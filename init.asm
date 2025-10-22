@@ -16,6 +16,10 @@
 .const BLUE         = $06
 .const WHITE        = $01
 
+// KERNAL routines
+.const CHROUT       = $FFD2     // Output character to current device
+.const CLRSCR       = $E544     // Clear screen
+
 // REU (RAM Expansion Unit) registers
 .const REU_STATUS      = $DF00  // Status register
 .const REU_COMMAND     = $DF01  // Command register
@@ -46,18 +50,10 @@ InitSystem:
 // ============================================================================
 // Clear Screen
 // ============================================================================
-// Fills screen memory with spaces (character code $20)
+// Uses KERNAL routine to clear screen
 // ============================================================================
 ClearScreen:
-    ldx #$00
-    lda #$20            // Space character
-!loop:
-    sta SCREEN_RAM,x         // Screen RAM page 1
-    sta SCREEN_RAM + $100,x  // Screen RAM page 2
-    sta SCREEN_RAM + $200,x  // Screen RAM page 3
-    sta SCREEN_RAM + $300,x  // Screen RAM page 4
-    inx
-    bne !loop-
+    jsr CLRSCR          // KERNAL clear screen routine
     rts
 
 // ============================================================================
@@ -207,7 +203,6 @@ DetectREU:
     sta REU_C64_ADDR_LO
     lda #$02
     sta REU_C64_ADDR_HI
-.break
     lda #$00
     sta REU_REU_ADDR_LO
     sta REU_REU_ADDR_HI
@@ -277,24 +272,17 @@ DetectREU:
 // Prints banner with REU status and ready prompt
 // ============================================================================
 PrintWelcomeMessage:
-    ldx #$00
-    
     // Print base text "Hondani Shell v0.1"
-!printBase:
-    lda WelcomeText,x
-    beq !checkREU+
-    sta SCREEN_RAM,x
-    lda #WHITE
-    sta COLOR_RAM,x
-    inx
-    jmp !printBase-
+    lda #<WelcomeText
+    sta $02
+    lda #>WelcomeText
+    sta $03
+    jsr PrintText
     
-.break
 !checkREU:
     lda REU_SIZE_BANKS
     bne !hasREU+
     jmp !noREU+
-.break
     
 !hasREU:
     
@@ -315,7 +303,6 @@ PrintWelcomeMessage:
     jsr PrintDecimal
     lda #<MBText
     sta $02
-.break
     lda #>MBText
     sta $03
     jsr PrintText
@@ -398,44 +385,38 @@ PrintWelcomeMessage:
     jsr PrintText
     
 !printReady:
-    // Print "ready." on second line
+    // Print newline then "READY."
+    lda #13             // Carriage return
+    jsr CHROUT
     lda #<ReadyText
     sta $02
     lda #>ReadyText
     sta $03
-    ldx #40
     jsr PrintText
     rts
 
 // ============================================================================
-// Print Character with Color
+// Print Character
 // ============================================================================
-// Helper to write char and color in one call
-// Input: A = character, X = screen position
-// Output: X = incremented position
+// Uses KERNAL CHROUT to print character
+// Input: A = character to print
 // ============================================================================
 PrintChar:
-    sta SCREEN_RAM,x
-    pha
-    lda #WHITE
-    sta COLOR_RAM,x
-    pla
-    inx
+    jsr CHROUT          // KERNAL character output
     rts
 
 // ============================================================================
 // Print Text
 // ============================================================================
-// Prints null-terminated string at current screen position
-// Input: $02/$03 = pointer to string, X = screen position
-// Output: X = updated position
+// Prints null-terminated string using KERNAL CHROUT
+// Input: $02/$03 = pointer to string
 // ============================================================================
 PrintText:
     ldy #$00
 !loop:
     lda ($02),y
     beq !done+
-    jsr PrintChar
+    jsr CHROUT          // Use KERNAL CHROUT
     iny
     bne !loop-
 !done:
@@ -444,9 +425,8 @@ PrintText:
 // ============================================================================
 // Print Decimal Number
 // ============================================================================
-// Prints 1-3 digit decimal number at current screen position
-// Input: A = number (0-255), X = screen position
-// Output: X = updated position after digits
+// Prints 1-3 digit decimal number using KERNAL CHROUT
+// Input: A = number (0-255)
 // ============================================================================
 PrintDecimal:
     sta $02             // Store number
@@ -468,7 +448,7 @@ PrintDecimal:
     beq !tensCalc+
     tya
     ora #$30
-    jsr PrintChar
+    jsr CHROUT          // Use KERNAL CHROUT
     inc $03             // Set leading zero flag
     
 !tensCalc:
@@ -490,18 +470,21 @@ PrintDecimal:
 !printTens:
     tya
     ora #$30
-    jsr PrintChar
+    jsr CHROUT          // Use KERNAL CHROUT
     
 !onesCalc:
     // Ones digit
     lda $02
     ora #$30
-    jsr PrintChar
+    jsr CHROUT          // Use KERNAL CHROUT
     rts
 
 // ============================================================================
 // Text Data
 // ============================================================================
+// Using petscii encoding for CHROUT (not screen codes)
+.encoding "petscii_mixed"
+
 WelcomeText:
     .text "Hondani Shell v0.1"
     .byte $00
