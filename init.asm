@@ -43,8 +43,31 @@ InitSystem:
     jsr SetColors
     jsr SetLowercaseMode
     jsr ClearScreen
+    jsr InitInputBuffer
     jsr DetectREU
     jsr PrintWelcomeMessage
+    jsr EnableCursor
+    rts
+
+// ============================================================================
+// Initialize Input Buffer
+// ============================================================================
+// Clears the input buffer and resets counters
+// ============================================================================
+InitInputBuffer:
+    lda #0
+    sta $033C           // Clear InputLength
+    sta $033D           // Clear CursorPos
+    rts
+
+// ============================================================================
+// Enable Cursor
+// ============================================================================
+// Ensures the cursor is enabled and blinking
+// ============================================================================
+EnableCursor:
+    lda #0
+    sta $CC             // Enable cursor (0 = enabled, 1+ = disabled)
     rts
 
 // ============================================================================
@@ -393,6 +416,8 @@ PrintWelcomeMessage:
     lda #>ReadyText
     sta $03
     jsr PrintText
+    lda #13             // Print another newline after READY.
+    jsr CHROUT
     rts
 
 // ============================================================================

@@ -34,15 +34,108 @@ WarmStart:
     jmp ColdStart
 
 // ============================================================================
+// Constants and Variables
+// ============================================================================
+.const InputBuffer  = $0340     // Input buffer in RAM (safe area page 3, 256 bytes)
+.const InputLength  = $033C     // Current length of input (in RAM - safe area)
+.const CursorPos    = $033D     // Current cursor position (in RAM - safe area)
+
+// ============================================================================
 // Main Loop
 // ============================================================================
 // Main event loop - waits for user input and processes commands
 // ============================================================================
 
 MainLoop:
-    // TODO: Wait for keyboard input
-    // TODO: Process commands
-    jmp MainLoop        // Loop forever
+    jsr $FFE4           // GETIN - Get character from keyboard buffer
+    cmp #0              // Check if a key was pressed
+    beq MainLoop        // No key pressed, keep looping
+    
+    // Handle special keys
+    cmp #13             // Enter key?
+    beq HandleEnter
+    cmp #20             // Delete key?
+    beq HandleDelete
+    cmp #157            // Cursor left?
+    beq HandleCursorLeft
+    cmp #29             // Cursor right?
+    beq HandleCursorRight
+    
+    // Regular character - add to input buffer
+    ldx InputLength
+    cpx #255            // Max buffer size check
+    beq MainLoop        // Buffer full, ignore
+    
+    sta InputBuffer,x   // Store character in buffer
+    inc InputLength     // Increment buffer length
+    jsr $FFD2           // CHROUT - Print character to screen
+    jmp MainLoop
+
+HandleEnter:
+    // Copy input buffer to $1000
+    lda InputLength
+    beq EmptyInput      // Skip copy if empty
+    
+    ldx #0
+CopyLoop:
+    lda InputBuffer,x
+    sta $1000,x
+    inx
+    cpx InputLength
+    bcc CopyLoop        // Continue while X < InputLength
+    
+EmptyInput:
+    // Null terminate
+    lda #0
+    ldx InputLength
+    sta $1000,x
+    
+    // Clear input buffer
+    lda #0
+    sta InputLength
+    
+    // Print newline
+    lda #13
+    jsr $FFD2           // CHROUT
+    
+    jmp MainLoop
+
+HandleDelete:
+    // Check if buffer is empty
+    lda InputLength
+    beq MainLoop        // Nothing to delete
+    
+    // Delete last character
+    dec InputLength
+    
+    // Move cursor back and print space to clear character
+    lda #20             // Delete key
+    jsr $FFD2
+    
+    jmp MainLoop
+
+HandleCursorLeft:
+    // Check if cursor position > 0
+    lda CursorPos
+    beq MainLoop        // At start, can't go left
+    
+    dec CursorPos
+    lda #157            // Cursor left
+    jsr $FFD2
+    
+    jmp MainLoop
+
+HandleCursorRight:
+    // Check if cursor position < input length
+    lda CursorPos
+    cmp InputLength
+    beq MainLoop        // At end of input, can't go right
+    
+    inc CursorPos
+    lda #29             // Cursor right
+    jsr $FFD2
+    
+    jmp MainLoop
 
 // ============================================================================
 // Include initialization routines
