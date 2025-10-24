@@ -150,6 +150,27 @@ EmptyInput:
     // Print newline
     lda #ENTER_KEY
     jsr CHROUT
+
+    // TODO: Process the input line here (e.g., execute command)
+    jsr PrintResponse
+
+    rts
+// ============================================================================
+// Print Response Routine
+// ============================================================================
+// Prints null-terminated string at $1000 using CHROUT
+// ============================================================================
+PrintResponse:
+    ldy #0
+PrintResponseLoop:
+    lda $1000,y
+    beq PrintResponseDone
+    jsr CHROUT
+    iny
+    bne PrintResponseLoop
+PrintResponseDone:
+    lda #ENTER_KEY // newline (carriage return)
+    jsr CHROUT
     rts
 
 // ============================================================================
