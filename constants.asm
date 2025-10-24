@@ -47,3 +47,6 @@
 
 // Runtime variables (stored in zero page)
 .const REU_SIZE_BANKS  = $FB    // Number of 64KB banks detected
+
+// MujBASIC working area
+.const MUJBASIC_CURRENT_DRIVE = $0313 // Current drive number used as default for listing directory and file operations

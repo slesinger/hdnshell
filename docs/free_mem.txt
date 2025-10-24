@@ -26,6 +26,47 @@ Total Free Memory: 569 bytes
 8. $00FB-$00FE : 4 bytes
 9. $03FC-$03FF : 4 bytes
 
+
+Chapter 1: Zero Page
+
+| Address Range   | Length | Description                                                                 |
+|-----------------|--------|-----------------------------------------------------------------------------|
+| $0000-$0001     | 2      | System use (not explicitly marked as unused)                                |
+| $0002           | 1      | Unused                                                                      |
+| $0003-$008F     | 141    | BASIC Working Storage (used by BASIC only; free if BASIC is replaced)       |
+| $0092           | 1      | Cassette: Timing Constant for Tape Reads                                    |
+| $009B           | 1      | Cassette: Tape Character Parity                                             |
+| $009C           | 1      | Cassette: Flag: Tape Byte Received                                          |
+| $009E-$009F     | 2      | Cassette: Tape Pass 1/2 Error Log Index                                     |
+| $00A5           | 1      | Cassette: Cassette Synchronization Character Countdown                      |
+| $00A6           | 1      | Cassette: Count of Characters in Tape I/O Buffer                            |
+| $00B0           | 1      | Cassette: Tape Timing                                                       |
+| $00B2-$00B3     | 2      | Cassette: Pointer: Start of Tape Buffer                                     |
+| $00BE           | 1      | Cassette: Cassette Read/Write Block Count                                   |
+| $00BF           | 1      | Cassette: Tape Input Byte Buffer                                            |
+| $00C0           | 1      | Cassette: Tape Motor Interlock                                              |
+| $00C1-$00C2     | 2      | Cassette: I/O Start Address (used for tape I/O)                             |
+| $00FB-$00FE     | 4      | FREEZP – Four free bytes of zero page for user programs                     |
+
+Chapter 2: Low Memory
+
+| Address Range   | Length | Description                                                                 |
+|-----------------|--------|-----------------------------------------------------------------------------|
+| $013F-$01FF     | 193    | Cassette: Tape Input Error Log (part of stack area)                         |
+| $0200-$0258     | 89     | BASIC Line Editor Input Buffer ("BUF")                                      |
+| $0259-$0276     | 30     | BASIC: Tables for File Numbers, Device Numbers, Secondary Addresses         |
+| $0277-$0280     | 10     | BASIC: Keyboard Buffer (Queue)                                              |
+| $02A7-$02FF     | 89     | Unused – For machine language subroutines or graphics data storage          |
+| $0300-$030B     | 12     | BASIC: Indirect Vector Table                                                |
+| $030C-$0312     | 7      | BASIC: Register Storage Area for SYS command                                |
+| $0313           | 1      | Unused                                                                      |
+| $0314-$0333     | 32     | Interrupt vectors and Kernal indirect vectors (preserve if Kernal present)  |
+| $0334-$033B     | 8      | Eight free bytes for user vectors or other data                             |
+| $033C-$03FB     | 192    | Cassette: Cassette I/O Buffer (TBUFFER)                                     |
+| $03FC-$03FF     | 4      | Four more free bytes                                                        |
+
+
+
 # Detailed list of addresses in the $0000-$0400 range that your application can use, with explanations:
 
 1. Addresses Unused by System
