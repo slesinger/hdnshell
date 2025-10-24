@@ -7,32 +7,8 @@
 // ============================================================================
 // Constants
 // ============================================================================
-.const SCREEN_RAM   = $0400     // Screen memory start
-.const COLOR_RAM    = $D800     // Color memory start
-.const BORDER_COLOR = $D020     // Border color register
-.const BG_COLOR     = $D021     // Background color register
 
-.const LIGHT_BLUE   = $0E
-.const BLUE         = $06
-.const WHITE        = $01
-
-// KERNAL routines
-.const CHROUT       = $FFD2     // Output character to current device
-.const CLRSCR       = $E544     // Clear screen
-
-// REU (RAM Expansion Unit) registers
-.const REU_STATUS      = $DF00  // Status register
-.const REU_COMMAND     = $DF01  // Command register
-.const REU_C64_ADDR_LO = $DF02  // C64 base address (low)
-.const REU_C64_ADDR_HI = $DF03  // C64 base address (high)
-.const REU_REU_ADDR_LO = $DF04  // REU base address (low)
-.const REU_REU_ADDR_HI = $DF05  // REU base address (high)
-.const REU_REU_BANK    = $DF06  // REU bank
-.const REU_LENGTH_LO   = $DF07  // Transfer length (low)
-.const REU_LENGTH_HI   = $DF08  // Transfer length (high)
-
-// Runtime variables (stored in zero page)
-.const REU_SIZE_BANKS  = $FB    // Number of 64KB banks detected
+#import "constants.asm"
 
 // ============================================================================
 // Initialize System
@@ -45,28 +21,18 @@ InitSystem:
     jsr ClearScreen
     jsr InitInputBuffer
     jsr DetectREU
-    jsr PrintWelcomeMessage
-    jsr EnableCursor
-    rts
+    jmp PrintWelcomeMessage     // Tail call optimization
 
 // ============================================================================
 // Initialize Input Buffer
 // ============================================================================
 // Clears the input buffer and resets counters
+// Also enables cursor
 // ============================================================================
 InitInputBuffer:
     lda #0
     sta $033C           // Clear InputLength
     sta $033D           // Clear CursorPos
-    rts
-
-// ============================================================================
-// Enable Cursor
-// ============================================================================
-// Ensures the cursor is enabled and blinking
-// ============================================================================
-EnableCursor:
-    lda #0
     sta $CC             // Enable cursor (0 = enabled, 1+ = disabled)
     rts
 
@@ -76,8 +42,7 @@ EnableCursor:
 // Uses KERNAL routine to clear screen
 // ============================================================================
 ClearScreen:
-    jsr CLRSCR          // KERNAL clear screen routine
-    rts
+    jmp CLRSCR          // KERNAL clear screen routine (tail call)
 
 // ============================================================================
 // Set Screen Colors
@@ -107,24 +72,24 @@ SetLowercaseMode:
 // Setup REU Transfer
 // ============================================================================
 // Helper function to reduce redundant REU setup code
-// Input: A = C64 addr high, X = REU bank, Y = command
+// Input: A = REU bank, X = command (C64->REU=$90, REU->C64=$91)
 // Uses: $0200 for C64 base, $0000 for REU base, 1 byte length
 // ============================================================================
 SetupREUTransfer:
-    pha                     // Save C64 addr high
+    sta REU_REU_BANK        // Set REU bank
     lda #$00
-    sta $DF0A               // Clear control register
-    sta $DF04               // REU base address low
-    sta $DF05               // REU base address high
-    sta $DF02               // C64 base address low
+    sta REU_C64_ADDR_LO     // C64 address low
+    sta REU_REU_ADDR_LO     // REU address low
+    sta REU_REU_ADDR_HI     // REU address high
+    lda #$02
+    sta REU_C64_ADDR_HI     // C64 address high ($0200)
     lda #$01
-    sta $DF07               // Transfer length = 1 byte
+    sta REU_LENGTH_LO       // Transfer 1 byte
     lda #$00
-    sta $DF08               // Transfer length high
-    stx $DF06               // Set REU bank
-    pla
-    sta $DF03               // Set C64 base address high
-    sty $DF01               // Execute command
+    sta REU_LENGTH_HI
+    stx REU_COMMAND         // Execute command
+    nop
+    nop                     // Wait for transfer
     rts
 
 // ============================================================================
@@ -142,49 +107,19 @@ DetectREU:
     lda #$AA
     sta $0200
     
-    // Setup transfer TO REU (C64 -> REU)
-    lda #$00
-    sta REU_C64_ADDR_LO     // C64 address low = $00
-    lda #$02
-    sta REU_C64_ADDR_HI     // C64 address high = $02 ($0200)
-    lda #$00
-    sta REU_REU_ADDR_LO     // REU address low = $00
-    sta REU_REU_ADDR_HI     // REU address high = $00
-    sta REU_REU_BANK        // REU bank = 0
-    lda #$01
-    sta REU_LENGTH_LO       // Transfer 1 byte
-    lda #$00
-    sta REU_LENGTH_HI
-    lda #%10010000          // Execute: C64->REU, no autoload
-    sta REU_COMMAND
-
-    // Wait for transfer to complete
-    nop
-    nop
+    // Transfer TO REU (C64 -> REU)
+    lda #$00                // Bank 0
+    ldx #%10010000          // C64->REU command
+    jsr SetupREUTransfer
     
     // Change C64 memory
     lda #$55
     sta $0200
     
-    // Setup transfer FROM REU (REU -> C64) - need to re-setup addresses
-    lda #$00
-    sta REU_C64_ADDR_LO     // C64 address low = $00
-    lda #$02
-    sta REU_C64_ADDR_HI     // C64 address high = $02 ($0200)
-    lda #$00
-    sta REU_REU_ADDR_LO     // REU address low = $00
-    sta REU_REU_ADDR_HI     // REU address high = $00
-    sta REU_REU_BANK        // REU bank = 0
-    lda #$01
-    sta REU_LENGTH_LO       // Transfer 1 byte
-    lda #$00
-    sta REU_LENGTH_HI
-    lda #%10010001          // Execute: REU->C64, no autoload
-    sta REU_COMMAND
-
-    // Wait for transfer to complete
-    nop
-    nop
+    // Transfer FROM REU (REU -> C64)
+    lda #$00                // Bank 0
+    ldx #%10010001          // REU->C64 command
+    jsr SetupREUTransfer
 
     // Check if we got original value back
     lda $0200
@@ -197,96 +132,60 @@ DetectREU:
     // Write marker $AA to bank 0, address $0000
     lda #$AA
     sta $0200
-    lda #$00
-    sta REU_C64_ADDR_LO
-    lda #$02
-    sta REU_C64_ADDR_HI
-    lda #$00
-    sta REU_REU_ADDR_LO
-    sta REU_REU_ADDR_HI
-    sta REU_REU_BANK        // Bank 0
-    lda #$01
-    sta REU_LENGTH_LO
-    lda #$00
-    sta REU_LENGTH_HI
-    lda #%10010000          // C64->REU
-    sta REU_COMMAND
-    nop
-    nop
+    lda #$00                // Bank 0
+    ldx #%10010000          // C64->REU command
+    jsr SetupREUTransfer
     
     // Now test each bank by writing its number to it
-    ldx #$01                // Start at bank 1
+    ldy #$01                // Start at bank 1
 !testBank:
-    // Write bank number to C64 memory
-    stx $0200
-    stx $FC                 // Save bank counter in zero page
+    // Write bank number to C64 memory and transfer to current bank
+    sty $0200
+    sty $FC                 // Save bank counter in zero page
     
-    // Transfer bank number to current bank
-    lda #$00
-    sta REU_C64_ADDR_LO
-    lda #$02
-    sta REU_C64_ADDR_HI
-    lda #$00
-    sta REU_REU_ADDR_LO
-    sta REU_REU_ADDR_HI
-    stx REU_REU_BANK        // Current bank being tested
-    lda #$01
-    sta REU_LENGTH_LO
-    lda #$00
-    sta REU_LENGTH_HI
-    lda #%10010000          // C64->REU
-    sta REU_COMMAND
-    nop
-    nop
+    tya
+    ldx #%10010000          // C64->REU command
+    jsr SetupREUTransfer
     
     // Read back from bank 0 to check if it still has $AA
     lda #$FF
     sta $0200
-    lda #$00
-    sta REU_C64_ADDR_LO
-    lda #$02
-    sta REU_C64_ADDR_HI
-    lda #$00
-    sta REU_REU_ADDR_LO
-    sta REU_REU_ADDR_HI
-    sta REU_REU_BANK        // Bank 0
-    lda #$01
-    sta REU_LENGTH_LO
-    lda #$00
-    sta REU_LENGTH_HI
-    lda #%10010001          // REU->C64
-    sta REU_COMMAND
-    nop
-    nop
+    lda #$00                // Bank 0
+    ldx #%10010001          // REU->C64 command
+    jsr SetupREUTransfer
     
     // If bank 0 doesn't have $AA anymore, we wrapped
     lda $0200
     cmp #$AA
-    beq !bankOK+
-    jmp !sizeFound+
-!bankOK:
+    bne !sizeFound+
     
     // Bank exists, try next
-    ldx $FC
-    inx
+    ldy $FC
+    iny
     beq !maxSize+           // If wrapped to 0, that means we tested all 256 banks (16MB)
-    cpx #129                // Safety check - shouldn't get here normally
+    cpy #129                // Safety check - shouldn't get here normally
     bcc !testBank-
     
 !maxSize:
-    // Hit 16MB (256 banks) - store special value $FF
-    ldx #$FF
-    stx REU_SIZE_BANKS
-    rts
-    
+    lda #$FF                // 16MB (256 banks) - store special value
+    .byte $2C               // BIT absolute - skip next 2 bytes
 !sizeFound:
-    ldx $FC                 // Current bank count
-    stx REU_SIZE_BANKS
-    rts
-    
+    lda $FC                 // Current bank count
+    .byte $2C               // BIT absolute - skip next 2 bytes
 !noREU:
     lda #$00
     sta REU_SIZE_BANKS
+    rts
+
+// ============================================================================
+// Helper: Load Text Pointer
+// ============================================================================
+// Input: A = low byte, X = high byte
+// Output: $02/$03 = pointer
+// ============================================================================
+LoadTextPtr:
+    sta $02
+    stx $03
     rts
 
 // ============================================================================
@@ -297,39 +196,26 @@ DetectREU:
 PrintWelcomeMessage:
     // Print base text "Hondani Shell v0.1"
     lda #<WelcomeText
-    sta $02
-    lda #>WelcomeText
-    sta $03
+    ldx #>WelcomeText
+    jsr LoadTextPtr
     jsr PrintText
     
-!checkREU:
     lda REU_SIZE_BANKS
-    bne !hasREU+
-    jmp !noREU+
+    beq !noREU+
     
-!hasREU:
-    
-    // Print ", reu "
+    // Print ", REU "
     lda #<REULabel
-    sta $02
-    lda #>REULabel
-    sta $03
+    ldx #>REULabel
+    jsr LoadTextPtr
     jsr PrintText
     
     // Check if $FF (256 banks = 16MB)
     lda REU_SIZE_BANKS
     cmp #$FF
     bne !normalSize+
-    
-    // Print 16MB
     lda #16
     jsr PrintDecimal
-    lda #<MBText
-    sta $02
-    lda #>MBText
-    sta $03
-    jsr PrintText
-    jmp !printReady+
+    jmp !printMB+
     
 !normalSize:
     // Convert banks to MB (banks / 16)
@@ -339,72 +225,52 @@ PrintWelcomeMessage:
     lsr
     lsr
     beq !printKB+
-    
-    // Print size in MB
     jsr PrintDecimal
+!printMB:
     lda #<MBText
-    sta $02
-    lda #>MBText
-    sta $03
+    ldx #>MBText
+    jsr LoadTextPtr
     jsr PrintText
     jmp !printReady+
     
 !printKB:
-    // For sizes < 1MB, we have 2-15 banks (128KB-960KB)
-    // Let's just handle specific common sizes
+    // For sizes < 1MB, handle common sizes with lookup table
     lda REU_SIZE_BANKS
-    cmp #2
-    bne !not128+
-    lda #<Msg128KB
-    sta $02
-    lda #>Msg128KB
-    sta $03
-    jsr PrintText
-    jmp !printReady+
+    cmp #9
+    bcs !notCommon+         // >= 9 banks, not a common size
     
-!not128:
-    cmp #4
-    bne !not256+
-    lda #<Msg256KB
+    // Use lookup table for common sizes (2, 4, 8 banks)
+    asl                     // * 2 for word lookup
+    tax
+    lda KBSizeTableLo-2,x   // -2 because table starts at bank 1
     sta $02
-    lda #>Msg256KB
+    lda KBSizeTableHi-2,x
     sta $03
-    jsr PrintText
-    jmp !printReady+
-    
-!not256:
-    cmp #8
-    bne !notCommon+
-    lda #<Msg512KB
-    sta $02
-    lda #>Msg512KB
-    sta $03
+    lda ($02),y             // Check if null (Y=0 from earlier)
+    beq !notCommon+         // Not in table
     jsr PrintText
     jmp !printReady+
     
 !notCommon:
-    // For other sizes, print banks * 64 using lookup or calculation
-    // For simplicity, just show number of banks
+    // For other sizes, calculate banks * 64
     lda REU_SIZE_BANKS
-    asl                     // * 2
-    asl                     // * 4  
-    asl                     // * 8
-    asl                     // * 16
-    asl                     // * 32
-    asl                     // * 64 - this will wrap but works for small values
+    asl                     // * 64
+    asl
+    asl
+    asl
+    asl
+    asl
     jsr PrintDecimal
     lda #<KBText
-    sta $02
-    lda #>KBText
-    sta $03
+    ldx #>KBText
+    jsr LoadTextPtr
     jsr PrintText
     jmp !printReady+
     
 !noREU:
     lda #<NoREUText
-    sta $02
-    lda #>NoREUText
-    sta $03
+    ldx #>NoREUText
+    jsr LoadTextPtr
     jsr PrintText
     
 !printReady:
@@ -412,22 +278,11 @@ PrintWelcomeMessage:
     lda #13             // Carriage return
     jsr CHROUT
     lda #<ReadyText
-    sta $02
-    lda #>ReadyText
-    sta $03
+    ldx #>ReadyText
+    jsr LoadTextPtr
     jsr PrintText
     lda #13             // Print another newline after READY.
     jsr CHROUT
-    rts
-
-// ============================================================================
-// Print Character
-// ============================================================================
-// Uses KERNAL CHROUT to print character
-// Input: A = character to print
-// ============================================================================
-PrintChar:
-    jsr CHROUT          // KERNAL character output
     rts
 
 // ============================================================================
@@ -441,7 +296,7 @@ PrintText:
 !loop:
     lda ($02),y
     beq !done+
-    jsr CHROUT          // Use KERNAL CHROUT
+    jsr CHROUT
     iny
     bne !loop-
 !done:
@@ -454,55 +309,51 @@ PrintText:
 // Input: A = number (0-255)
 // ============================================================================
 PrintDecimal:
-    sta $02             // Store number
-    lda #$00
-    sta $03             // Clear leading zero flag
+    ldx #0              // Leading zero flag
     
     // Hundreds digit
-    lda $02
-    ldy #$00
+    ldy #0
 !hundreds:
     cmp #100
     bcc !tens+
-    sbc #100
+    sbc #100            // Carry already set from compare
     iny
-    jmp !hundreds-
+    bne !hundreds-
 !tens:
-    sta $02
-    cpy #$00
+    cpy #0
     beq !tensCalc+
+    pha
     tya
     ora #$30
-    jsr CHROUT          // Use KERNAL CHROUT
-    inc $03             // Set leading zero flag
+    jsr CHROUT
+    ldx #1              // Set leading zero flag
+    pla
     
 !tensCalc:
     // Tens digit
-    lda $02
-    ldy #$00
+    ldy #0
 !tensLoop:
     cmp #10
     bcc !ones+
     sbc #10
     iny
-    jmp !tensLoop-
+    bne !tensLoop-
 !ones:
-    sta $02
-    lda $03
+    cpx #0              // Check leading zero flag
     bne !printTens+
-    cpy #$00
+    cpy #0
     beq !onesCalc+
 !printTens:
+    pha
     tya
     ora #$30
-    jsr CHROUT          // Use KERNAL CHROUT
+    jsr CHROUT
+    pla
     
 !onesCalc:
-    // Ones digit
-    lda $02
+    // Ones digit always printed
     ora #$30
-    jsr CHROUT          // Use KERNAL CHROUT
-    rts
+    jmp CHROUT          // Tail call optimization
 
 // ============================================================================
 // Text Data
@@ -545,3 +396,9 @@ NoREUText:
 ReadyText:
     .text "READY."
     .byte $00
+
+// Lookup table for common KB sizes (indexed by bank count * 2)
+KBSizeTableLo:
+    .byte $00, <Msg128KB, $00, <Msg256KB, $00, $00, $00, <Msg512KB
+KBSizeTableHi:
+    .byte $00, >Msg128KB, $00, >Msg256KB, $00, $00, $00, >Msg512KB

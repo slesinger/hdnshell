@@ -1,0 +1,117 @@
+# Summary of Free Memory Areas in $0000-$0400 for Custom Applications
+
+$0002: 1 byte
+$0003-$008F: 141 bytes ($008F - $0003 + 1 = 0x8D = 141)
+$00FB-$00FE: 4 bytes
+$0200-$0258: 89 bytes ($0258 - $0200 + 1 = 0x59 = 89)
+$0259-$0276: 30 bytes ($0276 - $0259 + 1 = 0x1E = 30)
+$0277-$0280: 10 bytes ($0280 - $0277 + 1 = 0x0A = 10)
+$02A7-$02FF: 89 bytes ($02FF - $02A7 + 1 = 0x59 = 89)
+$0313: 1 byte
+$0334-$033B: 8 bytes
+$033C-$03FB: 192 bytes ($03FB - $033C + 1 = 0xC0 = 192)
+$03FC-$03FF: 4 bytes
+
+Total Free Memory: 569 bytes
+
+# Consecutive Spaces
+
+1. $033C-$03FB : 192 bytes
+2. $0003-$008F : 141 bytes
+3. $02A7-$02FF : 89 bytes
+4. $0200-$0258 : 89 bytes
+5. $0259-$0276 : 30 bytes
+6. $0277-$0280 : 10 bytes
+7. $0334-$033B : 8 bytes
+8. $00FB-$00FE : 4 bytes
+9. $03FC-$03FF : 4 bytes
+
+# Detailed list of addresses in the $0000-$0400 range that your application can use, with explanations:
+
+1. Addresses Unused by System
+Zero Page ($0000-$00FF)
+$0002: Explicitly marked as "Unused".
+$00FB-$00FE: "FREEZP" – Four free bytes of zero page for user programs. Guaranteed not to be altered by BASIC.
+$0313 ($787): Explicitly marked as "Unused".
+High RAM ($0334-$033B, $03FC-$03FF)
+$0334-$033B: Eight free bytes for user vectors or other data.
+$03FC-$03FF: Four more free bytes.
+$02A7-$02FF: "Unused" – The programmer may use this area for machine language subroutines or graphics data storage.
+2. Addresses Used by BASIC (which you are replacing)
+Zero Page ($0000-$008F)
+$0003-$008F: "BASIC Working Storage" – Used by BASIC only. If your application does not interact with BASIC, you can freely use this area.
+BASIC Buffers and Tables
+$0200-$0258: BASIC Line Editor Input Buffer ("BUF"). If you do not use BASIC, you can repurpose this buffer.
+$0259-$0276: Tables for File Numbers, Device Numbers, and Secondary Addresses. Used by BASIC for I/O file management.
+$0277-$0280: Keyboard Buffer (Queue). Used by BASIC for keyboard input.
+$0300-$030B: BASIC Indirect Vector Table. Used for BASIC's internal routine vectors.
+$030C-$0312: Register Storage Area for SYS command (BASIC only).
+$0314-$0333: Interrupt vectors and Kernal indirect vectors. Caution: If you replace BASIC and also the Kernal, you may use these, but if you keep the Kernal, you must preserve these vectors.
+3. Addresses Used by Cassette (which you do not use)
+Zero Page
+$00A6 ($166): Count of Characters in Tape I/O Buffer.
+$0092 ($146): Timing Constant for Tape Reads.
+$009B ($155): Tape Character Parity.
+$009C ($156): Flag: Tape Byte Received.
+$009E ($158): Tape Pass 1 Error Log Index.
+$009F ($159): Tape Pass 2 Error Log Correction Index.
+$00A5 ($165): Cassette Synchronization Character Countdown.
+$00B0 ($176): Tape Timing.
+$00B2-$00B3 ($178-$179): Pointer: Start of Tape Buffer.
+$00BE ($190): Cassette Read/Write Block Count.
+$00BF ($191): Tape Input Byte Buffer.
+$00C0 ($192): Tape Motor Interlock.
+$00C1-$00C2 ($193-$194): I/O Start Address (used for tape I/O).
+$013F-$01FF ($319-$511): Tape Input Error Log (part of stack area, but used for tape error logging).
+$033C-$03FB ($828-$1019): Cassette I/O Buffer (TBUFFER). If you do not use tape, this entire 192-byte buffer is available.
+4. Other Candidates
+Stack Area
+$0100-$01FF: Microprocessor Stack Area. Do not use for persistent data, but you may use for temporary storage if you manage the stack pointer carefully.
+BASIC Numeric Work Area
+$0057-$0060: Used by BASIC for numeric calculations. If you replace BASIC, you may use this area.
+BASIC Floating Point Accumulators
+$0061-$006E: Used by BASIC for floating point math. If you replace BASIC, you may use this area.
+BASIC CHRGET Routine
+$0073-$008A: Used by BASIC for text parsing. If you replace BASIC, you may use this area.
+BASIC RND Seed
+$008B-$008F: Used by BASIC for random number generation. If you replace BASIC, you may use this area.
+Summary Table
+Range	Usage/Comment
+$0002	Unused
+$0003-$008F	BASIC Working Storage (free if BASIC is replaced)
+$00FB-$00FE	Four free bytes of zero page
+$0200-$0258	BASIC Input Buffer (free if BASIC is replaced)
+$0259-$0276	BASIC I/O Tables (free if BASIC is replaced)
+$0277-$0280	BASIC Keyboard Buffer (free if BASIC is replaced)
+$02A7-$02FF	Unused (free for user programs)
+$0300-$030B	BASIC Indirect Vector Table (free if BASIC is replaced)
+$030C-$0312	BASIC SYS Register Storage (free if BASIC is replaced)
+$0313	Unused
+$0334-$033B	Eight free bytes
+$033C-$03FB	Cassette Buffer (free if you do not use tape)
+$03FC-$03FF	Four free bytes
+Special Notes
+$0000-$0001: These are hardware registers for the 6510 I/O port and memory banking. Do not use unless you know what you are doing.
+$0100-$01FF: Stack area. Do not use for persistent data.
+$0146, $0155, $0156, $0158, $0159, $0165, $0166, $0176, $0178-$0179, $0190, $0191, $0192, $0193-$0194, $013F-$01FF, $033C-$03FB: All tape/cassette related. Free if you do not use tape.
+$02A7-$02FF: Unused, safe for user programs.
+$0334-$033B, $03FC-$03FF: Explicitly marked as unused/free.
+Recommended for Your Application
+$0002
+$0003-$008F (if you replace BASIC)
+$00FB-$00FE
+$0200-$0258
+$0259-$0276
+$0277-$0280
+$02A7-$02FF
+$0313
+$0334-$033B
+$033C-$03FB (if you do not use cassette)
+$03FC-$03FF
+If you need more space
+$0100-$01FF: Use for temporary storage only, not persistent data.
+$0057-$008F: All BASIC work areas, including numeric, floating point, CHRGET, RND seed, etc., are available if you replace BASIC.
+Summary
+You have a large amount of RAM in $0002-$008F, $00FB-$00FE, $02A7-$02FF, $0334-$033B, $033C-$03FB, $03FC-$03FF, and all BASIC/cassette areas if you do not use those features.
+Avoid $0000-$0001 unless you are handling memory banking and hardware I/O yourself.
+Stack area ($0100-$01FF) is for temporary use only.

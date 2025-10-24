@@ -4,10 +4,10 @@
         {
             "label": "Build MujBASIC",
             "type": "shell",
-            "command": "bash",
-            "args": [
-                "-c",
-                "java -jar /home/honza/projects/c64/pc-tools/kickass/KickAss.jar ${file} -o ${fileBasenameNoExtension}.bin -vicesymbols && mv ${fileBasenameNoExtension}.bin ${fileBasenameNoExtension}.sym ${fileBasenameNoExtension}.vs build/"
+                    "command": "bash",
+                    "args": [
+                        "-c",
+                        "java -jar /home/honza/projects/c64/pc-tools/kickass/KickAss.jar /home/honza/projects/c64/projects/mujbasic/mujbasic.asm -o mujbasic.bin -vicesymbols && mv mujbasic.bin mujbasic.sym mujbasic.vs build/"
             ],
             "group": {
                 "kind": "build",
@@ -35,7 +35,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "java -jar /home/honza/projects/c64/pc-tools/kickass/KickAss.jar ${file} -o ${fileBasenameNoExtension}.bin -vicesymbols && mv ${fileBasenameNoExtension}.bin ${fileBasenameNoExtension}.sym ${fileBasenameNoExtension}.vs build/ && x64sc -basic ${fileDirname}/build/${fileBasenameNoExtension}.bin -reu -reusize 2048"
+                "java -jar /home/honza/projects/c64/pc-tools/kickass/KickAss.jar /home/honza/projects/c64/projects/mujbasic/mujbasic.asm -o mujbasic.bin -vicesymbols && mv mujbasic.bin mujbasic.sym mujbasic.vs build/ && x64sc -basic build/mujbasic.bin -reu -reusize 2048"
             ],
             "group": "test",
             "problemMatcher": {
