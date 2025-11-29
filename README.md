@@ -15,6 +15,8 @@ Features:
 
 ### Future Plans
 - Implement a simple plain text editor https://github.com/gillham/speedscript
+- prglets support - relocatable small residential programs (relocation possible with hints in header and relative jumps
+)
 ### Syntax
 
 The syntax for user commands is as follows:
@@ -131,3 +133,9 @@ This project is free to use and modify for educational and personal purposes.
 ## Author
 
 Created with KickAssembler for the Commodore 64
+
+## Notes
+
+### Context7
+
+/websites/theweb_dk_kickassembler_webhelp

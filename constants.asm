@@ -5,7 +5,8 @@
 // This file contains all shared constants for the project.
 // ============================================================================
 
-
+// Zero page locations
+.const ZP_INDIRECT_ADDR = $b2  // +$b3 Repurposable Zero page indirect address pointer
 
 // KERNAL routines
 .const GETIN        = $FFE4     // KERNAL get character from keyboard
@@ -19,11 +20,19 @@
 .const INPUT_LINE_BUFFER = $1000 // Input line buffer destination
 
 // Input key codes
-.const ENTER_KEY    = 13
-.const DELETE_KEY   = 20
-.const CURSOR_LEFT  = 157
-.const CURSOR_RIGHT = 29
-.const SPACE_CHAR   = 32
+.const ENTER_KEY    = $0D
+.const DELETE_KEY   = $14
+.const CURSOR_LEFT  = $9D
+.const CURSOR_RIGHT = $1D
+.const SPACE_CHAR   = $20
+
+.const KEY_NULL = $00
+.const KEY_SPACE = $20
+.const KEY_E = $45
+.const KEY_H = $48
+.const KEY_L = $4c
+.const KEY_P = $50
+.const KEY_S = $53
 
 // Screen and color RAM
 .const SCREEN_RAM   = $0400     // Screen memory start
@@ -52,3 +61,10 @@
 
 // MujBASIC working area
 .const MUJBASIC_CURRENT_DRIVE = $0313 // Current drive number used as default for listing directory and file operations
+
+// Parser
+// .const PARSER_INPUT_PTR = $0200 // Pointer to parser input string. Input string is null terminated.
+.const PARSER_INPUT_PTR = $0900  // temporary
+.const PARSER_MAX_INPUT_LEN = 89 // Maximum length of user input
+.const PARSER_WHITESPACE = $20 // ASCII space character used as whitespace in parser
+.const PARSER_END_OF_TABLE = $FF // Special marker indicating end of parser token table
