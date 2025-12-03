@@ -38,6 +38,7 @@ cmp_addr:
     lda (ZP_INDIRECT_ADDR),y
     cmp #PARSER_END_OF_TABLE
     bne !+  // end of table reached, command unknown
+    pla
     jsr cmd_unknown
     jmp parse_done
 !:  pla

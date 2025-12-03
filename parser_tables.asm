@@ -23,6 +23,8 @@ tbl:
 .byte KEY_L, <tbl_l, >tbl_l
 .byte KEY_R, <tbl_r, >tbl_r
 .byte PARSER_END_OF_TABLE
+.byte PARSER_END_OF_TABLE
+.byte PARSER_END_OF_TABLE
 
 tbl_null:
 .byte KEY_NULL, <cmd_empty, >cmd_empty  // empty line

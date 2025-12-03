@@ -99,11 +99,13 @@ MSGBAS:
 MSG2:
     .text "   PC  SR AC XR YR SP   V0.1"  // header for registers
     .byte $0D, $80    // end of message marker
+MSG_UNKNOWN_COMMAND:
+    .text "COMMAND UNKNOWN"
+    .byte $0D, $80
 MSG_HELP:
     .text "AVAILABLE COMMANDS:"
     .byte $0D
     .text " HELP - DISPLAY THIS HELP MESSAGE"
     .byte $0D
     .text " R    - DISPLAY CPU REGISTERS"
-    .byte $0D
-    .byte $80               // end of message marker
+    .byte $0D, $80
