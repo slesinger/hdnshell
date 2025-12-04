@@ -1,4 +1,5 @@
 .importonce
+#import "constants.asm"
 
 // floppy.asm - PrintDirectory routine for C64
 // Prints the disk directory in standard C64 format
@@ -350,3 +351,58 @@ pn_out:
     rts
 
 save_status: .byte 0
+
+
+// Filename is temporary fixed to "SOUND2" PRG. Its start address is $1800
+LoadFile:
+    // lda #$01           // logical file number
+    // ldx #$08           // device 8
+    // ldy #$00           // secondary address 0
+    // jsr SetLFSAndOpen
+    // rts
+
+    lda #$01  // logical number, can have up to 5 opened at the same time
+    ldx #$08  // device number
+    ldy #$01  // command, secondary address normally 1 to use PRG address (or .X , .Y LOAD ADDRESS IF SA=0 )
+    jsr SETLFS          // call KERNAL set logical file parameters
+
+    lda #$06            // length of filename
+    ldx #<SOUND2        // low byte of filename address
+    ldy #>SOUND2        // high byte of filename address
+    jsr SETNAM          // call KERNAL set file name
+
+    lda #$00      // load (not verify)
+    ldx #$00
+    ldy #$50           // load to $5000
+    jsr LOAD
+
+    rts
+
+SaveFile:
+    lda #$01  // logical number, can have up to 5 opened at the same time
+    ldx #$08  // device number
+    ldy #$01  // secondary address, command, use PRG address  (or .X , .Y LOAD ADDRESS IF SA=0 )
+    jsr SETLFS          // call KERNAL set logical file parameters
+
+    lda #$06            // length of filename
+    ldx #<MEDLIK        // low byte of filename address
+    ldy #>MEDLIK        // high byte of filename address
+    jsr SETNAM          // call KERNAL set file name
+
+    lda #$00
+    sta ZP_INDIRECT_ADDR_2
+    lda #$04
+    sta ZP_INDIRECT_ADDR_2 + 1  // start address $0400
+
+    lda #ZP_INDIRECT_ADDR_2      // page 0 offset
+    ldx #$2b
+    ldy #$04           // load up to $042b
+    jsr SAVE
+jmp *
+    rts
+
+SOUND2: .text "SOUND2"
+MEDLIK: .text "MEDLIK"
+// SOUND2: .byte $2a, $00  // *
+// SOUND2: .byte $22, $2a, $22, $00  // "*"
+// SOUND2: .byte $13, $0f, $15, $0e, $04, $32, $00  // "SOUND2"
