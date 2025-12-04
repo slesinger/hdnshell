@@ -98,14 +98,14 @@ SNDMSG:
 MSGBAS:
 MSG2:
     .text "   PC  SR AC XR YR SP   V0.1"  // header for registers
-    .byte $0D, $80    // end of message marker
+    .byte ENTER_KEY, $80    // end of message marker
 MSG_UNKNOWN_COMMAND:
-    .text "COMMAND UNKNOWN"
-    .byte $0D, $80
+    .text "COMMAND NOT FOUND"
+    .byte ENTER_KEY, $80
 MSG_HELP:
     .text "AVAILABLE COMMANDS:"
-    .byte $0D
+    .byte ENTER_KEY
     .text " HELP - DISPLAY THIS HELP MESSAGE"
-    .byte $0D
+    .byte ENTER_KEY
     .text " R    - DISPLAY CPU REGISTERS"
-    .byte $0D, $80
+    .byte ENTER_KEY, $80

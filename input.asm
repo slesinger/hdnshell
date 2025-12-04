@@ -125,8 +125,25 @@ HandleEnter:
     lda #0
     ldx InputLength
     sta InputBuffer,x
+    // Disable cursor
+      // Load PNT (low) into LDA, add PNTR, store to ZP_INDIRECT_ADDR (low)
+    lda $00D1          // Load PNT low byte
+    clc
+    adc $00D3          // Add PNTR (cursor column)
+    sta $00B2          // Store result to ZP_INDIRECT_ADDR low byte
+      // Load PNT (high), add carry if needed, store to ZP_INDIRECT_ADDR (high)
+    lda $00D2          // Load PNT high byte
+    adc #$00           // Add carry from previous addition
+    sta $00B3          // Store result to ZP_INDIRECT_ADDR high byte
+    
+    lda #$35
+    ldy #$00
+    lda ($b2),y
+    and #$7F          // Clear bit 7 to disable cursor
+    sta ($b2),y
+    
     // New line
-    lda #$0D
+    lda #ENTER_KEY
     jsr CHROUT
     // parse and execute
     jsr parse_input

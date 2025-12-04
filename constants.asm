@@ -10,13 +10,15 @@
 .const ZP_INDIRECT_ADDR = $b2      // +$b3 Repurposable Zero page indirect address pointer 1
 .const ZP_INDIRECT_ADDR_2 = $c1    // +$c2 Repurposable Zero page indirect address pointer 2
 .const TMP2 = $c3                  // usually holds start address
-.const PCH = $00                   // program counter high byte
-.const PCL = $00                   // program counter low byte
+.const PNT = $d1                   // Read-only $00D1-$00D2	PNT	Pointer to the Address of the Current Screen Line
+.const PNTR = $d3                  // Read-only $00D3	PNTR	Cursor Column on Current Line 0-79
+// .const PCH = $00                   // program counter high byte
+// .const PCL = $00                   // program counter low byte
 .const REU_SIZE_BANKS = $FB        // Number of 64KB banks detected
 .const InputBuffer  = $0200        // Input buffer in RAM (safe area page 3, 256 bytes)
 .const parser_input_cursor = $0313 // Current position in parser input string
 .const InputLength  = $033C        // Current length of input (in RAM - safe area)
-.const CursorPos    = $033D        // Current cursor position (in RAM - safe area)
+.const CursorPos    = $033D        // Current cursor position within user input line (in RAM - safe area)
 
 // KERNAL routines
 .const CLRSCR  = $E544             // KERNAL clear screen routine
@@ -49,12 +51,32 @@
 
 .const KEY_NULL = $00
 .const KEY_SPACE = $20
+.const KEY_A = $41
+.const KEY_B = $42
+.const KEY_C = $43
+.const KEY_D = $44
 .const KEY_E = $45
+.const KEY_F = $46
+.const KEY_G = $47
 .const KEY_H = $48
+.const KEY_I = $49
+.const KEY_J = $4a
+.const KEY_K = $4b
 .const KEY_L = $4c
+.const KEY_M = $4d
+.const KEY_N = $4e
+.const KEY_O = $4f
 .const KEY_P = $50
+.const KEY_Q = $51
 .const KEY_R = $52
 .const KEY_S = $53
+.const KEY_T = $54
+.const KEY_U = $55
+.const KEY_V = $56
+.const KEY_W = $57
+.const KEY_X = $58
+.const KEY_Y = $59
+.const KEY_Z = $5a
 
 // Screen and color RAM
 .const SCREEN_RAM   = $0400     // Screen memory start
@@ -83,6 +105,6 @@
 
 // Parser
 .const PARSER_INPUT_PTR = InputBuffer  // temporary
-.const PARSER_MAX_INPUT_LEN = 89 // Maximum length of user input
+.const PARSER_MAX_INPUT_LEN = 79 // Maximum length of user input
 .const PARSER_WHITESPACE = $20 // ASCII space character used as whitespace in parser
 .const PARSER_END_OF_TABLE = $FF // Special marker indicating end of parser token table

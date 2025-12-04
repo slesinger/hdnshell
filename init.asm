@@ -275,13 +275,13 @@ PrintWelcomeMessage:
     
 !printReady:
     // Print newline then "READY."
-    lda #13             // Carriage return
+    lda #ENTER_KEY             // Carriage return
     jsr CHROUT
     lda #<ReadyText
     ldx #>ReadyText
     jsr LoadTextPtr
     jsr PrintText
-    lda #13             // Print another newline after READY.
+    lda #ENTER_KEY             // Print another newline after READY.
     jsr CHROUT
     rts
 

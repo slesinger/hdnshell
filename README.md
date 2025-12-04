@@ -139,3 +139,4 @@ Created with KickAssembler for the Commodore 64
 ### Context7
 
 /websites/theweb_dk_kickassembler_webhelp
+/mist64/c64ref
