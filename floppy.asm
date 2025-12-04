@@ -1,4 +1,4 @@
-.importonce
+#importonce
 #import "constants.asm"
 #import "utils.asm"
 
@@ -319,24 +319,33 @@ open2_status_prefix:
 */
 
 // Filename is temporary fixed to "SOUND2" PRG. Its start address is $1800
-// Input: filename in pointer ZP_INDIRECT_ADDR_2
+// Input: filename in pointer ZP_INDIRECT_ADDR
 // Input: filename length in FNLEN
+// Input: SAVX (low byte of load address), SAVY (high byte of load address) non-zero if relocatable load is desired
+// Input: command = 1 if SAVY == 0, else 0  (use PRG load address if SAVY is 0)
 // Output: None, file loaded
 // Registers modified: A, X, Y
 load_file:
+    lda SAVY
+    beq load_file_non_reloc
+    // Relocatable load
+    ldy #$00  // command, secondary address normally 1 to use PRG address (or .X , .Y LOAD ADDRESS IF SA=0 )
+    jmp load_file_common
+load_file_non_reloc:
+    ldy #$01  // command, secondary address 0 to use file load address
+load_file_common:
     lda #$01  // logical number, can have up to 5 opened at the same time
-    ldx #$08  // device number
-    ldy #$01  // command, secondary address normally 1 to use PRG address (or .X , .Y LOAD ADDRESS IF SA=0 )
+    ldx #$08  // device number  // TODO take current device from global variable
     jsr SETLFS          // call KERNAL set logical file parameters
 
     lda FNLEN            // length of filename
-    ldx ZP_INDIRECT_ADDR_2  // low byte of filename address
-    ldy ZP_INDIRECT_ADDR_2  // high byte of filename address
+    ldx ZP_INDIRECT_ADDR  // low byte of filename address
+    ldy ZP_INDIRECT_ADDR+1  // high byte of filename address
     jsr SETNAM          // call KERNAL set file name
 
     lda #$00      // load (not verify)
-    ldx #$00
-    ldy #$50           // load to $5000
+    ldx SAVX    // low byte of load address
+    ldy SAVY    // high byte of load address
     jsr LOAD
     bcc load_file_done  // if no error, done
     // Error occurred during load

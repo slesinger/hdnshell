@@ -17,6 +17,8 @@ pn_out:
     rts
 
 // print address
+// Input: TMP2 = low byte, TMP2+1 = high byte of address to print
+// Kills: A, X
 SHOWAD:
     lda TMP2
     ldx TMP2+1
@@ -109,7 +111,62 @@ SNDMSG:
     bpl SNDMSG          // loop until high bit is set
     rts
 
-// message table; last character has high bit set
+
+// convert binary to BCD
+// Input: TMP0 = low byte, TMP0+1 = high byte of binary value
+// Input: alternatively call CVTDEC_tmp2 for TMP2 = low byte, TMP2+1 = high byte of binary value
+
+// CVTDEC:  jsr COPY12          // copy value from TMP0 to TMP2
+CVTDEC_tmp2:
+         lda #0
+         ldx #2              // clear 3 bytes in work buffer
+DECML1:  sta U0AA0,x
+         dex
+         bpl DECML1
+         ldy #16             // 16 bits in input
+         php                 // save status register
+         sei                 // make sure no interrupts occur with BCD enabled
+         sed
+DECML2:  asl TMP2            // rotate bytes out of input low byte
+         rol TMP2+1          // .. into high byte and carry bit
+         ldx #2              // process 3 bytes
+DECDBL:  lda U0AA0,x         // load current value of byte
+         adc U0AA0,x         // add it to itself plus the carry bit
+         sta U0AA0,x         // store it back in the same location
+         dex                 // decrement byte counter
+         bpl DECDBL          // loop until all bytes processed
+         dey                 // decrement bit counter
+         bne DECML2          // loop until all bits processed
+         plp                 // restore processor status
+         rts
+
+
+// print number in specified base without leading zeros
+nmprnt:  sta DIGCNT          // number of digits in accumulator
+         sty NUMBIT          // bits per digit passed in y register
+digout:  ldy NUMBIT          // get bits to process
+         lda #0              // clear accumulator
+rolbit:  asl U0AA0+2         // shift bits out of low byte
+         rol U0AA0+1         // ... into high byte
+         rol U0AA0           // ... into overflow byte
+         rol                 // ... into accumulator
+         dey                 // decrement bit counter
+         bpl rolbit          // loop until all bits processed
+         tay                 // check whether accumulator is 0
+         bne nzero           // if not, print it
+         cpx #1              // have we output the max number of digits?
+         beq nzero           // if not, print it
+         ldy DIGCNT          // how many digits have we output?
+         beq zersup          // skip output if digit is 0
+nzero:   inc DIGCNT          // increment digit counter
+         ora #$30            // add numeric value to ascii '0' to get ascii char
+         jsr CHROUT          // output character
+zersup:  dex                 // decrement number of leading zeros
+         bne digout          // next digit
+         rts
+
+
+// message table// last character has high bit set
 MSGBAS:
 MSG2:
     .text "   PC  SR AC XR YR SP   V0.1"  // header for registers
@@ -120,7 +177,7 @@ MSG_UNKNOWN_COMMAND:
 MSG_HELP:
     .text "AVAILABLE COMMANDS:"
     .byte KEY_RETURN
-    .text " HELP - DISPLAY THIS HELP MESSAGE"
+    .text " HELP - DISplaY THIS HELP MESSAGE"
     .byte KEY_RETURN
-    .text " R    - DISPLAY CPU REGISTERS"
+    .text " R    - DISplaY CPU REGISTERS"
     .byte KEY_RETURN, $80

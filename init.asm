@@ -17,7 +17,7 @@
 // ============================================================================
 InitSystem:
     jsr SetColors
-    jsr SetLowercaseMode
+    // jsr SetLowercaseMode
     jsr ClearScreen
     jsr InitInputBuffer
     jsr DetectREU
@@ -277,6 +277,7 @@ PrintWelcomeMessage:
     // Print newline then "READY."
     lda #KEY_RETURN             // Carriage return
     jsr CHROUT
+    jsr CHROUT
     lda #<ReadyText
     ldx #>ReadyText
     jsr LoadTextPtr
@@ -362,39 +363,45 @@ PrintDecimal:
 .encoding "petscii_mixed"
 
 WelcomeText:
-    .text "Hondani Shell v0.1"
+    // .text "Hondani Shell v0.1"
+    .text "hondani shell v0.1"
     .byte $00
 
 REULabel:
-    .text ", REU "
+    // .text ", REU "
+    .text ", reu "
     .byte $00
 
 MBText:
-    .text "MB"
+    // .text "MB"
+    .text "mb"
     .byte $00
 
 KBText:
-    .text "KB"
+    // .text "KB"
+    .text "kb"
     .byte $00
 
 Msg128KB:
-    .text "128KB"
+    .text "128kb"
     .byte $00
 
 Msg256KB:
-    .text "256KB"
+    .text "256kb"
     .byte $00
 
 Msg512KB:
-    .text "512KB"
+    .text "512kb"
     .byte $00
 
 NoREUText:
-    .text ", no REU found"
+    // .text ", no REU found"
+    .text ", no reu found"
     .byte $00
 
 ReadyText:
-    .text "READY."
+    // .text "READY."
+    .text "ready."
     .byte $00
 
 // Lookup table for common KB sizes (indexed by bank count * 2)

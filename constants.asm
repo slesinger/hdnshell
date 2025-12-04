@@ -6,7 +6,9 @@
 // ============================================================================
 
 // Runtime variables Zero page locations
-.const SAVX = $02                  // 1 byte temp storage, often to save X register
+.const _TMP = $02                 // 1 byte temp storage
+.const SAVX = $9e                  // 1 byte temp storage, often to save X register
+.const SAVY = $9f                  // 1 byte temp storage, often to save Y register
 .const ZP_INDIRECT_ADDR = $b2      // +$b3 Repurposable Zero page indirect address pointer 1
 .const FNLEN = $B7                 // length of current filename
 .const SADD = $B9                  // current secondary address (official name SA) like, load "*",8,1 <- put 1 into SADD
@@ -31,7 +33,12 @@
 // 192 bytes cassete buffer $033C-$03FB
 .const InputLength  = $033C        // Current length of input (in RAM - safe area)
 .const CursorPos    = $033D        // Current cursor position within user input line (in RAM - safe area)
-
+.const DIGCNT = $033e              // digit counter for RDVAL
+.const NUMBIT = $033f              // number of bits per digit for RDVAL
+.const INDIG = $0340               // input digit value for RDVAL
+.const STASH = $0341               // and $0342 stashed character for RDVAL
+.const U0AA0 = $0341               // .FILL 10 work buffer
+.const U0AAE = U0AA0+10            // end of work buffer
 // Read-only system constants
 .const PNT = $d1                   // Read-only $00D1-$00D2	PNT	Pointer to the Address of the Current Screen Line
 .const PNTR = $d3                  // Read-only $00D3	PNTR	Cursor Column on Current Line 0-79
@@ -63,13 +70,46 @@
 
 // Input key codes
 .const KEY_NULL = $00
+.const KEY_CTRL_J = $0A
 .const KEY_RETURN = $0D
+.const KEY_HOME = $13
 .const KEY_DELETE = $14
 .const KEY_CURSOR_RIGHT = $1D
+.const KEY_GREEN = $1E
+.const KEY_BLUE = $1F
 .const KEY_SPACE = $20
+.const KEY_EXCLAMATION = $21
+.const KEY_QUOTE = $22
+.const KEY_HASH = $23
 .const KEY_DOLLAR = $24
+.const KEY_PERCENT = $25
+.const KEY_AMPERSAND = $26
+.const KEY_SINGLE_QUOTE = $27
+.const KEY_OPEN_PAREN = $28
+.const KEY_CLOSE_PAREN = $29
+.const KEY_ASTERISK = $2a
+.const KEY_PLUS = $2b
+.const KEY_COMMA = $2c
 .const KEY_MINUS = $2d
+.const KEY_DOT = $2e
+.const KEY_SLASH = $2f
+.const KEY_0 = $30
+.const KEY_1 = $31
+.const KEY_2 = $32
+.const KEY_3 = $33
+.const KEY_4 = $34
+.const KEY_5 = $35
+.const KEY_6 = $36
+.const KEY_7 = $37
+.const KEY_8 = $38
+.const KEY_9 = $39
+.const KEY_COLON = $3a
+.const KEY_SEMICOLON = $3b
+.const KEY_LESS_THAN = $3c
 .const KEY_EQUAL = $3d
+.const KEY_GREATER_THAN = $3e
+.const KEY_QUESTION_MARK = $3f
+.const KEY_AT = $40
 .const KEY_A = $41
 .const KEY_B = $42
 .const KEY_C = $43
