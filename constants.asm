@@ -3,6 +3,7 @@
 // constants.asm - Shared Constants for HONDANI Shell
 // ============================================================================
 // This file contains all shared constants for the project.
+// This file should only contain definitions, no code, no data.
 // ============================================================================
 
 // Runtime variables Zero page locations
@@ -21,6 +22,7 @@
 
 .const InputBuffer  = $0200        // Input buffer in RAM (safe area page 3, 256 bytes)
 // 8 bytes $0334-$033B global vars Eight free bytes for user vectors or other data.
+// Next 7 bytes must follow in this order, do not change order!
 .const PCH = $0334                 // program counter high byte
 .const PCL = $0335                 // program counter low byte
 .const SR = $0336
@@ -39,10 +41,11 @@
 .const STASH = $0341               // and $0342 stashed character for RDVAL
 .const U0AA0 = $0341               // .FILL 10 work buffer
 .const U0AAE = U0AA0+10            // end of work buffer
+
 // Read-only system constants
 .const PNT = $d1                   // Read-only $00D1-$00D2	PNT	Pointer to the Address of the Current Screen Line
 .const PNTR = $d3                  // Read-only $00D3	PNTR	Cursor Column on Current Line 0-79
-
+.const BKVEC = $0316               // BRK instruction vector (official name CBINV)
 
 
 
@@ -168,3 +171,31 @@
 .const PARSER_MAX_INPUT_LEN = 79 // Maximum length of user input
 .const PARSER_WHITESPACE = $20 // ASCII space character used as whitespace in parser
 .const PARSER_END_OF_TABLE = $FF // Special marker indicating end of parser token table
+
+
+// MACROS
+
+// BRK handler
+.macro BreakHandler() {
+    ldx #$05            // pull registers off the stack
+BSTACK:
+    pla                 // order: Y,X,A,SR,PCL,PCH
+    sta PCH,X           // store in memory
+    dex 
+    bpl BSTACK
+
+// // put back the stack
+ldx #$00            // start with YR
+BUNSTACK:
+    lda PCH,X       // load from memory (YR, XR, ACC, SR, PCL, PCH)
+    pha             // push onto stack
+    inx
+    cpx #$06
+    bne BUNSTACK
+
+    cld                 // disable bcd mode
+    tsx                 // store stack pointer in memory 
+    ldx SP  // TODO muzu to dat pryc? L A*   G $080D
+    stx SP
+    cli                 // enable interupts
+}

@@ -122,16 +122,17 @@ parse_filename_done:
 // Parse hexadecimal address from input string
 // Input: None
 // Output: SAVX = low byte of address, SAVY = high byte of address
+// Output: A = number of digits read
 // Error: Carry flag set on error
 parse_address:
     jsr skip_whitespace
     jsr RDVAL
     rts
 
-
 // read hexa address from input string
 // Input: TBD
 // Output: SAVX = low byte, SAVY = high byte of address
+// Output: A = number of digits read
 // Error: Carry flag set on error
 // read a value in the specified base
 RDVAL:

@@ -20,7 +20,7 @@ HandleInput:
     // Handle special keys
     cmp #KEY_RETURN
     bne !+
-    jmp HandleEnter
+    jmp HandleReturn
 !:  cmp #KEY_DELETE
     bne !+
     jmp HandleDelete
@@ -120,10 +120,12 @@ InputDone:
 // ============================================================================
 // Handle Enter Key
 // ============================================================================
-HandleEnter:
-    // Null terminate
+HandleReturn:
+    // Null terminate (better two bytes for safety)
     lda #0
     ldx InputLength
+    sta InputBuffer,x
+    inx
     sta InputBuffer,x
     // Disable cursor
       // Load PNT (low) into LDA, add PNTR, store to ZP_INDIRECT_ADDR (low)
@@ -136,7 +138,6 @@ HandleEnter:
     adc #$00           // Add carry from previous addition
     sta $00B3          // Store result to ZP_INDIRECT_ADDR high byte
     
-    lda #$35
     ldy #$00
     lda ($b2),y
     and #$7F          // Clear bit 7 to disable cursor

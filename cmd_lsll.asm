@@ -82,7 +82,4 @@ end_of_dir:
     jmp parse_done  // jump to parser completion handler in parser.asm
 
 cmd_ls:
-    nop
-    nop
-    nop
     jmp parse_done  // jump to parser completion handler in parser.asm

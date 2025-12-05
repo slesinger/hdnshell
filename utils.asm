@@ -1,6 +1,7 @@
 #importonce 
 #import "constants.asm"
 
+
 // print single hex nibble in A (0..15) as ASCII to screen via CHROUT
 print_nibble:
     cmp #10
@@ -33,7 +34,7 @@ WRBYTE:
     jsr WRTWO           // output byte in A
 
 SPACE:
-    lda #$20            // output space
+    lda #KEY_SPACE      // output space
     bne FLIP
 
 CHOUT:
@@ -166,11 +167,97 @@ zersup:  dex                 // decrement number of leading zeros
          rts
 
 
+// subtract TMP2 from TMP0
+SUB12:
+    sec
+    lda TMP0            // subtract low byte
+    sbc TMP2
+    sta TMP0
+    lda TMP0+1
+    sbc TMP2+1          // subtract high byte
+    sta TMP0+1
+    rts
+
+// subtract from TMP0
+SUBA1:
+    lda #1              // shortcut to decrement by 1
+SUBA2:
+    sta SAVX            // subtrahend in accumulator
+    sec
+    lda TMP0            // minuend in low byte
+    sbc SAVX
+    sta TMP0
+    lda TMP0+1          // borrow from high byte
+    sbc #0
+    sta TMP0+1
+    rts
+
+// add to TMP2
+ADDA2:
+    lda #1              // shortcut to increment by 1
+BUMPAD2:
+    clc
+    adc TMP2            // add value in accumulator to low byte
+    sta TMP2
+    bcc BUMPEX
+    inc TMP2+1          // carry to high byte
+BUMPEX:
+    rts 
+
+// display 8 bytes of memory
+DISPMEM:
+    jsr CRLF            // new line
+    lda #KEY_GREATER_THAN  // prefix > so memory can be edited in place
+    jsr CHROUT
+    jsr SHOWAD          // show address of first byte on line
+    ldy #0
+    beq DMEMGO          // SHOWAD already printed a space after the address
+DMEMLP:
+    jsr SPACE           // print space between bytes
+DMEMGO:
+    lda (TMP2),Y        // load byte from start address + Y
+    jsr WRTWO           // output hex digits for byte
+    iny                 // next byte
+    cpy #8              // have we output 8 bytes yet?
+    bcc DMEMLP          // if not, output next byte
+    ldy #MSG5-MSGBAS    // if so, output : and turn on reverse video
+    jsr SNDMSG          //   before displaying ascii representation
+    ldy #0              // back to first byte in line
+DCHAR:
+    lda (TMP2),Y        // load byte at start address + Y
+    tax                 // stash in X
+    and #$BF            // clear 6th bit
+    cmp #KEY_QUOTE      // is it a quote (")?
+    beq DDOT            // if so, print . instead
+    txa                 // if not, restore character
+    and #$7F            // clear top bit
+    cmp #KEY_SPACE      // is it a printable character (>= $20)?
+    txa                 // restore character
+    bcs DCHROK          // if printable, output character
+DDOT:
+    lda #KEY_DOT        // if not, output '.' instaed
+DCHROK:
+    jsr CHROUT
+    iny                 // next byte
+    cpy #8              // have we output 8 bytes yet?
+    bcc DCHAR           // if not, output next byte
+    rts 
+
+// handle error
+ERROR:
+    ldy #MSG3-MSGBAS    // display "?" to indicate error and go to new line
+    jsr SNDMSG
+    jmp parse_done      // back to main loop
+
 // message table// last character has high bit set
 MSGBAS:
 MSG2:
     .text "   PC  SR AC XR YR SP   V0.1"  // header for registers
     .byte KEY_RETURN, $80    // end of message marker
+MSG3:
+    .byte $1D,$3F+$80       // syntax error: move right, display "?"
+MSG5:
+    .byte KEY_SPACE, KEY_SPACE, $12+$80       // ":" then RVS ON for memory ASCII dump
 MSG_UNKNOWN_COMMAND:
     .text "COMMAND NOT FOUND"
     .byte KEY_RETURN, $80

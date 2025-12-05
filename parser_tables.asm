@@ -4,6 +4,7 @@
 #import "cmd_help.asm"
 #import "cmd_l.asm"
 #import "cmd_lsll.asm"
+#import "cmd_m.asm"
 #import "cmd_r.asm"
 #import "cmd_unknown.asm"
 
@@ -23,6 +24,7 @@ tbl:
 .byte KEY_G, <tbl_g, >tbl_g
 .byte KEY_H, <tbl_h, >tbl_h
 .byte KEY_L, <tbl_l, >tbl_l
+.byte KEY_M, <tbl_m, >tbl_m
 .byte KEY_R, <tbl_r, >tbl_r
 .byte PARSER_END_OF_TABLE
 .byte PARSER_END_OF_TABLE
@@ -74,6 +76,12 @@ tbl_ll:
 tbl_ls:
 .byte KEY_NULL, <cmd_ls, >cmd_ls   // ls without arguments  // must be fist position to read command address after carry flag identifies the end of command
 .byte KEY_SPACE, <cmd_ls, >cmd_ls  // ls with arguments
+.byte PARSER_END_OF_TABLE
+
+// Top level M
+tbl_m:
+.byte KEY_NULL, <cmd_m, >cmd_m   // m without arguments
+.byte KEY_SPACE, <cmd_m, >cmd_m  // m with arguments
 .byte PARSER_END_OF_TABLE
 
 // Top level R

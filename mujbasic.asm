@@ -1,3 +1,5 @@
+#import "constants.asm"  // does not generate any bytes here
+
 // ============================================================================
 // HONDANI Shell - Custom BASIC ROM Replacement for Commodore 64
 // ============================================================================
@@ -26,6 +28,15 @@
 // ============================================================================
 
 ColdStart:
+    // Register BRK handler
+//     lda #<break_handler         // set BRK vector
+//     sta BKVEC
+//     lda #>break_handler
+//     sta BKVEC+1
+
+break_handler:  // id BRK is encountered, system "like" restarts and you run "r" to dispay registers
+    // BreakHandler()              // save registers to handle BRK
+
     jsr InitSystem      // Initialize the system
     jmp MainLoop        // Enter main loop
 
@@ -51,6 +62,7 @@ MainLoop:
     beq MainLoop        // No key pressed, keep looping
     jsr HandleInput     // Process the input character
     jmp MainLoop
+
 
 // ============================================================================
 // Include initialization routines
