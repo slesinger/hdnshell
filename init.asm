@@ -217,9 +217,13 @@ clear_history_loop:
 // ============================================================================
 // Input: None
 // Output: None
+// Kills: A
 // ============================================================================
 clear_terminal_history:
-    // ReuFill(SCR_SPACE, $0000, 0, $4000)  // TODO
+    lda #$00
+    sta SAVX  // $9e
+    sta SAVY  // $9f
+    ReuFill(SCR_OPEN_BRACKET, $009e, 0, $4000)
     rts
 // ============================================================================
 // Print Welcome Message

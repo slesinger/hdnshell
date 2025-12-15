@@ -342,18 +342,24 @@ BUNSTACK:
 }
 
 
-// TODO neni implementovano, jen to tak vypada
-.macro ReuFill(value, to, bank, length) {
-    // Set C64 address
-    lda #<to
+// Fill REU memory area with value
+// to_ptr is a pointer to a zero page address containing the REU address
+// Uses _TMP ($02) to store the fill value temporarily
+.macro ReuFill(value, to_ptr, bank, length) {
+    // Store fill value in C64 RAM temporarily
+    lda #value
+    sta _TMP
+
+    // Set C64 source address (fixed - will read same byte repeatedly)
+    lda #<_TMP
     sta REU_C64_ADDR_LO
-    lda #>to
+    lda #>_TMP
     sta REU_C64_ADDR_HI
 
     // Set REU address (24-bit: low, high, bank)
-    lda #<to
+    lda to_ptr
     sta REU_REU_ADDR_LO
-    lda #>to
+    lda to_ptr+1
     sta REU_REU_ADDR_HI
     lda #bank
     sta REU_REU_BANK
@@ -364,14 +370,13 @@ BUNSTACK:
     lda #>length
     sta REU_LENGTH_HI
 
-    // Set fill value
-    lda #value
+    // Set control: C64 address fixed, REU address increments
+    lda #$80      // bit 7 = 1: fix C64 address
     sta $DF0A
 
-    // Command: Execute, auto-increment, fill REU
-    lda #$92      // %10010000 : execute, auto-increment, fill REU
+    // Command: Execute, C64->REU transfer
+    lda #$90      // %10010000 : execute, C64->REU with auto-increment REU address
     sta REU_COMMAND
-    
 }
 
 // Store to REU
