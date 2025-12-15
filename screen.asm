@@ -64,20 +64,16 @@ get_older_screen_history_line:
     sbc #$00
     sta screen_history_read_ptr+1
 
-//     // Roll over if pointer < $0000: add $4000 until in range
-//     lda screen_history_read_ptr+1
-//     bpl !no_rollover+   // If high byte is not negative, we're in range
-// !rollover_loop:
-//     clc
-//     lda screen_history_read_ptr
-//     adc #$00            // Add low byte of $4000
-//     sta screen_history_read_ptr
-//     lda screen_history_read_ptr+1
-//     adc #$40            // Add high byte of $4000
-//     sta screen_history_read_ptr+1
-//     bpl !no_rollover+   // If still negative, repeat
-//     jmp !rollover_loop-
+    // Roll over if pointer < $0000: add $4000 until in range
+    lda screen_history_read_ptr+1
+    bpl !no_rollover+   // If high byte is not negative, we're in range
+    lda #$00
+    sta screen_history_read_ptr
+    lda #$3c
+    sta screen_history_read_ptr+1
 !no_rollover:
+    debug()
+    
     ReuFetch(SCREEN_RAM, screen_history_read_ptr, 0, SCREEN_WIDTH*SCREEN_HEIGHT)
     rts
 
@@ -102,16 +98,12 @@ get_newer_screen_history_line:
     lda screen_history_read_ptr+1
     adc #$00
     sta screen_history_read_ptr+1
-    // Roll over if pointer >= $4000: subtract $4000
+    // Roll over if pointer == $3cxx: set  $0000
     lda screen_history_read_ptr+1
-    cmp #$40
+    cmp #$3c
     bcc !no_rollover+
-    sec
-    lda screen_history_read_ptr
-    sbc #$00            // Subtract low byte of $4000
+    lda #$00
     sta screen_history_read_ptr
-    lda screen_history_read_ptr+1
-    sbc #$40            // Subtract high byte of $4000
     sta screen_history_read_ptr+1
 !no_rollover:
     ReuFetch(SCREEN_RAM, screen_history_read_ptr, 0, SCREEN_WIDTH*SCREEN_HEIGHT)

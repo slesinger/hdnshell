@@ -223,7 +223,7 @@ clear_terminal_history:
     lda #$00
     sta SAVX  // $9e
     sta SAVY  // $9f
-    ReuFill(SCR_OPEN_BRACKET, $009e, 0, $4000)
+    ReuFill(SCR_SPACE, $009e, 0, $4000)
     rts
 // ============================================================================
 // Print Welcome Message
