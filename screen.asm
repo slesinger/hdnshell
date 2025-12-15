@@ -128,20 +128,20 @@ get_newer_screen_history_line:
 // screen and if other than F1/F7 key is pressed, disable rolling mode.
 // Input: key pressed in A
 // Output: None
-// Killed registers: A
+// Killed registers: None
 // ============================================================================
 handle_if_rolling:
-    pha  // save key pressed
+    pha              // Save key pressed
+    cmp #KEY_F1
+    beq !rolling_F1F7+
+    cmp #KEY_F7
+    beq !rolling_F1F7+
+    // Other key pressed, check rolling flag
     lda INPUT_FLAGS
     and #$01
     beq !not_rolling+  // bit 0 not set, not in rolling mode, rts
     // rolling mode
     // Check if F1 or F7 key is pressed (in register A)
-    pla  // restore key pressed
-    cmp #KEY_F1
-    beq !rolling_F1F7+
-    cmp #KEY_F7
-    beq !rolling_F1F7+
     // rest read pointer to latest screen
     lda screen_history_write_ptr
     sta screen_history_read_ptr
@@ -154,7 +154,6 @@ handle_if_rolling:
     and #$FE
     sta INPUT_FLAGS
 !rolling_F1F7:
-    rts
 !not_rolling:
-    pla
+    pla              // Restore key pressed
     rts
