@@ -23,6 +23,8 @@ InitSystem:
     jsr InitInputBuffer
     jsr DetectREU
     jsr clear_history  // TODO load history from REU/network
+    jsr clear_terminal_history
+    InitGlobalVariables()
     jmp PrintWelcomeMessage     // Tail call optimization
 
 // ============================================================================
@@ -208,6 +210,16 @@ clear_history_loop:
     dex
     bne clear_history_loop
     stx commandline_history_idx  // set 0
+    rts
+
+// ============================================================================
+// Fill terminal history in REU bank 0 $0000-$4000 buffer with spaces
+// ============================================================================
+// Input: None
+// Output: None
+// ============================================================================
+clear_terminal_history:
+    // ReuFill(SCR_SPACE, $0000, 0, $4000)  // TODO
     rts
 // ============================================================================
 // Print Welcome Message

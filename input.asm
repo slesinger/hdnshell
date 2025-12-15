@@ -1,14 +1,7 @@
-// ============================================================================
-// Input Text Handling Routine
-// ============================================================================
-// Handles keyboard input with cursor movement, insertion, and deletion
-// Requires: PARSER_INPUT_PTR, InputLength, CursorPos to be defined in main file
-// ============================================================================
-
-// Constants
-
 #import "constants.asm"
 #import "parser.asm"
+#import "screen.asm"
+
 // ============================================================================
 // Main Input Handler
 // ============================================================================
@@ -17,6 +10,8 @@
 // ============================================================================
 
 HandleInput:
+    // Check rolling flag
+    jsr handle_if_rolling  // kills A
     // Handle special keys
     cmp #KEY_RETURN
     bne !+
@@ -30,9 +25,46 @@ HandleInput:
     bne !+
     jmp HandleHistoryDown
 !:
+    cmp #KEY_F1
+    bne !+
+    jmp HandleF1
+!:
+    cmp #KEY_F7
+    bne !+
+    jmp HandleF7
+!:
+    // Normal character input
     jsr CHROUT
     rts
 
+
+// ============================================================================
+// Pre-hook for CHROUT to detect screen scroll for saving screen buffer history
+// Input: A = char to output
+// Killed registers: None
+// ============================================================================
+CHROUT_PreHook:
+    pha
+    lda TBLX
+    cmp #$18
+    bne !no_scroll+         // If not last line, no scroll
+    pla
+    pha
+    cmp #KEY_RETURN
+    beq !scroll+            // If A == KEY_RETURN, scroll
+    lda PNTR                // Load cursor column
+    cmp #$27                // Check if PNT is at the end of last line
+    beq !scroll+            // If PNTR == #$27, scroll
+    cmp #$4f                // Check if PNT is at the end of last line
+    beq !scroll+            // If PNTR == #$4f, scroll
+    jmp !no_scroll+
+!scroll:
+    // Store top line of screen to history buffer
+    jsr save_screen_to_history
+!no_scroll:
+    pla
+    jsr CHROUT_ORIG
+    rts
 // ============================================================================
 // Handle Enter Key
 // ============================================================================
@@ -155,3 +187,13 @@ get_history_entry_address:
     rts
 
 
+// ============================================================================
+// Handle Console buffer up (more to history)
+// ============================================================================
+HandleF1:
+    jsr get_older_screen_history_line
+    rts
+
+HandleF7:
+    jsr get_newer_screen_history_line
+    rts

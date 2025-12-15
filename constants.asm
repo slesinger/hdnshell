@@ -13,12 +13,16 @@
 .const ZP_INDIRECT_ADDR = $b2      // +$b3 Repurposable Zero page indirect address pointer 1
 .const FNLEN = $B7                 // length of current filename
 .const SADD = $B9                  // current secondary address (official name SA) like, load "*",8,1 <- put 1 into SADD
-.const FA = $BA                    // current device number
+.const FA = $BA                    // Current device number used as default for listing directory and file operations
 .const FNADR = $BB                 // $00BB-$00BC pointer to current filename
 .const ZP_INDIRECT_ADDR_2 = $c1    // +$c2 Repurposable Zero page indirect address pointer 2
 .const TMP0 = $c1                  // +$c2 Repurposable Zero page indirect address pointer 2 used in SMON
 .const TMP2 = $c3                  // usually holds start address
 .const REU_SIZE_BANKS = $FB        // Number of 64KB banks detected
+
+
+// Runtime variables low-mem locations
+.const INPUT_FLAGS = $0313  // bit 0: rolling (true: rolling, false: input from CLI (screen_history_read_ptr==screen_history_write_ptr) )
 
 // 8 bytes $0334-$033B global vars Eight free bytes for user vectors or other data.
 // Next 7 bytes must follow in this order, do not change order!
@@ -44,11 +48,14 @@
 .const INDIG = $0340               // input digit value for RDVAL
 .const STASH = $0341               // and $0342 stashed character for RDVAL
 .const U0AA0 = $0341               // .FILL 10 work buffer
-.const U0AAE = U0AA0+10            // end of work buffer
+.const U0AAE = U0AA0+10            // end of work buffer $034b
+.const screen_history_write_ptr= $034c  // and $034d When screen scrolls, this index is updated to point to next history buffer empty line (ready for next write)
+.const screen_history_read_ptr = $034e  // and $034f When navigating history, this index is pointing to the last fetched history line
 
 // Read-only system constants
 .const PNT = $d1                   // Read-only $00D1-$00D2	PNT	Pointer to the Address of the Current Screen Line
 .const PNTR = $d3                  // Read-only $00D3	PNTR	Cursor Column on Current Line 0-PARSER_MAX_INPUT_LEN
+.const TBLX = $d6                  // Read-only $00D6	TBLX	Current Cursor Physical Line Number
 .const SCRHIADDR = $d9             // Read-only $00D9-$00F2		Pointer to the High Byte of the Current Screen Line Address, see $ECF0
 .const BKVEC = $0316               // BRK instruction vector (official name CBINV)
 
@@ -71,7 +78,8 @@
 .const CHKIN   = $FFC6             // define input channel
 .const CLRCHN  = $FFCC             // restore default devices
 .const INPUT   = $FFCF             // input a character (official name CHRIN)
-.const CHROUT  = $FFD2             // output a character
+.const CHROUT_ORIG  = $FFD2        // output a character
+.const CHROUT  = CHROUT_PreHook    // output a character
 .const LOAD    = $FFD5             // load from device
 .const SAVE    = $FFD8             // save to device
 .const STOP    = $FFE1             // check the STOP key
@@ -146,7 +154,24 @@
 .const KEY_X = $58
 .const KEY_Y = $59
 .const KEY_Z = $5a
+.const KEY_OPEN_SQUARE_BRACKET = $5b
+.const KEY_POUND = $5c
+.const KEY_CLOSE_SQUARE_BRACKET = $5d
+.const KEY_ARROW_UP = $5e
+.const KEY_ARROW_LEFT = $5f
+.const KEY_RUN = $83
+.const KEY_F1 = $85
+.const KEY_F3 = $86
+.const KEY_F5 = $87
+.const KEY_F7 = $88
+.const KEY_F2 = $89
+.const KEY_F4 = $8a
+.const KEY_F6 = $8b
+.const KEY_F8 = $8c
+.const KEY_SHIFT_RETURN = $8d
 .const KEY_UP = $91
+.const KEY_CLEAR = $93
+.const KEY_INSERT = $94
 .const KEY_LEFT = $9D
 
 
@@ -253,9 +278,6 @@
 .const REU_LENGTH_LO   = $DF07  // Transfer length (low)
 .const REU_LENGTH_HI   = $DF08  // Transfer length (high)
 
-// MujBASIC working area
-.const MUJBASIC_CURRENT_DRIVE = $0313 // Current drive number used as default for listing directory and file operations
-
 // Parser
 .const PARSER_INPUT_PTR = $0200  // BASIC line input buffer start
 .const PARSER_WHITESPACE = $20 // ASCII space character used as whitespace in parser
@@ -263,6 +285,26 @@
 
 
 // MACROS
+
+.macro debug() {
+    lda screen_history_read_ptr
+    sta $5001
+    lda screen_history_read_ptr+1
+    sta $5000
+    lda screen_history_write_ptr
+    sta $5005
+    lda screen_history_write_ptr+1
+    sta $5004
+}
+
+.macro InitGlobalVariables() {
+    lda #$00
+    sta screen_history_write_ptr
+    sta screen_history_write_ptr+1
+    sta screen_history_read_ptr
+    sta screen_history_read_ptr+1
+}
+
 
 .macro ParsingInputsDone() {
     lda #KEY_RETURN
@@ -297,4 +339,107 @@ BUNSTACK:
     ldx SP  // TODO muzu to dat pryc? L A*   G $080D
     stx SP
     cli                 // enable interupts
+}
+
+
+// TODO neni implementovano, jen to tak vypada
+.macro ReuFill(value, to, bank, length) {
+    // Set C64 address
+    lda #<to
+    sta REU_C64_ADDR_LO
+    lda #>to
+    sta REU_C64_ADDR_HI
+
+    // Set REU address (24-bit: low, high, bank)
+    lda #<to
+    sta REU_REU_ADDR_LO
+    lda #>to
+    sta REU_REU_ADDR_HI
+    lda #bank
+    sta REU_REU_BANK
+
+    // Set transfer length
+    lda #<length
+    sta REU_LENGTH_LO
+    lda #>length
+    sta REU_LENGTH_HI
+
+    // Set fill value
+    lda #value
+    sta $DF0A
+
+    // Command: Execute, auto-increment, fill REU
+    lda #$92      // %10010000 : execute, auto-increment, fill REU
+    sta REU_COMMAND
+    
+}
+
+// Store to REU
+// Input: from - word C64 address
+// Input: to - dword REU address
+// Input: length - word length of data to transfer
+.macro ReuStore(from, to_ptr, bank, length) {
+    // Set C64 address
+    lda #<from
+    sta REU_C64_ADDR_LO
+    lda #>from
+    sta REU_C64_ADDR_HI
+
+    // Set REU address (24-bit: low, high, bank)
+    lda to_ptr
+    sta REU_REU_ADDR_LO
+    lda to_ptr+1
+    sta REU_REU_ADDR_HI
+    lda #bank
+    sta REU_REU_BANK
+
+    // Set transfer length
+    lda #<length
+    sta REU_LENGTH_LO
+    lda #>length
+    sta REU_LENGTH_HI
+
+    // No fixed address
+    lda #0
+    sta $DF0A
+
+    // Command: Execute, auto-increment, C64->REU
+    lda #$90      // %10010000 : execute, auto-increment, C64->REU
+    sta REU_COMMAND
+}
+
+// Fetch from REU to C64
+// Input: from - dword REU address
+// Input: to - word C64 address
+// Input: length - word length of data to transfer
+.macro ReuFetch(to, from_ptr, bank, length) {
+    // Set C64 address
+    lda #<to
+    sta REU_C64_ADDR_LO
+    lda #>to
+    sta REU_C64_ADDR_HI
+
+    // Set REU address (24-bit: low, high, bank)
+    lda from_ptr
+    sta REU_REU_ADDR_LO
+    sta $5011
+    lda from_ptr+1  // TODO is this usable in all situations?
+    sta REU_REU_ADDR_HI
+    sta $5010
+    lda #bank
+    sta REU_REU_BANK
+
+    // Set transfer length
+    lda #<length
+    sta REU_LENGTH_LO
+    lda #>length
+    sta REU_LENGTH_HI
+
+    // No fixed address
+    lda #0
+    sta $DF0A
+
+    // Command: Execute, auto-increment, REU->C64
+    lda #$91      // %10010001 : execute, auto-increment, REU->C64
+    sta REU_COMMAND
 }
