@@ -1,6 +1,7 @@
 #import "constants.asm"
 #import "cmd_empty.asm"
 #import "cmd_hash.asm"
+#import "cmd_cd.asm"
 #import "cmd_g.asm"
 #import "cmd_help.asm"
 #import "cmd_l.asm"
@@ -23,6 +24,7 @@
 tbl:
 .byte KEY_NULL, <tbl_null, >tbl_null  // empty line
 .byte KEY_HASH, <tbl_hash, >tbl_hash
+.byte KEY_C, <tbl_c, >tbl_c
 .byte KEY_G, <tbl_g, >tbl_g
 .byte KEY_H, <tbl_h, >tbl_h
 .byte KEY_L, <tbl_l, >tbl_l
@@ -54,6 +56,17 @@ tbl_hash:
 tbl_hash_device:
 .byte KEY_NULL, <cmd_hash, >cmd_hash
 .byte PARSER_END_OF_TABLE
+
+// Top level C
+tbl_c:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown  // c without arguments
+.byte KEY_D, <tbl_cd, >tbl_cd
+.byte PARSER_END_OF_TABLE
+
+tbl_cd:
+.byte KEY_NULL, <cmd_cd, >cmd_cd
+.byte PARSER_END_OF_TABLE
+
 
 // Top level G
 tbl_g:

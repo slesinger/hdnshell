@@ -34,7 +34,7 @@ DISJ:
     bcc DISJ
 
     // new line
-    lda #$0D
+    lda #KEY_RETURN
     jsr CHROUT
     // execute actual job
     CommandDone()  // jump to parser completion handler in parser.asm

@@ -75,7 +75,10 @@
 .const CIOUT   = $FFA8             // output byte to serial bus
 .const UNTLK   = $FFAB             // command serial bus device to UNTALK
 .const UNLSN   = $FFAE             // command serial bus device to UNLISTEN
+.const OPEN    = $FFC0             // open a file or device
+.const CLOSE   = $FFC3             // close a file or device
 .const CHKIN   = $FFC6             // define input channel
+.const CHKOUT  = $FFC9             // define output channel
 .const CLRCHN  = $FFCC             // restore default devices
 .const INPUT   = $FFCF             // input a character (official name CHRIN)
 .const CHROUT_ORIG  = $FFD2        // output a character

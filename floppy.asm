@@ -119,7 +119,7 @@ ok_after_setnam1:
     lda save_lfn
     ldx save_dev
     ldy save_sec
-    jsr $FFC0          // OPEN
+    jsr OPEN
     jsr $FFB7
     sta save_status
     lda save_status
@@ -193,7 +193,7 @@ ok_after_setlfs2:
     lda save_lfn
     ldx save_dev
     ldy save_sec
-    jsr $FFC0
+    jsr OPEN
     jsr $FFB7
     sta save_status
     lda save_status

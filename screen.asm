@@ -7,7 +7,7 @@
 // Read index is also synced to write index because we write only when on head of the buffer.
 // Input: None
 // Output: None
-// Killed registers: TBD
+// Killed registers: A
 // ============================================================================
 
 .const SCREEN_WIDTH = 40
