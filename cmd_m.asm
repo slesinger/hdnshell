@@ -30,7 +30,6 @@ cmd_m:
     beq DSPLYM   // go without address if none provided
     // Address provided
 m_address_from:
-    inc $d020
     lda SAVX
     sta TMP0
     sta TMP2          // low byte of start address

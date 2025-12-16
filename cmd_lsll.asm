@@ -31,6 +31,12 @@ cmd_ll:
     sta SAVY        // Clear SAVY to indicate no load address
     sta ZP_INDIRECT_ADDR + 1
     jsr load_file
+    bcc !load_success+
+    // Load failed, indicate error
+    lda #PURPLE  // TODO load error, print error message
+    sta $d020
+    jmp end_of_dir
+!load_success:
 
     // print out directory here
 print_dir_loop:

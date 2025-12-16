@@ -350,6 +350,7 @@ load_file_common:
     bcc load_file_done  // if no error, done
     // Error occurred during load
     jsr show_status
+    sec
     rts
 load_file_done:
     // Display load start-end address

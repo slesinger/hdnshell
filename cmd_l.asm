@@ -35,4 +35,9 @@ cmd_l:
     ParsingInputsDone() // finish parsing input line
 
     jsr load_file
+    bcc !load_success+
+    // Load failed, indicate error
+    lda #PURPLE  // TODO load error, print error message
+    sta $d020
+!load_success:
     CommandDone()  // jump to parser completion handler in parser.asm
