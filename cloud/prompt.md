@@ -1,3 +1,11 @@
+# Common Instructions
+
+Always review existing code and documentation before making changes.
+Ensure that any new code adheres to existing coding standards and practices.
+Do not create redundant code; reuse existing functions and classes where applicable. You can refactor existing code if necessary to improve maintainability.
+Extend existing documentation to cover new features or changes.
+Extend unit tests to cover new functionality and ensure all tests pass before finalizing changes.
+
 # C64 HDN Cloud Server Application
 
 Create python application that receives TCP data as commands from the C64 and responds back with data.

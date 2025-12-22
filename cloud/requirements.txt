@@ -1,0 +1,15 @@
+# Core dependencies
+pydantic>=2.0.0
+pytest>=7.0.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# LLM dependencies (required for chat handler with Azure OpenAI)
+langchain>=1.0.0
+langchain-openai>=1.0.0
+langchain-community>=0.0.20
+langchain-core>=1.0.0
+
+# Optional: Google Search integration
+langchain-google-community>=1.0.0
+# google-api-python-client>=2.100.0

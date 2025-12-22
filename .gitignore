@@ -4,9 +4,12 @@ build/
 *.vs
 *.sym
 *.dbg
+*.pyc
+__pycache__/
 .source.txt
 hdnsh.bin
 venv/
 msbasic/
 docs/ramdos.zip
 data/
+cloud/.env

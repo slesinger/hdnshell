@@ -8,8 +8,13 @@ Requires C64 Ultimate with network target on the client side.
 import socket
 import threading
 import logging
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 from generate_pet_asc_table import Petscii
+from base_handler import BaseHandler
+from chat_handler import ChatHandler
+from help_handler import HelpHandler
+from python_eval_handler import PythonEvalHandler
+from csdb_handler import CSDBHandler
 
 # Configure logging
 logging.basicConfig(
@@ -43,8 +48,84 @@ class ModifierFlags:
     COMMODORE = 0x04
 
 
+class RequestDispatcher:
+    """Dispatches text input requests to appropriate handlers"""
+
+    def __init__(self):
+        """Initialize dispatcher with all available handlers"""
+        self.handlers: List[BaseHandler] = []
+        self._initialize_handlers()
+
+    def _initialize_handlers(self):
+        """Initialize all request handlers in priority order"""
+        try:
+            # Order matters - first matching handler will process the request
+            self.handlers = [
+                HelpHandler(),
+                PythonEvalHandler(),
+                ChatHandler(),
+                CSDBHandler(),
+            ]
+            logger.info(f"Initialized {len(self.handlers)} request handlers")
+        except Exception as e:
+            logger.error(f"Error initializing handlers: {e}")
+            self.handlers = []
+
+    def dispatch(self, petscii_text: bytes) -> bytes:
+        """
+        Dispatch request to appropriate handler
+
+        Args:
+            petscii_text: PETSCII encoded text input (null-terminated)
+
+        Returns:
+            PETSCII encoded response
+        """
+        try:
+            # Convert PETSCII to UTF-8
+            null_pos = petscii_text.find(0x00)
+            if null_pos != -1:
+                petscii_text = petscii_text[:null_pos]
+
+            if len(petscii_text) == 0:
+                return bytes([0x00])
+
+            # Convert to UTF-8
+            utf8_text = BaseHandler.petscii_to_utf8(petscii_text)
+            logger.info(f"Dispatching request: {utf8_text}")
+
+            # Find appropriate handler
+            for handler in self.handlers:
+                if handler.can_handle(utf8_text):
+                    logger.info(f"Using handler: {handler.__class__.__name__}")
+                    response_utf8 = handler.handle(utf8_text)
+
+                    # Convert response back to PETSCII
+                    response_petscii = BaseHandler.utf8_to_petscii(response_utf8)
+                    return response_petscii + bytes([0x00])  # Add null terminator
+
+            # No handler found - return error
+            error_msg = "Unknown command. Type 'help' for available commands."
+            return BaseHandler.utf8_to_petscii(error_msg) + bytes([0x00])
+
+        except Exception as e:
+            logger.error(f"Error dispatching request: {e}")
+            error_msg = f"Error: {str(e)}"
+            return BaseHandler.utf8_to_petscii(error_msg) + bytes([0x00])
+
+
 class CommandHandler:
     """Handles processing of commands from C64 client"""
+
+    # Class-level dispatcher instance
+    _dispatcher = None
+
+    @classmethod
+    def get_dispatcher(cls) -> RequestDispatcher:
+        """Get or create the request dispatcher instance"""
+        if cls._dispatcher is None:
+            cls._dispatcher = RequestDispatcher()
+        return cls._dispatcher
 
     @staticmethod
     def parse_packet(packet: bytes) -> Tuple[bytes, int, bytes]:
@@ -133,37 +214,11 @@ class CommandHandler:
         Returns:
             Response packet
         """
-        # Find null terminator
-        null_pos = data.find(0x00)
-        if null_pos == -1:
-            logger.warning("Text input missing null terminator")
-            petscii_text = data
-        else:
-            petscii_text = data[:null_pos]
+        # Get dispatcher instance
+        dispatcher = CommandHandler.get_dispatcher()
 
-        # Convert to UTF-8 for logging
-        if len(petscii_text) > 0:
-            utf8_bytes = bytes([Petscii.petscii2ascii(b)
-                               for b in petscii_text])
-            try:
-                utf8_str = utf8_bytes.decode('ascii')
-                logger.info(f"Text input: '{utf8_str}'")
-            except UnicodeDecodeError:
-                logger.info(f"Text input (raw): {petscii_text.hex()}")
-        else:
-            logger.info("Text input: (empty)")
-            utf8_str = ""
-
-        # Process the command - for now, just echo it back
-        if len(petscii_text) > 0:
-            # Echo back with ">" prefix
-            prefix = "> "
-            petscii_prefix = bytes(
-                [Petscii.ascii2petscii(ord(c)) for c in prefix])
-            response_data = petscii_prefix + petscii_text + \
-                bytes([0x0D, 0x00])  # CR + null
-        else:
-            response_data = bytes([0x00])  # Just null terminator
+        # Dispatch the request to appropriate handler
+        response_data = dispatcher.dispatch(data)
 
         return CommandHandler.create_response(
             ResponseType.PETSCII_NULL_TERMINATED,
