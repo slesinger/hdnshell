@@ -1,5 +1,7 @@
 # Hondani Shell - Custom BASIC ROM Replacement for Commodore 64
 
+You want to pronounce HDN Shell as "Hondani Shell".
+
 This project replaces the standard Commodore 64 BASIC ROM ($A000-$BFFF) with custom code. When the C64 is switched on, this ROM gets executed instead of the built-in BASIC interpreter. The HDN Shell provides modern command line capabilities inspired by Linux shell commands, enhancing productivity on the C64.
 
 ### Motivation
@@ -31,6 +33,7 @@ Features:
 ### Future Plans
 - Implement a simple plain text editor https://github.com/gillham/speedscript
 - prglets support - relocatable small residential programs (relocation possible with hints in header and relative jumps
+- multiple screens / virtual consoles
 )
 ### Syntax
 
@@ -153,6 +156,8 @@ Created with KickAssembler for the Commodore 64
 
 ## Notes
 
+### HDN Cloud
+[See cloud/README.md for details](cloud/README.md)
 ### Context7
 
 /websites/theweb_dk_kickassembler_webhelp
@@ -168,13 +173,14 @@ BRK handler neni aktiovan, protoze se vse pak chova trochu divne.
 
 cursor - rotating line to indicate 
 
-hondani cloud - group chat
+hondani cloud - group chat with https://github.com/WiC64-Team/wic64-mex
 
 vic konzoli jako screen
 
 AI chat
 
 AI by mela dokumentaci
+  https://www.the-dreams.de/aay.html
 
 HDN cloud zlate stranky C64 sceny, group list, 
 demo list, game list, latest releases
