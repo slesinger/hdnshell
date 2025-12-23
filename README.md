@@ -190,3 +190,24 @@ demo list, game list, latest releases
  csdb messages
 
  coding help codex - AI coding prgletu
+
+ ## High-level use cases
+
+ - Play games/demos
+ - Fetch them from csdb.dk
+ - Search new releases in csdb.dk,...
+ - Messaging via csdb.dk
+ - Chat between C64 users
+ - News accumulation from various sources (csdb.dk, lemon64.com, ...)
+ - Use HDN Shell documentation (with AI)
+ - Develop prglets for HDN Shell
+ - Develop stuff on C64U
+ - Use C64 reference documentation (with AI)
+ - Do daily routine tasks on C64 (reading emails, browsing web,...)
+ - Use HDN Cloud applications (chat, coding help, databases, conversation tools, memory analysis, ...)
+ - General AI chatting
+ - Use git
+ - Image search/generation and conversion to C64 graphics
+ - SID Music search and playback
+ - Manage files on C64U SD card
+ - Manage files on HDN Cloud, share files
