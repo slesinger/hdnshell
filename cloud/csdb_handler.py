@@ -134,42 +134,43 @@ class CSDBHandler(BaseHandler):
                 return path
             # cd command
             if t_lower.startswith("cd "):
-                arg = t[3:].strip()
-                # Support 'cd <type>/<id>' syntax
-                import re
-                m = re.match(r"(group|release|scener|event|bbs|sid)[/\\](\d+)$", arg, re.IGNORECASE)
-                if m:
-                    cd_type = m.group(1).lower()
-                    cd_id = m.group(2)
-                    state['active_dir'] = cd_type
-                    state['active_id'] = int(cd_id)
-                    return self._get_entry_info(cd_type, int(cd_id))
-                # cd / (go to root)
-                if arg == "/":
+                path = t[3:].strip()
+                # cd / - go to root
+                if path == '/':
                     state['active_dir'] = None
                     state['active_id'] = None
-                    return "Changed to root."
-                # cd .. (go up one level)
-                if arg == "..":
-                    if state['active_id'] is not None:
-                        state['active_id'] = None
-                        return f"Moved up to {state['active_dir']}/"
-                    elif state['active_dir'] is not None:
-                        state['active_dir'] = None
-                        return "Moved up to root."
-                    else:
-                        return "Already at root."
-                # cd <type> (e.g. group, release, scener, event, bbs, sid)
-                if arg in ['group', 'release', 'scener', 'event', 'bbs', 'sid']:
-                    state['active_dir'] = arg
+                    return "c:/"
+                # cd /<type>/<id> or /<type>
+                if path.startswith('/'):
+                    state['active_dir'] = None
                     state['active_id'] = None
-                    return f"Changed to {arg}/"
-                # cd <id> (if in a dir)
-                if state['active_dir'] and arg.isdigit():
-                    state['active_id'] = int(arg)
-                    # e.g. cd 901 in group dir => c: group 901
-                    return self._process_csdb_command(f"{state['active_dir']} {arg}", session_id)
-                return "Unknown cd target. Use 'cd group', 'cd release', etc."
+                    path = path[1:]
+                # cd .. - go up one level
+                if path == '..':
+                    if state['active_id']:
+                        state['active_id'] = None
+                        return f"c:/{state['active_dir']}"
+                    elif state['active_dir']:
+                        state['active_dir'] = None
+                        return "c:/"
+                    else:
+                        return "c:/"  # Already at root
+                # cd <type> - change directory type
+                if path in ['release', 'group', 'scener', 'event', 'bbs', 'sid']:
+                    state['active_dir'] = path
+                    state['active_id'] = None
+                    return f"c:/{path}"
+                # cd <id> - go to item in current dir
+                if path.isdigit() and state['active_dir']:
+                    state['active_id'] = int(path)
+                    return self._get_entry_info(state['active_dir'], state['active_id'])
+                # cd <type>/<id>
+                parts = path.split('/')
+                if len(parts) == 2 and parts[0] in ['release', 'group', 'scener', 'event', 'bbs', 'sid'] and parts[1].isdigit():
+                    state['active_dir'] = parts[0]
+                    state['active_id'] = int(parts[1])
+                    return self._get_entry_info(state['active_dir'], state['active_id'])
+                return f"Invalid path: {path}"
             # find command
             if t_lower.startswith("find "):
                 search_text = t[5:].strip()
@@ -308,47 +309,220 @@ class CSDBHandler(BaseHandler):
             return {'error': f"Network error: {str(e)}"}
 
     def _get_entry_info(self, entry_type: str, entry_id: int, depth: int = 2) -> str:
+        def format_members(members: list) -> str:
+            if not members:
+                return "(none)"
+
+            lines = []
+            for m in members:
+                member_id = m.get('id') or ''
+                name = m.get('name', '')
+                status = m.get('status') or ''
+                if status:
+                    status = f"({status})"
+                roles = m.get('roles') or ''
+
+                # Format: id (padded) name (status) - roles
+                details = f"{name} {status} - {roles}".strip()
+                line = f"{member_id:<6} {details}"
+                lines.append(line[:40])
+            return '\n'.join(lines)
+
+        def format_release_output(release_data: dict, entry_id: int) -> str:
+            """Format release output from HTML parser data"""
+
+            output = []
+            # Add release name as heading if present
+            release_name = release_data.get('name')
+            if release_name:
+                output.append(f"{release_name}")
+
+            # Released by: group_id    group_name
+            if release_data.get('groups'):
+                groups_parts = []
+                for group in release_data['groups']:
+                    group_id = group.get('id', '')
+                    group_name = group.get('name', '')
+                    if group_id and group_name:
+                        groups_parts.append(f"{group_id} {group_name}")
+                if groups_parts:
+                    output.append(f"Released by: {', '.join(groups_parts)}")
+
+            # Release Date
+            if release_data.get('release_date'):
+                output.append(f"Release Date: {release_data['release_date']}")
+
+            # Type
+            if release_data.get('type'):
+                output.append(f"Type: {release_data['type']}")
+
+            # User rating
+            if release_data.get('user_rating'):
+                output.append(f"User rating: {release_data['user_rating']}")
+
+            # Files
+            files = release_data.get('files', [])
+            if files:
+                output.append("Files:")
+                for file_info in files:
+                    file_id = file_info.get('id', '')
+                    file_name = file_info.get('name', '')
+                    downloads = file_info.get('downloads', '')
+                    if file_id and file_name:
+                        file_line = f"{file_id} {file_name}"
+                        if downloads:
+                            file_line += f" ({downloads})"
+                        output.append(file_line)
+
+            return '\n'.join(output)
+
+        def format_scener_output(model: CSDBScener) -> str:
+            result = f"Handle: {model.handle}\n"
+            if model.real_name:
+                result += f"Name: {model.real_name}\n"
+            if model.groups:
+                result += f"Groups: {', '.join(model.groups)}"
+            return result
+
+        def format_event_output(model: CSDBEvent) -> str:
+            result = f"Event: {model.name}\n"
+            result += f"Start: {model.start_date}\n"
+            if model.end_date and model.end_date != model.start_date:
+                result += f"End: {model.end_date}"
+            return result
+
+        def format_group_output(group_data: dict, entry_id: int) -> str:
+            name = group_data.get('name', f"Group {entry_id}")
+            abbr = group_data.get('abbreviation')
+            country = group_data.get('country')
+            group_type = group_data.get('group_type')
+            user_rating = group_data.get('user_rating')
+            # Compose the first line: name (abbr) [country]
+            first_line = f"{name}"
+            if abbr:
+                first_line += f" ({abbr})"
+            if country:
+                first_line += f" [{country}]"
+            output = [first_line]
+            type_rating_line = None
+            if group_type and user_rating:
+                type_rating_line = f"Type: {group_type} | Rating: {user_rating}"
+            elif group_type:
+                type_rating_line = f"Type: {group_type}"
+            elif user_rating:
+                type_rating_line = f"Rating: {user_rating}"
+            if type_rating_line:
+                output.append(type_rating_line)
+            output.append("")
+            # Only add 'All Members:' if there are members
+            members = group_data.get('members', [])
+            if members:
+                output.append("All Members:")
+                output.append(format_members(members))
+                output.append("")
+
+            # Add 'Releases' section if present
+            releases = group_data.get('releases', [])
+            if releases:
+                output.append(f"Releases: ({len(releases)})")
+
+                def format_release(r):
+                    title = r.get('title', 'Unknown')
+                    year = r.get('year')
+                    release_type = r.get('type')
+                    release_id = r.get('id', '')
+
+                    year_str = f"({year})" if year else ""
+                    type_str = f"[{release_type}]" if release_type else ""
+
+                    # Format: id (padded) title (year) [type]
+                    full_title = f"{title} {year_str} {type_str}".strip()
+                    line = f"{release_id:<6} {full_title}"
+                    return line[:40]
+
+                for rel in releases:
+                    output.append(format_release(rel))
+                output.append("")
+            return '\n'.join(output)
         """
         Get information for a specific CSDB entry
-
-        Args:
-            entry_type: Type of entry (release, group, scener, event, bbs, sid)
-            entry_id: CSDB ID of the entry
-            depth: Recursion depth for API call (default 2, max 4)
-
-        Returns:
-            Formatted entry information
+        For 'group' and 'release', use HTML parser for detailed information.
         """
+        if entry_type == 'group':
+            try:
+                from csdb_group_parser import parse_csdb_group_detail
+                url = f"https://csdb.dk/group/?id={entry_id}"
+                logger.info(f"Fetching group HTML for id {entry_id}: {url}")
+                resp = self.session.get(url, timeout=10)
+                resp.raise_for_status()
+                group_data = parse_csdb_group_detail(resp.text)
+                return format_group_output(group_data, entry_id)
+            except Exception as e:
+                logger.error(f"Error fetching/parsing group HTML: {e}")
+                return f"Error fetching group details: {str(e)}"
+
+        if entry_type == 'release':
+            try:
+                from csdb_release_parser import parse_csdb_release_detail
+                url = f"https://csdb.dk/release/?id={entry_id}"
+                logger.info(f"Fetching release HTML for id {entry_id}: {url}")
+                resp = self.session.get(url, timeout=10)
+                resp.raise_for_status()
+                release_data = parse_csdb_release_detail(resp.text)
+                return format_release_output(release_data, entry_id)
+            except Exception as e:
+                logger.error(f"Error fetching/parsing release HTML: {e}")
+                return f"Error fetching release details: {str(e)}"
+
         try:
-            # Build API URL
             params = {
                 'type': entry_type,
                 'id': entry_id,
-                'depth': min(depth, 4)  # Max depth is 4
+                'depth': min(depth, 4)
             }
-
-            logger.info(f"Fetching {entry_type} {entry_id} from CSDB")
-
+            logger.info(f"Fetching {entry_type} {entry_id} from CSDB XML API")
             response = self.session.get(
                 CSDB_API_URL, params=params, timeout=10)
             response.raise_for_status()
-
-            # Parse XML response
             root = ET.fromstring(response.content)
-
-            # Format based on entry type
             if entry_type == 'release':
-                return self._format_release(root)
-            elif entry_type == 'group':
-                return self._format_group(root)
+                # This code path should not be reached anymore
+                name = root.findtext('.//Release/Name', 'Unknown')
+                release_type = root.findtext('.//Release/Type', 'Unknown')
+                release_date = root.findtext(
+                    './/Release/ReleaseDate', 'Unknown')
+                groups = [group.findtext('Name', 'Unknown') for group in root.findall(
+                    './/Release/ReleasedBy/Group')]
+                model = CSDBRelease(
+                    name=name,
+                    release_type=release_type,
+                    release_date=release_date,
+                    groups=groups
+                )
+                return format_release_output({}, entry_id)
             elif entry_type == 'scener':
-                return self._format_scener(root)
+                handle = root.findtext('.//Scener/Handle', 'Unknown')
+                real_name = root.findtext('.//Scener/RealName', None)
+                groups = [group.findtext('Name', 'Unknown')
+                          for group in root.findall('.//Scener/Groups/Group')]
+                model = CSDBScener(
+                    handle=handle,
+                    real_name=real_name,
+                    groups=groups
+                )
+                return format_scener_output(model)
             elif entry_type == 'event':
-                return self._format_event(root)
+                name = root.findtext('.//Event/Name', 'Unknown')
+                start_date = root.findtext('.//Event/StartDate', 'Unknown')
+                end_date = root.findtext('.//Event/EndDate', None)
+                model = CSDBEvent(
+                    name=name,
+                    start_date=start_date,
+                    end_date=end_date
+                )
+                return format_event_output(model)
             else:
-                # Generic format
                 return self._format_generic(root)
-
         except requests.RequestException as e:
             logger.error(f"HTTP error querying CSDB: {e}")
             return f"Network error: {str(e)}"
@@ -358,139 +532,6 @@ class CSDBHandler(BaseHandler):
         except Exception as e:
             logger.error(f"Error getting entry info: {e}")
             return f"Error: {str(e)}"
-
-    def _format_release(self, root: ET.Element) -> str:
-        """Format release information"""
-        try:
-            name = root.findtext('.//Release/Name', 'Unknown')
-            release_type = root.findtext('.//Release/Type', 'Unknown')
-            release_date = root.findtext('.//Release/ReleaseDate', 'Unknown')
-            groups = [group.findtext('Name', 'Unknown') for group in root.findall(
-                './/Release/ReleasedBy/Group')]
-            model = CSDBRelease(
-                name=name,
-                release_type=release_type,
-                release_date=release_date,
-                groups=groups
-            )
-            groups_str = ', '.join(model.groups) if model.groups else 'Unknown'
-            result = f"Release: {model.name}\n"
-            result += f"Type: {model.release_type}\n"
-            result += f"Date: {model.release_date}\n"
-            result += f"By: {groups_str}"
-            return result
-        except Exception as e:
-            logger.error(f"Error formatting release: {e}")
-            return "Error formatting release information"
-
-    def _format_group(self, root: ET.Element) -> str:
-        """Format group information"""
-        try:
-            name = root.findtext('.//Group/Name', 'Unknown')
-            abbr = root.findtext('.//Group/Abbreviation', None)
-            country = root.findtext('.//Group/BaseCountry', 'Unknown')
-            user_rating = root.findtext('.//Group/UserRating', None)
-            votes_needed = root.findtext('.//Group/VotesNeeded', None)
-            votes_left = root.findtext('.//Group/VotesLeft', None)
-            vote_url = root.findtext('.//Group/VoteURL', None)
-            votestat_url = root.findtext('.//Group/VoteStatURL', None)
-
-            # Heading
-            abbr_str = f" ({abbr})" if abbr else ""
-            heading = f"{name}{abbr_str}\t{country}\n\n"
-
-            # User rating
-            rating_str = "User rating: "
-            if user_rating:
-                rating_str += f"{user_rating} votes"
-            elif votes_needed and votes_left:
-                rating_str += f"awaiting {votes_needed} votes ({votes_left} left)"
-            else:
-                rating_str += "N/A"
-            if vote_url:
-                rating_str += "   vote"
-            if votestat_url:
-                rating_str += "   See votestatistics"
-
-            # Members
-            members = root.findall('.//Group/Members/Member')
-            member_lines = []
-            for m in members:
-                m_name = m.findtext('Name', 'Unknown')
-                m_status = m.findtext('Status', None)
-                m_roles = m.findtext('Roles', None)
-                status_str = f" ({m_status})" if m_status else ""
-                roles_str = f"\t....\t{m_roles}" if m_roles else ""
-                line = f"{m_name}{status_str}{roles_str}"[:40]
-                member_lines.append(line)
-
-            # Releases
-            releases = root.findall('.//Group/Releases/Release')
-            release_lines = []
-            for r in releases:
-                r_id = r.findtext('ID', '')
-                r_name = r.findtext('Name', 'Unknown')
-                r_year = r.findtext('Year', '')
-                r_type = r.findtext('Type', '')
-                line = f"{r_id:<6}{r_name}, {r_year}\t{r_type}"[:40]
-                release_lines.append(line)
-
-            result = heading
-            result += f"{rating_str}\n\n"
-            result += "All Members :\n"
-            result += '\n'.join(member_lines) + '\n\n'
-            result += f"Releases : ({len(release_lines)})\n"
-            result += '\n'.join(release_lines)
-            return result
-        except Exception as e:
-            logger.error(f"Error formatting group: {e}")
-            return "Error formatting group information"
-
-    def _format_scener(self, root: ET.Element) -> str:
-        """Format scener information"""
-        try:
-            handle = root.findtext('.//Scener/Handle', 'Unknown')
-            real_name = root.findtext('.//Scener/RealName', None)
-            groups = [group.findtext('Name', 'Unknown')
-                      for group in root.findall('.//Scener/Groups/Group')]
-            model = CSDBScener(
-                handle=handle,
-                real_name=real_name,
-                groups=groups
-            )
-            result = f"Handle: {model.handle}\n"
-            if model.real_name:
-                result += f"Name: {model.real_name}\n"
-            if model.groups:
-                result += f"Groups: {', '.join(model.groups)}"
-            return result
-        except Exception as e:
-            logger.error(f"Error formatting scener: {e}")
-            return "Error formatting scener information"
-
-    def _format_event(self, root: ET.Element) -> str:
-        """Format event information"""
-        try:
-            name = root.findtext('.//Event/Name', 'Unknown')
-            start_date = root.findtext('.//Event/StartDate', 'Unknown')
-            end_date = root.findtext('.//Event/EndDate', None)
-            model = CSDBEvent(
-                name=name,
-                start_date=start_date,
-                end_date=end_date
-            )
-            result = f"Event: {model.name}\n"
-            result += f"Start: {model.start_date}\n"
-            if model.end_date and model.end_date != model.start_date:
-                result += f"End: {model.end_date}"
-            return result
-        except Exception as e:
-            logger.error(f"Error formatting event: {e}")
-            return "Error formatting event information"
-
-    def _format_generic(self, root: ET.Element) -> str:
-        """Generic XML formatting"""
-        return "Entry found (generic format not yet implemented)"
 
     def _search_help(self, query: str) -> str:
         """

@@ -3,11 +3,18 @@ from typing import Dict, Any
 
 
 def parse_csdb_group_detail(html: str) -> Dict[str, Any]:
+    # ...existing code...
     soup = BeautifulSoup(html, 'html.parser')
     result = {}
     main = soup.find('td', valign='top', width="100%")
     if not main:
         return result
+
+    def format_member(m):
+        name = m.get('name', '')
+        status = f" ({m['status']})" if m.get('status') else ''
+        roles = f" - {m['roles']}" if m.get('roles') else ''
+        return f"{name}{status}{roles}"
 
     # Group name and abbreviation
     name = None
@@ -99,19 +106,50 @@ def parse_csdb_group_detail(html: str) -> Dict[str, Any]:
         if 'All Members' in b.get_text():
             table = b.find_next('table')
             if table:
-                for tr in table.find_all('tr'):
+                member_rows = table.find_all('tr')
+                for tr in member_rows:
                     tds = tr.find_all('td')
-                    if len(tds) >= 4:
+                    if len(tds) >= 1:
                         name_a = tds[0].find('a')
-                        name = name_a.get_text(
-                            strip=True) if name_a else tds[0].get_text(strip=True)
+                        name = name_a.get_text(strip=True) if name_a else tds[0].get_text(strip=True)
+                        member_id = None
+                        if name_a and 'scener/?id=' in name_a.get('href', ''):
+                            member_id = name_a['href'].split('id=')[-1]
                         status = tds[0].find('small')
-                        status_str = status.get_text(
-                            strip=True) if status else None
-                        roles = tds[3].get_text(strip=True)
-                        members.append(
-                            {'name': name, 'status': status_str, 'roles': roles})
+                        status_str = status.get_text(strip=True).strip('()') if status else None
+                        roles = tds[-1].get_text(strip=True) if len(tds) > 1 else None
+                        members.append({
+                            'id': member_id,
+                            'name': name,
+                            'status': status_str,
+                            'roles': roles
+                        })
             break
     result['members'] = members
+
+    # Releases
+    releases = []
+    for b in main.find_all('b'):
+        if 'Releases' in b.get_text():
+            release_table = b.find_next('table')
+            if release_table:
+                for row in release_table.find_all('tr'):
+                    cols = row.find_all('td')
+                    if len(cols) >= 4:
+                        release_link = cols[0].find('a', href=lambda href: href and '/release/?id=' in href)
+                        if release_link:
+                            release_id = release_link['href'].split('id=')[-1]
+                            title = release_link.get_text(strip=True)
+                            year_font = cols[2].find('font')
+                            year = year_font.get_text(strip=True) if year_font else None
+                            type_font = cols[3].find('font')
+                            release_type = type_font.get_text(strip=True).replace('\xa0', ' ').strip() if type_font else None
+                            releases.append({
+                                'id': release_id,
+                                'title': title,
+                                'year': year,
+                                'type': release_type
+                            })
+    result['releases'] = releases
 
     return result
