@@ -25,10 +25,12 @@ cmd_l:
     CommandDone()  // jump to parser completion handler in parser.asm
 
 !:
+    lda #$00
+    sta SAVY  // clear high byte of load address to indicate no address given
     // Check for optional address
     jsr parse_address
     bcc !+
-    // Error parsing filename, handle error
+    // Error parsing load address, handle error
     lda #CYAN  // TODO error parsing address, print error message
     sta $d020
 !:

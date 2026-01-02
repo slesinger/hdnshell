@@ -132,7 +132,14 @@ parse_filename_done:
 // Error: Carry flag set on error
 parse_address:
     jsr skip_whitespace
+    bcs !+  // if end of string reached, no address given
     jsr RDVAL
+    rts
+!:
+    lda #0    // clear address
+    sta SAVX
+    sta SAVY
+    clc  // no address found is not an error
     rts
 
 // read hexa address from input string

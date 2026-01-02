@@ -81,8 +81,9 @@ HandleReturn:
     // store updated index
     sty commandline_history_idx
     jsr get_history_entry_address
+    jsr clear_input_buffer
     // copy input from screen current line to PARSER_INPUT_PTR, max 79 chars
-    ldy #79
+    ldy $d5   // get current input line length
 CopyInputLoop:
     lda (PNT),y        // read from current screen input line
     jsr screen2petscii
@@ -94,12 +95,6 @@ CopyInputLoop:
     jmp CopyInputLoop
 CopyInputLoopEnd:
     
-    // Null terminate (better two bytes for safety)
-    // lda #0
-    // ldx InputLength
-    // sta PARSER_INPUT_PTR,x
-    // inx
-    // sta PARSER_INPUT_PTR,x
     // Disable cursor
       // Load PNT (low) into LDA, add PNTR, store to ZP_INDIRECT_ADDR (low)
     lda PNT          // Load PNT low byte
@@ -127,6 +122,17 @@ CopyInputLoopEnd:
     sta CursorPos
     rts
 
+// Kills: A, Y
+clear_input_buffer:
+    // clear input buffer
+    ldy #PARSER_MAX_INPUT_LEN
+    lda #$20  // space
+!:
+    sta PARSER_INPUT_PTR,y   // clear input buffer
+    dey
+    cpy #$ff
+    bne !-
+    rts
 
 // ============================================================================
 // Handle Command History Up/Down
@@ -154,8 +160,9 @@ HandleHistoryUpDown:
     sty commandline_history_idx
     tay
     jsr get_history_entry_address
+    jsr clear_input_buffer
     // copy input from history buffer to screen, max 80 chars
-    ldy #79
+    ldy $d5   // get current input line length
 CopyHistoryLoop:
     lda (ZP_INDIRECT_ADDR),y   // read from history buffer
     jsr petscii2screen

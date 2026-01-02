@@ -318,11 +318,10 @@ open2_status_prefix:
     .byte 0
 */
 
-// Filename is temporary fixed to "SOUND2" PRG. Its start address is $1800
 // Input: filename in pointer ZP_INDIRECT_ADDR
 // Input: filename length in FNLEN
 // Input: SAVX (low byte of load address), SAVY (high byte of load address) non-zero if relocatable load is desired
-// Input: command = 1 if SAVY == 0, else 0  (use PRG load address if SAVY is 0)
+// Note: command = 1 if SAVY == 0, else 0  (use PRG load address if SAVY is 0)
 // Output: None, file loaded
 // Registers modified: A, X, Y
 load_file:
@@ -344,8 +343,6 @@ load_file_common:
     jsr SETNAM          // call KERNAL set file name
 
     lda #$00      // load (not verify)
-    ldx SAVX    // low byte of load address
-    ldy SAVY    // high byte of load address
     jsr LOAD
     bcc load_file_done  // if no error, done
     // Error occurred during load
