@@ -11,11 +11,11 @@ BIN_OUT = $(BIN_DIR)/hdnsh.bin
 # Common VICE emulator options
 
 REU_OPTS = -reu -reusize 128
-DISK_OPTS = -8 data/001a.d64 -9 data/002b.d64
+DISK_OPTS = -9 data/001a.d64 -10 data/002b.d64 -8 data/image1.d64
+# DISK_OPTS = -8 data/image1.d64
 FS11_OPTS = -iecdevice11 -device11 1 -fs11 data/
 #FS9_OPTS = -iecdevice9 -device9 1 -fs9 data/
 VICE_OPTS = $(REU_OPTS) $(DISK_OPTS) $(FS11_OPTS)
-# $(FS11_OPTS)
 
 
 .PHONY: all build run run-std clean cloud-server test-cloud cloud-client

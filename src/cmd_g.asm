@@ -37,7 +37,7 @@ cmd_g:
     // Address parsed successfully, JMP to it
     jmp run_address
 
-// copy TMP0 to PC
+// copy TMP0 to PC (program counter)
 COPY1P:
     bcs CPY1PX          // do nothing if parameter is empty
     lda TMP0            // copy low byte

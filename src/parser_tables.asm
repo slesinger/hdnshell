@@ -26,6 +26,7 @@ tbl:
 .byte KEY_NULL, <tbl_null, >tbl_null  // empty line
 .byte KEY_HASH, <tbl_hash, >tbl_hash
 .byte KEY_C, <tbl_c, >tbl_c
+.byte KEY_D, <tbl_d, >tbl_d
 .byte KEY_G, <tbl_g, >tbl_g
 .byte KEY_H, <tbl_h, >tbl_h
 .byte KEY_L, <tbl_l, >tbl_l
@@ -39,7 +40,7 @@ tbl_null:
 .byte KEY_NULL, <cmd_empty, >cmd_empty  // empty line
 
 
-// Top level #
+// Top level #device
 tbl_hash:
 .byte KEY_NULL, <cmd_hash, >cmd_hash
 .byte KEY_8, <tbl_hash_device, >tbl_hash_device
@@ -67,6 +68,22 @@ tbl_c:
 
 tbl_cd:
 .byte KEY_NULL, <cmd_cd, >cmd_cd
+.byte PARSER_END_OF_TABLE
+
+
+// Top level D
+tbl_d:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_I, <tbl_di, >tbl_di
+.byte PARSER_END_OF_TABLE
+
+tbl_di:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_R, <tbl_dir, >tbl_dir
+.byte PARSER_END_OF_TABLE
+
+tbl_dir:
+.byte KEY_NULL, <cmd_dir, >cmd_dir  // dir with arguments
 .byte PARSER_END_OF_TABLE
 
 

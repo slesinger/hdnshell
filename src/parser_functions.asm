@@ -142,7 +142,19 @@ parse_address:
     clc  // no address found is not an error
     rts
 
-// read hexa address from input string
+// Parses a number from the input buffer, supporting multiple bases 
+//   (binary, octal, decimal, hexadecimal) using specific prefixes. 
+//   Returns the value in SAVX (low byte) and SAVY (high byte), and 
+//   the number of digits read in A. Sets the carry flag on error.
+// | Prefix | Base | Example  |
+// |--------|------|----------|
+// |   %    |  2   |  %1011   | 
+// |   &    |  8   |  &77     |
+// |   +    | 10   |  +123    |
+// |   $    | 16   |  $1A3F   |
+// |  none  | 16   |  1A3F    |
+
+// $hexadecimal, $ddecimal, &octal, %binary
 // Input: TBD
 // Output: SAVX = low byte, SAVY = high byte of address
 // Output: A = number of digits read
@@ -175,7 +187,7 @@ RDVMOR:
     lda #$03            // 3 bits per digit
     sta NUMBIT
     jmp NUDIG
-!:  cmp #KEY_PLUS       // decimal  // TODO does not work
+!:  cmp #KEY_PLUS       // decimal
     bne !+
     ldy #$0A            // base 10
     lda #$03            // 4 bits per digit

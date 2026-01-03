@@ -25,6 +25,11 @@ cmd_run:
     bne !cpyloop-       // if not, continue scanning
     jmp !parse_add+
 !FoundSys:
+    lda BASIC_START,y  // peek next byte after SYS token
+    cmp #KEY_SPACE     // check if next byte is space
+    bne !get_sys_address+   // if not space, ignore and continue
+    iny
+!get_sys_address:
     dey
     lda #KEY_PLUS
     sta PARSER_INPUT_PTR,y

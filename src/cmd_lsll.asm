@@ -17,6 +17,7 @@
 // <ll_command> ::= "ll" [ <ws> ( <file_or_path> ) ]  ; command code 25
 
 cmd_ll:
+cmd_dir:
     ParsingInputsDone() // finish parsing input line
 
     // filename = $
