@@ -11,6 +11,9 @@ hdnsh.bin
 venv/
 msbasic/
 docs/ramdos.zip
-data/
+data/**
 cloud/.env
 docs/assets/*.bkp
+docs/c64os/**
+binaries/*
+docs/inspiration/*

@@ -319,7 +319,7 @@
 }
 
 .macro CommandDone() {
-    lda #LIGHT_BLUE
+    jmp parse_done
 }
 
 
