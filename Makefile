@@ -38,6 +38,16 @@ run: build
 run-std:
 	x64sc -basic /usr/local/share/vice/C64/basic-901226-01.bin $(VICE_OPTS) $(ARG)
 
+
+# Upload and run test_net.prg on Ultimate 64
+.PHONY: run-prg1
+run-prg1: test_net.prg
+	curl -X POST --header "Content-Type: application/octet-stream" --data-binary @test_net.prg http://192.168.1.64/v1/runners:run_prg
+
+# Build test_net.prg if not present
+test_net.prg: test_net.asm
+	java -jar $(KICKASS_JAR) test_net.asm -o test_net.prg
+
 clean:
 	rm -rf $(BIN_DIR)
 	rm -f ${SRC_DIR}/*.sym
