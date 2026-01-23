@@ -2,6 +2,45 @@
 #import "constants.asm"
 
 
+// ============================================================================
+// Helper: Load Text Pointer
+// ============================================================================
+// Input: A = low byte, X = high byte
+// Output: $02/$03 = pointer
+// ============================================================================
+LoadTextPtr:
+    sta $02
+    stx $03
+    rts
+
+// ============================================================================
+// Print null-terminated Text
+// ============================================================================
+// Prints null-terminated string using KERNAL CHROUT
+// Input: $02/$03 = pointer to string set by LoadTextPtr
+// ============================================================================
+PrintText:
+    ldy #$00
+!loop:
+    lda ($02),y
+    beq !done+
+    jsr CHROUT
+    iny
+    bne !loop-
+!done:
+    rts
+
+
+// ============================================================================
+PrintStatusString:
+    lda #<STATUS_STRING
+    ldx #>STATUS_STRING
+    jsr LoadTextPtr
+    jsr PrintText
+    PrintReturn()
+    rts
+
+
 // Executes code at address
 // Note: does not return! Use jmp instead of jsr to call this routine.
 // Input: SAVX = low byte of address, SAVY = high byte of address
@@ -425,3 +464,10 @@ MSG_HELP:
     .byte KEY_RETURN
     .text " R    - DISPLAY CPU REGISTERS"
     .byte KEY_RETURN, $80
+
+
+// TODO move this varaible memory
+// Network
+host_ip:   .text "192.168.1.2"
+           .byte 0
+

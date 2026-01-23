@@ -8,9 +8,7 @@
 //   Execute programm at <address> and update CPU registers (A, X, Y, SP, PC, flags).
 // Usage:
 //   G <address>
-// Notes:
-//   - Useful for debugging and code analysis.
-// <go_command> ::= "G" <address>
+
 // TODO test this after we can load some prg to mem
 cmd_g:
     // Check for required address

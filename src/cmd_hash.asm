@@ -53,6 +53,7 @@ cmd_hash:
 !:
     cmp #KEY_HASH
     beq !print_device+
+
     // other devices, just store value
     sta FA
     jmp !finish+

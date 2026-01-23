@@ -18,4 +18,4 @@ It also includes parts of SMON, which is one of the best (if not the best) machi
 - [Executing Programs](#executing-programs)
 - [File Operations](#file-operations)
 - [Using SMON Machine Language Monitor](#using-smon-machine-language-monitor)
-- [Cloud Integration](#cloud-integration)
+- [Networking, Cloud Integration](#cloud-integration)

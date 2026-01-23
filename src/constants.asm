@@ -7,7 +7,7 @@
 // ============================================================================
 
 // Runtime variables Zero page locations
-.const _TMP = $02                 // 1 byte temp storage
+.const _TMP = $02                  // 1 byte temp storage
 .const SAVX = $9e                  // 1 byte temp storage, often to save X register
 .const SAVY = $9f                  // 1 byte temp storage, often to save Y register
 .const ZP_INDIRECT_ADDR = $b2      // +$b3 Repurposable Zero page indirect address pointer 1
@@ -18,10 +18,28 @@
 .const ZP_INDIRECT_ADDR_2 = $c1    // +$c2 Repurposable Zero page indirect address pointer 2
 .const TMP0 = $c1                  // +$c2 Repurposable Zero page indirect address pointer 2 used in SMON
 .const TMP2 = $c3                  // usually holds start address
-.const REU_SIZE_BANKS = $FB        // Number of 64KB banks detected
+.const REU_SIZE_BANKS = $FB        // Number of 64KB banks detected  // TODO move away from ZP
 
 
 // Runtime variables low-mem locations
+.const STATUS_STRING = $0259 // 30 bytes $0259-$0276, last connection status, etc.
+.const FEATURE_FLAGS = $0297 // Holds info about available hardware/software options:
+.const FEATURE_FLAG_ULTIMATE = $01  // 0 bit: ultimate cartridge present
+.const FEATURE_FLAG_REU_0     = $00 * 2
+// .const FEATURE_FLAG_REU_128KB = $01 * 2
+// .const FEATURE_FLAG_REU_256KB = $02 * 2
+// .const FEATURE_FLAG_REU_512KB = $03 * 2  // TODO NOT YET REPORTED
+// .const FEATURE_FLAG_REU_1MB   = $04 * 2
+// .const FEATURE_FLAG_REU_2MB   = $05 * 2
+// .const FEATURE_FLAG_REU_4MB   = $06 * 2
+.const FEATURE_FLAG_REU_16MB  = $07 * 2
+.const FEATURE_FLAG_CMD_IFCE  = $10  // 4 bit: command interface available
+.const FEATURE_FLAG_DMA_IFCE  = $20  // 5 bit: dma interface available
+.const FEATURE_FLAG_CLOUD_REACHABLE = $40  // 6 bit: cloud connection available
+// 7 bit: [reserved]
+
+.const IP_ADDR_LOCAL  = $030c  // 4 bytes local IP address
+.const IP_ADDR_SERVER = $0310  // 4 bytes server IP address
 .const INPUT_FLAGS = $0313  // bit 0: rolling (true: rolling, false: input from CLI (screen_history_read_ptr==screen_history_write_ptr) )
 
 // 8 bytes $0334-$033B global vars Eight free bytes for user vectors or other data.
@@ -51,6 +69,7 @@
 .const U0AAE = U0AA0+10            // end of work buffer $034b
 .const screen_history_write_ptr= $034c  // and $034d When screen scrolls, this index is updated to point to next history buffer empty line (ready for next write)
 .const screen_history_read_ptr = $034e  // and $034f When navigating history, this index is pointing to the last fetched history line
+.const socket_id = $03fc           // socket id for network connection
 
 // Read-only system constants
 .const PNT = $d1                   // Read-only $00D1-$00D2	PNT	Pointer to the Address of the Current Screen Line
@@ -87,6 +106,7 @@
 .const SAVE    = $FFD8             // save to device
 .const STOP    = $FFE1             // check the STOP key
 .const GETIN   = $FFE4             // get a character
+.const PLOT    = $FFF0             // set cursor position
 
 // Input key codes
 .const KEY_NULL = $00
@@ -308,12 +328,21 @@
     sta screen_history_read_ptr
     sta screen_history_read_ptr+1
 
+    lda #FEATURE_FLAG_CLOUD_REACHABLE
+    sta FEATURE_FLAGS
+
     lda #$08
     sta FA  // default device number
+
 }
 
 
 .macro ParsingInputsDone() {
+    lda #KEY_RETURN
+    jsr CHROUT
+}
+
+.macro PrintReturn() {
     lda #KEY_RETURN
     jsr CHROUT
 }

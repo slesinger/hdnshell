@@ -1,4 +1,3 @@
-#import "constants.asm"
 // ============================================================================
 // init.asm - System Initialization for HONDANI Shell
 // ============================================================================
@@ -10,6 +9,10 @@
 // ============================================================================
 
 #import "constants.asm"
+#import "utils.asm"
+#import "c64u_dos.asm"
+#import "c64u_network.asm"
+
 
 // ============================================================================
 // Initialize System
@@ -21,10 +24,11 @@ InitSystem:
     // jsr SetLowercaseMode
     jsr ClearScreen
     jsr InitInputBuffer
+    InitGlobalVariables()
     jsr DetectREU
+    jsr DetectUltimate  // carry set if ultimate detected, clear if not
     jsr clear_history  // TODO load history from REU/network
     jsr clear_terminal_history
-    InitGlobalVariables()
     jmp PrintWelcomeMessage     // Tail call optimization
 
 // ============================================================================
@@ -182,17 +186,6 @@ DetectREU:
     rts
 
 // ============================================================================
-// Helper: Load Text Pointer
-// ============================================================================
-// Input: A = low byte, X = high byte
-// Output: $02/$03 = pointer
-// ============================================================================
-LoadTextPtr:
-    sta $02
-    stx $03
-    rts
-
-// ============================================================================
 // Fill commandline_history_addr ($c000 - $c400) buffer with spaces
 // ============================================================================
 // Input: None
@@ -231,20 +224,32 @@ clear_terminal_history:
 // Prints banner with REU status and ready prompt
 // ============================================================================
 PrintWelcomeMessage:
+    // Move cursor
+    ldx #$01        // X register = row (vertical position)
+    ldy #$04        // Y register = column (horizontal position)
+    clc            // Clear carry flag to SET cursor position
+    jsr PLOT      // Call KERNAL PLOT routine
     // Print base text "HDN Shell v0.1"
+
     lda #<WelcomeText
     ldx #>WelcomeText
     jsr LoadTextPtr
     jsr PrintText
-    
-    lda REU_SIZE_BANKS
-    beq !noREU+
-    
-    // Print ", REU "
-    lda #<REULabel
-    ldx #>REULabel
+
+    // Move cursor row 3, col 0
+    ldx #$02
+    ldy #$27
+    clc
+    jsr PLOT
+
+    // Print ", REU "  // TODO print has to be there else print number in next block is failing, really strange
+    lda #<REULabel0
+    ldx #>REULabel0
     jsr LoadTextPtr
     jsr PrintText
+
+    lda REU_SIZE_BANKS
+    beq !noREU+
     
     // Check if $FF (256 banks = 16MB)
     lda REU_SIZE_BANKS
@@ -252,6 +257,8 @@ PrintWelcomeMessage:
     bne !normalSize+
     lda #16
     jsr PrintDecimal
+    lda #FEATURE_FLAG_REU_16MB
+    sta !wrs+ +1
     jmp !printMB+
     
 !normalSize:
@@ -268,7 +275,7 @@ PrintWelcomeMessage:
     ldx #>MBText
     jsr LoadTextPtr
     jsr PrintText
-    jmp !printReady+
+    jmp !writeREUsizetoFeatureFlags+
     
 !printKB:
     // For sizes < 1MB, handle common sizes with lookup table
@@ -286,7 +293,7 @@ PrintWelcomeMessage:
     lda ($02),y             // Check if null (Y=0 from earlier)
     beq !notCommon+         // Not in table
     jsr PrintText
-    jmp !printReady+
+    jmp !writeREUsizetoFeatureFlags+
     
 !notCommon:
     // For other sizes, calculate banks * 64
@@ -298,18 +305,50 @@ PrintWelcomeMessage:
     asl
     asl
     jsr PrintDecimal
+    lda #FEATURE_FLAG_REU_0
+    sta !wrs+ +1
     lda #<KBText
     ldx #>KBText
     jsr LoadTextPtr
     jsr PrintText
-    jmp !printReady+
+    jmp !writeREUsizetoFeatureFlags+
     
 !noREU:
     lda #<NoREUText
     ldx #>NoREUText
     jsr LoadTextPtr
     jsr PrintText
-    
+
+!writeREUsizetoFeatureFlags:
+    lda FEATURE_FLAGS
+    and #%11110001
+!wrs: ora #$00  // virtual value
+    sta FEATURE_FLAGS
+    // Print " REU "
+    lda #<REULabel
+    ldx #>REULabel
+    jsr LoadTextPtr
+    jsr PrintText
+
+    // Print "ULTIM" or "SYSTEM"
+    lda FEATURE_FLAGS
+    and #FEATURE_FLAG_ULTIMATE
+    bne !printUltim+
+    lda #<SystemText
+    ldx #>SystemText
+    jsr LoadTextPtr
+    jsr PrintText
+    jmp !printReady+
+!printUltim:
+    // print ip address
+    jsr uii_identify
+
+    lda #<HondaniText
+    ldx #>HondaniText
+    jsr LoadTextPtr
+    jsr PrintText
+
+
 !printReady:
     // Print newline then "READY."
     lda #KEY_RETURN             // Carriage return
@@ -321,23 +360,6 @@ PrintWelcomeMessage:
     jsr PrintText
     lda #KEY_RETURN             // Print another newline after READY.
     jsr CHROUT
-    rts
-
-// ============================================================================
-// Print Text
-// ============================================================================
-// Prints null-terminated string using KERNAL CHROUT
-// Input: $02/$03 = pointer to string
-// ============================================================================
-PrintText:
-    ldy #$00
-!loop:
-    lda ($02),y
-    beq !done+
-    jsr CHROUT
-    iny
-    bne !loop-
-!done:
     rts
 
 // ============================================================================
@@ -401,39 +423,52 @@ PrintDecimal:
 
 WelcomeText:
     // .text "HDN SHELL V0.1"
-    .text "hdn shell v0.1"
+    .text "**** commodore 64 shell v1 ****"
+    .byte $00
+
+REULabel0:
+    // .text " "
+    .text "  "
     .byte $00
 
 REULabel:
-    // .text ", REU "
-    .text ", reu "
+    // .text " REU"
+    .text " reu "
     .byte $00
 
 MBText:
-    // .text "MB"
-    .text "mb"
+    // .text "M"
+    .text "m"
     .byte $00
 
 KBText:
-    // .text "KB"
-    .text "kb"
+    // .text "K"
+    .text "k"
     .byte $00
 
 Msg128KB:
-    .text "128kb"
+    .text "128k"
     .byte $00
 
 Msg256KB:
-    .text "256kb"
+    .text "256k"
     .byte $00
 
 Msg512KB:
-    .text "512kb"
+    .text "512k"
     .byte $00
 
 NoREUText:
     // .text ", no REU found"
-    .text ", no reu found"
+    .text "  no"
+    .byte $00
+
+SystemText:
+    .text "system        38912 bytes free"
+    .byte $00
+
+HondaniText:
+    .text ", hondani"
     .byte $00
 
 ReadyText:
@@ -446,3 +481,5 @@ KBSizeTableLo:
     .byte $00, <Msg128KB, $00, <Msg256KB, $00, $00, $00, <Msg512KB
 KBSizeTableHi:
     .byte $00, >Msg128KB, $00, >Msg256KB, $00, $00, $00, >Msg512KB
+
+

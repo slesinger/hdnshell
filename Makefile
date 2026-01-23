@@ -18,7 +18,7 @@ FS11_OPTS = -iecdevice11 -device11 1 -fs11 data/
 VICE_OPTS = $(REU_OPTS) $(DISK_OPTS) $(FS11_OPTS)
 
 
-.PHONY: all build run run-std clean cloud-server test-cloud cloud-client
+.PHONY: all build run-vice run-c64u run-std clean cloud-server test-cloud cloud-client
 
 
 all: build
@@ -31,9 +31,12 @@ build:
 # 	mv -f *.dbg *.sym *.vs *.prg $(BIN_DIR) 2>/dev/null || true
 
 
-run: build
+run-vice: build
 	x64sc -basic $(BIN_OUT) $(VICE_OPTS)
 
+run-c64u: build
+	curl -T binaries/hdnsh.bin ftp://192.168.1.65/Flash/roms/
+	python test/test_dmaservice.py
 
 run-std:
 	x64sc -basic /usr/local/share/vice/C64/basic-901226-01.bin $(VICE_OPTS) $(ARG)
@@ -42,7 +45,7 @@ run-std:
 # Upload and run test_net.prg on Ultimate 64
 .PHONY: run-prg1
 run-prg1: test_net.prg
-	curl -X POST --header "Content-Type: application/octet-stream" --data-binary @test_net.prg http://192.168.1.64/v1/runners:run_prg
+	curl -X POST --header "Content-Type: application/octet-stream" --data-binary @test_net.prg http://192.168.1.65/v1/runners:run_prg
 
 # Build test_net.prg if not present
 test_net.prg: test_net.asm

@@ -48,29 +48,47 @@ def reset_c64():
     send(0x04)
 
 
+def power_off():
+    send(0x0C)
+
+
 def dma_write(address: int, data: bytes):
     payload = address.to_bytes(2, 'little') + data
     send(0x06, len(payload), payload)
 
 
-def power_off():
-    send(0x0C)
+def identify():
+    """
+    Send the IDENTIFY command and print product info string.
+    """
+    # Use send() to transmit the command
+    send(0x0E, read=True)
+    # Open a new socket to receive the response
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('192.168.1.65', 64))
+    response = s.recv(64)
+    s.close()
+    print(response)
 
 
-def send(cmd: int, length: int = 0, payload: bytes = b''):
+def send(cmd: int, length: int = 0, payload: bytes = b'', read: bool = False):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('192.168.1.65', 64))
     cmd = 0xFF00 | cmd
     s.sendall(cmd.to_bytes(2, 'little'))
     s.sendall(length.to_bytes(2, 'little'))
-    s.sendall(payload)
-    # response = s.recv(1024)  # only few commands return data
+    if length > 0:
+        s.sendall(payload)
+    if read:
+        response = s.recv(64)  # only few commands return data
+        if response:
+            print("Response:", response)
     s.close()
-    # print("Response:", response)
 
 
 # reset_c64()
 # dma_write(0x0400, b'\x31\x38\x39\x00')
 # keyboard_input(b'HELLO WORLD!\n')
-# power_off()
-dma_run('test_net.prg')
+power_off()
+# dma_run('test_net.prg')
+# identify()

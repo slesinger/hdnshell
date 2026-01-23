@@ -1,4 +1,5 @@
 #import "utils.asm"
+#import "hdncloud.asm"
 
 // -----------------------------------------------------------------------------
 // Unknown Command
@@ -18,7 +19,12 @@ cmd_unknown:
     cmp #KEY_SPACE
     beq !suppress_empty_line+
 
-    ldy #MSG_UNKNOWN_COMMAND - MSGBAS    // display headers
-    jsr SNDMSG
+    // Commands not recognized locally will be sent to HDN Cloud service
+    
+    jsr send_cmd_to_hdn_cloud
+    // TODO check for errors and only display message if cloud is not reachable
+
+    // ldy #MSG_UNKNOWN_COMMAND - MSGBAS    // display headers
+    // jsr SNDMSG
 !suppress_empty_line:
     CommandDone()  // jump to parser completion handler in parser.asm

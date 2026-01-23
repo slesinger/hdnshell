@@ -244,6 +244,9 @@ class CommandHandler:
         """
         Process a complete command packet from the client
         """
+        # Print packet in hex for debugging
+        logger.info(f"Received packet: {packet.hex()}")
+
         try:
             magic, cmd_id, data = CommandHandler.parse_packet(packet)
             if magic != MAGIC_BYTES:
@@ -258,9 +261,13 @@ class CommandHandler:
             elif cmd_id == CommandID.TEXT_INPUT:
                 response_data = CommandHandler.handle_text_input(
                     data, session_id)
+            else:
+                logger.warning(f"Unknown command ID: {cmd_id}")
 
             if response_data:
-                return CommandHandler.create_response(response_type, response_data)
+                resp = CommandHandler.create_response(response_type, response_data)
+                logger.info(f"Response: {resp.hex()}")
+                return resp
 
         except ValueError as e:
             logger.error(f"Packet parsing error: {e}")

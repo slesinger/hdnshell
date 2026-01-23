@@ -13,6 +13,8 @@
 | `find <text>` | Search in current CSDB directory (or all if none) | `find hondani` |
 | `cd <id>` | Enter detail for item in current directory | `cd 901` |
 | `pwd` | Show current CSDB path | `pwd` |
+| `@` | Show status of last operation | `@` |
+| `info` | Show detailed setup information | `info` |
 
 ## Python Eval Functions
 
