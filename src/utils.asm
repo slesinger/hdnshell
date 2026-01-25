@@ -458,12 +458,16 @@ MSG_UNKNOWN_COMMAND:
     .byte KEY_RETURN, $80
 MSG_HELP:
     .byte KEY_RETURN
-    .text "AVAILABLE COMMANDS:"
+    .text "NOTE: LOCAL HELP, SERVER NOT AVAILABLE"
+    .byte KEY_RETURN, KEY_RETURN
+    .text "COMMANDS: (SEE DOCS FOR MORE)"
     .byte KEY_RETURN
-    .text " HELP - DISPLAY THIS HELP MESSAGE"
+    .text " INFO - DISPLAY SYSTEM DETAILS"
     .byte KEY_RETURN
-    .text " R    - DISPLAY CPU REGISTERS"
-    .byte KEY_RETURN, $80
+    .text " REMOTE <HOST> - SET SERVER ADDRESS"
+    .byte KEY_RETURN, KEY_RETURN
+    .text "VISIT GITHUB.COM/SLESINGER/HDNSHELL"
+    .byte $80
 
 
 // TODO move this varaible memory

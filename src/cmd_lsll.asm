@@ -1,4 +1,5 @@
 #import "floppy.asm"
+#import "c64u_dos.asm"
 
 // -----------------------------------------------------------------------------
 // List Directory Command
@@ -20,6 +21,23 @@ cmd_ll:
 cmd_dir:
     ParsingInputsDone() // finish parsing input line
 
+    // if floppy or iec then use KERNAL routines to read directory, that means if FA ==8 or 9 or 10
+    lda FA
+    cmp #8
+    beq !use_kernal_dir+
+    cmp #9
+    beq !use_kernal_dir+
+    cmp #10
+    beq !use_kernal_dir+
+    // else use Ultimate command to get directory listing
+    jsr uii_open_dir
+    jsr uii_get_dir
+    PrintReturn()
+    jsr uii_read_more_data
+    CommandDone()  // jump to parser completion handler in parser.asm
+
+
+!use_kernal_dir:
     // filename = $
     lda #KEY_DOLLAR
     sta directory_listing_addr  // will be overwritten but who cares

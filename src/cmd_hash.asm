@@ -39,16 +39,10 @@ cmd_hash:
     sta FA  // set default device to 9
     jmp !finish+
 !:
-    cmp #KEY_A
+    cmp #KEY_S
     bne !+
     lda #10
-    sta FA  // set default device to 10
-    jmp !finish+
-!:
-    cmp #KEY_B
-    bne !+
-    lda #11
-    sta FA  // set default device to 11
+    sta FA  // set default device to 10 SoftIEC
     jmp !finish+
 !:
     cmp #KEY_HASH
@@ -71,13 +65,8 @@ cmd_hash:
     jmp !print_char+
 !:
     cmp #$0A
-    bne !+
-    lda #KEY_A
-    jmp !print_char+
-!:
-    cmp #$0B
     bne !print_char+
-    lda #KEY_B
+    lda #KEY_S
 !print_char:
     jsr CHROUT
 

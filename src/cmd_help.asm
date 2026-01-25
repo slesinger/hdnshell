@@ -1,4 +1,7 @@
+#import "constants.asm"
 #import "utils.asm"
+#import "hdncloud.asm"
+
 
 // -----------------------------------------------------------------------------
 // Help Command
@@ -13,11 +16,18 @@
 // <help_command> ::= "HELP"
 
 cmd_help:
+    jsr send_cmd_to_hdn_cloud  // Display remote help if cloud is available
+    bcc !cloud_available+
+
+    // Display local help message
     ldy #MSG_HELP - MSGBAS    // display headers
     jsr SNDCLR
 
-
-    lda #$32
-    // execute actual job
-
+!cloud_available:
+    PrintReturn()
     CommandDone()  // jump to parser completion handler in parser.asm
+
+cmd_x:  // THIS IS JUST A TESTEBED
+inc $d021
+    jmp JMP_RESET_MACHINE
+    CommandDone()

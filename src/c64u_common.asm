@@ -33,6 +33,40 @@
 .const CONTROL_REG_BIT_CLR_ERR  = %00001000  // Pushing a command to the Ultimate-II when the communication layer is not in idle mode, causes a state error flag to be set. See status register. Write a ‘1’ to CLR_ERR to clear this error condition.
 
 
+// Sends a command to the Ultimate and retrieves status (does not read data)
+// Input: full command including target and cmd, incl. data bytes if any
+//   UII_CMD_BYTES - <target><cmd>[data bytes]
+//   Register A: length of command payload in bytes (without target and cmd)
+sendcommand:
+    tay
+    jsr wait_idle
+    // send command bytes
+    iny  // inc length for target+cmd
+    iny  // inc length for target+cmd
+    ldx #$00
+!send_loop:
+    lda UII_CMD_BYTES,x
+    sta CMD_DATA_REG
+    inx
+    dey
+    bne !send_loop-
+    // push command
+    lda CONTROL_REG
+    ora #CONTROL_REG_BIT_PUSH_CMD
+    sta CONTROL_REG
+    // error?
+    lda STATUS_REG
+    and #STATUS_REG_BIT_ERROR
+    beq !no_error+
+    jsr status_error
+!no_error:
+    jsr wait_not_busy
+    jsr uii_readdata
+    jsr uii_readstatus
+    jsr uii_accept
+    rts
+
+
 uii_readdata:
     // uii_isdataavailable
 !data_available:
@@ -48,7 +82,48 @@ uii_readdata:
 !data_not_available:
     rts
 
+// TODO is it used anywhere?
+uii_readdata_readsocket:
+    // uii_isdataavailable
+    jsr uii_isdataavailable
+    // jsr wait_for_data
+!next_data:
+    lda RESP_DATA_REG
+    sta $05f0
+    jsr CHROUT
+    jsr uii_isdataavailable
+    bcc !last_data+
+    inc $0402
+    // bcc !last_data+
+    jmp !next_data-
+!last_data:
+    rts
 
+
+// TODO is it used anywhere?
+uii_read_more_data:
+    jsr uii_isdataavailable
+    bcc !no_more_data+
+    jsr uii_readdata
+    jsr uii_accept
+    PrintReturn()
+    jmp uii_read_more_data
+!no_more_data:
+    rts
+
+// Output: carry set when more data is available, clear when last data
+uii_isdataavailable:
+    lda STATUS_REG
+    and #STATUS_REG_BIT_DATA_AV
+    beq !no_data+
+    sec  // data available
+    rts
+!no_data:
+    clc  // no data available
+    rts
+
+
+// Output: data count // TODO zatim nevraci
 uii_readstatus:
     // uii_isstatusdataavailable
     ldx #$00
@@ -91,10 +166,10 @@ uii_success:
     lda STATUS_STRING+1  // second status byte
     cmp #$30   // '0'
     bne !error+
-    clc        // Clear carry (success)
+    clc        // Clear carry (success) return true
     rts
  !error:
-    sec        // Set carry (error)
+    sec        // Set carry (error) return false
     rts
 
 
@@ -106,10 +181,31 @@ wait_idle:
     bne !loop-
     rts
 
+// Waits for data to be available from the Ultimate command interface.
+// Output: carry set when more data is available, clear when last data
+wait_for_data:
+!loop:
+    lda STATUS_REG
+    sta $0401
+    tay
+    and #$20  // data more or data last
+    cmp #$00
+    beq !loop-
+    tya
+    and #$10
+    bne !more_data+
+    clc  // last data
+    rts
+!more_data:
+    sec  // more data
+    rts
+
 // Waits for the Ultimate command interface to not be busy.
 wait_not_busy:
 !loop:
     lda STATUS_REG
+    tay
+    tya
     and #STATUS_REG_BIT_STATE
     cmp #$10
     beq !loop-
@@ -118,7 +214,7 @@ wait_not_busy:
 
 // TODO vracet chyby zpet do OS
 status_error:
-    inc $0428
-    inc $d020
+    lda #RED
+    sta $d020
     jmp *
     rts

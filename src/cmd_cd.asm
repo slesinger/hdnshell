@@ -1,19 +1,40 @@
 #import "constants.asm"
 #import "utils.asm"
 #import "parser_functions.asm"
+#import "c64u_dos.asm"
+
 
 // -----------------------------------------------------------------------------
 // Change Directory Command
 // -----------------------------------------------------------------------------
 // Purpose:
-//   Displays and allows editing of CPU registers (A, X, Y, SP, PC, flags).
+//   Change directory for IEC device and UII filesystem.
 // Usage:
-//   R
-//     - 'R' shows the current register values and allows editing.
+//   for #e
+//     - 'cd <path>' changes the current directory to <path>.
+//   for #t,h,f
+//     - 'cd <path>' changes the current directory to <path>.
 // Notes:
 //   - Useful for debugging and code analysis.
 // <register_command> ::= "R"
 
+
+cmd_cd:  // TODO for mounting d64 image on c64 ultimate maybe MOUNT instead of CD will be needed.
+
+    jsr parse_file_or_path
+    bcc !dir_name_parsed_ok+
+    // Error parsing filename, handle error
+    lda #RED  // TODO wrong filename, print error message
+    sta $d020
+    CommandDone()  // jump to parser completion handler in parser.asm
+!dir_name_parsed_ok:
+    ParsingInputsDone() // finish parsing input line
+    jsr uii_change_dir
+    CommandDone()
+    rts
+
+
+/*  DOCASNE ZAKOMENTOVANE ABYCH MOHL NEJDRIV ODLADIT CD PRO UII SOUBORY
 cmd_cd:  // TODO for mounting d64 image on c64 ultimate maybe MOUNT instead of CD will be needed.
     ParsingInputsDone() // finish parsing input line
 
@@ -81,3 +102,5 @@ cmd_cd:  // TODO for mounting d64 image on c64 ultimate maybe MOUNT instead of C
     lda #RED
     sta $d020
     CommandDone()
+
+*/

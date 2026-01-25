@@ -88,7 +88,7 @@ skip_whitespace_eos:
     rts
 
 
-// Output: filename pointer at ZP_INDIRECT_ADDR_2
+// Output: filename pointer at ZP_INDIRECT_ADDR
 // Output: filename length in FNLEN
 // Error: Carry flag if there is no filename
 parse_file_or_path:

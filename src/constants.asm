@@ -24,6 +24,10 @@
 // Runtime variables low-mem locations
 .const STATUS_STRING = $0259 // 30 bytes $0259-$0276, last connection status, etc.
 .const FEATURE_FLAGS = $0297 // Holds info about available hardware/software options:
+.const UII_CMD_BYTES = $02A7 // 89 bytes $02A7-$02FF, is short lived and can be reused
+.const UII_CMD_BYTES_TARGET = $02A7 // TARGET_DOS1, TARGET_NETWORK, TARGET_CONTROL
+.const UII_CMD_BYTES_CMD    = UII_CMD_BYTES_TARGET+1 // see DOS Commands
+.const UII_CMD_BYTES_DATA   = UII_CMD_BYTES_TARGET+2 // depends on command
 .const FEATURE_FLAG_ULTIMATE = $01  // 0 bit: ultimate cartridge present
 .const FEATURE_FLAG_REU_0     = $00 * 2
 // .const FEATURE_FLAG_REU_128KB = $01 * 2
@@ -83,6 +87,7 @@
 // KERNAL routines
 .const CLRSCR  = $E544             // KERNAL clear screen routine
 .const SCRLOADDR = $ECF0  // table of low bytes of screen line addresses
+.const JMP_RESET_MACHINE = $FCE2   // KERNAL reset routine
 .const SETMSG  = $FF90             // set kernel message control flag
 .const SECOND  = $FF93             // set secondary address after LISTEN
 .const TKSA    = $FF96             // send secondary address after TALK

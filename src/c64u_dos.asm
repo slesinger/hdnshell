@@ -29,6 +29,7 @@
 .const DOS_CMD_SWAP_DISK = $25
 .const DOS_CMD_GET_TIME = $26
 .const DOS_CMD_SET_TIME = $27
+.const CTRL_CMD_FREEZE = $05
 .const CTRL_CMD_ENABLE_DISK_A = $30
 .const CTRL_CMD_DISABLE_DISK_A = $31
 .const CTRL_CMD_ENABLE_DISK_B = $32
@@ -59,27 +60,145 @@ DetectUltimate:
     rts
 
 
+// target, cmd
+// nekde se cte jen statu, ne data
+// uii_get_dir nedela read data
+// readdata schazi v 7 pripadech
+// pouzit consecutive ram na vytvoreni celeho cmd vcetne targetu a cmd a dat
+//     jaky je asi nejdelsi cmd?  directory nebo filename [a new filename] copy je vcetne cest
+
 // Replies like this: b'!*** C64 Ultimate (V1.47) 3.14 ***'
 uii_identify:
-    jsr wait_idle
     lda #TARGET_DOS1
-    sta CMD_DATA_REG
+    sta UII_CMD_BYTES_TARGET
     lda #DOS_CMD_IDENTIFY
-    sta CMD_DATA_REG
-    // push command
-    lda CONTROL_REG
-    ora #CONTROL_REG_BIT_PUSH_CMD
-    sta CONTROL_REG
-    // error?
-    lda STATUS_REG
-    and #STATUS_REG_BIT_ERROR
-    beq !no_error+
-    jsr status_error
-!no_error:
-    jsr wait_not_busy
-    jsr uii_readdata
-    jsr uii_readstatus
-    jsr uii_accept
+    sta UII_CMD_BYTES_CMD
+    lda #$00
+    jsr sendcommand
+    rts
+
+uii_freeze:
+    lda #TARGET_CONTROL
+    sta UII_CMD_BYTES_TARGET
+    lda #CTRL_CMD_FREEZE
+    sta UII_CMD_BYTES_CMD
+    lda #$00  // length
+    jsr sendcommand
+    rts
+
+uii_get_path:
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_GET_PATH
+    sta UII_CMD_BYTES_CMD
+    lda #$00
+    jsr sendcommand
     rts
 
 
+uii_open_dir:  // TODO sendcommand must not do readdata()
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_OPEN_DIR
+    sta UII_CMD_BYTES_CMD
+    lda #$00
+    jsr sendcommand
+    rts
+
+
+uii_get_dir:  // TODO toto potrebuje custom readdata funkci
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_READ_DIR
+    sta UII_CMD_BYTES_CMD
+    lda #$00
+    jsr sendcommand
+    rts
+
+
+// Input: filename pointer at ZP_INDIRECT_ADDR
+// Input: filename length in FNLEN
+uii_change_dir:
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_CHANGE_DIR
+    sta UII_CMD_BYTES_CMD
+
+    ldy #$00
+!load_filename_loop:
+    lda (ZP_INDIRECT_ADDR),y
+    sta UII_CMD_BYTES_DATA,y
+    iny
+    cpy FNLEN
+    bne !load_filename_loop-
+
+    lda FNLEN  // payload length
+    jsr sendcommand
+    rts
+
+
+// Input: filename pointer at ZP_INDIRECT_ADDR
+// Input: filename length in FNLEN
+uii_create_dir:
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_CREATE_DIR
+    sta UII_CMD_BYTES_CMD
+
+    ldy #$00
+!load_filename_loop:
+    lda (ZP_INDIRECT_ADDR),y
+    sta UII_CMD_BYTES_DATA,y
+    iny
+    cpy FNLEN
+    bne !load_filename_loop-
+
+    lda FNLEN  // payload length
+    jsr sendcommand
+    rts
+
+
+// Input: filename pointer at ZP_INDIRECT_ADDR
+// Input: filename length in FNLEN
+uii_mount_disk:
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_MOUNT_DISK
+    sta UII_CMD_BYTES_CMD
+    lda #$08  // TODO make it possible to mount to different devices also
+    sta UII_CMD_BYTES_DATA+0  // device number
+
+    ldy #$00
+!load_filename_loop:
+    lda (ZP_INDIRECT_ADDR),y
+    sta UII_CMD_BYTES_DATA+1,y
+    iny
+    cpy FNLEN
+    bne !load_filename_loop-
+
+    inc FNLEN  // include device number in payload length
+    lda FNLEN  // payload length
+    jsr sendcommand
+    rts
+
+
+uii_unmount_disk:
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_UMOUNT_DISK
+    sta UII_CMD_BYTES_CMD
+    lda #$08  // TODO make it possible to unmount different devices also
+    sta UII_CMD_BYTES_DATA+0  // device number
+    lda #$01  // payload length
+    jsr sendcommand
+    rts
+
+
+uii_get_time:
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_GET_TIME
+    sta UII_CMD_BYTES_CMD
+    lda #$00
+    jsr sendcommand
+    rts

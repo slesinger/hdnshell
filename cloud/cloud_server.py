@@ -11,6 +11,7 @@ import logging
 import sys
 import os
 import argparse
+from time import sleep
 from typing import Tuple, Optional, List
 from generate_pet_asc_table import Petscii
 from base_handler import BaseHandler
@@ -29,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 # Protocol constants
-MAGIC_BYTES = bytes([0xFE, 0xFF])
+MAGIC_BYTES = bytes([0xFE])
 
 
 class CommandID:
@@ -117,7 +118,7 @@ class RequestDispatcher:
 
             # Default response if no handler is found
             logger.warning("No handler found for the request.")
-            return BaseHandler.utf8_to_petscii("Unknown command. Type 'help' for assistance.")
+            return BaseHandler.utf8_to_petscii("?ERROR")
 
         except Exception as e:
             logger.error(f"Error during dispatch: {e}", exc_info=True)
@@ -154,12 +155,12 @@ class CommandHandler:
         if len(packet) < 3:
             raise ValueError("Packet too short")
 
-        magic = packet[0:2]
+        magic = packet[0:len(MAGIC_BYTES)]
         if magic != MAGIC_BYTES:
             raise ValueError(f"Invalid magic bytes: {magic.hex()}")
 
-        cmd_id = packet[2]
-        data = packet[3:]
+        cmd_id = packet[len(MAGIC_BYTES)]
+        data = packet[len(MAGIC_BYTES) + 1:]
 
         return magic, cmd_id, data
 
@@ -237,7 +238,9 @@ class CommandHandler:
         if response_type == ResponseType.PETSCII_NULL_TERMINATED:
             if not data or data[-1] != 0x00:
                 data += bytes([0x00])
-        return MAGIC_BYTES + bytes([response_type]) + data
+        # return MAGIC_BYTES + bytes([response_type]) + data
+        sleep(3.0)
+        return data[:-1]
 
     @staticmethod
     def process_command(packet: bytes, session_id: int = 0) -> Optional[bytes]:

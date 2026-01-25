@@ -78,16 +78,18 @@ cmd_info:
     ParsingInputsDone()
     CommandDone()  // jump to parser completion handler in parser.asm
 
+.encoding "petscii_mixed"
+
 LocalLabel:
     .byte KEY_RETURN
-    .text "MY IP ADDRESS: "
+    .text "My IP address: "
     .byte $00
 
 ServerLabel:
     .byte KEY_RETURN
-    .text "SERVER "
+    .text "Server "
     .byte $00
 
 ServerNotConnectedLabel:
-    .text " NOT REACHABLE "
+    .text " not reachable "
     .byte $00

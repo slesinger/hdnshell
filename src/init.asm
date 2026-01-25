@@ -21,7 +21,7 @@
 // ============================================================================
 InitSystem:
     jsr SetColors
-    // jsr SetLowercaseMode
+    jsr SetLowercaseMode
     jsr ClearScreen
     jsr InitInputBuffer
     InitGlobalVariables()
@@ -423,39 +423,35 @@ PrintDecimal:
 
 WelcomeText:
     // .text "HDN SHELL V0.1"
-    .text "**** commodore 64 shell v1 ****"
+    .text "**** COMMODORE 64 SHELL V1 ****"
     .byte $00
 
 REULabel0:
-    // .text " "
     .text "  "
     .byte $00
 
 REULabel:
-    // .text " REU"
-    .text " reu "
+    .text " REU "
     .byte $00
 
 MBText:
-    // .text "M"
-    .text "m"
+    .text "M"
     .byte $00
 
 KBText:
-    // .text "K"
-    .text "k"
+    .text "K"
     .byte $00
 
 Msg128KB:
-    .text "128k"
+    .text "128K"
     .byte $00
 
 Msg256KB:
-    .text "256k"
+    .text "256K"
     .byte $00
 
 Msg512KB:
-    .text "512k"
+    .text "512K"
     .byte $00
 
 NoREUText:
@@ -464,16 +460,16 @@ NoREUText:
     .byte $00
 
 SystemText:
-    .text "system        38912 bytes free"
+    .text "SYSTEM        38912 BYTES FREE"
     .byte $00
 
 HondaniText:
-    .text ", hondani"
+    .text ", Hondani"
     .byte $00
 
 ReadyText:
     // .text "READY."
-    .text "ready."
+    .text "READY."
     .byte $00
 
 // Lookup table for common KB sizes (indexed by bank count * 2)

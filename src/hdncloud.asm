@@ -57,21 +57,30 @@ send_cmd_to_hdn_cloud:
     // connect to network if not connected already
     jsr connect_hdn_cloud
     bcs !NOT_OK+
+
     // send command line data to socket
     lda #<PARSER_INPUT_PTR
     sta ZP_INDIRECT_ADDR  // store data pointer low byte
     lda #>PARSER_INPUT_PTR
     sta ZP_INDIRECT_ADDR+1  // store data pointer high byte
-    lda #PARSER_MAX_INPUT_LEN
     lda #HDNCLD_CMD_SEND_CLI
     sta hdncld_cmd
+    lda #PARSER_MAX_INPUT_LEN + 2 // command id + data length
     jsr uii_socketwrite
+
+    // wait for response
+!repeat_until_00data:
     jsr uii_socketread
-    // receive response
-    jsr uii_success
-    bcc !OK+
-    jsr PrintStatusString
-!OK:
-!NOT_OK:
+    jsr uii_success  // returns 00,ok if data has been received, there are maybe more data
+    bcs !repeat_until_00data-
+    // read response data
+!repeat_until_02nodata:
+    jsr uii_socketread
+    jsr uii_success  // returns 00,ok if data has been received, there are maybe more data
+    bcc !repeat_until_02nodata-
     jsr disconnect_hdn_cloud
+    clc
+    rts
+!NOT_OK:
+    sec
     rts

@@ -21,7 +21,7 @@
 .const NET_CMD_GET_LISTENER_STATE = $14
 .const NET_CMD_GET_LISTENER_SOCKET = $15
 
-
+.const PACKET_MAGIC_BYTE = $fe
 
 // Input: host_ip, port
 // Output: socket_id
@@ -102,6 +102,9 @@ uii_socketclose:
     rts
 
 
+	// printf("\n\nIP Address: %d.%d.%d.%d", uii_data[0], uii_data[1], uii_data[2], uii_data[3]);
+	// printf("\n   Netmask: %d.%d.%d.%d", uii_data[4], uii_data[5], uii_data[6], uii_data[7]);
+	// printf("\n   Gateway: %d.%d.%d.%d", uii_data[8], uii_data[9], uii_data[10], uii_data[11]);
 uii_print_ipaddress:
     jsr wait_idle
     lda #TARGET_NETWORK
@@ -129,20 +132,20 @@ uii_print_ipaddress:
 
 
 uii_socketread:
-!read_next_block:
+    // sendcommand
     jsr wait_idle
     lda #TARGET_NETWORK
-    sta CMD_DATA_REG
+    sta CMD_DATA_REG  // cmd[0] target network
     lda #NET_CMD_SOCKET_READ
-    sta CMD_DATA_REG
+    sta CMD_DATA_REG  // cmd[1] command id
     lda socket_id
-    sta CMD_DATA_REG
-    lda #$08 // low byte of length - read 1 byte
-    sta socketread_expected_length_lo
-    sta CMD_DATA_REG
+    sta CMD_DATA_REG  // cmd[2] socket id
+    lda #$e8 // low byte of length of one block to read
+    sta socketread_expected_length_lo  // TODO is this needed?
+    sta CMD_DATA_REG  // cmd[3] length low byte
     lda #$00  // high byte of length
     sta socketread_expected_length_hi
-    sta CMD_DATA_REG
+    sta CMD_DATA_REG  // cmd[4] length high byte
     // push command
     lda CONTROL_REG
     ora #CONTROL_REG_BIT_PUSH_CMD
@@ -153,24 +156,11 @@ uii_socketread:
     beq !no_error+
     jsr status_error
 !no_error:
-    jsr wait_not_busy
-    lda RESP_DATA_REG
-    sta socketread_real_length_lo
-    lda RESP_DATA_REG
-    sta socketread_real_length_hi
+    jsr wait_not_busy  // todle je porad soucast sendcommand
+
     jsr uii_readdata
     jsr uii_readstatus
     jsr uii_accept
-
-    // HERE IT CAN RETURN OR LOOP TO READ MORE DATA IF NEEDED
-    // IF RTS, YOU CAN DO OTHER THINGS AND READ THE REST LATER
-    lda socketread_real_length_lo
-    cmp socketread_expected_length_lo
-    bne !read_exit+  // read length is shorter than requested, end of data, exit
-    lda socketread_real_length_hi
-    cmp socketread_expected_length_hi
-    beq !read_next_block-  // read length equals requested, read more
-!read_exit:
     rts
 socketread_real_length_lo:
     .byte $00
@@ -195,9 +185,7 @@ uii_socketwrite:
     lda socket_id
     sta CMD_DATA_REG
     // Send magic and command
-    lda #$fe
-    sta CMD_DATA_REG
-    lda #$ff
+    lda #PACKET_MAGIC_BYTE
     sta CMD_DATA_REG
     lda _TMP
     sta CMD_DATA_REG

@@ -3,6 +3,7 @@
 #import "cmd_hash.asm"
 #import "cmd_at.asm"
 #import "cmd_cd.asm"
+#import "cmd_frz.asm"
 #import "cmd_g.asm"
 #import "cmd_grp.asm"
 #import "cmd_help.asm"
@@ -10,9 +11,15 @@
 #import "cmd_l.asm"
 #import "cmd_lsll.asm"
 #import "cmd_m.asm"
+#import "cmd_mkdir.asm"
+#import "cmd_mnt.asm"
+#import "cmd_pwd.asm"
 #import "cmd_r.asm"
+#import "cmd_reset.asm"
 #import "cmd_run.asm"
+#import "cmd_time.asm"
 #import "cmd_unknown.asm"
+#import "cmd_umnt.asm"
 
 // Token Table for parser generalisation
 // Parser iterates over "current letter" which is a structure of 3 bytes:
@@ -25,18 +32,24 @@
 // If command can have arguments, KEY_SPACE entry must be there to resolve to command execution address.
 // Each table must end by PARSER_END_OF_TABLE marker.
 .byte $88, $88, $88, $88
+// Top level
 tbl:
 .byte KEY_NULL, <tbl_null, >tbl_null  // empty line
 .byte KEY_HASH, <tbl_hash, >tbl_hash
 .byte KEY_AT, <tbl_at, >tbl_at
 .byte KEY_C, <tbl_c, >tbl_c
 .byte KEY_D, <tbl_d, >tbl_d
+.byte KEY_F, <tbl_f, >tbl_f
 .byte KEY_G, <tbl_g, >tbl_g
 .byte KEY_H, <tbl_h, >tbl_h
 .byte KEY_I, <tbl_i, >tbl_i
 .byte KEY_L, <tbl_l, >tbl_l
 .byte KEY_M, <tbl_m, >tbl_m
+.byte KEY_P, <tbl_p, >tbl_p
 .byte KEY_R, <tbl_r, >tbl_r
+.byte KEY_T, <tbl_t, >tbl_t
+.byte KEY_U, <tbl_u, >tbl_u
+.byte KEY_X, <tbl_x, >tbl_x
 .byte PARSER_END_OF_TABLE
 .byte PARSER_END_OF_TABLE
 .byte PARSER_END_OF_TABLE
@@ -50,12 +63,10 @@ tbl_hash:
 .byte KEY_NULL, <cmd_hash, >cmd_hash
 .byte KEY_8, <tbl_hash_device, >tbl_hash_device
 .byte KEY_9, <tbl_hash_device, >tbl_hash_device
-.byte KEY_A, <tbl_hash_device, >tbl_hash_device  // device 10
-.byte KEY_B, <tbl_hash_device, >tbl_hash_device  // device 11
 .byte KEY_C, <tbl_hash_device, >tbl_hash_device  // CSDB.dk
 .byte KEY_F, <tbl_hash_device, >tbl_hash_device  // Ultimate 64 Flash
 .byte KEY_H, <tbl_hash_device, >tbl_hash_device  // Ultimate 64 Home
-.byte KEY_S, <tbl_hash_device, >tbl_hash_device  // SD2IEC
+.byte KEY_S, <tbl_hash_device, >tbl_hash_device  // SoftIEC
 .byte KEY_T, <tbl_hash_device, >tbl_hash_device  // Ultimate 64 Temp
 .byte KEY_AT, <tbl_hash_device, >tbl_hash_device  // Hondani Cloud
 .byte PARSER_END_OF_TABLE
@@ -93,6 +104,22 @@ tbl_di:
 
 tbl_dir:
 .byte KEY_NULL, <cmd_dir, >cmd_dir  // dir with arguments
+.byte PARSER_END_OF_TABLE
+
+
+// Top level F
+tbl_f:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_R, <tbl_fr, >tbl_fr
+.byte PARSER_END_OF_TABLE
+
+tbl_fr:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_Z, <tbl_frz, >tbl_frz
+.byte PARSER_END_OF_TABLE
+
+tbl_frz:
+.byte KEY_NULL, <cmd_frz, >cmd_frz  // freeze has no arguments
 .byte PARSER_END_OF_TABLE
 
 
@@ -155,7 +182,6 @@ tbl_info:
 
 // Top level L
 tbl_l:
-// .byte KEY_NULL, <cmd_l, >cmd_l
 .byte KEY_SPACE, <cmd_l, >cmd_l  // l with arguments
 .byte KEY_L, <tbl_ll, >tbl_ll
 .byte KEY_S, <tbl_ls, >tbl_ls
@@ -176,14 +202,70 @@ tbl_ls:
 tbl_m:
 .byte KEY_NULL, <cmd_m, >cmd_m   // m without arguments
 .byte KEY_SPACE, <cmd_m, >cmd_m  // m with arguments
+.byte KEY_K, <tbl_mk, >tbl_mk
+.byte KEY_N, <tbl_mn, >tbl_mn
+.byte PARSER_END_OF_TABLE
+
+tbl_mk:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_D, <tbl_mkd, >tbl_mkd
+.byte PARSER_END_OF_TABLE
+
+tbl_mkd:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_I, <tbl_mkdi, >tbl_mkdi
+.byte PARSER_END_OF_TABLE
+
+tbl_mkdi:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_R, <tbl_mkdir, >tbl_mkdir
+.byte PARSER_END_OF_TABLE
+
+tbl_mkdir:
+.byte KEY_SPACE, <cmd_mkdir, >cmd_mkdir  // mkdir with arguments
+.byte PARSER_END_OF_TABLE
+
+tbl_mn:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_T, <tbl_mnt, >tbl_mnt
+.byte PARSER_END_OF_TABLE
+
+tbl_mnt:
+.byte KEY_SPACE, <cmd_mnt, >cmd_mnt  // mkdir with arguments
+.byte PARSER_END_OF_TABLE
+
+
+// Top level P
+tbl_p:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_W, <tbl_pw, >tbl_pw
+.byte PARSER_END_OF_TABLE
+
+tbl_pw:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_D, <tbl_pwd, >tbl_pwd
+.byte PARSER_END_OF_TABLE
+
+tbl_pwd:
+.byte KEY_NULL, <cmd_pwd, >cmd_pwd  // pwd without arguments
 .byte PARSER_END_OF_TABLE
 
 
 // Top level R
 tbl_r:
 .byte KEY_NULL, <cmd_r, >cmd_r  // r without arguments
+.byte KEY_E, <tbl_re, >tbl_re
 .byte KEY_U, <tbl_ru, >tbl_ru
 .byte KEY_SHIFT_U, <tbl_rU, >tbl_rU
+.byte PARSER_END_OF_TABLE
+
+tbl_re:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_S, <tbl_res, >tbl_res
+.byte PARSER_END_OF_TABLE
+
+tbl_res:
+.byte KEY_NULL, <cmd_reset, >cmd_reset
 .byte PARSER_END_OF_TABLE
 
 tbl_ru:
@@ -197,4 +279,50 @@ tbl_rU:
 
 tbl_run:
 .byte KEY_NULL, <cmd_run, >cmd_run  // no args
+.byte PARSER_END_OF_TABLE
+
+
+// Top level T
+tbl_t:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_I, <tbl_ti, >tbl_ti
+.byte PARSER_END_OF_TABLE
+
+tbl_ti:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_M, <tbl_tim, >tbl_tim
+.byte PARSER_END_OF_TABLE
+
+tbl_tim:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_E, <tbl_time, >tbl_time
+.byte PARSER_END_OF_TABLE
+
+tbl_time:
+.byte KEY_NULL, <cmd_time, >cmd_time  // no args
+.byte PARSER_END_OF_TABLE
+
+
+// Top level U
+tbl_u:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_M, <tbl_um, >tbl_um
+.byte PARSER_END_OF_TABLE
+
+tbl_um:
+.byte KEY_NULL, <cmd_unknown, >cmd_unknown
+.byte KEY_N, <tbl_umn, >tbl_umn
+.byte PARSER_END_OF_TABLE
+
+tbl_umn:
+.byte KEY_T, <tbl_umnt, >tbl_umnt
+.byte PARSER_END_OF_TABLE
+
+tbl_umnt:
+.byte KEY_NULL, <cmd_umnt, >cmd_umnt  // umnt with arguments
+.byte PARSER_END_OF_TABLE
+
+// Top level X
+tbl_x:
+.byte KEY_NULL, <cmd_x, >cmd_x  // x without arguments
 .byte PARSER_END_OF_TABLE

@@ -15,7 +15,7 @@
 // <load_command> ::= "l" <ws> <file_or_path> [ <ws> <address> ]
 
 
-cmd_l:
+cmd_l:  // TODO support also LOAD"*",8,1
     // Parse mandatory filename
     jsr parse_file_or_path
     bcc !+

@@ -27,4 +27,5 @@ cmd_unknown:
     // ldy #MSG_UNKNOWN_COMMAND - MSGBAS    // display headers
     // jsr SNDMSG
 !suppress_empty_line:
+    PrintReturn()
     CommandDone()  // jump to parser completion handler in parser.asm
