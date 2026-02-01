@@ -10,3 +10,4 @@
 
 cmd_reset:
     jmp JMP_RESET_MACHINE
+

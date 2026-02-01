@@ -1,5 +1,6 @@
 #import "floppy.asm"
 #import "c64u_dos.asm"
+#import "hdncloud.asm"
 
 // -----------------------------------------------------------------------------
 // List Directory Command
@@ -29,13 +30,27 @@ cmd_dir:
     beq !use_kernal_dir+
     cmp #10
     beq !use_kernal_dir+
+    cmp #SCR_Cc  // CSDB device
+    beq !use_csdb_dir+
     // else use Ultimate command to get directory listing
     jsr uii_open_dir
     jsr uii_get_dir
     PrintReturn()
-    jsr uii_read_more_data
+
+!more_data:   // while(uii_isdataavailable())
+    jsr uii_isdataavailable
+    bcc !no_more_data+
+    jsr uii_readdata  // if uii_readdata_CHROUT was called before, it is assumed the callback is still set
+    jsr uii_accept
+    PrintReturn()
+    jmp !more_data-
+!no_more_data:
     CommandDone()  // jump to parser completion handler in parser.asm
 
+!use_csdb_dir:
+    jsr send_cmd_to_hdn_cloud
+    PrintReturn()
+    CommandDone()  // jump to parser completion handler in parser.asm
 
 !use_kernal_dir:
     // filename = $

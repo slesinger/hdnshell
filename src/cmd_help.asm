@@ -16,6 +16,7 @@
 // <help_command> ::= "HELP"
 
 cmd_help:
+    ParsingInputsDone() // finish parsing input line
     jsr send_cmd_to_hdn_cloud  // Display remote help if cloud is available
     bcc !cloud_available+
 
@@ -26,6 +27,9 @@ cmd_help:
 !cloud_available:
     PrintReturn()
     CommandDone()  // jump to parser completion handler in parser.asm
+
+
+
 
 cmd_x:  // THIS IS JUST A TESTEBED
 inc $d021

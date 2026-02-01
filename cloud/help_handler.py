@@ -18,16 +18,16 @@ logger = logging.getLogger(__name__)
 HELP_SYSTEM_PROMPT = """You are a help system for a C64 Cloud Server.
 Analyze the user's help query and provide the most relevant help information.
 Keep responses concise and suitable for a C64 screen (40 columns).
-Focus on available commands and their usage."""
+Focus on available commands and their usage.
+Provide your answer in the same language as the query. Only use ASCII characters without special characters."""
 
 # Static help text
-HELP_TEXT = """C64 Cloud Server Commands:
 
-I: <query>    - Chat with AI assistant
-help [topic]  - Show this help or search topics
-? <expr>      - Evaluate Python expression
-c: <query>    - Search CSDB.dk database
+HELP_TEXT = """\x05C64 HDN Shell Help\x9a
 
+\x9ehelp [topic]\x9a  Show help or search topics\x9eI:<query>\x9a     Chat with AI assistant
+\x9ec:<query>\x9a     Search CSDB.dk database
+\x9e?<expr>\x9a       Evaluate Python expression
 Examples:
 I: what is the c64?
 help chat
@@ -36,7 +36,15 @@ c: latest releases
 
 For detailed help on a topic, use:
 help <topic>
-"""
+
+The topics available are:
+filesytem,chat,python,csdb,commands,
+ondra a dan,human wisdow,zeli,bla bla
+B
+C           \xb0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xae
+D           \xdd   \x9fHONDANI\x9a  \xdd
+E           \xed\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xbd
+F---                        --------"""
 
 # Help topics dictionary
 HELP_TOPICS = {
@@ -139,6 +147,11 @@ class HelpHandler(BaseHandler):
         Returns:
             UTF-8 response text
         """
+
+        # General help request
+        if text.strip().lower() == "help":
+            return HELP_TEXT
+
         # Remove "help" prefix and get topic
         parts = text.strip().split(maxsplit=1)
         topic = parts[1].strip().lower() if len(parts) > 1 else None

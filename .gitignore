@@ -14,6 +14,8 @@ docs/ramdos.zip
 data/**
 cloud/.env
 docs/assets/*.bkp
-docs/c64os/**
 binaries/*
 docs/inspiration/*
+docs/c64os/TextViewPlus
+docs/c64os/c64os-dev
+docs/c64os/**

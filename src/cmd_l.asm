@@ -1,5 +1,7 @@
 #import "parser_functions.asm"
 #import "floppy.asm"
+#import "c64u_dos.asm"
+
 // -----------------------------------------------------------------------------
 // Load Command
 // -----------------------------------------------------------------------------
@@ -36,6 +38,50 @@ cmd_l:  // TODO support also LOAD"*",8,1
 !:
     ParsingInputsDone() // finish parsing input line
 
+    lda FA
+    cmp #8
+    beq !use_kernal_load+
+    cmp #9
+    beq !use_kernal_load+
+    cmp #10
+    beq !use_kernal_load+
+    cmp #SCR_Cc  // CSDB device
+    beq !use_not_supported+
+    // else use Ultimate command
+ultimate_read_file:
+    lda #$01              // File open mode: 0x01 = READ
+    sta SADD              // Set file attributes register
+    jsr uii_open_file  // requires filename pointer at ZP_INDIRECT_ADDR and length in FNLEN
+    jsr uii_success
+    bcc !open_success+
+    // open error
+    jsr PrintStatusString
+    CommandDone()
+    
+!open_success:
+    set_uii_readdata_to_PRG()  // set uii_readdata to store data to memory at address in SAVX/SAVY
+    jsr uii_read_file  // requires read length in SAVX/SAVY
+    // jsr uii_success
+    // bcc !read_success+
+    //// read error
+    // jsr PrintStatusString
+    // CommandDone()
+// !read_success:
+    jsr uii_read_more_data_entry
+    jsr PrintStatusString
+    jsr uii_close_file
+    CommandDone()  // jump to parser completion handler in parser.asm
+
+!use_not_supported:
+    lda #<NOT_SUPPORTED
+    sta SAVX
+    lda #>NOT_SUPPORTED
+    sta SAVY
+    jsr PrintText
+    CommandDone()
+
+
+!use_kernal_load:
     jsr load_file
     bcc !load_success+
     // Load failed, indicate error

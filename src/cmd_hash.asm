@@ -1,5 +1,6 @@
 #import "utils.asm"
 #import "parser_functions.asm"
+#import "hdncloud.asm"
 
 // -----------------------------------------------------------------------------
 // Change default device number
@@ -22,6 +23,11 @@
 //     - '#' without a number display current default device.
 // Notes:
 //   - Device number is a single character (8,9,A,B,C,F,H,S,T,@).
+// KEY_C  // CSDB.dk
+// KEY_F  // Ultimate 64 Flash
+// KEY_H  // Ultimate 64 Home
+// KEY_S  // SoftIEC
+// KEY_T  // Ultimate 64 Temp
 
 cmd_hash:
 	ldy parser_input_cursor         // Y = input_cursor position
@@ -45,12 +51,20 @@ cmd_hash:
     sta FA  // set default device to 10 SoftIEC
     jmp !finish+
 !:
+    cmp #KEY_C
+    bne !+
+    lda #SCR_Cc
+    sta FA  // set default device to CSDB
+    PrintReturn()
+    jsr send_cmd_to_hdn_cloud 
+    jmp !finish+
+!:
     cmp #KEY_HASH
     beq !print_device+
 
     // other devices, just store value
-    sta FA
-    jmp !finish+
+    sta FA   // set default device to other recognized values F H T
+    jmp !finish+  
 
 !print_device:
     lda FA

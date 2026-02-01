@@ -6,23 +6,23 @@
 // Helper: Load Text Pointer
 // ============================================================================
 // Input: A = low byte, X = high byte
-// Output: $02/$03 = pointer
+// Output: SAVX/SAVY = pointer
 // ============================================================================
 LoadTextPtr:
-    sta $02
-    stx $03
+    sta SAVX
+    stx SAVY
     rts
-
+    
 // ============================================================================
 // Print null-terminated Text
 // ============================================================================
 // Prints null-terminated string using KERNAL CHROUT
-// Input: $02/$03 = pointer to string set by LoadTextPtr
+// Input: SAVX/SAVY = pointer to string set by LoadTextPtr
 // ============================================================================
 PrintText:
     ldy #$00
 !loop:
-    lda ($02),y
+    lda (SAVX),y
     beq !done+
     jsr CHROUT
     iny
@@ -457,7 +457,6 @@ MSG_UNKNOWN_COMMAND:
     .text "COMMAND NOT FOUND"
     .byte KEY_RETURN, $80
 MSG_HELP:
-    .byte KEY_RETURN
     .text "NOTE: LOCAL HELP, SERVER NOT AVAILABLE"
     .byte KEY_RETURN, KEY_RETURN
     .text "COMMANDS: (SEE DOCS FOR MORE)"
@@ -475,3 +474,8 @@ MSG_HELP:
 host_ip:   .text "192.168.1.2"
            .byte 0
 
+
+// Message strings
+NOT_SUPPORTED:
+    .text "not supported"
+    .byte 0

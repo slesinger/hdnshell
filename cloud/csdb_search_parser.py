@@ -12,7 +12,7 @@ def parse_csdb_find(html: str) -> Dict:
 
     # Helper to extract items from a section
     def extract_items(section_title, id_prefix):
-        # Find the <b> tag with the section title (e.g., '219 release matches:')
+        import re
         b_tag = None
         for b in main.find_all('b'):
             if section_title in b.get_text():
@@ -21,23 +21,52 @@ def parse_csdb_find(html: str) -> Dict:
         items = []
         count = 0
         if b_tag:
-            # Get count from b_tag text (e.g., '219 release matches:')
-            import re
             m = re.match(r"(\d+)[^\d]*", b_tag.get_text())
             if m:
                 count = int(m.group(1))
-            # Find the next <ol> after the b_tag
             ol = b_tag.find_next('ol')
             if ol:
-                for li in ol.find_all('li', recursive=False):
-                    # Try to get ID from link
-                    a = li.find('a', href=lambda h: h and id_prefix in h)
-                    id_ = None
-                    if a and 'href' in a.attrs:
-                        id_ = a['href'].split('=')[-1]
-                    # Get text, remove extra whitespace and <br>
-                    text = ' '.join(li.stripped_strings)
-                    items.append({"id": id_, "text": text})
+                for li in ol.find_all('li'):
+                    # Release parsing
+                    if id_prefix == "/release/?id=":
+                        a_release = li.find('a', href=lambda h: h and '/release/?id=' in h)
+                        a_group = li.find('a', href=lambda h: h and '/group/?id=' in h)
+                        name = a_release.text.strip() if a_release else None
+                        release_id = a_release['href'].split('=')[-1] if a_release else None
+                        group_name = a_group.text.strip() if a_group else None
+                        group_id = a_group['href'].split('=')[-1] if a_group else None
+                        # Type and year/date: get all parenthesized values
+                        parens = re.findall(r'\(([^)]*)\)', li.get_text())
+                        release_type = parens[0] if len(parens) > 0 else None
+                        year = parens[1] if len(parens) > 1 else None
+                        items.append({
+                            "id": release_id,
+                            "name": name,
+                            "type": release_type,
+                            "group_id": group_id,
+                            "group_name": group_name,
+                            "year": year,
+                        })
+                    # Group parsing
+                    elif id_prefix == "/group/?id=":
+                        a_group = li.find('a', href=lambda h: h and '/group/?id=' in h)
+                        name = a_group.text.strip() if a_group else None
+                        group_id = a_group['href'].split('=')[-1] if a_group else None
+                        m_country = re.search(r'\(([^)]*)\)', li.get_text())
+                        country = m_country.group(1) if m_country else None
+                        items.append({
+                            "id": group_id,
+                            "name": name,
+                            "country": country,
+                        })
+                    # Scener, BBS, SID: fallback to previous logic
+                    else:
+                        a = li.find('a', href=lambda h: h and id_prefix in h)
+                        id_ = None
+                        if a and 'href' in a.attrs:
+                            id_ = a['href'].split('=')[-1]
+                        text = ' '.join(li.stripped_strings)
+                        items.append({"id": id_, "text": text})
         return count, items
 
     # Releases
@@ -68,6 +97,14 @@ def parse_csdb_find(html: str) -> Dict:
     return result
 
 
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Connection': 'keep-alive',
+}
+
+
 class CSDB:
     BASE_URL = "https://csdb.dk"
 
@@ -76,7 +113,7 @@ class CSDB:
         Search csdb.dk for a string and return releases and groups.
         """
         url = f"{self.BASE_URL}/search/?seinsel=all&search={query}"
-        resp = requests.get(url)
+        resp = requests.get(url, headers=HEADERS)
         return self._parse_search_html(resp.text)
 
     def latest_releases(self) -> Dict[str, Any]:
@@ -84,7 +121,7 @@ class CSDB:
         Get latest releases from csdb.dk (parsing the main page or releases page).
         """
         url = f"{self.BASE_URL}/?type=release"
-        resp = requests.get(url)
+        resp = requests.get(url, headers=HEADERS)
         # This is a placeholder; real parsing logic should be implemented for the actual page structure
         return self._parse_latest_releases_html(resp.text)
 
@@ -93,7 +130,7 @@ class CSDB:
         Get latest forum posts from csdb.dk (parsing the forum page).
         """
         url = f"{self.BASE_URL}/forums/"
-        resp = requests.get(url)
+        resp = requests.get(url, headers=HEADERS)
         # This is a placeholder; real parsing logic should be implemented for the actual page structure
         return self._parse_latest_forum_html(resp.text)
 

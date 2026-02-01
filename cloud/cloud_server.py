@@ -11,7 +11,6 @@ import logging
 import sys
 import os
 import argparse
-from time import sleep
 from typing import Tuple, Optional, List
 from generate_pet_asc_table import Petscii
 from base_handler import BaseHandler
@@ -239,7 +238,6 @@ class CommandHandler:
             if not data or data[-1] != 0x00:
                 data += bytes([0x00])
         # return MAGIC_BYTES + bytes([response_type]) + data
-        sleep(3.0)
         return data[:-1]
 
     @staticmethod
@@ -321,8 +319,8 @@ class C64Server:
                     with self.lock:
                         self.clients.append(client_socket)
                     logger.info(f"Accepted connection from {address}")
-                    # Use a unique session ID for each client connection
-                    session_id = id(client_socket)
+                    # Use a stable session ID per client IP to persist state across connections
+                    session_id = hash(address[0]) & 0xFFFFFFFF
                     thread = threading.Thread(
                         target=self.handle_client, args=(client_socket, address, session_id))
                     thread.daemon = True
@@ -343,6 +341,9 @@ class C64Server:
             session_id: A unique ID for this client session
         """
         try:
+            # Store client IP for this session
+            state = get_session_state(session_id)
+            state['client_ip'] = address[0]
             while self.running:
                 data = client_socket.recv(1024)
                 if not data:

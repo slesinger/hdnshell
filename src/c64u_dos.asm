@@ -2,6 +2,8 @@
 
 #import "constants.asm"
 #import "c64u_common.asm"
+#import "utils.asm"
+
 
 // DOS Commands
 .const DOS_CMD_IDENTIFY = $01
@@ -38,6 +40,10 @@
 .const CTRL_CMD_DRIVE_B_POWER = $35
 .const DOS_CMD_ECHO	 = $f0
 
+.const DOS_CMD_OPEN_FILE_READ = $01
+.const DOS_CMD_OPEN_FILE_WRITE = $02
+.const DOS_CMD_OPEN_FILE_CREATE = $06
+.const DOS_CMD_OPEN_FILE_OVERWRITE = $0e
 
 // Ultimate Cartridge Detection Routine
 // Addresses for the Ultimate Command Interface
@@ -198,6 +204,60 @@ uii_get_time:
     lda #TARGET_DOS1
     sta UII_CMD_BYTES_TARGET
     lda #DOS_CMD_GET_TIME
+    sta UII_CMD_BYTES_CMD
+    lda #$00
+    jsr sendcommand
+    rts
+
+
+// Input: filename pointer at ZP_INDIRECT_ADDR
+// Input: filename length in FNLEN
+// Input: filename attributes in SADD
+	// Attrib will be:
+	// 0x01 = Read
+	// 0x02 = Write
+	// 0x06 = Create new file
+	// 0x0E = Create (overwriting an existing file)
+uii_open_file:
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_OPEN_FILE
+    sta UII_CMD_BYTES_CMD
+    lda SADD  // file attributes
+    sta UII_CMD_BYTES_DATA+0  // file attributes
+
+    ldy #$00
+!load_filename_loop:
+    lda (ZP_INDIRECT_ADDR),y
+    sta UII_CMD_BYTES_DATA+1,y
+    iny
+    cpy FNLEN
+    bne !load_filename_loop-
+    inc FNLEN  // include file attributes in payload length
+    lda FNLEN  // payload length
+    jsr sendcommand
+    rts
+
+
+// Input: read length in SAVX/SAVY (low/high)???
+uii_read_file:
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_READ_DATA
+    sta UII_CMD_BYTES_CMD
+    lda #$FF  // low byte of read length
+    sta UII_CMD_BYTES_DATA+0
+    lda #$80  // high byte of read length
+    sta UII_CMD_BYTES_DATA+1
+    lda #$02
+    jsr sendcommand
+    rts
+
+
+uii_close_file:
+    lda #TARGET_DOS1
+    sta UII_CMD_BYTES_TARGET
+    lda #DOS_CMD_CLOSE_FILE
     sta UII_CMD_BYTES_CMD
     lda #$00
     jsr sendcommand

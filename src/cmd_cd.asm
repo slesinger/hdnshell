@@ -2,7 +2,7 @@
 #import "utils.asm"
 #import "parser_functions.asm"
 #import "c64u_dos.asm"
-
+#import "hdncloud.asm"
 
 // -----------------------------------------------------------------------------
 // Change Directory Command
@@ -29,22 +29,21 @@ cmd_cd:  // TODO for mounting d64 image on c64 ultimate maybe MOUNT instead of C
     CommandDone()  // jump to parser completion handler in parser.asm
 !dir_name_parsed_ok:
     ParsingInputsDone() // finish parsing input line
+    // check what device is active
+    lda FA
+    cmp #10  // SoftIEC device
+    beq !iec_device+
+    cmp #SCR_Cc  // CSDB device
+    bne !uii_device+
+    // CSDB device
+    jsr send_cmd_to_hdn_cloud
+!uii_device:
+    // else Uii file system 
     jsr uii_change_dir
-    CommandDone()
-    rts
+!dir_changed:
+    CommandDone()  // like rts
 
-
-/*  DOCASNE ZAKOMENTOVANE ABYCH MOHL NEJDRIV ODLADIT CD PRO UII SOUBORY
-cmd_cd:  // TODO for mounting d64 image on c64 ultimate maybe MOUNT instead of CD will be needed.
-    ParsingInputsDone() // finish parsing input line
-
-    jsr parse_file_or_path
-    bcc !+
-    // Error parsing filename, handle error
-    lda #RED  // TODO wrong filename, print error message
-    sta $d020
-    CommandDone()  // jump to parser completion handler in parser.asm
-!:
+!iec_device:
     // save FNLEN as it get cleared by kernal calls
     lda FNLEN
     sta _TMP
@@ -103,4 +102,3 @@ cmd_cd:  // TODO for mounting d64 image on c64 ultimate maybe MOUNT instead of C
     sta $d020
     CommandDone()
 
-*/

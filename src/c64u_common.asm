@@ -1,6 +1,8 @@
 #importonce
 
 #import "constants.asm"
+#import "utils.asm"
+
 
 // Ultimate cartridge registers
 .const CONTROL_REG     = $df1c  // Write
@@ -67,46 +69,84 @@ sendcommand:
     rts
 
 
+// Reads data from Ultimate command interface and puts it to CHROUT
+uii_readdata_CHROUT:
+    lda #<readdata_CHROUT_callback
+    sta JSR_INDIRECT_ADDR
+    lda #>readdata_CHROUT_callback
+    sta JSR_INDIRECT_ADDR+1
+// Reads data from Ultimate command interface and calls callback to output each byte in A register
+// Input: callback address in JSR_INDIRECT_ADDR (lo/hi). Optins are readdata_CHROUT_callback, readdata_PRG_callback
+// Output: effect depends on what callback pointer is set on input.
 uii_readdata:
-    // uii_isdataavailable
-!data_available:
+!skip_ff_bytes:
+    lda STATUS_REG
+    and #STATUS_REG_BIT_DATA_AV
+    beq !data_not_available+
+    // data available, is it ff?
+    lda RESP_DATA_REG
+    // cmp #$ff  // TODO FF must not be skipped as is part of data, check somehow better is the byte is data or just read on when no data are available; FF means it is awaiting server to send some data
+    // beq !skip_ff_bytes-
+    jsr call_indirect  // jsr CHROUT,  Simulate the "JSR (JSR_INDIRECT_ADDR)" instruction
+!read_remaining_data:
     lda STATUS_REG
     and #STATUS_REG_BIT_DATA_AV
     beq !data_not_available+
     // data available
     lda RESP_DATA_REG
-   cmp #$ff  // TODO za jakych podminek dostanu ff? da se to nejak zjistit ze statusu, ktery mozna checkuju nedostatecne?
-   beq !data_available-
-    jsr CHROUT
-    jmp !data_available-
+    jsr call_indirect  // jsr CHROUT,  Simulate the "JSR (JSR_INDIRECT_ADDR)" instruction
+    jmp !read_remaining_data-
 !data_not_available:
     rts
 
-// TODO is it used anywhere?
-uii_readdata_readsocket:
-    // uii_isdataavailable
-    jsr uii_isdataavailable
-    // jsr wait_for_data
-!next_data:
-    lda RESP_DATA_REG
-    sta $05f0
+call_indirect:
+    jmp (JSR_INDIRECT_ADDR)  // This performs the jump; RTS from the target; will return to the 'jsr' above.
+
+// Prints out A register to terminal
+readdata_CHROUT_callback:
     jsr CHROUT
-    jsr uii_isdataavailable
-    bcc !last_data+
-    inc $0402
-    // bcc !last_data+
-    jmp !next_data-
-!last_data:
     rts
 
+// Stores A register to memory pointed by ZP_INDIRECT_ADDR
+readdata_PRG_callback:
+    ldx ZP_INDIRECT_ADDR+1
+    cpx #$00  // is load address dictated by L cmd?
+    bne !address_use_from_cli+
 
-// TODO is it used anywhere?
-uii_read_more_data:
+    // set load address from PRG header
+    sta ZP_INDIRECT_ADDR  // first byte of load address comes in A
+    lda RESP_DATA_REG     // lets hope the second byte of header is ready
+    sta ZP_INDIRECT_ADDR+1
+    jmp !set_new_callback_address+
+
+!address_use_from_cli:
+    // discard first two bytes from PRG header(load address)
+    lda RESP_DATA_REG  // A register has first data byte, this lda reads the second byte
+    // load address is already set in ZP_INDIRECT_ADDR by set_uii_readdata_to_PRG macro
+
+!set_new_callback_address:
+    lda #<readdata_PRG_callback_after_header_was_read
+    sta JSR_INDIRECT_ADDR
+    lda #>readdata_PRG_callback_after_header_was_read
+    sta JSR_INDIRECT_ADDR+1
+    rts  // in this call we only read second byte from header, next byte will go to the new callback
+
+readdata_PRG_callback_after_header_was_read:
+    ldy #$00
+    sta (ZP_INDIRECT_ADDR),y
+    inc ZP_INDIRECT_ADDR
+    bne !+
+    inc ZP_INDIRECT_ADDR+1
+!:
+    rts
+
+uii_read_more_data:   // while(uii_isdataavailable())
     jsr uii_isdataavailable
     bcc !no_more_data+
-    jsr uii_readdata
+uii_read_more_data_entry:
+    jsr uii_readdata  // if uii_readdata_CHROUT was called before, it is assumed the callback is still set
+    // TODO check for errors here?
     jsr uii_accept
-    PrintReturn()
     jmp uii_read_more_data
 !no_more_data:
     rts

@@ -63,7 +63,7 @@ uii_tcpconnect:
     // read socket_id
     lda RESP_DATA_REG
     sta socket_id
-    jsr uii_readdata
+    jsr uii_readdata_CHROUT
     jsr uii_readstatus
     jsr uii_accept
     // set connect status
@@ -96,7 +96,7 @@ uii_socketclose:
     jsr status_error
 !no_error:
     jsr wait_not_busy
-    jsr uii_readdata
+    jsr uii_readdata_CHROUT
     jsr uii_readstatus
     jsr uii_accept
     rts
@@ -125,7 +125,7 @@ uii_print_ipaddress:
 !no_error:
     jsr wait_not_busy
     // IP_ADDR_LOCAL
-    jsr uii_readdata  // TODO only print 192 168 A 192 168
+    jsr uii_readdata_CHROUT  // TODO only print 192 168 A 192 168
     jsr uii_readstatus
     jsr uii_accept
     rts
@@ -158,7 +158,7 @@ uii_socketread:
 !no_error:
     jsr wait_not_busy  // todle je porad soucast sendcommand
 
-    jsr uii_readdata
+    jsr uii_readdata_CHROUT
     jsr uii_readstatus
     jsr uii_accept
     rts
@@ -208,7 +208,7 @@ uii_socketwrite:
     jsr status_error
 !no_error:
     jsr wait_not_busy
-    jsr uii_readdata
+    jsr uii_readdata_CHROUT
     jsr uii_readstatus
     jsr uii_accept
     rts

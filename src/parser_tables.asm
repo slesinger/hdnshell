@@ -5,7 +5,6 @@
 #import "cmd_cd.asm"
 #import "cmd_frz.asm"
 #import "cmd_g.asm"
-#import "cmd_grp.asm"
 #import "cmd_help.asm"
 #import "cmd_info.asm"
 #import "cmd_l.asm"
@@ -68,7 +67,6 @@ tbl_hash:
 .byte KEY_H, <tbl_hash_device, >tbl_hash_device  // Ultimate 64 Home
 .byte KEY_S, <tbl_hash_device, >tbl_hash_device  // SoftIEC
 .byte KEY_T, <tbl_hash_device, >tbl_hash_device  // Ultimate 64 Temp
-.byte KEY_AT, <tbl_hash_device, >tbl_hash_device  // Hondani Cloud
 .byte PARSER_END_OF_TABLE
 
 tbl_hash_device:
@@ -126,16 +124,6 @@ tbl_frz:
 // Top level G
 tbl_g:
 .byte KEY_NULL, <cmd_g, >cmd_g  // g without arguments  // TODO g has one mandatory argument - address
-.byte KEY_R, <tbl_gr, >tbl_gr
-.byte PARSER_END_OF_TABLE
-
-tbl_gr:
-.byte KEY_NULL, <cmd_unknown, >cmd_unknown
-.byte KEY_P, <tbl_grp, >tbl_grp
-.byte PARSER_END_OF_TABLE
-
-tbl_grp:
-.byte KEY_NULL, <cmd_grp, >cmd_grp  // with argument
 .byte PARSER_END_OF_TABLE
 
 
@@ -267,6 +255,7 @@ tbl_re:
 tbl_res:
 .byte KEY_NULL, <cmd_reset, >cmd_reset
 .byte PARSER_END_OF_TABLE
+
 
 tbl_ru:
 .byte KEY_NULL, <cmd_unknown, >cmd_unknown

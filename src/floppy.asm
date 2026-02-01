@@ -28,7 +28,7 @@ PrintDirectory:
         sta $d020
         ldx #<err_status_msg
         ldy #>err_status_msg
-        jsr print_string
+        jsr PrintText  // haha pouzij radeji PrintText, nahrad vsude jinde
         rts
 
     dir_ok:

@@ -10,6 +10,7 @@
 
 #import "constants.asm"
 #import "utils.asm"
+#import "c64u_common.asm"
 #import "c64u_dos.asm"
 #import "c64u_network.asm"
 
@@ -287,10 +288,10 @@ PrintWelcomeMessage:
     asl                     // * 2 for word lookup
     tax
     lda KBSizeTableLo-2,x   // -2 because table starts at bank 1
-    sta $02
+    sta SAVX
     lda KBSizeTableHi-2,x
-    sta $03
-    lda ($02),y             // Check if null (Y=0 from earlier)
+    sta SAVY
+    lda (SAVX),y             // Check if null (Y=0 from earlier)
     beq !notCommon+         // Not in table
     jsr PrintText
     jmp !writeREUsizetoFeatureFlags+

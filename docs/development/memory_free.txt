@@ -35,13 +35,12 @@ Chapter 1: Zero Page
 
 | Address Range   | Length | Description                                                                 |
 |-----------------|--------|-----------------------------------------------------------------------------|
-| $0000-$0001     | 2      | System use (not explicitly marked as unused)                                |
-| $0002           | 1      | Unused                                                                      |
+| $0002          *| 1      | Unused                                                                      |
 | $0003-$008F     | 141    | BASIC Working Storage (used by BASIC only; free if BASIC is replaced)       |
 | $0092           | 1      | Cassette: Timing Constant for Tape Reads                                    |
-| $009B           | 1      | Cassette: Tape Character Parity                                             |
-| $009C           | 1      | Cassette: Flag: Tape Byte Received                                          |
-| $009E-$009F     | 2      | Cassette: Tape Pass 1/2 Error Log Index                                     |
+| $009B          *| 1      | Cassette: Tape Character Parity                                             |
+| $009C          *| 1      | Cassette: Flag: Tape Byte Received                                          |
+| $009E-$009F    *| 2      | Cassette: Tape Pass 1/2 Error Log Index                                     |
 | $00A5           | 1      | Cassette: Cassette Synchronization Character Countdown                      |
 | $00A6           | 1      | Cassette: Count of Characters in Tape I/O Buffer                            |
 | $00B0           | 1      | Cassette: Tape Timing                                                       |

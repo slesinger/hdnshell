@@ -8,6 +8,7 @@
 
 // Runtime variables Zero page locations
 .const _TMP = $02                  // 1 byte temp storage
+.const JSR_INDIRECT_ADDR = $9b     // +$9c Repurposable Zero page indirect address pointer for JSR calls using JMP (addr)
 .const SAVX = $9e                  // 1 byte temp storage, often to save X register
 .const SAVY = $9f                  // 1 byte temp storage, often to save Y register
 .const ZP_INDIRECT_ADDR = $b2      // +$b3 Repurposable Zero page indirect address pointer 1
@@ -48,8 +49,8 @@
 
 // 8 bytes $0334-$033B global vars Eight free bytes for user vectors or other data.
 // Next 7 bytes must follow in this order, do not change order!
-.const PCH = $0334                 // program counter high byte
-.const PCL = $0335                 // program counter low byte
+.const PCL = $0334                 // program counter low byte
+.const PCH = $0335                 // program counter high byte
 .const SR = $0336
 .const ACC = $0337
 .const XR = $0338
@@ -339,6 +340,12 @@
     lda #$08
     sta FA  // default device number
 
+    // set initial uii_readdata to output to terminal
+    lda #<readdata_CHROUT_callback
+    sta JSR_INDIRECT_ADDR
+    lda #>readdata_CHROUT_callback
+    sta JSR_INDIRECT_ADDR+1
+
 }
 
 
@@ -488,4 +495,18 @@ BUNSTACK:
     // Command: Execute, auto-increment, REU->C64
     lda #$91      // %10010001 : execute, auto-increment, REU->C64
     sta REU_COMMAND
+}
+
+// Set uii_readdata to use callback function that will read load address from PRG header (if SAVY == $00) or to a specified address in SAVX/SAVY.
+.macro set_uii_readdata_to_PRG() {
+    lda SAVX
+    sta ZP_INDIRECT_ADDR
+    lda SAVY
+    sta ZP_INDIRECT_ADDR+1
+    lda #<readdata_PRG_callback
+    sta JSR_INDIRECT_ADDR
+    lda #>readdata_PRG_callback
+    sta JSR_INDIRECT_ADDR+1
+    // lda #$ff
+    // sta SADD  // flag, indicate first two bytes of prg header not yet read
 }

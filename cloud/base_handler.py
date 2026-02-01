@@ -61,4 +61,8 @@ class BaseHandler(ABC):
         Returns:
             PETSCII encoded bytes
         """
-        return bytes([Petscii.ascii2petscii(ord(c)) for c in text])
+        # Convert '\n' (LF, 0x0a) to PETSCII newline (CR, 0x0d)
+        return bytes([
+            0x0d if c == '\n' else Petscii.ascii2petscii(ord(c))
+            for c in text
+        ])

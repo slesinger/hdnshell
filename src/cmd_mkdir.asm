@@ -20,5 +20,27 @@ cmd_mkdir:
     CommandDone()  // jump to parser completion handler in parser.asm
 !dir_name_parsed_ok:
     ParsingInputsDone() // finish parsing input line
+
+    lda FA
+    cmp #8
+    beq !use_89_dir+
+    cmp #9
+    beq !use_89_dir+
+    cmp #10  //iec device
+    beq !use_iec_dir+
+    cmp #SCR_Cc  // CSDB device
+    beq !use_csdb_dir+
+    // else use Ultimate command to get directory listing
     jsr uii_create_dir
+    jmp !done+
+!use_csdb_dir:
+!use_89_dir:
+!use_iec_dir:
+    lda #<NOT_SUPPORTED
+    sta SAVX
+    lda #>NOT_SUPPORTED
+    sta SAVY
+    jsr PrintText
+!done:
+    PrintReturn()
     CommandDone()  // jump to parser completion handler in parser.asm
