@@ -26,7 +26,7 @@ Build and tested with Python 3.11.
 Install dependencies:
 
 ```bash
-pip install pydantic pytest requests
+pip install -r cloud/requirements.txt
 ```
 
 For LLM chat features (optional):
@@ -39,7 +39,7 @@ Or if using a virtual environment:
 
 ```bash
 source venv/bin/activate
-pip install pydantic pytest requests
+pip install -r cloud/requirements.txt
 pip install langchain langchain-openai langchain-community  # Optional
 ```
 
@@ -54,7 +54,7 @@ python cloud.py
 Custom host and port:
 
 ```bash
-python cloud.py --host 0.0.0.0 --port 8080
+python cloud.py --host 0.0.0.0 --port 8585
 ```
 
 Enable debug logging:
@@ -62,6 +62,30 @@ Enable debug logging:
 ```bash
 python cloud.py --debug
 ```
+
+## Releasing a Production Build
+
+To create a production release (UI + backend single-file executable):
+
+1. Build and package everything:
+
+	```bash
+	make release
+	```
+
+2. The release executable will be in the `release/` directory (e.g. `release/hdnsh-cloud` or `release/hdnsh-cloud.exe`).
+
+3. The UI will be served from the backend at GET / and all static paths.
+
+4. Distribute the single file for Windows or Linux as needed.
+
+**Requirements:**
+* Node.js and npm for UI build
+* Python and PyInstaller (install with `pip install -r cloud/requirements.txt`)
+
+**Note:** The backend executable includes the UI assets and can be run standalone.
+
+Upon start, the server will scan local network and look for C64U on port 64. If found, it will save the IP in `cloud_config.cfg` for future connections. Rescan can be triggered from the web UI or by deleting value of the last_c64_ip property in the config file. The scan takes upt to 25 seconds. The C64U needs to be switched on during the scan and it has to have Utlimate DMA Service enabled. See Getting Started guide for more details.
 
 ## Testing
 
@@ -93,7 +117,7 @@ python test_client.py --demo
 Connect to a different server:
 
 ```bash
-python test_client.py --host 192.168.1.100 --port 8080
+python test_client.py --host 192.168.1.100 --port 8585
 ```
 
 ## Request Handlers
@@ -245,6 +269,35 @@ Follow TDD approach:
 2. Implement features in `cloud.py`
 3. Run tests: `pytest test_cloud.py -v`
 4. Test manually with `test_client.py`
+
+## Web UI (React + Vite)
+
+The UI lives in `ui/` and calls the backend API on `http://127.0.0.1:8585`.
+
+Install dependencies:
+
+```bash
+cd ui
+npm install
+```
+
+Run in dev mode:
+
+```bash
+npm run dev
+```
+
+Build for production:
+
+```bash
+npm run build
+```
+
+Preview the production build:
+
+```bash
+npm run preview
+```
 
 ## Future Enhancements
 

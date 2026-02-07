@@ -8,6 +8,22 @@ BIN_DIR = binaries
 ASM_SRC = $(SRC_DIR)/hdnsh.asm
 BIN_OUT = $(BIN_DIR)/hdnsh.bin
 
+# Cloud/UI packaging
+UI_DIR = ui
+UI_DIST = $(UI_DIR)/dist
+CLOUD_DIR = cloud
+CLOUD_STATIC_DIR = $(CLOUD_DIR)/static
+RELEASE_DIR = release
+PYI_NAME = hdnsh-cloud
+
+ifeq ($(OS),Windows_NT)
+PYI_DATA_SEP = ;
+PYI_EXE_EXT = .exe
+else
+PYI_DATA_SEP = :
+PYI_EXE_EXT =
+endif
+
 # Common VICE emulator options
 
 REU_OPTS = -reu -reusize 128
@@ -18,7 +34,7 @@ FS11_OPTS = -iecdevice11 -device11 1 -fs11 data/
 VICE_OPTS = $(REU_OPTS) $(DISK_OPTS) $(FS11_OPTS)
 
 
-.PHONY: all build run-vice run-c64u run-std clean cloud-server test-cloud cloud-client
+.PHONY: all build run-vice run-c64u run-std clean cloud-server test-cloud cloud-client release ui-build ui-copy backend-package
 
 
 all: build
@@ -72,3 +88,40 @@ test-cloud:
 
 test-client:
 	make -C cloud test-client
+
+
+release: clean-release ui-build ui-copy backend-package-win backend-package-linux backend-package-mac
+clean-release:
+	rm -f $(RELEASE_DIR)/hdnsh-cloud $(RELEASE_DIR)/hdnsh-cloud.exe $(RELEASE_DIR)/hdnsh-cloud-mac $(RELEASE_DIR)/hdnsh-server-win.exe $(RELEASE_DIR)/hdnsh-server-linux $(RELEASE_DIR)/hdnsh-server-mac
+
+ui-build:
+	cd $(UI_DIR) && npm install
+	cd $(UI_DIR) && npm run build
+
+ui-copy:
+	rm -rf $(CLOUD_STATIC_DIR)
+	cp -r $(UI_DIST) $(CLOUD_STATIC_DIR)
+
+backend-package-win:
+	rm -rf $(CLOUD_DIR)/build-win $(CLOUD_DIR)/dist-win $(CLOUD_DIR)/*.spec
+	cd $(CLOUD_DIR) && pyinstaller --clean --onefile --name hdnsh-server-win --add-data "static;static" cloud.py
+	mkdir -p $(RELEASE_DIR)
+	cp -f $(CLOUD_DIR)/dist/hdnsh-server-win.exe $(RELEASE_DIR)/
+
+backend-package-linux:
+	rm -rf $(CLOUD_DIR)/build-linux $(CLOUD_DIR)/dist-linux $(CLOUD_DIR)/*.spec
+	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name hdnsh-server-linux --add-data "static:static" cloud.py
+	mkdir -p $(RELEASE_DIR)
+	cp -f $(CLOUD_DIR)/dist/hdnsh-server-linux $(RELEASE_DIR)/
+
+backend-package-mac:
+	rm -rf $(CLOUD_DIR)/build-mac $(CLOUD_DIR)/dist-mac $(CLOUD_DIR)/*.spec
+	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name hdnsh-server-mac --add-data "static:static" cloud.py
+	mkdir -p $(RELEASE_DIR)
+	cp -f $(CLOUD_DIR)/dist/hdnsh-server-mac $(RELEASE_DIR)/
+
+backend-package-mac:
+	rm -rf $(CLOUD_DIR)/build-mac $(CLOUD_DIR)/dist-mac $(CLOUD_DIR)/*.spec
+	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name $(PYI_NAME)-mac --add-data "static:static" cloud.py
+	mkdir -p $(RELEASE_DIR)
+	cp -f $(CLOUD_DIR)/dist/$(PYI_NAME)-mac $(RELEASE_DIR)/

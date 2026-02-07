@@ -176,7 +176,7 @@ The CSDB module provides both direct queries and a navigational mode with per-se
 	- `find <text>` searches the selected directory (or all types if none selected) using CSDB search pages.
 	- `cd <id>` enters the detail view for the item with numeric id (e.g., `cd 901`).
 	- `pwd` shows the current CSDB path for the session (e.g., `c:/group/901`).
-	- `cp <file-pattern>` attempts to copy files from a release or zip to `/tmp/c64cloud` (server-side temporary area).
+	- `cp <file-pattern>` attempts to copy files from a release or zip to `/tmp/hdnshell` (server-side temporary area).
 	- `ls` / listing commands are supported implicitly when entering a directory or opening a zip (see handlers for formatting).
 
 Parser utilities included in `cloud/`:
@@ -186,7 +186,7 @@ Parser utilities included in `cloud/`:
 
 Operational notes:
 - The handler uses HTTP requests to `https://csdb.dk/` for search and detail pages.
-- File downloads (release files / zip) are saved under `/tmp/c64cloud` and may be extracted when needed.
+- File downloads (release files / zip) are saved under `/tmp/hdnshell` and may be extracted when needed.
 
 ## Example CSDB Session
 
@@ -235,7 +235,7 @@ Start the server from the `cloud/` directory:
 
 ```bash
 python cloud.py          # default: host 0.0.0.0 port 6464
-python cloud.py --port 8080
+python cloud.py --port 8585
 python cloud.py --debug  # enable debug logging
 ```
 
@@ -280,7 +280,7 @@ cloud/
 
 - The Python evaluator restricts `__builtins__` and only exposes a small safe namespace.
 - Handlers may perform network I/O (CSDB queries, optional LLM calls) — configure environment and credentials carefully.
-- Downloaded files are written to `/tmp/c64cloud` when using `cp` or extracting zip contents.
+- Downloaded files are written to `/tmp/hdnshell` when using `cp` or extracting zip contents.
 
 ## Troubleshooting
 

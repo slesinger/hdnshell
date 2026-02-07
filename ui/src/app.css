@@ -1,0 +1,52 @@
+:root {
+  color-scheme: light;
+}
+
+.status-pill {
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+}
+
+.status-button {
+  background: transparent;
+  border: none;
+}
+
+.status-pill.connected {
+  background: rgba(25, 135, 84, 0.15);
+  color: #198754;
+  border: 1px solid rgba(25, 135, 84, 0.4);
+}
+
+.status-pill.disconnected {
+  background: rgba(255, 193, 7, 0.2);
+  color: #b58105;
+  border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.status-extended .status-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 999px;
+  display: inline-block;
+  border: 2px solid transparent;
+}
+
+.status-extended .status-dot.ok {
+  background: rgba(25, 135, 84, 0.2);
+  border-color: rgba(25, 135, 84, 0.6);
+}
+
+.status-extended .status-dot.warn {
+  background: rgba(255, 193, 7, 0.25);
+  border-color: rgba(255, 193, 7, 0.6);
+}
+
+.status-extended .status-dot.danger {
+  background: rgba(220, 53, 69, 0.25);
+  border-color: rgba(220, 53, 69, 0.7);
+}
