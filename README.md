@@ -1,148 +1,94 @@
-# TODO
+# HDN Shell — Modern BASIC ROM Replacement for Commodore 64
 
-```
-run prg z ultimate fs
-screen roll - taky s D800
+> _Pronounced "Hondani Shell"_
 
-update dokumentace, doplnit, vyhodit
-co je v dokumentaci musi fungovat
-strucnejsi AI
-instalace serveru linux/win/macos
-Create Ultimage cfg file
-nastavovani ip serveru
-tutorial pres input keys
-tut1 prchazt disk, mount disk, run game
-tut2 jak na help
-tut3 ask me anything
-tut4 jak najit demo
-tut5 complete migrate to C64
-Verify installation steps
-cp, mv v ramci ultimate fs
-csdb - mount disk, run prg
-```
-# PRIDAT DO MANUALU
-aliasy rel~release, grp~group, scn~scener
-#c (prepne do csdb mode)
-ls/dir
-cd /
-cd grp (aliasy)'group', 'scener', 'event', 'release'
-c:find hondani
-cd 901
-cd rel 248345
-release 258461
-scener 2588
-cd rel, dir - > csdb latest
-CTRL slows down listings
-SHIFT+RETURN - next line without executing command
+HDN Shell transforms your Commodore 64 by replacing the standard BASIC ROM ($A000-$BFFF) with a powerful, modern command line interface. When you power on your C64, HDN Shell launches instead of the classic BASIC interpreter, bringing Linux-inspired features and productivity to your retro computer.
 
+---
 
-# HDN Shell - BASIC ROM Replacement for Commodore 64
+## 🚀 Key Benefits for C64 Users
 
-_You want to pronounce HDN Shell as "Hondani Shell"_.
+- **Simplified commands:** Replace `LOAD "*",8,1` with `LS` or `DIR`.
+- **Fast file management:** Switch drives (`#9`), copy files (`cp from to`), and more.
+- **SD2IEC support:** Use device #14 (with Ultimate), including directory navigation.
+- **Linux-inspired command line:** Familiar syntax and power.
+- **Command history:** Recall and reuse previous commands.
+- **Screen scrollback:** Review output (requires REU).
+- **Integrated memory monitor:** Inspect and debug memory easily.
+- **HDN Cloud integration:** Connect for extended features (requires Ultimate/1541 Ultimate with networking).
+- **Open source:** All code, including cloud server, is available.
+- **Privacy-first:** Run HDN Cloud locally or use the free public server.
+- **Searchable manual pages:** Find help fast.
+- **AI chat:** Get assistance and answers.
+- **Python expression execution:** Run Python code directly.
+- **Memory efficiency:** Keeps all C64 memory free for your programs.
 
-This project replaces the standard Commodore 64 BASIC ROM ($A000-$BFFF) with modern command line sporting new features. When the C64 is switched on, this ROM gets executed instead of the built-in BASIC interpreter. The HDN Shell provides modern command line capabilities inspired by Linux shell commands, enhancing productivity on the C64.
+> *REU required for scrollback. Ultimate/1541 Ultimate with networking required for cloud features.*
 
-## Benefits for C64 Users
- 
- - Simplifies frequently used commands (instead of `LOAD "*",8,1` you can just type `LS` or `DIR`),
- - Speeds up file management tasks (switching drives `#9`, copying `cp from to`, ...),
- - Use SD2IEC like device #14 (with Ultimate), including directories,
- - Command line inspired by Linux,
- - Command history,
- - Screen scrollback capability\*,
- - Integrated monitor for memory inspection,
- - Connects to HDN Cloud for extended functionality\*\*,
- - Fully open source, including cloud server code,
- - HDN Cloud can be run on your PC for fully transparent privacy,
- - or use free public HDN Cloud server for easier setup,
- - Searchable manual pages\*\*,
- - AI chat\*\*,  
- - Execute python expressions\*\*,
- - All the above by keeping all the memory free for your programs.
+---
 
-\* Requires at least REU  
-\*\* Requires C64 Ultimate or 1541 Ultimate cartridge with networking capabilities
+## 💡 Motivation
 
-## Motivation
- 
- - C64 is a great hardware C64 Ultimate makes it even better,
- - These days, C64 can be used as a serious computer for \<insert your favorite reason\>,
- - Command line is powerful, that is a fact, HDN Shell brings power of command line to C64,
- - Focus on productivity, not on nostalgia,
- - HDN Shell replaces BASIC ROM and hence all C64 memory remains free for your usage,
- - BASIC is mostly only used for loading programs, hence you will not miss it much,
- - Who wants to program in BASIC can plug in a cartridge with BASIC,
- - Mankind got impatient, HDN Shell uses fast methods for injecting programs into memory,
- - Use cloud services with C64, network like a modern computer.
- - See all the features HDN Shell brings to your C64.
+- C64 hardware is legendary; Ultimate makes it even better.
+- Today, C64 can be a serious computer for creative projects, learning, and fun.
+- Command line = power. HDN Shell brings that power to your C64.
+- Focus on productivity, not just nostalgia.
+- HDN Shell frees all C64 memory for your programs.
+- BASIC is mostly used for loading programs—HDN Shell does it faster and easier.
+- Want BASIC? Just plug in a cartridge.
+- Fast program injection means less waiting, more doing.
+- Cloud services and networking make your C64 feel modern.
+- Discover all the features HDN Shell brings to your C64!
 
- ## Future Features
+---
 
- - Have multiple command line sessions (virtual consoles) and switch between them like in Linux (C=+1, C=+2, ...),
- - Allow for copy/paste on the screen, (maybe between cloud and C64 also?), 
- - Write your own program in the cloud and use it on the C64,
- - prglets support - relocatable small residential programs
- - SID/MOD background music playback,
- - Provide a simple file editor (like [speedscript](https://github.com/gillham/speedscript)),
- - Replace Ultimate web app by more integrated and powerful cloud solution,
+## 🔮 Future Features
 
-## How do I Install it?
+- Multiple command line sessions (virtual consoles) — switch like Linux (C=+1, C=+2, ...)
+- Copy/paste on screen (maybe between cloud and C64!)
+- Write programs in the cloud, use them on your C64
+- Prglets: relocatable small resident programs
+- SID/MOD background music playback
+- Simple file editor ([speedscript](https://github.com/gillham/speedscript))
+- Replace Ultimate web app with a more integrated, powerful cloud solution
 
-The sweet spot is to use C64 Ultimate or 1541 Ultimate cartridge with networking capabilities. However, if you do no have one there are other options. See below.
+---
 
-In a nutshell, for full functionality you need to:
+## 🛠️ Installation & Quick Start
 
-1. Set BASIC ROM in the Ultimate menu.
-2. Enable REU (recommended size 16MB) in the Ultimate menu.
-3. Connect your Ultimate to the network (Ethernet or WiFi).
+See the [Installation Guide](docs/user_manual/installation.md) for step-by-step instructions to set up HDN Shell on your C64 and PC.
 
-### Using C64 Ultimate or 1541 Ultimate
+---
 
-#### BASIC ROM Replacement
+## 📖 User Manual
 
-1. Download the latest `hdnsh.bin` from the [Releases](https://github.com/slesinger/hdnshell/releases) page. Then place it into the `roms` folder in Ultimate `flash` partition. Next, in the Ultimate menu, go to `Settings` -> `Memory & ROMs` and set the `BASIC ROM` to `hdnsh.bin`.
+- Type `HELP` in the command line for a list of available commands.
+- Get help on any topic: `HELP <command>` or `HELP <your question>`
+- Or, read the [User Manual](docs/user_manual.md).
 
-2. Enable REU (recommended size 16MB) in the Ultimate menu under `Settings` -> `Memory & ROMs` -> `RAM Expansion Unit` set to Enabled and set `Size` to 16MB.
+---
 
-3. Enable `Command Interace` in the same menu to give C64 access to Ultimate features like filesystem and networking.
-
-4. Enter `Network Services & Timezone` menu and enable `Ultimate DMA Service` (for fast transfers from cloud). Do not forget to configure your network settings (Ethernet or WiFi) as needed.
-
-5. Save the settings and reboot your C64.
-
-### Alternative Options (without C64 Ultimate)
-
-You can benefit from using a general RAM expansion unit (REU). Without Ultimate there is no alternative networking interface support as of now, so cloud features will not be available. Support the new Commodore by getting the C64U now 🙂 and continue the setup as described above.
-
-### How do I Verify it Works?
-
-After switching on your C64, you should see a command prompt like this:
-
-```
-    **** COMMODORE 64 SHELL V1 ****
-
- 16M REU ULTIMATE-II DOS V1.2, HONDANI
-```
-
-If first line is displayed like this, the BASIC ROM has been enabled correctly.
-
-The second line depends on your hardware configuration. If `Command Interace` has been enabled correctly, you should see `ULTIMATE-II DOS V1.2` part.
-
-You can use `info` command to display more detailed information about your setup. The `@` command shows the status of the last operation, like connecting to cloud server.
-
-## User Manual
-
-You can type ```HELP``` in the command line to get a list of available commands. You can also get help on particular topic with ```HELP <command>``` or ```HELP <whatever is difficult for you>```.
-
-Or, read the [User Manual](docs/user_manual.md).
-
-## License
+## 📝 License
 
 This project is free to use and modify for educational and personal purposes.
 
-## Author
+---
 
-[Honza](https://csdb.dk/scener/?id=2588) with support of the [Hondani](https://csdb.dk/group/?id=901) gang.
+## 👤 Author
 
-Created with KickAssembler for the Commodore 64
+Created by [Honza](https://csdb.dk/scener/?id=2588) with support from the [Hondani](https://csdb.dk/group/?id=901) gang.
+
+Built with KickAssembler for the Commodore 64.
+
+---
+
+## 🎬 Watch the YouTube Brief!
+
+Want a quick overview of HDN Shell's benefits, motivation, and how to get started? Check out this 4-minute video:
+
+[![HDN Shell Quick Starter](https://img.youtube.com/vi/dummy1234/0.jpg)](https://www.youtube.com/watch?v=dummy1234)
+
+> _Click the thumbnail above or [watch here](https://www.youtube.com/watch?v=dummy1234)_
+
+---
 

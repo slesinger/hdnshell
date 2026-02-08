@@ -69,15 +69,27 @@ To create a production release (UI + backend single-file executable):
 
 1. Build and package everything:
 
-	```bash
-	make release
-	```
+Linux/Mac:
 
-2. The release executable will be in the `release/` directory (e.g. `release/hdnsh-cloud` or `release/hdnsh-cloud.exe`).
+```
+    make release
+```
 
-3. The UI will be served from the backend at GET / and all static paths.
+Windows:
 
-4. Distribute the single file for Windows or Linux as needed.
+Native Python 3.14+, Node.js 22+, git, gh CLI, and a lots of patience are required. Run the release script. No luck using WSL. 
+
+```
+    release.ps1
+```
+
+2. The build artifacts will be created in the `cloud/dist/` directory (e.g. `cloud/dist/hdnsh-server-linux`).
+
+3. After a successful build, the executables will be copied to the `release/` directory (e.g. `release/hdnsh-server-linux`).
+
+4. The UI will be served from the backend at GET / and all static paths.
+
+5. Distribute the single file for Windows or Linux as needed.
 
 **Requirements:**
 * Node.js and npm for UI build

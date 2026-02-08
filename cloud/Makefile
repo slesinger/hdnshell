@@ -5,7 +5,7 @@
 
 
 cloud-server:
-	python3 cloud_server.py
+	python3 cloud.py
 
 cloud-client:
 	python3 cloud_test_client.py

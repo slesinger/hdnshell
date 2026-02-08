@@ -75,6 +75,7 @@ def check_ftp_files(host):
     ftp_file_service_enabled = False
     hdnsh_bin_present = False
     hdnsh_conf_present = False
+    hdnsh_cfg_present = False
 
     try:
         with ftplib.FTP() as ftp:
@@ -86,12 +87,14 @@ def check_ftp_files(host):
         normalized = {entry.lower() for entry in entries}
         hdnsh_bin_present = "hdnsh.bin" in normalized
         hdnsh_conf_present = "hdnsh.conf" in normalized
+        hdnsh_cfg_present = "hdnsh.cfg" in normalized
     except Exception:
         ftp_file_service_enabled = False
         hdnsh_bin_present = False
         hdnsh_conf_present = False
+        hdnsh_cfg_present = False
 
-    return ftp_file_service_enabled, hdnsh_bin_present, hdnsh_conf_present
+    return ftp_file_service_enabled, hdnsh_bin_present, hdnsh_conf_present, hdnsh_cfg_present
 
 
 @app.route("/c64/status_extended")
@@ -101,6 +104,7 @@ def c64_status_extended():
     ftp_file_service_enabled = False
     hdnsh_bin_present = False
     hdnsh_conf_present = False
+    hdnsh_cfg_present = False
 
     if last_c64_ip:
         ultimate_dma_service_enabled = is_port_open(last_c64_ip, 64, timeout=2)
@@ -108,6 +112,7 @@ def c64_status_extended():
             ftp_file_service_enabled,
             hdnsh_bin_present,
             hdnsh_conf_present,
+            hdnsh_cfg_present,
         ) = check_ftp_files(last_c64_ip)
 
     return jsonify(
@@ -116,6 +121,7 @@ def c64_status_extended():
             "ftp_file_service_enabled": ftp_file_service_enabled,
             "hdnsh.bin_present": hdnsh_bin_present,
             "hdnsh.conf_present": hdnsh_conf_present,
+            "hdnsh.cfg_present": hdnsh_cfg_present,
         }
     )
 
@@ -167,8 +173,14 @@ def upload_rom_via_ftp(host: str, rom_path: str) -> None:
         ftp.connect(host, 21, timeout=5)
         ftp.login()
         ftp.cwd("/Flash/roms")
+        # Upload hdnsh.bin
         with open(rom_path, "rb") as f:
             ftp.storbinary("STOR hdnsh.bin", f)
+        # If hdnsh.cfg exists in the same directory as rom_path, upload it too
+        cfg_path = os.path.join(os.path.dirname(rom_path), "hdnsh.cfg")
+        if os.path.exists(cfg_path):
+            with open(cfg_path, "rb") as f:
+                ftp.storbinary("STOR hdnsh.cfg", f)
 
 
 @app.route("/settings/ensure_rom")
@@ -179,11 +191,17 @@ def ensure_rom():
 
     try:
         rom_path, asset_name = download_latest_rom("/tmp/hdnshell")
+        # Copy hdnsh.cfg as a twin if missing
+        cfg_src = os.path.join(os.path.dirname(__file__), "../binaries/hdnsh.cfg")
+        cfg_dst = os.path.join(os.path.dirname(rom_path), "hdnsh.cfg")
+        if not os.path.exists(cfg_dst) and os.path.exists(cfg_src):
+            import shutil
+            shutil.copy2(cfg_src, cfg_dst)
         upload_rom_via_ftp(last_c64_ip, rom_path)
         return jsonify(
             {
                 "status": "ok",
-                "message": f"Uploaded {asset_name} to ftp://{last_c64_ip}/Flash/roms"
+                "message": f"Uploaded {asset_name} and hdnsh.cfg to ftp://{last_c64_ip}/Flash/roms"
             }
         )
     except Exception as exc:

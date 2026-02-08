@@ -1,6 +1,8 @@
 import socket
 import os
 import ipaddress
+import platform
+import subprocess
 
 # Get the primary non-localhost IPv4 address
 
@@ -18,8 +20,14 @@ def get_primary_ip() -> str:
 # Get the network range from the IP and netmask
 
 
-def get_network(ip: str) -> ipaddress.IPv4Network:
-    # Try to get netmask from system
+def _cidr_from_netmask(mask: str) -> int | None:
+    try:
+        return ipaddress.IPv4Network(f"0.0.0.0/{mask}").prefixlen
+    except Exception:
+        return None
+
+
+def _get_network_linux(ip: str) -> ipaddress.IPv4Network | None:
     try:
         iface = os.popen(
             "ip route get 8.8.8.8 | awk '{print $5}'").read().strip()
@@ -29,7 +37,82 @@ def get_network(ip: str) -> ipaddress.IPv4Network:
             if netmask:
                 return ipaddress.IPv4Network(f"{ip}/{netmask}", strict=False)
     except Exception:
-        pass
+        return None
+    return None
+
+
+def _get_network_macos(ip: str) -> ipaddress.IPv4Network | None:
+    try:
+        route_out = subprocess.check_output(
+            ["route", "-n", "get", "default"], text=True, stderr=subprocess.DEVNULL
+        )
+        iface = None
+        for line in route_out.splitlines():
+            if "interface:" in line:
+                iface = line.split(":", 1)[1].strip()
+                break
+        if not iface:
+            return None
+
+        ifconfig_out = subprocess.check_output(
+            ["ifconfig", iface], text=True, stderr=subprocess.DEVNULL
+        )
+        netmask_hex = None
+        for line in ifconfig_out.splitlines():
+            if "inet " in line and "netmask" in line:
+                parts = line.split()
+                if "netmask" in parts:
+                    netmask_hex = parts[parts.index("netmask") + 1]
+                    break
+        if netmask_hex:
+            if netmask_hex.startswith("0x"):
+                netmask_hex = netmask_hex[2:]
+            mask_int = int(netmask_hex, 16)
+            netmask = str(ipaddress.IPv4Address(mask_int))
+            cidr = _cidr_from_netmask(netmask)
+            if cidr is not None:
+                return ipaddress.IPv4Network(f"{ip}/{cidr}", strict=False)
+    except Exception:
+        return None
+    return None
+
+
+def _get_network_windows(ip: str) -> ipaddress.IPv4Network | None:
+    try:
+        ipconfig_out = subprocess.check_output(
+            ["ipconfig"], text=True, stderr=subprocess.DEVNULL
+        )
+        lines = ipconfig_out.splitlines()
+        for idx, line in enumerate(lines):
+            if ip in line:
+                # Search forward for Subnet Mask in the same adapter block
+                for j in range(idx, min(idx + 20, len(lines))):
+                    if "Subnet Mask" in lines[j]:
+                        parts = lines[j].split(":", 1)
+                        if len(parts) == 2:
+                            netmask = parts[1].strip()
+                            cidr = _cidr_from_netmask(netmask)
+                            if cidr is not None:
+                                return ipaddress.IPv4Network(f"{ip}/{cidr}", strict=False)
+                        break
+                break
+    except Exception:
+        return None
+    return None
+
+
+def get_network(ip: str) -> ipaddress.IPv4Network:
+    system = platform.system().lower()
+    network = None
+    if "linux" in system:
+        network = _get_network_linux(ip)
+    elif "darwin" in system or "mac" in system:
+        network = _get_network_macos(ip)
+    elif "windows" in system:
+        network = _get_network_windows(ip)
+
+    if network is not None:
+        return network
     # Fallback: assume /24
     return ipaddress.IPv4Network(f"{ip}/24", strict=False)
 

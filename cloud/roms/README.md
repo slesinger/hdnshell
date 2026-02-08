@@ -1,1 +1,0 @@
-This directory need to contain `hdnsh.bin` and `hdnsh.conf` files. Latest version of these files will be downloaded automatically. Alternatively, you can put them here manually if you want to use specific versions or avoid downloading.
