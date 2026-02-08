@@ -13,7 +13,8 @@ It also includes parts of SMON, which is one of the best (if not the best) machi
 
 ---
 # Table of Contents
-- [Getting Started](../README.md)
+- [About the project](../README.md)
+- [Getting Started](installation.md)
 - [Navigating Disk Drives and Directories](user_dos.md)
 - [Executing Programs](#executing-programs)
 - [File Operations](#file-operations)
