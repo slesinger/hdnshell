@@ -30,6 +30,7 @@ SAFE_BUILTINS = {
     'round': round,
     'str': str,
     'sum': sum,
+    'print': print,
 }
 
 # Safe math functions
@@ -70,16 +71,20 @@ class PythonEvalHandler(BaseHandler):
         """
         return text.strip().startswith("?")
 
+
     def handle(self, text: str, session_id: int = 0) -> str:
         """
-        Evaluate Python expression and return result
+        Evaluate Python expression and return result, capturing printed output
 
         Args:
             text: UTF-8 text (should start with "?")
 
         Returns:
-            UTF-8 response text with evaluation result
+            UTF-8 response text with evaluation result or printed output
         """
+        import io
+        import contextlib
+
         # Remove "?" prefix
         expression = text.strip()[1:].strip()
 
@@ -88,24 +93,24 @@ class PythonEvalHandler(BaseHandler):
 
         logger.info(f"Evaluating: {expression}")
 
+        output_buffer = io.StringIO()
         try:
-            # Evaluate expression in safe namespace
-            result = eval(expression, {"__builtins__": {}}, self.safe_namespace)
-
-            # Format result
+            with contextlib.redirect_stdout(output_buffer):
+                result = eval(expression, {"__builtins__": {}}, self.safe_namespace)
+            printed = output_buffer.getvalue().strip()
+            # If something was printed, return it; otherwise, return the result
+            if printed:
+                logger.info(f"Printed output: {printed}")
+                return printed
             result_str = self._format_result(result)
-
             logger.info(f"Result: {result_str}")
             return result_str
-
         except SyntaxError as e:
             logger.warning(f"Syntax error: {e}")
             return f"Syntax error: {e.msg}"
-
         except NameError as e:
             logger.warning(f"Name error: {e}")
             return f"Unknown name: {str(e)}"
-
         except Exception as e:
             logger.error(f"Evaluation error: {e}")
             return f"Error: {str(e)}"

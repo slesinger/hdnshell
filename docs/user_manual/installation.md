@@ -1,3 +1,5 @@
+precislovat server port z 8585 na 8064
+
 # How do I Install it?
 
 The sweet spot is to use the C64 Ultimate or 1541 Ultimate cartridge with networking capabilities. However, if you do no have one there are other options. See below.

@@ -1,0 +1,2 @@
+This directory need to contain `hdnsh.bin` and `hdnsh.conf` files. Latest version of these files will be downloaded automatically. Alternatively, you can put them here manually if you want to use specific versions or avoid downloading.
+Also application hdn-cloud-server-* files will be created here after running the release script, but those are not required to be in this directory for the C64 client to work, they can be moved elsewhere or run from the `cloud/dist/` directory.

@@ -9,7 +9,7 @@
 //   Displays string status of last operation on network or Ultimate DOS,...
 // Usage:
 //   @
-//     - 'Q' shows the status string
+//     - shows the status string
 
 cmd_at:
     ParsingInputsDone()
