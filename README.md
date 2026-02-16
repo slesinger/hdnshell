@@ -10,7 +10,7 @@ HDN Shell transforms your Commodore 64 by replacing the standard BASIC ROM ($A00
 
 - **Simplified commands:** Replace `LOAD "*",8,1` with `LS` or `DIR`.
 - **Fast file management:** Switch drives (`#9`), copy files (`cp from to`), and more.
-- **SD2IEC support:** Use device #14 (with Ultimate), including directory navigation.
+- **SD2IEC support:** Use device #10 (with Ultimate), including directory navigation.
 - **Linux-inspired command line:** Familiar syntax and power.
 - **Command history:** Recall and reuse previous commands.
 - **Screen scrollback:** Review output (requires REU).
@@ -64,7 +64,7 @@ See the [Installation Guide](docs/user_manual/installation.md) for step-by-step 
 
 - Type `HELP` in the command line for a list of available commands.
 - Get help on any topic: `HELP <command>` or `HELP <your question>`
-- Or, read the [User Manual](docs/user_manual.md).
+- Or, read the [User Manual](docs/user_manual/user_manual.md).
 
 ---
 
