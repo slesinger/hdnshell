@@ -1,10 +1,3 @@
-To BE INSERTED
-IEC docs https://c64os.com/post/sd2iecdocumentation#realtimeclock
-run
-rU
-g $080d
-g 080d
-
 # HDN Shell User Manual
 
 HDN Shell is a replacement to C64 BASIC. The aim is to strip of mostly unused parts of BASIC, viewed as a DOS, and replace them with a mostly used features, viewed from modern perspective, while fitting into the same 8KB ROM space. The blueprint is Linux-like terminal user experience, AI enabled, utilizing C64 Ultimate and cloud computing services.
