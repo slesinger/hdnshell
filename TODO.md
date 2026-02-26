@@ -25,7 +25,6 @@ integration disablable fastloader
 #h se zatim chova jako sd karta
 Je toto validni jen pro IEC? - `cd:←` — Go up one level (like `cd ..`)
 funguje unmount?
-precislovat server port z 8585 na 8064
 pridat odkaz na dokumentaci do UI
 fetchovat a ukazovat posledni release verzi v UI
 ```

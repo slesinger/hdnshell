@@ -62,7 +62,7 @@ To run the C64 Cloud server with a web status API:
 	python cloud.py
 	```
 
-This will start both the C64 TCP server and a web server on port 8585. You can check status at http://localhost:8585/status and see the number of connected C64 clients at http://localhost:8585/clients.
+This will start both the C64 TCP server and a web server on port 8064. You can check status at http://localhost:8064/status and see the number of connected C64 clients at http://localhost:8064/clients.
 
 ---
 
@@ -155,11 +155,11 @@ Start the server from the `cloud/` directory:
 
 ```bash
 python cloud.py          # default: host 0.0.0.0 port 6464
-python cloud.py --port 8585
+python cloud.py --port 8064
 python cloud.py --debug  # enable debug logging
 ```
 
-The server starts both the C64 TCP server and a web server (default port 8585). Status: http://localhost:8585/status, clients: http://localhost:8585/clients
+The server starts both the C64 TCP server and a web server (default port 8064). Status: http://localhost:8064/status, clients: http://localhost:8064/clients
 
 ---
 
@@ -256,7 +256,7 @@ python example_dispatcher.py
 
 ## Web UI
 
-The UI lives in `ui/` and calls the backend API on `http://127.0.0.1:8585`.
+The UI lives in `ui/` and calls the backend API on `http://127.0.0.1:8064`.
 
 Install dependencies:
 ```bash

@@ -258,10 +258,10 @@ def run_web():
     if ext_ips:
         print("Web server available on:")
         for ip in ext_ips:
-            print(f"  http://{ip}:8585")
+            print(f"  http://{ip}:8064")
     else:
         print("No external IP address found.")
-    app.run(host='0.0.0.0', port=8585, debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', port=8064, debug=False, use_reloader=False)
 
 
 if __name__ == "__main__":
