@@ -2,7 +2,7 @@
 
 The sweet spot is to use the C64 Ultimate or 1541 Ultimate cartridge with networking capabilities. However, if you do no have one there are other options. See below.
 
-In a nutshell, for full functionality you need to:
+In a nutshell, this guide will help you set up your C64 Ultimate for full functionality, that includes:
 
 1. Set BASIC ROM in the Ultimate menu.
 2. Enable REU (recommended size 16MB) in the Ultimate menu.
@@ -13,14 +13,21 @@ In a nutshell, for full functionality you need to:
 
 This process is simplified and automated using the server process.
 
-1. Download the latest `hdnsh-server` from the [Releases](https://github.com/slesinger/hdnshell/releases/latest) page.
+### 1. Download the latest `hdnsh-server` from the [Releases](https://github.com/slesinger/hdnshell/releases/latest) page.
 - [Linux](https://github.com/slesinger/hdnshell/releases/latest/download/hdnsh-server-linux)
 - [Mac](https://github.com/slesinger/hdnshell/releases/latest/download/hdnsh-server-mac)
 - [Windows](https://github.com/slesinger/hdnshell/releases/latest/download/hdnsh-server-win)
 
-2. Run the `hdnsh-server` on your PC
+### 2. Run the `hdnsh-server` on your PC
 
-> Make sure the file is executable (on Linux/Mac you may need to run `chmod +x hdnsh-server-linux`).
+> Make sure the file is executable (on Linux/Mac you may need to run:
+
+<div style="position: relative; display: inline-block; width: 100%; margin-bottom: 1em;">
+    <button onclick="navigator.clipboard.writeText('chmod +x hdnsh-server-linux')" style="position: absolute; top: 4px; right: 4px; z-index: 1; background: #eee; border: none; border-radius: 4px; cursor: pointer; padding: 2px 6px;">
+        📋
+    </button>
+    <pre style="margin-top: 0; padding-top: 2em;"><code>chmod +x hdnsh-server-linux</code></pre>
+</div>
 
 It is better to run the server from terminal to see the logs and any potential errors.
 
@@ -28,14 +35,14 @@ It is better to run the server from terminal to see the logs and any potential e
 
 The process will scan your local network and look for your C64 Ultimate. It is __perfectly fine__ if you see `No C64 IPs found on the network.` message. It just means that your C64U is not connected, is powered off, or is not configured to connect to the network. You can proceed with the next steps and repeat the scan comfortably later.
 
-3. Open Web UI
+### 3. Open Web UI
 
 Open your browser and navigate to `http://localhost:8064`. You should see the HDN Shell Web UI.
 
 ![ui-start1.png](../assets/ui-start1.png)
 
 
-4. Follow instructions in the web UI to set up your C64 Ultimate
+### 4. Follow instructions in the web UI to set up your C64 Ultimate
 
 Depending on the status of your C64U, you will need to ensure the following. But do not worry the main page will try to detect what needs to be done next.
 

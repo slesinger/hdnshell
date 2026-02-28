@@ -5,9 +5,13 @@ screen roll - taky s D800
 update dokumentace, doplnit, vyhodit
 co je v dokumentaci musi fungovat
 strucnejsi AI
+dat dokumentaci jako AI help
+AI s websearch toolem
 instalace serveru linux/win/macos
 Create Ultimage cfg file
 nastavovani ip serveru
+dat html napovedu do UI (ne jen link na github)
+checkovat novou verzi serveru a hdnsh.bin a nabizet update
 tutorial pres input keys
 tut1 prchazt disk, mount disk, run game
 tut2 jak na help
