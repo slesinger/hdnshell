@@ -74,7 +74,6 @@ def is_port_open(host, port, timeout=2):
 def check_ftp_files(host):
     ftp_file_service_enabled = False
     hdnsh_bin_present = False
-    hdnsh_conf_present = False
     hdnsh_cfg_present = False
 
     try:
@@ -86,15 +85,13 @@ def check_ftp_files(host):
         ftp_file_service_enabled = True
         normalized = {entry.lower() for entry in entries}
         hdnsh_bin_present = "hdnsh.bin" in normalized
-        hdnsh_conf_present = "hdnsh.conf" in normalized
         hdnsh_cfg_present = "hdnsh.cfg" in normalized
     except Exception:
         ftp_file_service_enabled = False
         hdnsh_bin_present = False
-        hdnsh_conf_present = False
         hdnsh_cfg_present = False
 
-    return ftp_file_service_enabled, hdnsh_bin_present, hdnsh_conf_present, hdnsh_cfg_present
+    return ftp_file_service_enabled, hdnsh_bin_present, hdnsh_cfg_present
 
 
 @app.route("/c64/status_extended")
@@ -103,7 +100,6 @@ def c64_status_extended():
     ultimate_dma_service_enabled = False
     ftp_file_service_enabled = False
     hdnsh_bin_present = False
-    hdnsh_conf_present = False
     hdnsh_cfg_present = False
 
     if last_c64_ip:
@@ -111,7 +107,6 @@ def c64_status_extended():
         (
             ftp_file_service_enabled,
             hdnsh_bin_present,
-            hdnsh_conf_present,
             hdnsh_cfg_present,
         ) = check_ftp_files(last_c64_ip)
 
@@ -120,7 +115,6 @@ def c64_status_extended():
             "ultimate_dma_service_enabled": ultimate_dma_service_enabled,
             "ftp_file_service_enabled": ftp_file_service_enabled,
             "hdnsh.bin_present": hdnsh_bin_present,
-            "hdnsh.conf_present": hdnsh_conf_present,
             "hdnsh.cfg_present": hdnsh_cfg_present,
         }
     )
@@ -168,6 +162,21 @@ def download_latest_rom(target_dir: str) -> tuple[str, str]:
     return local_path, chosen_asset.get("name", "hdnsh.bin")
 
 
+def download_latest_cfg(target_dir: str) -> str:
+    """Download hdnsh.cfg from the GitHub master branch into target_dir.
+    Raises RuntimeError if the download fails.
+    Returns the path to the downloaded cfg file."""
+    cfg_url = "https://raw.githubusercontent.com/slesinger/hdnshell/master/cloud/hdnsh.cfg"
+    os.makedirs(target_dir, exist_ok=True)
+    local_path = os.path.join(target_dir, "hdnsh.cfg")
+    response = requests.get(cfg_url, timeout=10)
+    if not response.ok:
+        raise RuntimeError(f"Failed to download hdnsh.cfg from GitHub (HTTP {response.status_code})")
+    with open(local_path, "wb") as f:
+        f.write(response.content)
+    return local_path
+
+
 def upload_rom_via_ftp(host: str, rom_path: str) -> None:
     with ftplib.FTP() as ftp:
         ftp.connect(host, 21, timeout=5)
@@ -191,12 +200,8 @@ def ensure_rom():
 
     try:
         rom_path, asset_name = download_latest_rom("/tmp/hdnshell")
-        # Copy hdnsh.cfg as a twin if missing
-        cfg_src = os.path.join(os.path.dirname(__file__), "../binaries/hdnsh.cfg")
-        cfg_dst = os.path.join(os.path.dirname(rom_path), "hdnsh.cfg")
-        if not os.path.exists(cfg_dst) and os.path.exists(cfg_src):
-            import shutil
-            shutil.copy2(cfg_src, cfg_dst)
+        # Download hdnsh.cfg from GitHub master branch alongside the ROM
+        download_latest_cfg(os.path.dirname(rom_path))
         upload_rom_via_ftp(last_c64_ip, rom_path)
         return jsonify(
             {
@@ -265,14 +270,19 @@ def run_web():
 
 
 if __name__ == "__main__":
-    # Read config file
+
+    # Ensure config file exists
     config_path = os.path.join(os.path.dirname(__file__), "cloud_config.cfg")
+    if not os.path.exists(config_path):
+        with open(config_path, "w") as f:
+            f.write('last_c64_ip = ""\n')
+
+    # Read config file
     last_c64_ip = ""
-    if os.path.exists(config_path):
-        with open(config_path, "r") as f:
-            for line in f:
-                if line.startswith("last_c64_ip"):
-                    last_c64_ip = line.split("=", 1)[1].strip().strip('"')
+    with open(config_path, "r") as f:
+        for line in f:
+            if line.startswith("last_c64_ip"):
+                last_c64_ip = line.split("=", 1)[1].strip().strip('"')
 
     # If last_c64_ip is empty, scan network
     if not last_c64_ip:

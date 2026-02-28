@@ -24,11 +24,32 @@ export default function FindC64U({ lastC64Ip }) {
 
   return (
     <div className="rounded-4 bg-white border shadow-sm p-4">
-      <h1 className="h4 mb-3">Find your C64U</h1>
+      <h1 className="h4 mb-3">Find IP address of your C64 Ultimate</h1>
       <p className="text-muted">
         Use this page to discover your C64 Ultimate on the network. Last known IP:{" "}
         <strong>{lastC64Ip.trim() ? lastC64Ip : "not set yet"}</strong>.
       </p>
+      <p className="mb-1">To be able to find the C64U you need to have:</p>
+      <ul className="mb-3">
+        <li>The C64U device powered on</li>
+        <li>
+          <span
+            title="Press C= and RESTORE to enter C64U menu, then select WIRED NETWORK SETUP. Ensure that Active IP address is populated."
+            style={{ borderBottom: "1px dotted #666", cursor: "help" }}
+          >
+            Network ethernet cable plugged in and attached to your local network
+          </span>
+        </li>
+        <li className="list-unstyled ms-2 text-muted fst-italic">or</li>
+        <li>
+          <span
+            title="Press C= and RESTORE to enter C64U menu, then select WI-FI NETWORK SETUP. Ensure that Status shows Link Up and there is Active IP address populated."
+            style={{ borderBottom: "1px dotted #666", cursor: "help" }}
+          >
+            Setup WiFi
+          </span>
+        </li>
+      </ul>
       <div className="mb-3">
         <button
           className="btn btn-primary"
@@ -54,7 +75,6 @@ export default function FindC64U({ lastC64Ip }) {
                 : "No C64U found on the network.")}
         </div>
       )}
-      <p>Having issue? See the <a href="/getting-started" target="_blank" rel="noopener noreferrer">getting started guide</a> for troubleshooting steps.</p>
     </div>
   );
 }

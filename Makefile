@@ -14,16 +14,6 @@ UI_DIST = $(UI_DIR)/dist
 CLOUD_DIR = cloud
 CLOUD_STATIC_DIR = $(CLOUD_DIR)/static
 RELEASE_DIR = release
-PYI_NAME = hdnsh-cloud
-
-ifeq ($(OS),Windows_NT)
-PYI_DATA_SEP = ;
-PYI_EXE_EXT = .exe
-else
-PYI_DATA_SEP = :
-PYI_EXE_EXT =
-endif
-
 # Common VICE emulator options
 
 REU_OPTS = -reu -reusize 128
@@ -34,67 +24,70 @@ FS11_OPTS = -iecdevice11 -device11 1 -fs11 data/
 VICE_OPTS = $(REU_OPTS) $(DISK_OPTS) $(FS11_OPTS)
 
 
-.PHONY: all build run-vice run-c64u run-std clean cloud-server test-cloud cloud-client release ui-build ui-copy backend-package
+.PHONY: build-basic run-hdn-vice run-c64u run-std-vice run-test_net clean
+.PHONY: build-ui run-ui run-server test-server test-client
+.PHONY: clean-dist copy-to-release package-win package-linux package-mac
 
-
-all: build
-
-
-build:
-	mkdir -p $(BIN_DIR)
-	rm -f $(BIN_OUT) $(BIN_DIR)/*.dbg $(BIN_DIR)/*.sym $(BIN_DIR)/*.vs $(BIN_DIR)/*.prg
-	java -jar $(KICKASS_JAR) $(ASM_SRC) -afo -libdir $(SRC_DIR) -o $(BIN_OUT) -vicesymbols
-# 	mv -f *.dbg *.sym *.vs *.prg $(BIN_DIR) 2>/dev/null || true
-
-
-run-vice: build
-	x64sc -basic $(BIN_OUT) $(VICE_OPTS)
-
-run-c64u: build
-	curl -T binaries/hdnsh.bin ftp://192.168.1.65/Flash/roms/
-	python test/test_dmaservice.py
-
-run-std:
-	x64sc -basic /usr/local/share/vice/C64/basic-901226-01.bin $(VICE_OPTS) $(ARG)
-
-
-# Upload and run test_net.prg on Ultimate 64
-.PHONY: run-prg1
-run-prg1: test_net.prg
-	curl -X POST --header "Content-Type: application/octet-stream" --data-binary @test_net.prg http://192.168.1.65/v1/runners:run_prg
-
-# Build test_net.prg if not present
-test_net.prg: test_net.asm
-	java -jar $(KICKASS_JAR) test_net.asm -o test_net.prg
 
 clean:
 	rm -rf $(BIN_DIR)
 	rm -f ${SRC_DIR}/*.sym
 
 
-cloud-server:
-	make -C cloud cloud-server
+# BASIC
+
+build-basic:
+	mkdir -p $(BIN_DIR)
+	rm -f $(BIN_OUT) $(BIN_DIR)/*.dbg $(BIN_DIR)/*.sym $(BIN_DIR)/*.vs $(BIN_DIR)/*.prg
+	java -jar $(KICKASS_JAR) $(ASM_SRC) -afo -libdir $(SRC_DIR) -o $(BIN_OUT) -vicesymbols
+
+run-hdn-vice: build-basic
+	x64sc -basic $(BIN_OUT) $(VICE_OPTS)
+
+run-c64u: build-basic
+	curl -T binaries/hdnsh.bin ftp://192.168.1.65/Flash/roms/
+	python test/test_dmaservice.py
+
+run-std-vice:
+	x64sc -basic /usr/local/share/vice/C64/basic-901226-01.bin $(VICE_OPTS) $(ARG)
 
 
-cloud-client:
-	make -C cloud cloud-client
+# test_net.prg on Ultimate 64
+run-test_net:
+	java -jar $(KICKASS_JAR) test_net.asm -o test_net.prg
+	curl -X POST --header "Content-Type: application/octet-stream" --data-binary @test_net.prg http://192.168.1.65/v1/runners:run_prg
 
+
+# UI
+
+build-ui:
+	cd $(UI_DIR) && npm install
+	cd $(UI_DIR) && npm run build
+
+run-ui:
+	cd $(UI_DIR) && npm run dev
+
+
+# Server
+
+run-server:
+	$(MAKE) -C cloud run-server
 
 
 # Tests
 
-test-cloud:
-	make -C cloud test-cloud
+test-server:
+	$(MAKE) -C cloud test-server
 
 test-client:
-	make -C cloud test-client
+	$(MAKE) -C cloud test-client
 
 
-release: clean-dist ui-build ui-copy backend-package-win backend-package-linux backend-package-mac copy-to-release
+# Release packaging
 
 # Clean up dist folder before build
 clean-dist:
-	rm -rf $(CLOUD_DIR)/dist-linux $(CLOUD_DIR)/dist-mac $(CLOUD_DIR)/dist $(CLOUD_DIR)/build-linux $(CLOUD_DIR)/build-mac $(CLOUD_DIR)/*.spec
+	rm -rf $(CLOUD_DIR)/dist/
 
 # Copy built executables from dist to release only if build succeeded
 copy-to-release:
@@ -103,19 +96,13 @@ copy-to-release:
 	if [ -f $(CLOUD_DIR)/dist/hdnsh-server-mac ]; then cp -f $(CLOUD_DIR)/dist/hdnsh-server-mac $(RELEASE_DIR)/; fi
 	# Windows build is handled by PowerShell script
 
-ui-build:
-	cd $(UI_DIR) && npm install
-	cd $(UI_DIR) && npm run build
-
-ui-copy:
-	rm -rf $(CLOUD_STATIC_DIR)
-	cp -r $(UI_DIST) $(CLOUD_STATIC_DIR)
-
-backend-package-win:
+package-win:
 	echo "Use release.ps1 PowerShell script instead"
 
-backend-package-linux:
+package-linux: build-ui clean-dist
 	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name hdnsh-server-linux --add-data "static:static" cloud.py
+	$(MAKE) copy-to-release
 
-backend-package-mac:
+package-mac:
 	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name hdnsh-server-mac --add-data "static:static" cloud.py
+	$(MAKE) copy-to-release

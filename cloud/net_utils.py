@@ -6,6 +6,9 @@ import subprocess
 
 # Get the primary non-localhost IPv4 address
 
+DMA_SERVICE_PORT = 64
+MODEM_PORT = 3000
+
 
 def get_primary_ip() -> str:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -126,7 +129,7 @@ def scan_network_for_port_64(network: ipaddress.IPv4Network, timeout: float = 0.
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(timeout)
         try:
-            s.connect((ip_str, 64))
+            s.connect((ip_str, DMA_SERVICE_PORT))
             s.close()
             print()  # Newline after scan
             return ip_str  # Return first found
@@ -140,14 +143,43 @@ def scan_network_for_port_64(network: ipaddress.IPv4Network, timeout: float = 0.
     print()  # Newline after scan
     return None
 
-# Main function to use
+
+def scan_network_for_modem(network: ipaddress.IPv4Network, timeout: float = 0.05) -> str:
+    _MODEM_BANNERS = (
+        b"Modem Software is currently not running",
+        b"CONNECT",
+        b"Ultimate",
+    )
+    count = 0
+    for ip in network.hosts():
+        ip_str = str(ip)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(timeout)
+        try:
+            s.connect((ip_str, MODEM_PORT))
+            # Try to read a banner; the C64 Ultimate sends a message on connect
+            try:
+                s.settimeout(0.3)
+                banner = s.recv(256)
+                if any(sig in banner for sig in _MODEM_BANNERS):
+                    print()  # Newline after scan
+                    return ip_str
+            except Exception:
+                # No banner or timeout — not the modem we're looking for
+                pass
+        except Exception:
+            pass
+        finally:
+            s.close()
+        count += 1
+        if count % 10 == 0:
+            print('.', end='', flush=True)
+    print()  # Newline after scan
+    return None
 
 
 def find_port_64_hosts() -> str:
     ip = get_primary_ip()
     network = get_network(ip)
-    return scan_network_for_port_64(network)
-
-# Example usage:
-# hosts = find_port_64_hosts()
-# print(hosts)
+    return scan_network_for_modem(network)
+    # return scan_network_for_port_64(network)

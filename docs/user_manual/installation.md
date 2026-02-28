@@ -37,7 +37,16 @@ The process will scan your local network and look for your C64 Ultimate. It is _
 
 ### 3. Open Web UI
 
-Open your browser and navigate to `http://localhost:8064`. You should see the HDN Shell Web UI.
+Open your browser and navigate to 
+
+<div style="position: relative; display: inline-block; width: 100%; margin-bottom: 1em;">
+    <button onclick="navigator.clipboard.writeText('http://localhost:8064')" style="position: absolute; top: 4px; right: 4px; z-index: 1; background: #eee; border: none; border-radius: 4px; cursor: pointer; padding: 2px 6px;">
+        📋
+    </button>
+    <pre style="margin-top: 0; padding-top: 2em;"><code>http://localhost:8064</code></pre>
+</div>
+
+You should see the HDN Shell Web UI.
 
 ![ui-start1.png](../assets/ui-start1.png)
 

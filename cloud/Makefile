@@ -1,20 +1,20 @@
 # Makefile for Hondani Shell project - Server Side
 
 
-.PHONY: cloud-server test-cloud cloud-client
+.PHONY: run-server run-client test-server test-client
 
 
-cloud-server:
+run-server:
 	python3 cloud.py
 
-cloud-client:
+run-client:
 	python3 cloud_test_client.py
 
 
 # Tests
-test-cloud:
+test-server:
 	PYTHONWARNINGS="ignore::DeprecationWarning:.*site-packages.*" pytest
 
 test-client:
-	pytest test_cloud_test_client.py
+	PYTHONWARNINGS="ignore::DeprecationWarning:.*site-packages.*" pytest test_cloud_test_client.py
 
