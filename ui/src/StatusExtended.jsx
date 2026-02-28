@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import { API_BASE_URL } from "./api.js";
 import FindC64U from "./find_c64u.jsx";
 
+const normalizeStatus = (payload) => ({
+  ultimate_dma_service_enabled: Boolean(payload?.ultimate_dma_service_enabled),
+  ftp_file_service_enabled: Boolean(payload?.ftp_file_service_enabled),
+  "hdnsh.bin_present": Boolean(payload?.["hdnsh.bin_present"]),
+  "hdnsh.cfg_present": Boolean(payload?.["hdnsh.cfg_present"]),
+});
+
 const EMPTY_STATUS = {
   ultimate_dma_service_enabled: false,
   ftp_file_service_enabled: false,
@@ -31,12 +38,7 @@ export default function StatusExtended({ lastC64Ip }) {
         }
         const payload = await response.json();
         if (!cancelled) {
-          setStatus({
-            ultimate_dma_service_enabled: Boolean(payload?.ultimate_dma_service_enabled),
-            ftp_file_service_enabled: Boolean(payload?.ftp_file_service_enabled),
-            "hdnsh.bin_present": Boolean(payload?.["hdnsh.bin_present"]),
-            "hdnsh.cfg_present": Boolean(payload?.["hdnsh.cfg_present"])
-          });
+          setStatus(normalizeStatus(payload));
         }
       } catch (err) {
         if (!cancelled) {
@@ -73,13 +75,7 @@ export default function StatusExtended({ lastC64Ip }) {
         method: "GET"
       });
       if (statusResponse.ok) {
-        const statusPayload = await statusResponse.json();
-        setStatus({
-          ultimate_dma_service_enabled: Boolean(statusPayload?.ultimate_dma_service_enabled),
-          ftp_file_service_enabled: Boolean(statusPayload?.ftp_file_service_enabled),
-          "hdnsh.bin_present": Boolean(statusPayload?.["hdnsh.bin_present"]),
-          "hdnsh.cfg_present": Boolean(statusPayload?.["hdnsh.cfg_present"])
-        });
+        setStatus(normalizeStatus(await statusResponse.json()));
       }
     } catch (err) {
       setEnsureRomMessage(err?.message || "Failed to ensure ROM");

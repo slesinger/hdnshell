@@ -1,9 +1,14 @@
 import socket
 import net_utils
 import os
+import sys
+import stat
+import shutil
+import platform
 import logging
 import ftplib
 import requests
+from version import __version__
 from cloud_server import C64Server
 from flask_cors import CORS
 from threading import Thread
@@ -215,6 +220,144 @@ def ensure_rom():
         return jsonify({"error": str(exc)}), 500
 
 
+def _parse_version(tag: str) -> tuple:
+    """Turn 'v1.2.3' or '1.2.3' into (1, 2, 3) for comparison."""
+    return tuple(int(x) for x in tag.lstrip("vV").split("."))
+
+
+@app.route("/settings/version_check", methods=["GET"])
+def version_check():
+    local_version = __version__
+    try:
+        api_url = "https://api.github.com/repos/slesinger/hdnshell/releases/latest"
+        response = requests.get(api_url, timeout=10)
+        response.raise_for_status()
+        release = response.json()
+        latest_tag = release.get("tag_name", "")
+        published_at = release.get("published_at", "")
+        html_url = release.get("html_url", "")
+        release_name = release.get("name") or latest_tag
+        body = release.get("body", "")
+
+        update_available = False
+        try:
+            update_available = _parse_version(
+                latest_tag) > _parse_version(local_version)
+        except (ValueError, TypeError):
+            pass
+
+        return jsonify(
+            {
+                "local_version": local_version,
+                "latest_version": latest_tag,
+                "update_available": update_available,
+                "release_name": release_name,
+                "published_at": published_at,
+                "html_url": html_url,
+                "release_notes": body,
+            }
+        )
+    except requests.RequestException as exc:
+        logger.exception("Failed to check latest release")
+        return jsonify({"error": str(exc), "local_version": local_version}), 502
+
+
+@app.route("/settings/self_update", methods=["POST"])
+def self_update():
+    """Download the latest server binary from GitHub and replace + restart this process."""
+    system = platform.system().lower()  # 'linux' or 'windows'
+    if system not in ("linux", "windows"):
+        return jsonify({"error": f"Unsupported platform: {system}"}), 400
+
+    asset_name = "hdnsh-server-linux" if system == "linux" else "hdnsh-server-win.exe"
+
+    try:
+        api_url = "https://api.github.com/repos/slesinger/hdnshell/releases/latest"
+        response = requests.get(api_url, timeout=10)
+        response.raise_for_status()
+        release = response.json()
+        assets = release.get("assets", [])
+
+        chosen_asset = next(
+            (a for a in assets if a.get("name", "").lower() == asset_name.lower()),
+            None,
+        )
+        if chosen_asset is None:
+            return jsonify({"error": f"Asset '{asset_name}' not found in latest release"}), 404
+
+        download_url = chosen_asset["browser_download_url"]
+        tmp_path = os.path.join(
+            "/tmp" if system == "linux" else os.environ.get("TEMP", "/tmp"), asset_name + ".new")
+
+        with requests.get(download_url, stream=True, timeout=60) as dl:
+            dl.raise_for_status()
+            with open(tmp_path, "wb") as f:
+                for chunk in dl.iter_content(chunk_size=1024 * 256):
+                    if chunk:
+                        f.write(chunk)
+
+        # Determine path of the running executable
+        current_exe = sys.executable if getattr(
+            sys, "frozen", False) else os.path.abspath(sys.argv[0])
+
+        if system == "linux":
+            # Make the download executable
+            os.chmod(tmp_path, os.stat(tmp_path).st_mode |
+                     stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+            # Unlink the running binary first (kernel keeps the inode alive for
+            # the current process), then move the new file into place.
+            if os.path.exists(current_exe):
+                os.remove(current_exe)
+            shutil.move(tmp_path, current_exe)
+            # Restart: spawn the new executable and let this process exit
+            import subprocess
+            subprocess.Popen([current_exe] + sys.argv[1:])
+            # Respond before exiting
+            resp = jsonify(
+                {"status": "ok", "message": "Updated and restarting..."})
+            logger.info("Self-update complete; restarting process.")
+            # Use a daemon thread so the response is sent before sys.exit()
+
+            def _delayed_exit():
+                import time as _time
+                _time.sleep(1)
+                os._exit(0)
+            import threading
+            threading.Thread(target=_delayed_exit, daemon=True).start()
+            return resp
+        else:
+            # Windows: schedule replace on next start via a batch wrapper
+            batch_path = current_exe + ".update.bat"
+            with open(batch_path, "w") as bf:
+                bf.write(
+                    f'@echo off\n'
+                    f'timeout /t 2 /nobreak >nul\n'
+                    f'copy /Y "{tmp_path}" "{current_exe}"\n'
+                    f'start "" "{current_exe}"\n'
+                    f'del "%~f0"\n'
+                )
+            import subprocess
+            subprocess.Popen(["cmd", "/c", batch_path],
+                             creationflags=subprocess.DETACHED_PROCESS)
+            resp = jsonify(
+                {"status": "ok", "message": "Update scheduled; restarting..."})
+
+            def _delayed_exit():
+                import time as _time
+                _time.sleep(1)
+                os._exit(0)
+            import threading
+            threading.Thread(target=_delayed_exit, daemon=True).start()
+            return resp
+
+    except requests.RequestException as exc:
+        logger.exception("Self-update download failed")
+        return jsonify({"error": str(exc)}), 502
+    except OSError as exc:
+        logger.exception("Self-update file operation failed")
+        return jsonify({"error": str(exc)}), 500
+
+
 @app.route("/c64/basic/enabled", methods=["GET"])
 def c64_basic_enabled():
     last_c64_ip = read_last_c64_ip()
@@ -270,6 +413,39 @@ def c64_basic_disable():
         return jsonify({"error": str(exc)}), 502
 
 
+@app.route("/c64/reboot", methods=["PUT"])
+def c64_reboot():
+    last_c64_ip = read_last_c64_ip()
+    if not last_c64_ip:
+        return jsonify({"error": "No C64 IP found. Run scan first."}), 400
+    try:
+        url = f"http://{last_c64_ip}/v1/machine:reboot"
+        response = requests.put(url, timeout=5)
+        response.raise_for_status()
+        return jsonify({"status": "ok", "message": "Reboot command sent."})
+    except requests.RequestException as exc:
+        logger.exception("Failed to send reboot command")
+        return jsonify({"error": str(exc)}), 502
+
+
+@app.route("/c64/reset", methods=["PUT"])
+def c64_reset():
+    last_c64_ip = read_last_c64_ip()
+    if not last_c64_ip:
+        return jsonify({"error": "No C64 IP found. Run scan first."}), 400
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((last_c64_ip, 64))
+        cmd = (0xFF00 | 0x04).to_bytes(2, 'little')
+        s.sendall(cmd)
+        s.sendall((0).to_bytes(2, 'little'))  # length = 0
+        s.close()
+        return jsonify({"status": "ok", "message": "Reset command sent."})
+    except OSError as exc:
+        logger.exception("Failed to send reset command")
+        return jsonify({"error": str(exc)}), 502
+
+
 @app.route("/c64/power_off", methods=["PUT"])
 def c64_power_off():
     last_c64_ip = read_last_c64_ip()
@@ -295,12 +471,14 @@ def find_c64u():
     found_ip = net_utils.find_port_64_hosts()
     time.sleep(25)  # Simulate scan duration
     logger.info(f"Scan complete. Found: {found_ip}")
-    # Update config if any IPs found
+    # Always write config so the file exists; update IP only when found
+    config_path = os.path.join(os.path.dirname(__file__), "cloud_config.cfg")
     if found_ip:
-        config_path = os.path.join(
-            os.path.dirname(__file__), "cloud_config.cfg")
         with open(config_path, "w") as f:
             f.write(f"last_c64_ip = \"{found_ip}\"\n")
+    elif not os.path.exists(config_path):
+        with open(config_path, "w") as f:
+            f.write('last_c64_ip = ""\n')
     return jsonify({"found_ips": found_ip})
 
 

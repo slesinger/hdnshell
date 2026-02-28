@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import FindC64U from "./find_c64u.jsx";
 import { API_BASE_URL } from "./api.js";
 import StatusExtended from "./StatusExtended.jsx";
+import UpdateChecker from "./UpdateChecker.jsx";
 
 const NAV_ITEMS = [
   { id: "file-manager", label: "File Manager" },
@@ -17,6 +18,8 @@ export default function App() {
   const [basicAvailable, setBasicAvailable] = useState(false);
   const [basicActionLoading, setBasicActionLoading] = useState(false);
   const [powerOffLoading, setPowerOffLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [rebootLoading, setRebootLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,42 +52,20 @@ export default function App() {
       const timer = setInterval(checkConnection, 30000);
 
     // Listen for scan completion event
-    const refreshListener = () => checkConnection();
-    window.addEventListener("refreshC64Status", refreshListener);
+    window.addEventListener("refreshC64Status", checkConnection);
 
     return () => {
       cancelled = true;
       clearInterval(timer);
-      window.removeEventListener("refreshC64Status", refreshListener);
+      window.removeEventListener("refreshC64Status", checkConnection);
     };
   }, []);
 
-  useEffect(() => {
-    const fetchBasicStatus = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/c64/basic/enabled`, { method: "GET" });
-        if (response.ok) {
-          const payload = await response.json();
-          setBasicStatus(payload);
-          setBasicAvailable(true);
-        } else {
-          setBasicAvailable(false);
-          setBasicStatus(null);
-        }
-      } catch {
-        setBasicAvailable(false);
-        setBasicStatus(null);
-      }
-    };
-    fetchBasicStatus();
-  }, []);
-
-  const reloadBasicStatus = async () => {
+  const fetchBasicStatus = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/c64/basic/enabled`, { method: "GET" });
       if (response.ok) {
-        const payload = await response.json();
-        setBasicStatus(payload);
+        setBasicStatus(await response.json());
         setBasicAvailable(true);
       } else {
         setBasicAvailable(false);
@@ -96,13 +77,17 @@ export default function App() {
     }
   };
 
+  useEffect(() => {
+    fetchBasicStatus();
+  }, []);
+
   const handleBasicEnable = async () => {
     setBasicActionLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/c64/basic/enable`, { method: "PUT" });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload?.error || "Failed to enable Basic ROM");
-      await reloadBasicStatus();
+      await fetchBasicStatus();
     } catch {
       // ignore
     } finally {
@@ -116,11 +101,33 @@ export default function App() {
       const response = await fetch(`${API_BASE_URL}/c64/basic/disable`, { method: "PUT" });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload?.error || "Failed to disable Basic ROM");
-      await reloadBasicStatus();
+      await fetchBasicStatus();
     } catch {
       // ignore
     } finally {
       setBasicActionLoading(false);
+    }
+  };
+
+  const handleReboot = async () => {
+    setRebootLoading(true);
+    try {
+      await fetch(`${API_BASE_URL}/c64/reboot`, { method: "PUT" });
+    } catch {
+      // ignore
+    } finally {
+      setRebootLoading(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setResetLoading(true);
+    try {
+      await fetch(`${API_BASE_URL}/c64/reset`, { method: "PUT" });
+    } catch {
+      // ignore
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -138,6 +145,7 @@ export default function App() {
   const isHdnshActive = basicStatus?.current_rom === "hdnsh.bin";
   const enableButtonDisabled = !basicAvailable || basicActionLoading || isHdnshActive;
   const disableButtonDisabled = !basicAvailable || basicActionLoading || !isHdnshActive;
+  const rebootButtonDisabled = !basicAvailable || rebootLoading;
 
   const hasLastIp = lastC64Ip.trim().length > 0;
   let statusLabel = "Find your C64U";
@@ -186,6 +194,22 @@ export default function App() {
               </button>
               <button
                 type="button"
+                className="btn btn-sm btn-info"
+                onClick={handleReboot}
+                disabled={rebootButtonDisabled}
+              >
+                {rebootLoading ? "…" : "Reboot"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-secondary"
+                onClick={handleReset}
+                disabled={resetLoading}
+              >
+                {resetLoading ? "…" : "Reset"}
+              </button>
+              <button
+                type="button"
                 className="btn btn-sm btn-warning"
                 onClick={handlePowerOff}
                 disabled={powerOffLoading}
@@ -225,6 +249,7 @@ export default function App() {
               the API details when ready and I will wire up the views.
             </p>
             <StatusExtended lastC64Ip={lastC64Ip} />
+            <UpdateChecker />
           </div>
         )}
       </main>

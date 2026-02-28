@@ -66,13 +66,9 @@ export default function FindC64U({ lastC64Ip }) {
       )}
       {scanResult !== null && (
         <div className="alert alert-success mt-3">
-          {Array.isArray(scanResult)
-            ? (scanResult.length > 0
-                ? `Found C64U IPs: ${scanResult.join(", ")}`
-                : "No C64U found on the network.")
-            : (scanResult
-                ? `Found C64U IP: ${scanResult}`
-                : "No C64U found on the network.")}
+          {scanResult.length > 0
+            ? `Found C64U IPs: ${scanResult.join(", ")}`
+            : "No C64U found on the network."}
         </div>
       )}
     </div>

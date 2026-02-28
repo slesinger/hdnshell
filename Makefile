@@ -27,6 +27,7 @@ VICE_OPTS = $(REU_OPTS) $(DISK_OPTS) $(FS11_OPTS)
 .PHONY: build-basic run-hdn-vice run-c64u run-std-vice run-test_net clean
 .PHONY: build-ui run-ui run-server test-server test-client
 .PHONY: clean-dist copy-to-release package-win package-linux package-mac
+.PHONY: github-release release
 
 
 clean:
@@ -85,6 +86,10 @@ test-client:
 
 # Release packaging
 
+# Resolve version from latest git tag; strip leading 'v'; fall back to 0.0.0
+GIT_VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^[vV]//')
+VERSION ?= $(if $(GIT_VERSION),$(GIT_VERSION),0.0.0)
+
 # Clean up dist folder before build
 clean-dist:
 	rm -rf $(CLOUD_DIR)/dist/
@@ -92,6 +97,7 @@ clean-dist:
 # Copy built executables from dist to release only if build succeeded
 copy-to-release:
 	mkdir -p $(RELEASE_DIR)
+	if [ -f $(BIN_OUT) ]; then cp -f $(BIN_OUT) $(RELEASE_DIR)/; fi
 	if [ -f $(CLOUD_DIR)/dist/hdnsh-server-linux ]; then cp -f $(CLOUD_DIR)/dist/hdnsh-server-linux $(RELEASE_DIR)/; fi
 	if [ -f $(CLOUD_DIR)/dist/hdnsh-server-mac ]; then cp -f $(CLOUD_DIR)/dist/hdnsh-server-mac $(RELEASE_DIR)/; fi
 	# Windows build is handled by PowerShell script
@@ -100,9 +106,33 @@ package-win:
 	echo "Use release.ps1 PowerShell script instead"
 
 package-linux: build-ui clean-dist
+	echo '__version__ = "$(VERSION)"' > $(CLOUD_DIR)/version.py
 	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name hdnsh-server-linux --add-data "static:static" cloud.py
 	$(MAKE) copy-to-release
 
 package-mac:
+	echo '__version__ = "$(VERSION)"' > $(CLOUD_DIR)/version.py
 	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name hdnsh-server-mac --add-data "static:static" cloud.py
 	$(MAKE) copy-to-release
+
+
+# Full build: binary + linux server + copy to release
+release: build-basic package-linux copy-to-release
+
+
+# Create a git tag, build everything, and publish a GitHub release with all assets in release/
+# Usage: make github-release VERSION=1.2.3 [NOTES="optional release notes"]
+#        VERSION is required; if omitted the target will abort.
+NOTES ?=
+github-release:
+	@test -n "$(VERSION)" || (echo "ERROR: VERSION is required.  Usage: make github-release VERSION=1.2.3"; exit 1)
+	@echo "--- Building release v$(VERSION) ---"
+	$(MAKE) release VERSION=$(VERSION)
+	@echo "--- Tagging v$(VERSION) ---"
+	git tag -a "v$(VERSION)" -m "Release v$(VERSION)"
+	git push origin "v$(VERSION)"
+	@echo "--- Creating GitHub release v$(VERSION) ---"
+	gh release create "v$(VERSION)" $(RELEASE_DIR)/* \
+		--title "v$(VERSION)" \
+		$(if $(NOTES),--notes "$(NOTES)",--generate-notes)
+	@echo "--- Release v$(VERSION) published ---"
