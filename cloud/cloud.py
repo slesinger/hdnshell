@@ -171,7 +171,8 @@ def download_latest_cfg(target_dir: str) -> str:
     local_path = os.path.join(target_dir, "hdnsh.cfg")
     response = requests.get(cfg_url, timeout=10)
     if not response.ok:
-        raise RuntimeError(f"Failed to download hdnsh.cfg from GitHub (HTTP {response.status_code})")
+        raise RuntimeError(
+            f"Failed to download hdnsh.cfg from GitHub (HTTP {response.status_code})")
     with open(local_path, "wb") as f:
         f.write(response.content)
     return local_path
@@ -214,14 +215,77 @@ def ensure_rom():
         return jsonify({"error": str(exc)}), 500
 
 
+@app.route("/c64/basic/enabled", methods=["GET"])
+def c64_basic_enabled():
+    last_c64_ip = read_last_c64_ip()
+    if not last_c64_ip:
+        return jsonify({"error": "No C64 IP found. Run scan first."}), 400
+    try:
+        url = f"http://{last_c64_ip}/v1/configs/C64%20and%20Cartridge%20Settings/Basic%20ROM"
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        current = (
+            data.get("C64 and Cartridge Settings", {})
+            .get("Basic ROM", {})
+            .get("current", None)
+        )
+        if current is None:
+            return jsonify({"error": "Unexpected response from C64"}), 502
+        # Empty string means the default/stock BASIC ROM is active (basic enabled)
+        enabled = current == ""
+        return jsonify({"enabled": enabled, "current_rom": current})
+    except requests.RequestException as exc:
+        logger.exception("Failed to query Basic ROM config")
+        return jsonify({"error": str(exc)}), 502
+
+
 @app.route("/c64/basic/enable", methods=["PUT"])
 def c64_basic_enable():
-    return jsonify({"status": "ok"})
+    last_c64_ip = read_last_c64_ip()
+    if not last_c64_ip:
+        return jsonify({"error": "No C64 IP found. Run scan first."}), 400
+    try:
+        url = f"http://{last_c64_ip}/v1/configs/C64%20and%20Cartridge%20Settings/Basic%20ROM"
+        response = requests.put(url, params={"value": "hdnsh.bin"}, timeout=5)
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.RequestException as exc:
+        logger.exception("Failed to enable Basic ROM")
+        return jsonify({"error": str(exc)}), 502
 
 
 @app.route("/c64/basic/disable", methods=["PUT"])
 def c64_basic_disable():
-    return jsonify({"status": "ok"})
+    last_c64_ip = read_last_c64_ip()
+    if not last_c64_ip:
+        return jsonify({"error": "No C64 IP found. Run scan first."}), 400
+    try:
+        url = f"http://{last_c64_ip}/v1/configs/C64%20and%20Cartridge%20Settings/Basic%20ROM"
+        response = requests.put(url, params={"value": ""}, timeout=5)
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.RequestException as exc:
+        logger.exception("Failed to disable Basic ROM")
+        return jsonify({"error": str(exc)}), 502
+
+
+@app.route("/c64/power_off", methods=["PUT"])
+def c64_power_off():
+    last_c64_ip = read_last_c64_ip()
+    if not last_c64_ip:
+        return jsonify({"error": "No C64 IP found. Run scan first."}), 400
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((last_c64_ip, 64))
+        cmd = (0xFF00 | 0x0C).to_bytes(2, 'little')
+        s.sendall(cmd)
+        s.sendall((0).to_bytes(2, 'little'))  # length = 0
+        s.close()
+        return jsonify({"status": "ok", "message": "Power off command sent."})
+    except OSError as exc:
+        logger.exception("Failed to send power off command")
+        return jsonify({"error": str(exc)}), 502
 
 
 @app.route("/settings/find_c64u", methods=["POST"])
@@ -233,7 +297,8 @@ def find_c64u():
     logger.info(f"Scan complete. Found: {found_ip}")
     # Update config if any IPs found
     if found_ip:
-        config_path = os.path.join(os.path.dirname(__file__), "cloud_config.cfg")
+        config_path = os.path.join(
+            os.path.dirname(__file__), "cloud_config.cfg")
         with open(config_path, "w") as f:
             f.write(f"last_c64_ip = \"{found_ip}\"\n")
     return jsonify({"found_ips": found_ip})
@@ -300,6 +365,8 @@ if __name__ == "__main__":
         found_ip = net_utils.find_port_64_hosts()
         if found_ip:
             print("Found C64 IP:", found_ip)
+            with open(config_path, "w") as f:
+                f.write(f'last_c64_ip = "{found_ip}"\n')
         else:
             print("No C64 IPs found on the network.")
 
