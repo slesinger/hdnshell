@@ -90,7 +90,7 @@ Create python files for the classes above and implement basic functionality that
 Use context7 langchain_oss_python_langchain to create a ChatHandler class that will process chat requests to an LLM agent.
 The class will accept PETSCII text input, convert to UTF-8, send to the LLM, get the response, convert back to PETSCII and return.
 Create following LLM tools:
-- Web search tool using SerpAPI (use GOOGLE_CSE_ID env var for CSE ID)
+- Web search tool using SerpAPI (use SERPAPI_API_KEY env var)
 Prepare string for system prompt.
 Use MCP server like this:
 ```json

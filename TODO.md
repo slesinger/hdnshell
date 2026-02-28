@@ -1,24 +1,18 @@
 # TODO
 
 ```
-screen roll - taky s D800
-update dokumentace, doplnit, vyhodit
-co je v dokumentaci musi fungovat
-strucnejsi AI
 dat dokumentaci jako AI help
-AI s websearch toolem
+dat html napovedu do UI (ne jen link na github)
+screen roll - taky s D800
 instalace serveru linux/win/macos
 Create Ultimage cfg file
 nastavovani ip serveru
-dat html napovedu do UI (ne jen link na github)
-checkovat novou verzi serveru a hdnsh.bin a nabizet update
 tutorial pres input keys
 tut1 prchazt disk, mount disk, run game
 tut2 jak na help
 tut3 ask me anything
 tut4 jak najit demo
 tut5 complete migrate to C64
-Verify installation steps
 cp, mv v ramci ultimate fs
 csdb - mount disk, run prg
 integration disablable BASIC ROM

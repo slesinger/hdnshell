@@ -16,11 +16,48 @@ load_dotenv(override=True)
 logger = logging.getLogger(__name__)
 
 # System prompt for chat agent
-CHAT_SYSTEM_PROMPT = """You are a helpful AI assistant for C64 computer users.
-You are communicating with a Commodore 64 computer from the 1980s, so keep your responses concise and suitable for a small screen (40 columns x 25 lines).
-Focus on practical, actionable advice.
-When discussing code or technical topics, consider the C64's 8-bit architecture, 64KB RAM limit, and BASIC/assembly language environment.
-Be friendly but brief."""
+CHAT_SYSTEM_PROMPT = """You are an AI assistant for
+Commodore 64 users.
+
+CRITICAL RULE:
+Output MUST contain ONLY ASCII
+characters (codes 32-126).
+
+Never use:
+- Unicode
+- UTF-8 symbols
+- smart quotes
+- long dashes
+- emojis
+- special bullets
+
+Allowed punctuation:
+. , : ; ! ? - ' ( ) / + * =
+
+Output will be shown on a C64
+screen (40x25).
+
+Rules:
+- Max 40 characters per line
+- Use short sentences
+- Avoid long paragraphs
+- No fancy formatting
+- No tabs
+
+Use plain ASCII Markdown only:
+- lists use "-"
+- emphasis use *word*
+
+Keep answers practical.
+
+Assume:
+- 8-bit CPU
+- 64KB RAM
+- BASIC or 6502 ASM
+
+Be friendly.
+Be brief.
+Be ASCII-only."""
 
 
 class ChatHandler(BaseHandler):
@@ -40,10 +77,12 @@ class ChatHandler(BaseHandler):
             azure_key = os.getenv('AZURE_OPENAI_API_KEY')
             azure_endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
             azure_deployment = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME')
-            azure_version = os.getenv('AZURE_OPENAI_API_VERSION', '2024-02-15-preview')
-            
+            azure_version = os.getenv(
+                'AZURE_OPENAI_API_VERSION', '2024-02-15-preview')
+
             if not azure_key or not azure_endpoint or not azure_deployment:
-                logger.warning("Azure OpenAI credentials not set, ChatHandler will use basic responses")
+                logger.warning(
+                    "Azure OpenAI credentials not set, ChatHandler will use basic responses")
                 return
 
             # Import LangChain components
@@ -58,11 +97,13 @@ class ChatHandler(BaseHandler):
                     api_key=azure_key,
                     temperature=0.7
                 )
-                logger.info(f"ChatHandler initialized with Azure OpenAI (deployment: {azure_deployment})")
+                logger.info(
+                    f"ChatHandler initialized with Azure OpenAI (deployment: {azure_deployment})")
 
             except ImportError as e:
                 logger.warning(f"LangChain not installed: {e}")
-                logger.info("Install with: pip install langchain langchain-openai")
+                logger.info(
+                    "Install with: pip install langchain langchain-openai")
 
         except Exception as e:
             logger.error(f"Error initializing LLM: {e}")
@@ -70,19 +111,14 @@ class ChatHandler(BaseHandler):
     def _initialize_tools(self):
         """Initialize LangChain tools including web search"""
         try:
-            # Check for Google API key for web search
-            google_api_key = os.getenv('GOOGLE_API_KEY')
-            google_cse_id = os.getenv('GOOGLE_CSE_ID')
-
-            if google_api_key and google_cse_id:
+            # Check for SerpAPI key for web search
+            serpapi_key = os.getenv('SERPAPI_API_KEY')
+            if serpapi_key:
                 try:
-                    from langchain_google_community import GoogleSearchAPIWrapper
+                    from langchain_community.utilities import SerpAPIWrapper
                     from langchain_core.tools import Tool
 
-                    search = GoogleSearchAPIWrapper(
-                        google_api_key=google_api_key,
-                        google_cse_id=google_cse_id
-                    )
+                    search = SerpAPIWrapper(serpapi_api_key=serpapi_key)
 
                     search_tool = Tool(
                         name="web_search",
@@ -91,12 +127,13 @@ class ChatHandler(BaseHandler):
                     )
 
                     self.tools.append(search_tool)
-                    logger.info("Google search tool initialized")
+                    logger.info("SerpAPI search tool initialized")
 
                 except ImportError as e:
-                    logger.warning(f"Google search tools not available: {e}")
+                    logger.warning(f"SerpAPI tools not available: {e}")
             else:
-                logger.info("GOOGLE_API_KEY or GOOGLE_CSE_ID not set, web search disabled")
+                logger.info(
+                    "SERPAPI_API_KEY not set, web search disabled")
 
         except Exception as e:
             logger.error(f"Error initializing tools: {e}")
@@ -180,7 +217,8 @@ class ChatHandler(BaseHandler):
 
     def _query_llm(self, query: str) -> str:
         """
-        Query LLM with the user's request
+        Query LLM with the user's request using a LangChain agent.
+        If tools are available the agent can invoke them automatically.
 
         Args:
             query: User query
@@ -195,9 +233,21 @@ class ChatHandler(BaseHandler):
                 SystemMessage(content=CHAT_SYSTEM_PROMPT),
                 HumanMessage(content=query)
             ]
+            print("Tools available to agent:", [tool.name for tool in self.tools])
+            if self.tools:
+                from langchain.agents import create_agent
 
-            response = self.llm.invoke(messages)
-            return response.content
+                agent = create_agent(
+                    model=self.llm,
+                    tools=self.tools,
+                    system_prompt=CHAT_SYSTEM_PROMPT,
+                )
+                result = agent.invoke({"messages": [HumanMessage(content=query)]})
+                # Last message in the result is the final AI response
+                return result["messages"][-1].content
+            else:
+                response = self.llm.invoke(messages)
+                return response.content
 
         except Exception as e:
             logger.error(f"Error querying LLM: {e}")

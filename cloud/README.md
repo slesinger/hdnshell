@@ -139,7 +139,6 @@ Tested with Python 3.11+.
 3. (Optional) For web search in chat:
 	 ```bash
 	 export SERPAPI_API_KEY="your-key-here"
-	 export GOOGLE_CSE_ID="your-cse-id"
 	 ```
 4. (Optional) For documentation access:
 	 ```bash

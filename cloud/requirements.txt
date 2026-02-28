@@ -10,14 +10,21 @@ python-dotenv>=1.0.0
 bs4>=0.0.2
 
 # LLM dependencies (required for chat handler with Azure OpenAI)
-langchain>=1.0.0
-langchain-openai>=1.0.0
-langchain-community>=0.0.20
-langchain-core>=1.0.0
+langchain==1.2.0
+langchain-classic==1.0.1
+langchain-community==0.4.1
+langchain-core==1.2.5
+langchain-openai==1.1.6
+langchain-text-splitters==1.1.0
 
-# Optional: Google Search integration
-langchain-google-community>=1.0.0
-# google-api-python-client>=2.100.0
+# LangGraph (agent orchestration, used by langchain.agents.create_agent)
+langgraph==1.0.5
+langgraph-checkpoint==3.0.1
+langgraph-prebuilt==1.0.5
+langgraph-sdk==0.3.1
+
+# SerpAPI Search integration
+google-search-results==2.4.2
 
 # Packaging tool
 pyinstaller
