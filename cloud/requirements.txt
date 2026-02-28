@@ -26,5 +26,7 @@ langgraph-sdk==0.3.1
 # SerpAPI Search integration
 google-search-results==2.4.2
 
+# Context7 MCP integration (direct HTTP, uses requests which is already listed)
+
 # Packaging tool
 pyinstaller

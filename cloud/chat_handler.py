@@ -109,7 +109,7 @@ class ChatHandler(BaseHandler):
             logger.error(f"Error initializing LLM: {e}")
 
     def _initialize_tools(self):
-        """Initialize LangChain tools including web search"""
+        """Initialize LangChain tools including web search and context7 docs"""
         try:
             # Check for SerpAPI key for web search
             serpapi_key = os.getenv('SERPAPI_API_KEY')
@@ -137,6 +137,126 @@ class ChatHandler(BaseHandler):
 
         except Exception as e:
             logger.error(f"Error initializing tools: {e}")
+
+        self._initialize_context7_tools()
+
+    # ------------------------------------------------------------------ #
+    # Context7 MCP helpers                                                 #
+    # ------------------------------------------------------------------ #
+
+    # Known library ID on context7 for the C64 reference project
+    _C64REF_LIBRARY_ID = "/mist64/c64ref"
+
+    def _context7_request(self, method: str, params: dict, request_id: int = 1) -> dict:
+        """
+        Send a single JSON-RPC request to the context7 MCP endpoint.
+        Handles the streamable-HTTP session handshake transparently.
+
+        Returns the parsed JSON-RPC response dict, or {} on error.
+        """
+        import requests as _requests
+
+        api_key = os.getenv('CONTEXT7_API_KEY')
+        if not api_key:
+            logger.warning("CONTEXT7_API_KEY not set")
+            return {}
+
+        url = "https://mcp.context7.com/mcp"
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+            "CONTEXT7_API_KEY": api_key,
+        }
+
+        session = _requests.Session()
+
+        # --- initialise the MCP session ---
+        init_payload = {
+            "jsonrpc": "2.0",
+            "id": 0,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {},
+                "clientInfo": {"name": "hdnsh-cloud", "version": "1.0"},
+            },
+        }
+        try:
+            init_resp = session.post(url, json=init_payload, headers=headers, timeout=15)
+            init_resp.raise_for_status()
+            session_id = init_resp.headers.get("Mcp-Session-Id")
+            if session_id:
+                headers["Mcp-Session-Id"] = session_id
+        except Exception as e:
+            logger.error(f"context7 init error: {e}")
+            return {}
+
+        # --- call the actual method ---
+        payload = {"jsonrpc": "2.0", "id": request_id, "method": method, "params": params}
+        try:
+            resp = session.post(url, json=payload, headers=headers, timeout=30)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            logger.error(f"context7 request error ({method}): {e}")
+            return {}
+
+    def _context7_extract_text(self, rpc_response: dict) -> str:
+        """Extract plain text from a tools/call JSON-RPC response."""
+        result = rpc_response.get("result", {})
+        content = result.get("content", [])
+        parts = [c.get("text", "") for c in content if c.get("type") == "text"]
+        return "\n".join(parts).strip() or "No documentation found."
+
+    def _c64ref_get_docs(self, topic: str) -> str:
+        """
+        Retrieve C64 reference documentation for *topic* from context7.
+        Uses the pre-resolved library ID for https://github.com/mist64/c64ref.
+        """
+        response = self._context7_request(
+            method="tools/call",
+            params={
+                "name": "get-library-docs",
+                "arguments": {
+                    "context7CompatibleLibraryID": self._C64REF_LIBRARY_ID,
+                    "topic": topic,
+                    "tokens": 5000,
+                },
+            },
+            request_id=2,
+        )
+        return self._context7_extract_text(response)
+
+    def _initialize_context7_tools(self):
+        """Add the context7 C64-reference documentation tool to self.tools."""
+        api_key = os.getenv('CONTEXT7_API_KEY')
+        if not api_key:
+            logger.info("CONTEXT7_API_KEY not set, context7 tool disabled")
+            return
+
+        try:
+            from langchain_core.tools import Tool
+
+            c64ref_tool = Tool(
+                name="c64_reference_docs",
+                description=(
+                    "Retrieve authoritative Commodore 64 reference documentation "
+                    "(CPU opcodes, memory map, SID/VIC registers, KERNAL routines, etc.) "
+                    "from the c64ref project (https://github.com/mist64/c64ref). "
+                    "Input is the topic or keyword to look up, e.g. 'SID registers', "
+                    "'6502 opcodes', 'memory map', 'KERNAL vectors'."
+                ),
+                func=self._c64ref_get_docs,
+            )
+
+            self.tools.append(c64ref_tool)
+            logger.info("context7 c64_reference_docs tool initialized (library: %s)",
+                        self._C64REF_LIBRARY_ID)
+
+        except ImportError as e:
+            logger.warning(f"langchain_core not available for context7 tool: {e}")
+        except Exception as e:
+            logger.error(f"Error initializing context7 tool: {e}")
 
     def can_handle(self, text: str, session_id: int = 0) -> bool:
         """
