@@ -145,24 +145,36 @@ export default function StatusExtended({ lastC64Ip }) {
           <div className="col-12 col-lg-4">
             <div className="border rounded-4 p-3 h-100">
               <h3 className="h6">Step 3 &mdash; ROM files</h3>
-              <ul className="list-unstyled mb-0">
-                <li className="d-flex align-items-center gap-2 mb-2">
-                  <span
-                    className={`status-dot ${
-                      status["hdnsh.bin_present"] ? "ok" : "danger"
-                    }`}
-                  />
-                  <span>hdnsh.bin</span>
-                </li>
-                <li className="d-flex align-items-center gap-2">
-                  <span
-                    className={`status-dot ${
-                      status["hdnsh.cfg_present"] ? "ok" : "danger"
-                    }`}
-                  />
-                  <span>hdnsh.cfg</span>
-                </li>
-              </ul>
+              <div className="d-flex align-items-start justify-content-between gap-2">
+                <ul className="list-unstyled mb-0">
+                  <li className="d-flex align-items-center gap-2 mb-2">
+                    <span
+                      className={`status-dot ${
+                        status["hdnsh.bin_present"] ? "ok" : "danger"
+                      }`}
+                    />
+                    <span>hdnsh.bin</span>
+                  </li>
+                  <li className="d-flex align-items-center gap-2">
+                    <span
+                      className={`status-dot ${
+                        status["hdnsh.cfg_present"] ? "ok" : "danger"
+                      }`}
+                    />
+                    <span>hdnsh.cfg</span>
+                  </li>
+                </ul>
+                {hasIp ? (
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm flex-shrink-0"
+                    onClick={handleEnsureRom}
+                    disabled={ensureRomLoading}
+                  >
+                    {ensureRomLoading ? "Uploading…" : "Download & update"}
+                  </button>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
