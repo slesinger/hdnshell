@@ -8,11 +8,19 @@ const NAV_ITEMS = [
   { id: "inspector", label: "Inspector" }
 ];
 
+const EMPTY_EXTENDED = {
+  ftp_file_service_enabled: false,
+  ultimate_dma_service_enabled: false,
+  "hdnsh.bin_present": false,
+  "hdnsh.cfg_present": false
+};
+
 export default function App() {
   const [connected, setConnected] = useState(false);
   const [lastC64Ip, setLastC64Ip] = useState("");
   const [backendReachable, setBackendReachable] = useState(true);
   const [page, setPage] = useState("home");
+  const [extendedStatus, setExtendedStatus] = useState(EMPTY_EXTENDED);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,6 +39,23 @@ export default function App() {
           setBackendReachable(true);
           setConnected(Boolean(payload?.connected));
           setLastC64Ip(payload?.last_c64_ip ?? "");
+        }
+
+        try {
+          const extResponse = await fetch(`${API_BASE_URL}/c64/status_extended`, { method: "GET" });
+          if (extResponse.ok) {
+            const extPayload = await extResponse.json();
+            if (!cancelled) {
+              setExtendedStatus({
+                ftp_file_service_enabled: Boolean(extPayload?.ftp_file_service_enabled),
+                ultimate_dma_service_enabled: Boolean(extPayload?.ultimate_dma_service_enabled),
+                "hdnsh.bin_present": Boolean(extPayload?.["hdnsh.bin_present"]),
+                "hdnsh.cfg_present": Boolean(extPayload?.["hdnsh.cfg_present"])
+              });
+            }
+          }
+        } catch {
+          // extended status failure is non-critical
         }
       } catch {
         if (!cancelled) {
@@ -54,6 +79,28 @@ export default function App() {
       window.removeEventListener("refreshC64Status", refreshListener);
     };
   }, []);
+
+  const shellButtonsEnabled =
+    extendedStatus.ftp_file_service_enabled &&
+    extendedStatus.ultimate_dma_service_enabled &&
+    extendedStatus["hdnsh.bin_present"] &&
+    extendedStatus["hdnsh.cfg_present"];
+
+  const handleShellEnable = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/c64/basic/enable`, { method: "PUT" });
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleShellDisable = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/c64/basic/disable`, { method: "PUT" });
+    } catch {
+      // ignore
+    }
+  };
 
   const hasLastIp = lastC64Ip.trim().length > 0;
   let statusLabel = "Find your C64U";
@@ -83,7 +130,36 @@ export default function App() {
                 </li>
               ))}
             </ul>
-            <div className="d-flex align-items-center ms-auto">
+            <div className="d-flex align-items-center gap-3 ms-auto">
+              <div className="d-flex align-items-center gap-2">
+                <span className="text-white-50 small text-nowrap">Hondani Shell:</span>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  style={{
+                    backgroundColor: shellButtonsEnabled ? "#c0392b" : undefined,
+                    borderColor: shellButtonsEnabled ? "#c0392b" : undefined,
+                    color: shellButtonsEnabled ? "#fff" : undefined
+                  }}
+                  disabled={!shellButtonsEnabled}
+                  onClick={handleShellDisable}
+                >
+                  DISABLE
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  style={{
+                    backgroundColor: shellButtonsEnabled ? "#27ae60" : undefined,
+                    borderColor: shellButtonsEnabled ? "#27ae60" : undefined,
+                    color: shellButtonsEnabled ? "#fff" : undefined
+                  }}
+                  disabled={!shellButtonsEnabled}
+                  onClick={handleShellEnable}
+                >
+                  ENABLE
+                </button>
+              </div>
               <button
                 type="button"
                 className={`status-pill status-button ${

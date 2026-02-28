@@ -214,6 +214,16 @@ def ensure_rom():
         return jsonify({"error": str(exc)}), 500
 
 
+@app.route("/c64/basic/enable", methods=["PUT"])
+def c64_basic_enable():
+    return jsonify({"status": "ok"})
+
+
+@app.route("/c64/basic/disable", methods=["PUT"])
+def c64_basic_disable():
+    return jsonify({"status": "ok"})
+
+
 @app.route("/settings/find_c64u", methods=["POST"])
 def find_c64u():
     # Indicate scan started
