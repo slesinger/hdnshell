@@ -2,10 +2,7 @@
 
 ```
 dat dokumentaci jako AI help
-dat html napovedu do UI (ne jen link na github)
 screen roll - taky s D800
-instalace serveru linux/win/macos
-Create Ultimage cfg file
 nastavovani ip serveru
 tutorial pres input keys
 tut1 prchazt disk, mount disk, run game

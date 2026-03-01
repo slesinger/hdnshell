@@ -3,10 +3,12 @@ import FindC64U from "./find_c64u.jsx";
 import { API_BASE_URL } from "./api.js";
 import StatusExtended from "./StatusExtended.jsx";
 import UpdateChecker from "./UpdateChecker.jsx";
+import DocsPage from "./DocsPage.jsx";
 
 const NAV_ITEMS = [
   { id: "file-manager", label: "File Manager" },
-  { id: "inspector", label: "Inspector" }
+  { id: "inspector", label: "Inspector" },
+  { id: "docs", label: "Docs" }
 ];
 
 export default function App() {
@@ -171,7 +173,16 @@ export default function App() {
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               {NAV_ITEMS.map((item) => (
                 <li className="nav-item" key={item.id}>
-                  <span className="nav-link">{item.label}</span>
+                  <button
+                    type="button"
+                    className={`nav-link btn btn-link p-0 px-2 text-decoration-none${
+                      page === item.id ? " active fw-semibold" : ""
+                    }`}
+                    style={{ color: page === item.id ? "#fff" : "rgba(255,255,255,0.75)" }}
+                    onClick={() => setPage(item.id)}
+                  >
+                    {item.label}
+                  </button>
                 </li>
               ))}
             </ul>
@@ -241,6 +252,8 @@ export default function App() {
           </div>
         ) : page === "find" ? (
           <FindC64U lastC64Ip={lastC64Ip} />
+        ) : page === "docs" ? (
+          <DocsPage />
         ) : (
           <div className="rounded-4 bg-white border shadow-sm p-4">
             <h1 className="h4 mb-3">Welcome to HDN Cloud</h1>

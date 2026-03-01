@@ -50,3 +50,96 @@
   background: rgba(220, 53, 69, 0.25);
   border-color: rgba(220, 53, 69, 0.7);
 }
+
+/* Docs page markdown content */
+.docs-content {
+  font-size: 0.925rem;
+  line-height: 1.7;
+  color: #212529;
+}
+
+.docs-content h1 { font-size: 1.5rem; font-weight: 700; margin-top: 0; margin-bottom: 0.75rem; }
+.docs-content h2 { font-size: 1.2rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; border-bottom: 1px solid #dee2e6; padding-bottom: 0.25rem; }
+.docs-content h3 { font-size: 1.05rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.4rem; }
+.docs-content h4 { font-size: 0.95rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.3rem; }
+
+.docs-content p { margin-bottom: 0.75rem; }
+
+.docs-content code {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  font-size: 0.875em;
+  color: #c7254e;
+}
+
+.docs-content pre {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.docs-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+.docs-content blockquote {
+  border-left: 4px solid #0d6efd;
+  background: #f0f6ff;
+  margin: 0 0 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0 6px 6px 0;
+  color: #374151;
+}
+
+.docs-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.docs-content table th,
+.docs-content table td {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #dee2e6;
+  text-align: left;
+}
+
+.docs-content table th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.docs-content table tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+.docs-content ul,
+.docs-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.docs-content li {
+  margin-bottom: 0.2rem;
+}
+
+.docs-content a {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.docs-content a:hover {
+  text-decoration: underline;
+}
