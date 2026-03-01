@@ -1,10 +1,11 @@
 # TODO
 
 ```
-dat dokumentaci jako AI help
 screen roll - taky s D800
-nastavovani ip serveru
+m: jako AI manual protoze pri i: to nepouziva vzdy ten spravny tool
+use FAISS for in memory similarity search, pickle embeddings to disk
 tutorial pres input keys
+nastavovani ip serveru
 tut1 prchazt disk, mount disk, run game
 tut2 jak na help
 tut3 ask me anything

@@ -1,6 +1,7 @@
 # Web server for status API
 flask
 flask-cors
+flask-sock
 # Core dependencies
 pydantic>=2.0.0
 pytest>=7.0.0

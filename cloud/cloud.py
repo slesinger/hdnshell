@@ -8,11 +8,15 @@ import platform
 import logging
 import ftplib
 import requests
+import queue
+import base64
+import threading
 from version import __version__
 from cloud_server import C64Server
 from flask_cors import CORS
 from threading import Thread
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from flask_sock import Sock
 import time
 from flask import send_from_directory
 
@@ -24,6 +28,73 @@ logger = logging.getLogger("webserver")
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 CORS(app)
+sock = Sock(app)
+
+# ── U64 Stream state ──────────────────────────────────────────────────────────
+# UDP ports used by the Ultimate64 VIC/audio stream (REST API defaults)
+U64_VIDEO_UDP_PORT = 11000
+U64_AUDIO_UDP_PORT = 11001
+
+_video_active = False
+_video_udp_thread = None
+_video_clients: list[queue.Queue] = []
+_video_lock = threading.Lock()
+
+_audio_active = False
+_audio_udp_thread = None
+_audio_clients: list[queue.Queue] = []
+_audio_lock = threading.Lock()
+
+
+def _udp_receiver(port: int, get_active, clients, lock, stop_event: threading.Event):
+    """Background thread: receive UDP packets and broadcast to all WebSocket queues."""
+    udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    udp.bind(('0.0.0.0', port))
+    udp.settimeout(0.5)
+    logger.info(f"UDP listener started on port {port}")
+    while not stop_event.is_set():
+        try:
+            data, _ = udp.recvfrom(65507)
+        except socket.timeout:
+            continue
+        except OSError:
+            break
+        with lock:
+            dead = []
+            for q in clients:
+                try:
+                    q.put_nowait(data)
+                except queue.Full:
+                    pass  # drop frame for slow client
+            for q in dead:
+                clients.remove(q)
+    udp.close()
+    logger.info(f"UDP listener stopped on port {port}")
+
+
+def _get_outbound_ip() -> str:
+    """Return the IP address the server uses to reach the outside world."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except OSError:
+        return "127.0.0.1"
+
+
+def _send_tcp_cmd(host: str, cmd: int, payload: bytes = b'') -> None:
+    """Send a single DMA-service command to Ultimate64 on port 64."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(5)
+    s.connect((host, 64))
+    s.sendall((0xFF00 | cmd).to_bytes(2, 'little'))
+    s.sendall(len(payload).to_bytes(2, 'little'))
+    if payload:
+        s.sendall(payload)
+    s.close()
 
 
 @app.route("/")
@@ -491,6 +562,205 @@ def clients():
     return jsonify({"clients": None})
 
 
+# ─── Keyboard ──────────────────────────────────────────────────────────────────
+
+
+@app.route("/c64/keyboard", methods=["POST"])
+def c64_keyboard():
+    """Inject key presses into the C64 via TCP DMA-service command 0xFF03.
+
+    Body: {"bytes": [<petscii_byte>, ...]}
+    """
+    last_ip = read_last_c64_ip()
+    if not last_ip:
+        return jsonify({"error": "No C64 IP configured"}), 400
+    data = request.get_json(force=True, silent=True) or {}
+    byte_list = data.get("bytes", [])
+    if not byte_list:
+        return jsonify({"error": "No bytes provided"}), 400
+    payload = bytes([b & 0xFF for b in byte_list])
+    try:
+        _send_tcp_cmd(last_ip, 0x03, payload)
+        return jsonify({"status": "ok", "bytes_sent": len(payload)})
+    except OSError as exc:
+        logger.exception("Keyboard send failed")
+        return jsonify({"error": str(exc)}), 500
+
+
+# ─── Stream control ────────────────────────────────────────────────────────────
+
+
+@app.route("/streams/video/start", methods=["PUT"])
+def start_video_stream():
+    """Tell U64 to start sending its VIC video stream to this server (UDP 11000),
+    and start the local UDP listener if not already running."""
+    global _video_active, _video_udp_thread
+    last_ip = read_last_c64_ip()
+    if not last_ip:
+        return jsonify({"error": "No C64 IP configured"}), 400
+
+    server_ip = _get_outbound_ip()
+    try:
+        url = f"http://{last_ip}/v1/streams/video:start"
+        resp = requests.put(url, params={"ip": server_ip}, timeout=5)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        logger.warning(f"U64 stream start via REST failed: {exc} — trying TCP fallback")
+        try:
+            # TCP fallback: SOCKET_CMD_VICSTREAM_ON (0xFF20)
+            _send_tcp_cmd(last_ip, 0x20)
+        except OSError as tcp_exc:
+            logger.exception("TCP fallback for video stream also failed")
+            return jsonify({"error": str(tcp_exc)}), 500
+
+    if not _video_active:
+        _video_active = True
+        stop_evt = threading.Event()
+        _video_udp_thread = threading.Thread(
+            target=_udp_receiver,
+            args=(U64_VIDEO_UDP_PORT, lambda: _video_active, _video_clients, _video_lock, stop_evt),
+            daemon=True,
+            name="udp-video",
+        )
+        _video_udp_thread._stop_event = stop_evt
+        _video_udp_thread.start()
+
+    return jsonify({"status": "ok", "streaming_to": server_ip, "port": U64_VIDEO_UDP_PORT})
+
+
+@app.route("/streams/video/stop", methods=["PUT"])
+def stop_video_stream():
+    """Stop the video stream."""
+    global _video_active
+    _video_active = False
+    if _video_udp_thread and hasattr(_video_udp_thread, "_stop_event"):
+        _video_udp_thread._stop_event.set()
+
+    last_ip = read_last_c64_ip()
+    if last_ip:
+        try:
+            url = f"http://{last_ip}/v1/streams/video:stop"
+            requests.put(url, timeout=5)
+        except requests.RequestException:
+            try:
+                _send_tcp_cmd(last_ip, 0x30)  # SOCKET_CMD_VICSTREAM_OFF
+            except OSError:
+                pass
+
+    return jsonify({"status": "ok"})
+
+
+@app.route("/streams/audio/start", methods=["PUT"])
+def start_audio_stream():
+    """Tell U64 to start sending its audio stream to this server (UDP 11001)."""
+    global _audio_active, _audio_udp_thread
+    last_ip = read_last_c64_ip()
+    if not last_ip:
+        return jsonify({"error": "No C64 IP configured"}), 400
+
+    server_ip = _get_outbound_ip()
+    try:
+        url = f"http://{last_ip}/v1/streams/audio:start"
+        resp = requests.put(url, params={"ip": server_ip}, timeout=5)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        logger.warning(f"U64 audio stream start via REST failed: {exc} — trying TCP fallback")
+        try:
+            _send_tcp_cmd(last_ip, 0x21)  # SOCKET_CMD_AUDIOSTREAM_ON
+        except OSError as tcp_exc:
+            logger.exception("TCP fallback for audio stream also failed")
+            return jsonify({"error": str(tcp_exc)}), 500
+
+    if not _audio_active:
+        _audio_active = True
+        stop_evt = threading.Event()
+        _audio_udp_thread = threading.Thread(
+            target=_udp_receiver,
+            args=(U64_AUDIO_UDP_PORT, lambda: _audio_active, _audio_clients, _audio_lock, stop_evt),
+            daemon=True,
+            name="udp-audio",
+        )
+        _audio_udp_thread._stop_event = stop_evt
+        _audio_udp_thread.start()
+
+    return jsonify({"status": "ok", "streaming_to": server_ip, "port": U64_AUDIO_UDP_PORT})
+
+
+@app.route("/streams/audio/stop", methods=["PUT"])
+def stop_audio_stream():
+    """Stop the audio stream."""
+    global _audio_active
+    _audio_active = False
+    if _audio_udp_thread and hasattr(_audio_udp_thread, "_stop_event"):
+        _audio_udp_thread._stop_event.set()
+
+    last_ip = read_last_c64_ip()
+    if last_ip:
+        try:
+            url = f"http://{last_ip}/v1/streams/audio:stop"
+            requests.put(url, timeout=5)
+        except requests.RequestException:
+            try:
+                _send_tcp_cmd(last_ip, 0x31)  # SOCKET_CMD_AUDIOSTREAM_OFF
+            except OSError:
+                pass
+
+    return jsonify({"status": "ok"})
+
+
+# ─── WebSocket proxies ─────────────────────────────────────────────────────────
+
+
+@sock.route("/ws/video")
+def ws_video(ws):
+    """WebSocket endpoint: forward UDP video packets to browser clients."""
+    q: queue.Queue = queue.Queue(maxsize=10)
+    with _video_lock:
+        _video_clients.append(q)
+    logger.info("WebSocket video client connected")
+    try:
+        while True:
+            try:
+                frame: bytes = q.get(timeout=5.0)
+                ws.send(frame)  # binary frame
+            except queue.Empty:
+                # No data – check if client is still connected and stream is active
+                if not ws.connected or not _video_active:
+                    break
+    except Exception:
+        pass
+    finally:
+        with _video_lock:
+            if q in _video_clients:
+                _video_clients.remove(q)
+        logger.info("WebSocket video client disconnected")
+
+
+@sock.route("/ws/audio")
+def ws_audio(ws):
+    """WebSocket endpoint: forward UDP audio packets to browser clients."""
+    q: queue.Queue = queue.Queue(maxsize=20)
+    with _audio_lock:
+        _audio_clients.append(q)
+    logger.info("WebSocket audio client connected")
+    try:
+        while True:
+            try:
+                chunk: bytes = q.get(timeout=5.0)
+                ws.send(chunk)
+            except queue.Empty:
+                # No data – check if client is still connected and stream is active
+                if not ws.connected or not _audio_active:
+                    break
+    except Exception:
+        pass
+    finally:
+        with _audio_lock:
+            if q in _audio_clients:
+                _audio_clients.remove(q)
+        logger.info("WebSocket audio client disconnected")
+
+
 def get_external_ips():
     ips = []
     for iface in socket.getaddrinfo(host=socket.gethostname(), port=None):
@@ -519,7 +789,7 @@ def run_web():
             print(f"  http://{ip}:8064")
     else:
         print("No external IP address found.")
-    app.run(host='0.0.0.0', port=8064, debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', port=8064, debug=False, use_reloader=False, threaded=True)
 
 
 if __name__ == "__main__":

@@ -4,10 +4,12 @@ import { API_BASE_URL } from "./api.js";
 import StatusExtended from "./StatusExtended.jsx";
 import UpdateChecker from "./UpdateChecker.jsx";
 import DocsPage from "./DocsPage.jsx";
+import ScreenPage from "./ScreenPage.jsx";
 
 const NAV_ITEMS = [
   { id: "file-manager", label: "File Manager" },
   { id: "inspector", label: "Inspector" },
+  { id: "screen", label: "Screen" },
   { id: "docs", label: "Docs" }
 ];
 
@@ -254,6 +256,8 @@ export default function App() {
           <FindC64U lastC64Ip={lastC64Ip} />
         ) : page === "docs" ? (
           <DocsPage />
+        ) : page === "screen" ? (
+          <ScreenPage />
         ) : (
           <div className="rounded-4 bg-white border shadow-sm p-4">
             <h1 className="h4 mb-3">Welcome to HDN Cloud</h1>

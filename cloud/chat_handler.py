@@ -19,6 +19,19 @@ logger = logging.getLogger(__name__)
 CHAT_SYSTEM_PROMPT = """You are an AI assistant for
 Commodore 64 users.
 
+TOOL PRIORITY RULES:
+1. For ANY question about the
+   Hondani Shell (hdnsh), its
+   commands, CSDB, disk ops,
+   mounting, file listing, or
+   cloud features: ALWAYS use
+   hondani_shell_manual FIRST.
+2. For C64 hardware, opcodes,
+   memory map, SID, VIC, KERNAL:
+   use c64_reference_docs.
+3. Use web_search ONLY for topics
+   not covered by the above tools.
+
 CRITICAL RULE:
 Output MUST contain ONLY ASCII
 characters (codes 32-126).
@@ -67,8 +80,114 @@ class ChatHandler(BaseHandler):
         """Initialize ChatHandler with LangChain components"""
         self.llm = None
         self.tools = []
+        self._manual_content: dict = {}  # filename -> text
+        self._load_manual_files()
         self._initialize_llm()
         self._initialize_tools()
+
+    # ------------------------------------------------------------------ #
+    # User manual helpers                                                  #
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _find_manual_dir() -> str:
+        """
+        Resolve the user_manual directory whether running from source or
+        as a PyInstaller frozen binary.
+        """
+        import sys
+        # PyInstaller unpacks data into sys._MEIPASS
+        if getattr(sys, 'frozen', False):
+            base = sys._MEIPASS
+            return os.path.join(base, 'user_manual')
+        # Running from source: cloud/ -> ../docs/user_manual
+        here = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(here, '..', 'docs', 'user_manual')
+
+    def _load_manual_files(self):
+        """Read all .md files from the user_manual directory into memory."""
+        manual_dir = self._find_manual_dir()
+        if not os.path.isdir(manual_dir):
+            logger.warning("User manual directory not found: %s", manual_dir)
+            return
+        for fname in sorted(os.listdir(manual_dir)):
+            if fname.endswith('.md'):
+                fpath = os.path.join(manual_dir, fname)
+                try:
+                    with open(fpath, 'r', encoding='utf-8') as fh:
+                        self._manual_content[fname] = fh.read()
+                except Exception as e:
+                    logger.warning("Could not read manual file %s: %s", fname, e)
+        logger.info("Loaded %d user manual file(s) into memory", len(self._manual_content))
+
+    def _search_manual(self, topic: str) -> str:
+        """
+        Search the in-memory user manual for *topic*.
+
+        If *topic* is empty or "all", returns the full concatenated manual.
+        Otherwise returns every paragraph/section that contains the keyword
+        (case-insensitive). Falls back to the full manual if nothing matches.
+        """
+        if not self._manual_content:
+            return "User manual is not available."
+
+        topic = topic.strip()
+        keyword = topic.lower()
+
+        if not keyword or keyword == 'all':
+            sections = []
+            for fname, text in self._manual_content.items():
+                sections.append(f"=== {fname} ===\n{text}")
+            return "\n\n".join(sections)
+
+        # Collect matching sections (split on markdown headings or blank lines)
+        results = []
+        for fname, text in self._manual_content.items():
+            # Split into paragraphs on double newlines
+            paragraphs = text.split('\n\n')
+            for para in paragraphs:
+                if keyword in para.lower():
+                    results.append(para.strip())
+
+        if results:
+            return "\n\n".join(results)
+
+        # Nothing matched — return the full manual so the LLM can still help
+        logger.info("Manual search: no paragraphs matched '%s', returning full manual", topic)
+        sections = []
+        for fname, text in self._manual_content.items():
+            sections.append(f"=== {fname} ===\n{text}")
+        return "\n\n".join(sections)
+
+    def _initialize_manual_tool(self):
+        """Register the user manual search as a LangChain tool."""
+        if not self._manual_content:
+            logger.info("User manual not loaded, manual tool disabled")
+            return
+        try:
+            from langchain_core.tools import Tool
+
+            manual_tool = Tool(
+                name="hondani_shell_manual",
+                description=(
+                    "ALWAYS use this tool first for any question about the Hondani Shell user manual"
+                    "(hdnsh), its commands, or its features. "
+                    "Covers: shell commands (mnt, umnt, cd, pwd, l, ll, r, run, m, hash, at, "
+                    "frz, reset, info, time, mkdir, empty), file operations, disk mounting, "
+                    "CSDB browsing and latest releases, cloud/AI integration, "
+                    "memory operations, executing programs, installation, and general usage. "
+                    "Input is a keyword or topic, e.g. 'mount', 'csdb', 'latest releases', "
+                    "'file operations', 'memory', 'cloud', 'installation', 'commands'. "
+                    "Use 'all' to retrieve the complete manual."
+                ),
+                func=self._search_manual,
+            )
+            self.tools.append(manual_tool)
+            logger.info("hondani_shell_manual tool initialized (%d files)", len(self._manual_content))
+        except ImportError as e:
+            logger.warning("langchain_core not available for manual tool: %s", e)
+        except Exception as e:
+            logger.error("Error initializing manual tool: %s", e)
 
     def _initialize_llm(self):
         """Initialize LangChain LLM with Azure OpenAI"""
@@ -122,7 +241,14 @@ class ChatHandler(BaseHandler):
 
                     search_tool = Tool(
                         name="web_search",
-                        description="Search the web for current information. Use this when you need up-to-date information or facts.",
+                        description=(
+                            "Search the EXTERNAL web for information that cannot be found "
+                            "in the Hondani Shell manual or C64 reference docs. "
+                            "Use ONLY for topics unrelated to the Hondani Shell, its commands, "
+                            "CSDB, C64 hardware, or 6502 programming. "
+                            "Do NOT use for shell usage questions, CSDB browsing, "
+                            "listing releases, or any feature of the Hondani Shell."
+                        ),
                         func=search.run
                     )
 
@@ -139,6 +265,7 @@ class ChatHandler(BaseHandler):
             logger.error(f"Error initializing tools: {e}")
 
         self._initialize_context7_tools()
+        self._initialize_manual_tool()
 
     # ------------------------------------------------------------------ #
     # Context7 MCP helpers                                                 #
