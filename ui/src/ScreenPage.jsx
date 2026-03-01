@@ -627,11 +627,7 @@ export default function ScreenPage() {
           color: "#1b5e20",
         }}
       >
-        <strong>Format:</strong> U64 VIC stream — UDP 780-byte packets: 12-byte header +
-        768 bytes of 4‑bit nibble-packed C64 color indices (16-color palette). 4 lines per
-        packet × 384 pixels wide. Last-packet-of-frame flag = bit 15 of the line field.
-        PAL: 272 lines / 68 packets per frame. Palette and decoder are in{" "}
-        <code>ScreenPage.jsx::parsePacket()</code>.
+      The streaming capability is available over wired connections only.
       </div>
     </div>
   );

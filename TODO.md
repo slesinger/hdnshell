@@ -21,8 +21,6 @@ integration disablable fastloader
 #h se zatim chova jako sd karta
 Je toto validni jen pro IEC? - `cd:←` — Go up one level (like `cd ..`)
 funguje unmount?
-pridat odkaz na dokumentaci do UI
-fetchovat a ukazovat posledni release verzi v UI
 ```
 
 Clip board works by pressing C=+C which will freeze the screen and let you select text with SHIFT+cursor and commiting with RETURN. Paste works by pressing C=+V which will paste from clip board to current cursor position.
