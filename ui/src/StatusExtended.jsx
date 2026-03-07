@@ -3,6 +3,7 @@ import { API_BASE_URL } from "./api.js";
 import FindC64U from "./find_c64u.jsx";
 
 const normalizeStatus = (payload) => ({
+  connected: Boolean(payload?.connected),
   ultimate_dma_service_enabled: Boolean(payload?.ultimate_dma_service_enabled),
   ftp_file_service_enabled: Boolean(payload?.ftp_file_service_enabled),
   "hdnsh.bin_present": Boolean(payload?.["hdnsh.bin_present"]),
@@ -10,6 +11,7 @@ const normalizeStatus = (payload) => ({
 });
 
 const EMPTY_STATUS = {
+  connected: false,
   ultimate_dma_service_enabled: false,
   ftp_file_service_enabled: false,
   "hdnsh.bin_present": false,
@@ -84,7 +86,7 @@ export default function StatusExtended({ lastC64Ip }) {
     }
   };
 
-  const hasIp = lastC64Ip?.trim().length > 0;
+  const hasIp = lastC64Ip?.trim().length > 0 && status.connected;
   const needsNetworkServices =
     !status.ftp_file_service_enabled || !status.ultimate_dma_service_enabled;
   const needsRom = !status["hdnsh.bin_present"];
@@ -113,7 +115,9 @@ export default function StatusExtended({ lastC64Ip }) {
                 <li className="d-flex align-items-center gap-2">
                   <span className={`status-dot ${hasIp ? "ok" : "danger"}`} />
                   <span>
-                    {hasIp ? lastC64Ip : "Not detected yet"}
+                    {lastC64Ip?.trim()
+                      ? `${lastC64Ip}${status.connected ? "" : " (offline)"}`
+                      : "Not detected yet"}
                   </span>
                 </li>
               </ul>

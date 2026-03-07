@@ -173,13 +173,15 @@ def check_ftp_files(host):
 @app.route("/c64/status_extended")
 def c64_status_extended():
     last_c64_ip = read_last_c64_ip()
+    connected = False
     ultimate_dma_service_enabled = False
     ftp_file_service_enabled = False
     hdnsh_bin_present = False
     hdnsh_cfg_present = False
 
     if last_c64_ip:
-        ultimate_dma_service_enabled = is_port_open(last_c64_ip, 64, timeout=2)
+        connected = is_port_open(last_c64_ip, 64, timeout=2)
+        ultimate_dma_service_enabled = connected
         (
             ftp_file_service_enabled,
             hdnsh_bin_present,
@@ -188,6 +190,7 @@ def c64_status_extended():
 
     return jsonify(
         {
+            "connected": connected,
             "ultimate_dma_service_enabled": ultimate_dma_service_enabled,
             "ftp_file_service_enabled": ftp_file_service_enabled,
             "hdnsh.bin_present": hdnsh_bin_present,
@@ -481,6 +484,21 @@ def c64_basic_disable():
         return jsonify(response.json())
     except requests.RequestException as exc:
         logger.exception("Failed to disable Basic ROM")
+        return jsonify({"error": str(exc)}), 502
+
+
+@app.route("/c64/menu_button", methods=["PUT"])
+def c64_menu_button():
+    last_c64_ip = read_last_c64_ip()
+    if not last_c64_ip:
+        return jsonify({"error": "No C64 IP found. Run scan first."}), 400
+    try:
+        url = f"http://{last_c64_ip}/v1/machine:menu_button"
+        response = requests.put(url, timeout=5)
+        response.raise_for_status()
+        return jsonify({"status": "ok", "message": "Menu button command sent."})
+    except requests.RequestException as exc:
+        logger.exception("Failed to send menu button command")
         return jsonify({"error": str(exc)}), 502
 
 

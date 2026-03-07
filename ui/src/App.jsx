@@ -24,6 +24,7 @@ export default function App() {
   const [powerOffLoading, setPowerOffLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [rebootLoading, setRebootLoading] = useState(false);
+  const [menuButtonLoading, setMenuButtonLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,6 +114,17 @@ export default function App() {
     }
   };
 
+  const handleMenuButton = async () => {
+    setMenuButtonLoading(true);
+    try {
+      await fetch(`${API_BASE_URL}/c64/menu_button`, { method: "PUT" });
+    } catch {
+      // ignore
+    } finally {
+      setMenuButtonLoading(false);
+    }
+  };
+
   const handleReboot = async () => {
     setRebootLoading(true);
     try {
@@ -189,6 +201,14 @@ export default function App() {
               ))}
             </ul>
             <div className="d-flex align-items-center gap-3 ms-auto">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-light"
+                onClick={handleMenuButton}
+                disabled={menuButtonLoading}
+              >
+                {menuButtonLoading ? "…" : "Menu"}
+              </button>
               <button
                 type="button"
                 className="btn btn-sm btn-success"
