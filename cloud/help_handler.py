@@ -26,7 +26,9 @@ Provide your answer in the same language as the query. Only use ASCII characters
 
 HELP_TEXT = """\x05C64 HDN Shell Help\x9a
 
-\x9ehelp [topic]\x9a  Show help or search topics\x9eI:<query>\x9a     Chat with AI assistant
+\x9ehelp [topic]\x9a  Show help on a topic
+\x9ehelp topics\x9a   List help topics
+\x9eI:<query>\x9a     Chat with AI assistant
 \x9ec:<query>\x9a     Search CSDB.dk database
 \x9e?<expr>\x9a       Evaluate Python expression
 Examples:
@@ -81,9 +83,9 @@ Search the csdb.dk database for C64 releases, groups, and sceners.
 Usage: c: <search query>
 
 Examples:
-  c: latest releases
-  c: fairlight demos
-  c: rob hubbard music
+  c:latest
+  c:fairlight
+  c:rob hubbard music
 
 Returns information from the comprehensive C64 Scene Database.""",
     "commands": HELP_TEXT,

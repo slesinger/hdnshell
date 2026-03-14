@@ -479,7 +479,7 @@ class CSDBHandler(BaseHandler):
                         f"\x9b{f.get('id', '')}\x9a {f.get('name', '')}{size_str} ({f.get('downloads', 'N/A')} d/l)"
                     )
 
-            return "\n".join(output)
+            return "\n".join(output) + "\n"
 
         def format_scener_output(model: CSDBScener) -> str:
             result = f"\x9fHandle\x9a: {model.handle}\n"

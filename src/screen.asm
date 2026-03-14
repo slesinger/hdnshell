@@ -14,6 +14,7 @@
 .const SCREEN_HEIGHT = 25
 save_screen_to_history:
     ReuStore(SCREEN_RAM, screen_history_write_ptr, 0, SCREEN_WIDTH*SCREEN_HEIGHT)
+    ReuStore(COLOR_RAM, screen_history_write_ptr, 2, SCREEN_WIDTH*SCREEN_HEIGHT)
     // Update write pointer for next line by adding $28 (40) bytes
     lda screen_history_write_ptr
     clc
@@ -54,6 +55,7 @@ get_older_screen_history_line:
     bne !not_latest_screen+
     // Save current screen to REU buffer
     ReuStore(SCREEN_RAM, screen_history_write_ptr, 0, SCREEN_WIDTH*SCREEN_HEIGHT)
+    ReuStore(COLOR_RAM, screen_history_write_ptr, 2, SCREEN_WIDTH*SCREEN_HEIGHT)
 !not_latest_screen:
     // Move screen_history_read_ptr back by $28 (40) bytes
     lda screen_history_read_ptr
@@ -75,6 +77,7 @@ get_older_screen_history_line:
     debug()
     
     ReuFetch(SCREEN_RAM, screen_history_read_ptr, 0, SCREEN_WIDTH*SCREEN_HEIGHT)
+    ReuFetch(COLOR_RAM, screen_history_read_ptr, 2, SCREEN_WIDTH*SCREEN_HEIGHT)
     rts
 
 // ============================================================================
@@ -87,7 +90,8 @@ get_newer_screen_history_line:
     bne !+
     lda screen_history_read_ptr+1
     cmp screen_history_write_ptr+1
-    beq !no_history+
+    bne !+
+    jmp !no_history+
 !:
 
     // Move screen_history_read_ptr forward by $28 (40) bytes
@@ -107,6 +111,7 @@ get_newer_screen_history_line:
     sta screen_history_read_ptr+1
 !no_rollover:
     ReuFetch(SCREEN_RAM, screen_history_read_ptr, 0, SCREEN_WIDTH*SCREEN_HEIGHT)
+    ReuFetch(COLOR_RAM, screen_history_read_ptr, 2, SCREEN_WIDTH*SCREEN_HEIGHT)
     rts
 !no_history:
     // Clear rolling flag in INPUT_FLAGS
@@ -125,9 +130,12 @@ get_newer_screen_history_line:
 handle_if_rolling:
     pha              // Save key pressed
     cmp #KEY_F1
-    beq !rolling_F1F7+
-    cmp #KEY_F7
-    beq !rolling_F1F7+
+    bne !+
+    jmp !rolling_F1F7+
+!:  cmp #KEY_F7
+    bne !+
+    jmp !rolling_F1F7+
+!:
     // Other key pressed, check rolling flag
     lda INPUT_FLAGS
     and #$01
@@ -141,6 +149,7 @@ handle_if_rolling:
     sta screen_history_read_ptr+1
     // Display latest screen
     ReuFetch(SCREEN_RAM, screen_history_read_ptr, 0, SCREEN_WIDTH*SCREEN_HEIGHT)
+    ReuFetch(COLOR_RAM, screen_history_read_ptr, 2, SCREEN_WIDTH*SCREEN_HEIGHT)
     // Clear rolling flag in INPUT_FLAGS
     lda INPUT_FLAGS
     and #$FE
