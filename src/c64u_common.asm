@@ -69,38 +69,50 @@ sendcommand:
     rts
 
 
-// Reads data from Ultimate command interface and puts it to CHROUT
-uii_readdata_CHROUT:
-    lda #<readdata_CHROUT_callback
-    sta JSR_INDIRECT_ADDR
-    lda #>readdata_CHROUT_callback
-    sta JSR_INDIRECT_ADDR+1
 // Reads data from Ultimate command interface and calls callback to output each byte in A register
 // Input: callback address in JSR_INDIRECT_ADDR (lo/hi). Options are readdata_CHROUT_callback, readdata_PRG_callback
 // Output: effect depends on what callback pointer is set on input.
 uii_readdata:
-!skip_ff_bytes:
+    lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
     lda STATUS_REG
     and #STATUS_REG_BIT_DATA_AV
-    beq !data_not_available+
-    // data available, is it ff?
-    lda RESP_DATA_REG
-    // cmp #$ff  // TODO FF must not be skipped as is part of data, check somehow better is the byte is data or just read on when no data are available; FF means it is awaiting server to send some data
-    // beq !skip_ff_bytes-
-    jsr call_indirect  // jsr CHROUT,  Simulate the "JSR (JSR_INDIRECT_ADDR)" instruction
+    beq !bleble+
+    lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
+    // lda STATUS_REG
+    // and #STATUS_REG_BIT_DATA_AV
+    // beq !bleble+
+    // data available
+// dec $d020
 !read_remaining_data:
     lda STATUS_REG
     and #STATUS_REG_BIT_DATA_AV
     beq !data_not_available+
     // data available
+// lda STATUS_REG
+// ldx $7000
+// sta $0400,x
+// inc $7000
     lda RESP_DATA_REG
     jsr call_indirect  // jsr CHROUT,  Simulate the "JSR (JSR_INDIRECT_ADDR)" instruction
     jmp !read_remaining_data-
 !data_not_available:
+// inc $d021
+    rts
+!bleble:
+// TODO toto je velmi podezrele. Nevim, proc se musi cist RESP_DATA_REG 2x a ignorovat 
     rts
 
 call_indirect:
     jmp (JSR_INDIRECT_ADDR)  // This performs the jump; RTS from the target; will return to the 'jsr' above.
+
+
+// User readdata_CHROUT_callback as funtion to output data
+set_read_to_CHROUT:
+    lda #<readdata_CHROUT_callback
+    sta JSR_INDIRECT_ADDR
+    lda #>readdata_CHROUT_callback
+    sta JSR_INDIRECT_ADDR+1
+    rts
 
 // Prints out A register to terminal
 readdata_CHROUT_callback:
@@ -139,6 +151,16 @@ readdata_MEM_callback:
     bne !+
     inc ZP_INDIRECT_ADDR+1
 !:
+    rts
+
+set_read_to_NULL:
+    lda #<readdata_NULL_callback
+    sta JSR_INDIRECT_ADDR
+    lda #>readdata_NULL_callback
+    sta JSR_INDIRECT_ADDR+1
+    rts
+
+readdata_NULL_callback:
     rts
 
 uii_read_more_data:   // while(uii_isdataavailable())

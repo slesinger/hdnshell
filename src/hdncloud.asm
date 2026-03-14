@@ -14,7 +14,7 @@
 // Connects to HDN Cloud service if not connected already
 // Output: carry clear on success, set on failure
 connect_hdn_cloud:
-    // is connected alreaclc
+    // is connected already?
     lda FEATURE_FLAGS
     and #FEATURE_FLAG_CLOUD_REACHABLE
     beq !cloud_not_available+
@@ -84,15 +84,17 @@ send_cmd_to_hdn_cloud:
     jsr uii_socketwrite
 
     // wait for response
+    // jsr readdata_NULL_callback                  //  stejne se tam nekde nastavi chrout vevnitr, todle nema vubec zadny vliv
 !repeat_until_00data:
     jsr uii_socketread
     jsr uii_success  // returns 00,ok if data has been received, there are maybe more data
     bcs !repeat_until_00data-
-    // read response data
-!repeat_until_02nodata:
-    jsr uii_socketread
-    jsr uii_success  // returns 00,ok if data has been received, there are maybe more data
-    bcc !repeat_until_02nodata-
+//     // read response data
+//     jsr readdata_CHROUT_callback      // odtud dolu to sre jen posledni 5e, veskera dopoved je uz prectena nahore.
+// !repeat_until_02nodata:
+//     jsr uii_socketread
+//     jsr uii_success  // returns 00,ok if data has been received, there are maybe more data
+//     bcc !repeat_until_02nodata-
     jsr disconnect_hdn_cloud
     clc
     rts

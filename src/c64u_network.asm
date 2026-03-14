@@ -125,7 +125,8 @@ uii_print_ipaddress:
 !no_error:
     jsr wait_not_busy
     // IP_ADDR_LOCAL
-    jsr uii_readdata_CHROUT  // TODO only print 192 168 A 192 168
+    jsr set_read_to_CHROUT
+    jsr uii_readdata  // TODO only print 192 168 A 192 168
     jsr uii_readstatus
     jsr uii_accept
     rts
