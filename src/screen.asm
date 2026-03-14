@@ -135,7 +135,6 @@ handle_if_rolling:
     // rolling mode
     // Check if F1 or F7 key is pressed (in register A)
     // rest read pointer to latest screen
-switch_to_local_console:  //  This is pointer from hangle input (input.asm) when user presses C=1 to switch to local console, we also want to reset screen history read pointer to latest screen
     lda screen_history_write_ptr
     sta screen_history_read_ptr
     lda screen_history_write_ptr+1
@@ -146,10 +145,20 @@ switch_to_local_console:  //  This is pointer from hangle input (input.asm) when
     lda INPUT_FLAGS
     and #$FE
     sta INPUT_FLAGS
-    // enable cursor
-    lda #$00
-    sta CURSOR_DISABLE
 !rolling_F1F7:
 !not_rolling:
     pla              // Restore key pressed
+    rts
+
+save_local_console:
+    ReuStore(SCREEN_RAM, $0000, 1, SCREEN_WIDTH*SCREEN_HEIGHT)
+    ReuStore(COLOR_RAM, $0400, 1, SCREEN_WIDTH*SCREEN_HEIGHT)
+    rts
+
+switch_to_local_console:  //  This is pointer from hangle input (input.asm) when user presses C=1 to switch to local console, we also want to reset screen history read pointer to latest screen
+    ReuFetch(SCREEN_RAM, $0000, 1, SCREEN_WIDTH*SCREEN_HEIGHT)
+    ReuFetch(COLOR_RAM, $0400, 1, SCREEN_WIDTH*SCREEN_HEIGHT)
+    // enable cursor
+    lda #$00
+    sta CURSOR_DISABLE
     rts

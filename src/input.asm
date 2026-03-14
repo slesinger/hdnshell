@@ -262,7 +262,7 @@ HandleF7:
 // ============================================================================
 HandleConsoleSwitch:    
     sta console_id  // upper 4 bits only !!
-    cmp #$01  // is it local console?
+    cmp #$00  // is it local console?
     bne !+
     // switch to local console
     jsr switch_to_local_console
@@ -271,5 +271,6 @@ HandleConsoleSwitch:
     // disable cursor
     lda #$01
     sta CURSOR_DISABLE
+    jsr save_local_console
     jsr server_get_console_screen
     rts
