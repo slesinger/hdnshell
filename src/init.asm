@@ -42,7 +42,7 @@ InitInputBuffer:
     lda #0
     sta InputLength     // Clear InputLength
     sta CursorPos       // Clear CursorPos
-    sta $CC             // Enable cursor (0 = enabled, 1+ = disabled)
+    sta CURSOR_DISABLE  // Enable cursor (0 = enabled, 1+ = disabled)
     rts
 
 // ============================================================================
@@ -339,7 +339,7 @@ PrintWelcomeMessage:
     ldx #>SystemText
     jsr LoadTextPtr
     jsr PrintText
-    jmp !printReady+
+    jmp printReady
 !printUltim:
     // print ip address
     jsr uii_identify
@@ -348,20 +348,9 @@ PrintWelcomeMessage:
     ldx #>HondaniText
     jsr LoadTextPtr
     jsr PrintText
-
-
-!printReady:
-    // Print newline then "READY."
-    lda #KEY_RETURN             // Carriage return
+    PrintReturn()
     jsr CHROUT
-    jsr CHROUT
-    lda #<ReadyText
-    ldx #>ReadyText
-    jsr LoadTextPtr
-    jsr PrintText
-    lda #KEY_RETURN             // Print another newline after READY.
-    jsr CHROUT
-    rts
+    jmp printReady
 
 // ============================================================================
 // Print Decimal Number
@@ -468,10 +457,6 @@ HondaniText:
     .text ", Hondani"
     .byte $00
 
-ReadyText:
-    // .text "READY."
-    .text "READY."
-    .byte $00
 
 // Lookup table for common KB sizes (indexed by bank count * 2)
 KBSizeTableLo:

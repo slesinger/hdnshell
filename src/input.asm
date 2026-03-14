@@ -11,10 +11,11 @@
 
 HandleInput:
 
+    // Console switching
     // Check this regardless of selected console
     cmp #KEY_C_1  // back to local console
     bne !+
-    lda #$10  // console id for local console
+    lda #$00  // console id for local console
     jmp HandleConsoleSwitch
 !:
     cmp #KEY_C_2  // server source file editor
@@ -27,9 +28,10 @@ HandleInput:
     lda #$30  // console id for server code agent chat, upper 4 bits only !!
     jmp HandleConsoleSwitch
 !:
-    // Check console type
+
+    // Check if current console is local or server
     ldx console_id
-    cpx #$10  // local console
+    cpx #$00  // local console
     beq !HandleLocalConsole+
 
     // Remote console input handling
@@ -266,5 +268,8 @@ HandleConsoleSwitch:
     jsr switch_to_local_console
     rts
 !:
+    // disable cursor
+    lda #$01
+    sta CURSOR_DISABLE
     jsr server_get_console_screen
     rts

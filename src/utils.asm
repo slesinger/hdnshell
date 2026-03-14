@@ -197,6 +197,27 @@ for scrcode in range(0, 256):
     sbc #$80
     rts
 
+
+.macro CommandDone() {
+    jsr printReady
+    CommandDoneJMP()
+}
+
+printReady:
+    lda #<ReadyText
+    ldx #>ReadyText
+    jsr LoadTextPtr
+    jsr PrintText
+    lda #KEY_RETURN             // Print another newline after READY.
+    jsr CHROUT
+    rts
+
+.encoding "petscii_mixed"
+ReadyText:
+    .text "READY."
+    .byte $00
+
+
 // print single hex nibble in A (0..15) as ASCII to screen via CHROUT
 print_nibble:
     cmp #10

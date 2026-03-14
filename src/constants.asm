@@ -78,6 +78,7 @@
 .const console_id = $03fd          // current console id (upper 4 bits only) for HDN Cloud communication // switched by C= + 1234567890, left arrow will bring default local console. // left arrow:$00, 1:$10, 2:$20, 3:$30, 4:$40, 5:$50, 6:$60, 7:$70, 8:$80, 9:$90, 0:$a0
 
 // Read-only system constants
+.const CURSOR_DISABLE = $cc        // 0: cursor enabled, $cc: cursor disabled
 .const PNT = $d1                   // Read-only $00D1-$00D2	PNT	Pointer to the Address of the Current Screen Line
 .const PNTR = $d3                  // Read-only $00D3	PNTR	Cursor Column on Current Line 0-PARSER_MAX_INPUT_LEN
 .const TBLX = $d6                  // Read-only $00D6	TBLX	Current Cursor Physical Line Number
@@ -334,6 +335,7 @@
 
 .macro InitGlobalVariables() {
     lda #$00
+    sta console_id
     sta screen_history_write_ptr
     sta screen_history_write_ptr+1
     sta screen_history_read_ptr
@@ -364,7 +366,7 @@
     jsr CHROUT
 }
 
-.macro CommandDone() {
+.macro CommandDoneJMP() {
     jmp parse_done
 }
 

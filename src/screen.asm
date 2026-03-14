@@ -146,6 +146,9 @@ switch_to_local_console:  //  This is pointer from hangle input (input.asm) when
     lda INPUT_FLAGS
     and #$FE
     sta INPUT_FLAGS
+    // enable cursor
+    lda #$00
+    sta CURSOR_DISABLE
 !rolling_F1F7:
 !not_rolling:
     pla              // Restore key pressed
