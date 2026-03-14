@@ -1,17 +1,19 @@
 """
 Unit tests for cloud.py C64 TCP server
 """
+
 import pytest
 import socket
 import threading
 import time
-from cloud_server import C64Server, CommandHandler, MAGIC_BYTES, ResponseType
+from cloud_server import C64Server
+from command_handler import CommandHandler, MAGIC_BYTES, ResponseType
 
 
 @pytest.fixture
 def server():
     """Create a C64 server instance for testing"""
-    srv = C64Server(host='127.0.0.1', port=0)  # Port 0 = random available port
+    srv = C64Server(host="127.0.0.1", port=0)  # Port 0 = random available port
     yield srv
     srv.stop()
 
@@ -121,7 +123,7 @@ class TestResponseGeneration:
 
     def test_petscii_protocol_response_is_null_terminated(self):
         """Test that PETSCII_NULL_TERMINATED protocol responses are null-terminated"""
-        from cloud_server import CommandHandler, CommandID, MAGIC_BYTES, ResponseType
+        from command_handler import CommandHandler, CommandID, MAGIC_BYTES, ResponseType
 
         # Prepare a text input packet: MAGIC_BYTES + CommandID.TEXT_INPUT + PETSCII 'help' + null
         petscii_text = bytes([0x48, 0x45, 0x4C, 0x50, 0x00])  # 'HELP' + null
@@ -140,8 +142,7 @@ class TestResponseGeneration:
         petscii_text = bytes([0x4F, 0x4B, 0x00])
 
         response = CommandHandler.create_response(
-            ResponseType.PETSCII_NULL_TERMINATED,
-            petscii_text
+            ResponseType.PETSCII_NULL_TERMINATED, petscii_text
         )
 
         assert response[0:2] == MAGIC_BYTES
@@ -153,8 +154,7 @@ class TestResponseGeneration:
         data = bytes([0x01, 0x02, 0x03])
 
         response = CommandHandler.create_response(
-            ResponseType.MIX_COMMANDS_SCREEN_CODES,
-            data
+            ResponseType.MIX_COMMANDS_SCREEN_CODES, data
         )
 
         assert response[0:2] == MAGIC_BYTES
@@ -174,7 +174,7 @@ class TestPETSCIIConversion:
         ascii_a = Petscii.petscii2ascii(petscii_a)
 
         assert ascii_a == 0x61
-        assert chr(ascii_a) == 'a'
+        assert chr(ascii_a) == "a"
 
     def test_petscii_to_utf8_uppercase(self):
         """Test converting PETSCII uppercase to UTF-8"""
@@ -185,14 +185,14 @@ class TestPETSCIIConversion:
         ascii_A = Petscii.petscii2ascii(petscii_A)
 
         assert ascii_A == 0x41
-        assert chr(ascii_A) == 'A'
+        assert chr(ascii_A) == "A"
 
     def test_utf8_to_petscii_lowercase(self):
         """Test converting UTF-8 lowercase to PETSCII"""
         from generate_pet_asc_table import Petscii
 
         # ASCII 'a' = $61, PETSCII 'a' = $41
-        ascii_a = ord('a')
+        ascii_a = ord("a")
         petscii_a = Petscii.ascii2petscii(ascii_a)
 
         assert petscii_a == 0x41
@@ -202,7 +202,7 @@ class TestPETSCIIConversion:
         from generate_pet_asc_table import Petscii
 
         # ASCII 'A' = $41, PETSCII 'A' = $C1
-        ascii_A = ord('A')
+        ascii_A = ord("A")
         petscii_A = Petscii.ascii2petscii(ascii_A)
 
         assert petscii_A == 0xC1
@@ -216,7 +216,7 @@ class TestPETSCIIConversion:
 
         # Convert to UTF-8
         utf8_bytes = bytes([Petscii.petscii2ascii(b) for b in petscii_hello])
-        utf8_str = utf8_bytes.decode('ascii')
+        utf8_str = utf8_bytes.decode("ascii")
 
         assert utf8_str == "hello"
 
@@ -228,8 +228,7 @@ class TestPETSCIIConversion:
         utf8_str = "HELLO"
 
         # Convert to PETSCII
-        petscii_bytes = bytes([Petscii.ascii2petscii(ord(c))
-                              for c in utf8_str])
+        petscii_bytes = bytes([Petscii.ascii2petscii(ord(c)) for c in utf8_str])
 
         # PETSCII "HELLO": H=$C8, E=$C5, L=$CC, L=$CC, O=$CF
         expected = bytes([0xC8, 0xC5, 0xCC, 0xCC, 0xCF])
@@ -275,9 +274,11 @@ class TestServerIntegration:
 
         assert len(response) >= 3
         assert response[0:2] == MAGIC_BYTES
-        assert response[2] in [ResponseType.PETSCII_NULL_TERMINATED,
-                               ResponseType.MIX_COMMANDS_SCREEN_CODES,
-                               ResponseType.MTEXT_FORMAT]
+        assert response[2] in [
+            ResponseType.PETSCII_NULL_TERMINATED,
+            ResponseType.MIX_COMMANDS_SCREEN_CODES,
+            ResponseType.MTEXT_FORMAT,
+        ]
 
         client.close()
 
@@ -299,5 +300,5 @@ class TestServerIntegration:
         client.close()
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

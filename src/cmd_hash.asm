@@ -56,7 +56,8 @@ cmd_hash:
     lda #SCR_Cc
     sta FA  // set default device to CSDB
     PrintReturn()
-    jsr send_cmd_to_hdn_cloud 
+    lda #HDNCLD_CMD_SEND_CLI
+    jsr send_cmd_to_hdn_cloud_CHROUT 
     jmp !finish+
 !:
     cmp #KEY_HASH

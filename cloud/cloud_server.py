@@ -5,283 +5,31 @@ TCP server that receives commands from C64 and responds with data.
 Can run on local PC or in serverless cloud.
 Requires C64 Ultimate with network target on the client side.
 """
+
 import socket
 import threading
 import logging
 import sys
 import os
 import argparse
-from typing import Tuple, Optional, List
-from generate_pet_asc_table import Petscii
-from base_handler import BaseHandler
-from chat_handler import ChatHandler
-from help_handler import HelpHandler
-from python_eval_handler import PythonEvalHandler
-from csdb_handler import CSDBHandler
+from typing import Tuple, Optional
+from code_chat_console import CodeChatConsole
+from file_editor_console import FileEditorConsole
+from command_handler import CommandHandler, MAGIC_BYTES, CommandID, ResponseType
 from shared_state import get_session_state
+from console_manager import ConsoleManager
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
-
-
-# Protocol constants
-MAGIC_BYTES = bytes([0xFE])
-
-
-class CommandID:
-    """Command IDs from C64 client"""
-    KEYPRESS = 0x01
-    TEXT_INPUT = 0x02
-
-
-class ResponseType:
-    """Response types sent to C64"""
-    PETSCII_NULL_TERMINATED = 0x01
-    MIX_COMMANDS_SCREEN_CODES = 0x02
-    MTEXT_FORMAT = 0x03
-
-
-class ModifierFlags:
-    """Modifier flags for keypress commands"""
-    SHIFT = 0x01
-    CTRL = 0x02
-    COMMODORE = 0x04
-
-
-class RequestDispatcher:
-    """Dispatches text input requests to appropriate handlers"""
-
-    def __init__(self):
-        """Initialize dispatcher with all available handlers"""
-        self.handlers: List[BaseHandler] = []
-        self._initialize_handlers()
-
-    def _initialize_handlers(self):
-        """Initialize all request handlers in priority order"""
-        try:
-            # Order matters - first matching handler will process the request
-            self.handlers = [
-                HelpHandler(),
-                PythonEvalHandler(),
-                ChatHandler(),
-                CSDBHandler(),
-            ]
-            logger.info(f"Initialized {len(self.handlers)} request handlers")
-        except Exception as e:
-            logger.error(f"Error initializing handlers: {e}")
-            self.handlers = []
-
-    def dispatch(self, petscii_text: bytes, session_id: int = 0) -> bytes:
-        """
-        Dispatch request to appropriate handler
-
-        Args:
-            petscii_text: PETSCII encoded text input (null-terminated)
-            session_id: The session ID for the request
-
-        Returns:
-            PETSCII encoded response
-        """
-        try:
-            # Convert PETSCII to UTF-8
-            utf8_text = BaseHandler.petscii_to_utf8(petscii_text.rstrip(b'\x00'))
-            logger.info(f"Session {session_id}: Received: '{utf8_text}'")
-
-            # Find appropriate handler
-            for handler in self.handlers:
-                if handler.can_handle(utf8_text, session_id):
-                    logger.info(
-                        f"Dispatching to {handler.__class__.__name__}")
-                    response_text = handler.handle(utf8_text, session_id)
-                    logger.info(f"Response: '{response_text[:100]}...'")
-                    # Convert response back to PETSCII
-                    return BaseHandler.utf8_to_petscii(response_text)
-
-            # If no handler claims it, but a module is active, send it to that module's handler
-            state = get_session_state(session_id)
-            active_module = state.get('active_module')
-            if active_module:
-                for handler in self.handlers:
-                    # A bit of a hack to see which handler corresponds to the module
-                    if (active_module == 'c' and isinstance(handler, CSDBHandler)) or \
-                       (active_module == 'i' and isinstance(handler, ChatHandler)):
-                        logger.info(
-                            f"Dispatching to active module handler {handler.__class__.__name__}")
-                        response_text = handler.handle(utf8_text, session_id)
-                        logger.info(f"Response: '{response_text[:100]}...'")
-                        return BaseHandler.utf8_to_petscii(response_text)
-
-            # Default response if no handler is found
-            logger.warning("No handler found for the request.")
-            return BaseHandler.utf8_to_petscii("?ERROR")
-
-        except Exception as e:
-            logger.error(f"Error during dispatch: {e}", exc_info=True)
-            return BaseHandler.utf8_to_petscii(f"Server error: {str(e)}")
-
-
-class CommandHandler:
-    """Handles processing of commands from C64 client"""
-
-    # Class-level dispatcher instance
-    _dispatcher = None
-
-    @classmethod
-    def get_dispatcher(cls) -> RequestDispatcher:
-        """Get or create the request dispatcher instance"""
-        if cls._dispatcher is None:
-            cls._dispatcher = RequestDispatcher()
-        return cls._dispatcher
-
-    @staticmethod
-    def parse_packet(packet: bytes) -> Tuple[bytes, int, bytes]:
-        """
-        Parse a command packet from C64
-
-        Args:
-            packet: Raw packet bytes
-
-        Returns:
-            Tuple of (magic_bytes, command_id, data)
-
-        Raises:
-            ValueError: If packet is invalid
-        """
-        if len(packet) < 3:
-            raise ValueError("Packet too short")
-
-        magic = packet[0:len(MAGIC_BYTES)]
-        if magic != MAGIC_BYTES:
-            raise ValueError(f"Invalid magic bytes: {magic.hex()}")
-
-        cmd_id = packet[len(MAGIC_BYTES)]
-        data = packet[len(MAGIC_BYTES) + 1:]
-
-        return magic, cmd_id, data
-
-    @staticmethod
-    def handle_keypress(data: bytes) -> bytes:
-        """
-        Handle keypress command ($01)
-
-        Args:
-            data: Command data (1 byte PETSCII code + 1 byte modifier flags)
-
-        Returns:
-            Response packet
-        """
-        if len(data) < 2:
-            logger.warning("Keypress data too short")
-            return CommandHandler.create_response(
-                ResponseType.PETSCII_NULL_TERMINATED,
-                bytes([0x00])  # Empty response
-            )
-
-        petscii_code = data[0]
-        modifiers = data[1]
-
-        # Convert PETSCII to ASCII for logging
-        ascii_code = Petscii.petscii2ascii(petscii_code)
-        char = chr(
-            ascii_code) if 32 <= ascii_code < 127 else f"<{ascii_code:02X}>"
-
-        # Log the keypress
-        mod_str = []
-        if modifiers & ModifierFlags.SHIFT:
-            mod_str.append("SHIFT")
-        if modifiers & ModifierFlags.CTRL:
-            mod_str.append("CTRL")
-        if modifiers & ModifierFlags.COMMODORE:
-            mod_str.append("C=")
-
-        mod_desc = "+".join(mod_str) if mod_str else "none"
-        logger.info(
-            f"Keypress: {char} (PETSCII ${petscii_code:02X}), Modifiers: {mod_desc}")
-
-        # Create echo response
-        response_text = f"key: {char}\r".encode('ascii')
-        petscii_response = bytes([Petscii.ascii2petscii(b)
-                                 for b in response_text])
-        petscii_response += bytes([0x00])  # Null terminator
-
-        return CommandHandler.create_response(
-            ResponseType.PETSCII_NULL_TERMINATED,
-            petscii_response
-        )
-
-    @staticmethod
-    def handle_text_input(data: bytes, session_id: int = 0) -> bytes:
-        """
-        Handle text input by dispatching to appropriate handler
-        """
-        dispatcher = CommandHandler.get_dispatcher()
-        return dispatcher.dispatch(data, session_id)
-
-    @staticmethod
-    def create_response(response_type: int, data: bytes) -> bytes:
-        """
-        Create a response packet
-
-        Args:
-            response_type: Type of response (ResponseType constant)
-            data: Response data
-
-        Returns:
-            Complete response packet with magic bytes and type
-        """
-        # Null-terminate only if PETSCII_NULL_TERMINATED
-        if response_type == ResponseType.PETSCII_NULL_TERMINATED:
-            if not data or data[-1] != 0x00:
-                data += bytes([0x00])
-        # return MAGIC_BYTES + bytes([response_type]) + data
-        return data[:-1]
-
-    @staticmethod
-    def process_command(packet: bytes, session_id: int = 0) -> Optional[bytes]:
-        """
-        Process a complete command packet from the client
-        """
-        # Print packet in hex for debugging
-        logger.info(f"Received packet: {packet.hex()}")
-
-        try:
-            magic, cmd_id, data = CommandHandler.parse_packet(packet)
-            if magic != MAGIC_BYTES:
-                logger.warning("Invalid magic bytes received")
-                return None
-
-            response_data = b''
-            response_type = ResponseType.PETSCII_NULL_TERMINATED
-
-            if cmd_id == CommandID.KEYPRESS:
-                response_data = CommandHandler.handle_keypress(data)
-            elif cmd_id == CommandID.TEXT_INPUT:
-                response_data = CommandHandler.handle_text_input(
-                    data, session_id)
-            else:
-                logger.warning(f"Unknown command ID: {cmd_id}")
-
-            if response_data:
-                resp = CommandHandler.create_response(response_type, response_data)
-                logger.info(f"Response: {resp.hex()}")
-                return resp
-
-        except ValueError as e:
-            logger.error(f"Packet parsing error: {e}")
-        except Exception as e:
-            logger.error(f"Error processing command: {e}", exc_info=True)
-
-        return None
 
 
 class C64Server:
     """TCP server for C64 communication"""
 
-    def __init__(self, host: str = '0.0.0.0', port: int = 6464):
+    def __init__(self, host: str = "0.0.0.0", port: int = 6464):
         """
         Initialize the C64 server
 
@@ -296,11 +44,15 @@ class C64Server:
         self.clients = []
         self.lock = threading.Lock()
 
+        # Register custom server-console factories
+        mgr = ConsoleManager.instance()
+        mgr.register_factory(2, FileEditorConsole)   # Console 2 → File Editor
+        mgr.register_factory(10, CodeChatConsole)     # C=+0 → Vibe Coding AI Chat
+
     def start(self):
         """Start the server and begin accepting connections"""
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(
-            socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind((self.host, self.port))
 
         # Get actual port if 0 was specified (for testing)
@@ -322,7 +74,9 @@ class C64Server:
                     # Use a stable session ID per client IP to persist state across connections
                     session_id = hash(address[0]) & 0xFFFFFFFF
                     thread = threading.Thread(
-                        target=self.handle_client, args=(client_socket, address, session_id))
+                        target=self.handle_client,
+                        args=(client_socket, address, session_id),
+                    )
                     thread.daemon = True
                     thread.start()
                 except OSError:
@@ -331,7 +85,9 @@ class C64Server:
         finally:
             self.stop()
 
-    def handle_client(self, client_socket: socket.socket, address: Tuple[str, int], session_id: int):
+    def handle_client(
+        self, client_socket: socket.socket, address: Tuple[str, int], session_id: int
+    ):
         """
         Handle communication with a connected client
 
@@ -343,25 +99,102 @@ class C64Server:
         try:
             # Store client IP for this session
             state = get_session_state(session_id)
-            state['client_ip'] = address[0]
+            state["client_ip"] = address[0]
             while self.running:
                 data = client_socket.recv(1024)
                 if not data:
                     break  # Connection closed
-                response = CommandHandler.process_command(data, session_id)
+                response = self.process_command(data, session_id)
                 if response:
                     client_socket.sendall(response)
         except ConnectionResetError:
             logger.info(f"Connection reset by {address}")
         except Exception as e:
-            logger.error(
-                f"Error handling client {address}: {e}", exc_info=True)
+            logger.error(f"Error handling client {address}: {e}", exc_info=True)
         finally:
             logger.info(f"Connection from {address} closed")
             with self.lock:
                 if client_socket in self.clients:
                     self.clients.remove(client_socket)
             client_socket.close()
+
+    @staticmethod
+    def process_command(packet: bytes, session_id: int = 0) -> Optional[bytes]:
+        """
+        Process a complete command packet from the client
+        """
+        # Print packet in hex for debugging
+        logger.info(f"Received packet: {packet.hex()}")
+
+        try:
+            magic, console_cmd_id, data = CommandHandler.parse_packet(packet)
+            if magic != MAGIC_BYTES:
+                logger.warning("Invalid magic bytes received")
+                return None
+
+            response_data = b""
+            response_type = ResponseType.PETSCII_NULL_TERMINATED
+
+            console_id: int = (console_cmd_id & 0xF0) >> 4  # Upper 4 bits shifted right
+            cmd_id = console_cmd_id & 0x03  # Ensure lower 2 bits only
+
+            if console_id == 0:
+                # Console 0 — local C64 shell
+                if cmd_id == CommandID.KEYPRESS:
+                    response_data = CommandHandler.handle_keypress(data)
+                elif cmd_id == CommandID.TEXT_INPUT:
+                    response_data = CommandHandler.handle_text_input(data, session_id)
+                else:
+                    logger.warning(f"Unknown command ID: {cmd_id}")
+
+                if response_data:
+                    resp = CommandHandler.create_response(response_type, response_data)
+                    logger.info(f"ResponseT: {resp.hex()}")
+                    return resp
+
+            elif CommandHandler.is_server_console(console_id):
+                # Consoles 1-10 — server-side virtual consoles
+                if cmd_id == CommandID.COMMAND:
+                    logger.info(f"Received command for console {console_id}: {data.hex()}")
+                    resp = CommandHandler.handle_command(console_id, data, session_id)
+                    if resp:
+                        logger.info(f"ResponseC: {resp.hex()}")
+                        return resp
+                    return None  # No response for unhandled commands or commands that respond using DMA write
+
+                elif cmd_id == CommandID.KEYPRESS:
+                    resp_data = CommandHandler.handle_console_keypress(
+                        console_id, data, session_id
+                    )
+                    if resp_data:
+                        resp = CommandHandler.create_response(response_type, resp_data)
+                        logger.info(f"ResponseK: {resp.hex()}")
+                        return resp
+                    return None
+
+                elif cmd_id == CommandID.TEXT_INPUT:
+                    resp_data = CommandHandler.handle_console_text_input(
+                        console_id, data, session_id
+                    )
+                    if resp_data:
+                        resp = CommandHandler.create_response(response_type, resp_data)
+                        logger.info(f"ResponseI: {resp.hex()}")
+                        return resp
+
+                else:
+                    logger.warning(
+                        f"Unknown cmd_id {cmd_id} for console {console_id}"
+                    )
+
+            else:
+                logger.warning(f"Console {console_id} out of range")
+
+        except ValueError as e:
+            logger.error(f"Packet parsing error: {e}")
+        except Exception as e:
+            logger.error(f"Error processing command: {e}", exc_info=True)
+
+        return None
 
     def stop(self):
         """Stop the server and close all connections"""
@@ -393,13 +226,14 @@ def main():
     # Ensure cloud directory is in path
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-    parser = argparse.ArgumentParser(description='C64 HDN Cloud Server')
-    parser.add_argument('--host', default='0.0.0.0',
-                        help='Host to bind to (default: 0.0.0.0)')
-    parser.add_argument('--port', type=int, default=6464,
-                        help='Port to listen on (default: 6464)')
-    parser.add_argument('--debug', action='store_true',
-                        help='Enable debug logging')
+    parser = argparse.ArgumentParser(description="C64 HDN Cloud Server")
+    parser.add_argument(
+        "--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
+    )
+    parser.add_argument(
+        "--port", type=int, default=6464, help="Port to listen on (default: 6464)"
+    )
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
 
     args = parser.parse_args()
 
@@ -417,5 +251,5 @@ def main():
         server.cleanup()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

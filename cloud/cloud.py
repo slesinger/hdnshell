@@ -9,16 +9,45 @@ import logging
 import ftplib
 import requests
 import queue
-import base64
 import threading
 from version import __version__
 from cloud_server import C64Server
 from flask_cors import CORS
 from threading import Thread
 from flask import Flask, jsonify, request
-from flask_sock import Sock
+from flask_sock import Sock  # type: ignore[import-untyped]
 import time
 from flask import send_from_directory
+from network_helper import (
+    read_last_c64_ip,
+    _send_tcp_cmd,
+    send_screen_data,
+    SOCKET_CMD_DMA,
+    SOCKET_CMD_DMARUN,
+    SOCKET_CMD_KEYB,
+    SOCKET_CMD_RESET,
+    SOCKET_CMD_WAIT,
+    SOCKET_CMD_DMAWRITE,
+    SOCKET_CMD_REUWRITE,
+    SOCKET_CMD_KERNALWRITE,
+    SOCKET_CMD_DMAJUMP,
+    SOCKET_CMD_MOUNT_IMG,
+    SOCKET_CMD_RUN_IMG,
+    SOCKET_CMD_POWEROFF,
+    SOCKET_CMD_RUN_CRT,
+    SOCKET_CMD_IDENTIFY,
+    SOCKET_CMD_AUTHENTICATE,
+    SOCKET_CMD_VICSTREAM_ON,
+    SOCKET_CMD_AUDIOSTREAM_ON,
+    SOCKET_CMD_DEBUGSTREAM_ON,
+    SOCKET_CMD_VICSTREAM_OFF,
+    SOCKET_CMD_AUDIOSTREAM_OFF,
+    SOCKET_CMD_DEBUGSTREAM_OFF,
+    SOCKET_CMD_LOADSIDCRT,
+    SOCKET_CMD_LOADBOOTCRT,
+    SOCKET_CMD_READFLASH,
+    SOCKET_CMD_DEBUG_REG,
+)
 
 
 # Configure logging for the web server
@@ -27,8 +56,13 @@ logger = logging.getLogger("webserver")
 
 
 app = Flask(__name__, static_folder="static", static_url_path="")
+static_folder = os.path.join(os.path.dirname(__file__), "static")
+app.static_folder = static_folder
 CORS(app)
 sock = Sock(app)
+
+# Module-level reference to the C64 TCP server (set in __main__)
+_c64_server: "C64Server | None" = None
 
 # ── U64 Stream state ──────────────────────────────────────────────────────────
 # UDP ports used by the Ultimate64 VIC/audio stream (REST API defaults)
@@ -37,11 +71,13 @@ U64_AUDIO_UDP_PORT = 11001
 
 _video_active = False
 _video_udp_thread = None
+_video_stop_event: threading.Event | None = None
 _video_clients: list[queue.Queue] = []
 _video_lock = threading.Lock()
 
 _audio_active = False
 _audio_udp_thread = None
+_audio_stop_event: threading.Event | None = None
 _audio_clients: list[queue.Queue] = []
 _audio_lock = threading.Lock()
 
@@ -50,7 +86,7 @@ def _udp_receiver(port: int, get_active, clients, lock, stop_event: threading.Ev
     """Background thread: receive UDP packets and broadcast to all WebSocket queues."""
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    udp.bind(('0.0.0.0', port))
+    udp.bind(("0.0.0.0", port))
     udp.settimeout(0.5)
     logger.info(f"UDP listener started on port {port}")
     while not stop_event.is_set():
@@ -61,7 +97,7 @@ def _udp_receiver(port: int, get_active, clients, lock, stop_event: threading.Ev
         except OSError:
             break
         with lock:
-            dead = []
+            dead: list[queue.Queue] = []
             for q in clients:
                 try:
                     q.put_nowait(data)
@@ -85,29 +121,21 @@ def _get_outbound_ip() -> str:
         return "127.0.0.1"
 
 
-def _send_tcp_cmd(host: str, cmd: int, payload: bytes = b'') -> None:
-    """Send a single DMA-service command to Ultimate64 on port 64."""
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(5)
-    s.connect((host, 64))
-    s.sendall((0xFF00 | cmd).to_bytes(2, 'little'))
-    s.sendall(len(payload).to_bytes(2, 'little'))
-    if payload:
-        s.sendall(payload)
-    s.close()
+
 
 
 @app.route("/")
 def root():
-    return send_from_directory(app.static_folder, "index.html")
+    return send_from_directory(app.static_folder or "static", "index.html")
 
 
 @app.route("/<path:filepath>")
 def static_files(filepath: str):
-    full_path = os.path.join(app.static_folder, filepath)
+    static_dir = app.static_folder or "static"
+    full_path = os.path.join(static_dir, filepath)
     if os.path.isfile(full_path):
-        return send_from_directory(app.static_folder, filepath)
-    return send_from_directory(app.static_folder, "index.html")
+        return send_from_directory(static_dir, filepath)
+    return send_from_directory(static_dir, "index.html")
 
 
 @app.route("/status")
@@ -115,15 +143,7 @@ def status():
     return jsonify({"status": "ok"})
 
 
-def read_last_c64_ip():
-    config_path = os.path.join(os.path.dirname(__file__), "cloud_config.cfg")
-    if not os.path.exists(config_path):
-        return ""
-    with open(config_path, "r") as f:
-        for line in f:
-            if line.startswith("last_c64_ip"):
-                return line.split("=", 1)[1].strip().strip('"')
-    return ""
+
 
 
 @app.route("/c64/status")
@@ -245,13 +265,16 @@ def download_latest_cfg(target_dir: str) -> str:
     """Download hdnsh.cfg from the GitHub master branch into target_dir.
     Raises RuntimeError if the download fails.
     Returns the path to the downloaded cfg file."""
-    cfg_url = "https://raw.githubusercontent.com/slesinger/hdnshell/master/cloud/hdnsh.cfg"
+    cfg_url = (
+        "https://raw.githubusercontent.com/slesinger/hdnshell/master/cloud/hdnsh.cfg"
+    )
     os.makedirs(target_dir, exist_ok=True)
     local_path = os.path.join(target_dir, "hdnsh.cfg")
     response = requests.get(cfg_url, timeout=10)
     if not response.ok:
         raise RuntimeError(
-            f"Failed to download hdnsh.cfg from GitHub (HTTP {response.status_code})")
+            f"Failed to download hdnsh.cfg from GitHub (HTTP {response.status_code})"
+        )
     with open(local_path, "wb") as f:
         f.write(response.content)
     return local_path
@@ -286,7 +309,7 @@ def ensure_rom():
         return jsonify(
             {
                 "status": "ok",
-                "message": f"Uploaded {asset_name} and hdnsh.cfg to ftp://{last_c64_ip}/Flash/roms"
+                "message": f"Uploaded {asset_name} and hdnsh.cfg to ftp://{last_c64_ip}/Flash/roms",
             }
         )
     except Exception as exc:
@@ -315,8 +338,9 @@ def version_check():
 
         update_available = False
         try:
-            update_available = _parse_version(
-                latest_tag) > _parse_version(local_version)
+            update_available = _parse_version(latest_tag) > _parse_version(
+                local_version
+            )
         except (ValueError, TypeError):
             pass
 
@@ -357,11 +381,16 @@ def self_update():
             None,
         )
         if chosen_asset is None:
-            return jsonify({"error": f"Asset '{asset_name}' not found in latest release"}), 404
+            return (
+                jsonify({"error": f"Asset '{asset_name}' not found in latest release"}),
+                404,
+            )
 
         download_url = chosen_asset["browser_download_url"]
         tmp_path = os.path.join(
-            "/tmp" if system == "linux" else os.environ.get("TEMP", "/tmp"), asset_name + ".new")
+            "/tmp" if system == "linux" else os.environ.get("TEMP", "/tmp"),
+            asset_name + ".new",
+        )
 
         with requests.get(download_url, stream=True, timeout=60) as dl:
             dl.raise_for_status()
@@ -371,13 +400,18 @@ def self_update():
                         f.write(chunk)
 
         # Determine path of the running executable
-        current_exe = sys.executable if getattr(
-            sys, "frozen", False) else os.path.abspath(sys.argv[0])
+        current_exe = (
+            sys.executable
+            if getattr(sys, "frozen", False)
+            else os.path.abspath(sys.argv[0])
+        )
 
         if system == "linux":
             # Make the download executable
-            os.chmod(tmp_path, os.stat(tmp_path).st_mode |
-                     stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+            os.chmod(
+                tmp_path,
+                os.stat(tmp_path).st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH,
+            )
             # Unlink the running binary first (kernel keeps the inode alive for
             # the current process), then move the new file into place.
             if os.path.exists(current_exe):
@@ -385,18 +419,21 @@ def self_update():
             shutil.move(tmp_path, current_exe)
             # Restart: spawn the new executable and let this process exit
             import subprocess
+
             subprocess.Popen([current_exe] + sys.argv[1:])
             # Respond before exiting
-            resp = jsonify(
-                {"status": "ok", "message": "Updated and restarting..."})
+            resp = jsonify({"status": "ok", "message": "Updated and restarting..."})
             logger.info("Self-update complete; restarting process.")
             # Use a daemon thread so the response is sent before sys.exit()
 
             def _delayed_exit():
                 import time as _time
+
                 _time.sleep(1)
                 os._exit(0)
+
             import threading
+
             threading.Thread(target=_delayed_exit, daemon=True).start()
             return resp
         else:
@@ -404,23 +441,30 @@ def self_update():
             batch_path = current_exe + ".update.bat"
             with open(batch_path, "w") as bf:
                 bf.write(
-                    f'@echo off\n'
-                    f'timeout /t 2 /nobreak >nul\n'
+                    f"@echo off\n"
+                    f"timeout /t 2 /nobreak >nul\n"
                     f'copy /Y "{tmp_path}" "{current_exe}"\n'
                     f'start "" "{current_exe}"\n'
                     f'del "%~f0"\n'
                 )
             import subprocess
-            subprocess.Popen(["cmd", "/c", batch_path],
-                             creationflags=subprocess.DETACHED_PROCESS)
+
+            subprocess.Popen(
+                ["cmd", "/c", batch_path],
+                creationflags=getattr(subprocess, "DETACHED_PROCESS", 0x00000008),
+            )
             resp = jsonify(
-                {"status": "ok", "message": "Update scheduled; restarting..."})
+                {"status": "ok", "message": "Update scheduled; restarting..."}
+            )
 
             def _delayed_exit():
                 import time as _time
+
                 _time.sleep(1)
                 os._exit(0)
+
             import threading
+
             threading.Thread(target=_delayed_exit, daemon=True).start()
             return resp
 
@@ -525,9 +569,9 @@ def c64_reset():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((last_c64_ip, 64))
-        cmd = (0xFF00 | 0x04).to_bytes(2, 'little')
+        cmd = (0xFF00 | 0x04).to_bytes(2, "little")
         s.sendall(cmd)
-        s.sendall((0).to_bytes(2, 'little'))  # length = 0
+        s.sendall((0).to_bytes(2, "little"))  # length = 0
         s.close()
         return jsonify({"status": "ok", "message": "Reset command sent."})
     except OSError as exc:
@@ -543,9 +587,9 @@ def c64_power_off():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((last_c64_ip, 64))
-        cmd = (0xFF00 | 0x0C).to_bytes(2, 'little')
+        cmd = (0xFF00 | 0x0C).to_bytes(2, "little")
         s.sendall(cmd)
-        s.sendall((0).to_bytes(2, 'little'))  # length = 0
+        s.sendall((0).to_bytes(2, "little"))  # length = 0
         s.close()
         return jsonify({"status": "ok", "message": "Power off command sent."})
     except OSError as exc:
@@ -564,7 +608,7 @@ def find_c64u():
     config_path = os.path.join(os.path.dirname(__file__), "cloud_config.cfg")
     if found_ip:
         with open(config_path, "w") as f:
-            f.write(f"last_c64_ip = \"{found_ip}\"\n")
+            f.write(f'last_c64_ip = "{found_ip}"\n')
     elif not os.path.exists(config_path):
         with open(config_path, "w") as f:
             f.write('last_c64_ip = ""\n')
@@ -574,9 +618,9 @@ def find_c64u():
 @app.route("/clients")
 def clients():
     # Optionally, expose connected C64 clients (requires server instance)
-    if hasattr(app, 'c64_server'):
-        with app.c64_server.lock:
-            return jsonify({"clients": len(app.c64_server.clients)})
+    if _c64_server is not None:
+        with _c64_server.lock:
+            return jsonify({"clients": len(_c64_server.clients)})
     return jsonify({"clients": None})
 
 
@@ -612,7 +656,7 @@ def c64_keyboard():
 def start_video_stream():
     """Tell U64 to start sending its VIC video stream to this server (UDP 11000),
     and start the local UDP listener if not already running."""
-    global _video_active, _video_udp_thread
+    global _video_active, _video_udp_thread, _video_stop_event
     last_ip = read_last_c64_ip()
     if not last_ip:
         return jsonify({"error": "No C64 IP configured"}), 400
@@ -636,14 +680,22 @@ def start_video_stream():
         stop_evt = threading.Event()
         _video_udp_thread = threading.Thread(
             target=_udp_receiver,
-            args=(U64_VIDEO_UDP_PORT, lambda: _video_active, _video_clients, _video_lock, stop_evt),
+            args=(
+                U64_VIDEO_UDP_PORT,
+                lambda: _video_active,
+                _video_clients,
+                _video_lock,
+                stop_evt,
+            ),
             daemon=True,
             name="udp-video",
         )
-        _video_udp_thread._stop_event = stop_evt
+        _video_stop_event = stop_evt
         _video_udp_thread.start()
 
-    return jsonify({"status": "ok", "streaming_to": server_ip, "port": U64_VIDEO_UDP_PORT})
+    return jsonify(
+        {"status": "ok", "streaming_to": server_ip, "port": U64_VIDEO_UDP_PORT}
+    )
 
 
 @app.route("/streams/video/stop", methods=["PUT"])
@@ -651,8 +703,8 @@ def stop_video_stream():
     """Stop the video stream."""
     global _video_active
     _video_active = False
-    if _video_udp_thread and hasattr(_video_udp_thread, "_stop_event"):
-        _video_udp_thread._stop_event.set()
+    if _video_stop_event is not None:
+        _video_stop_event.set()
 
     last_ip = read_last_c64_ip()
     if last_ip:
@@ -671,7 +723,7 @@ def stop_video_stream():
 @app.route("/streams/audio/start", methods=["PUT"])
 def start_audio_stream():
     """Tell U64 to start sending its audio stream to this server (UDP 11001)."""
-    global _audio_active, _audio_udp_thread
+    global _audio_active, _audio_udp_thread, _audio_stop_event
     last_ip = read_last_c64_ip()
     if not last_ip:
         return jsonify({"error": "No C64 IP configured"}), 400
@@ -682,7 +734,9 @@ def start_audio_stream():
         resp = requests.put(url, params={"ip": server_ip}, timeout=5)
         resp.raise_for_status()
     except requests.RequestException as exc:
-        logger.warning(f"U64 audio stream start via REST failed: {exc} — trying TCP fallback")
+        logger.warning(
+            f"U64 audio stream start via REST failed: {exc} — trying TCP fallback"
+        )
         try:
             _send_tcp_cmd(last_ip, 0x21)  # SOCKET_CMD_AUDIOSTREAM_ON
         except OSError as tcp_exc:
@@ -694,14 +748,22 @@ def start_audio_stream():
         stop_evt = threading.Event()
         _audio_udp_thread = threading.Thread(
             target=_udp_receiver,
-            args=(U64_AUDIO_UDP_PORT, lambda: _audio_active, _audio_clients, _audio_lock, stop_evt),
+            args=(
+                U64_AUDIO_UDP_PORT,
+                lambda: _audio_active,
+                _audio_clients,
+                _audio_lock,
+                stop_evt,
+            ),
             daemon=True,
             name="udp-audio",
         )
-        _audio_udp_thread._stop_event = stop_evt
+        _audio_stop_event = stop_evt
         _audio_udp_thread.start()
 
-    return jsonify({"status": "ok", "streaming_to": server_ip, "port": U64_AUDIO_UDP_PORT})
+    return jsonify(
+        {"status": "ok", "streaming_to": server_ip, "port": U64_AUDIO_UDP_PORT}
+    )
 
 
 @app.route("/streams/audio/stop", methods=["PUT"])
@@ -709,8 +771,8 @@ def stop_audio_stream():
     """Stop the audio stream."""
     global _audio_active
     _audio_active = False
-    if _audio_udp_thread and hasattr(_audio_udp_thread, "_stop_event"):
-        _audio_udp_thread._stop_event.set()
+    if _audio_stop_event is not None:
+        _audio_stop_event.set()
 
     last_ip = read_last_c64_ip()
     if last_ip:
@@ -782,7 +844,7 @@ def ws_audio(ws):
 def get_external_ips():
     ips = []
     for iface in socket.getaddrinfo(host=socket.gethostname(), port=None):
-        ip = iface[4][0]
+        ip = str(iface[4][0])
         if not ip.startswith("127.") and ":" not in ip:
             ips.append(ip)
     # Also try to get the primary outbound IP
@@ -807,7 +869,7 @@ def run_web():
             print(f"  http://{ip}:8064")
     else:
         print("No external IP address found.")
-    app.run(host='0.0.0.0', port=8064, debug=False, use_reloader=False, threaded=True)
+    app.run(host="0.0.0.0", port=8064, debug=False, use_reloader=False, threaded=True)
 
 
 if __name__ == "__main__":
@@ -838,7 +900,7 @@ if __name__ == "__main__":
 
     # Start the C64 TCP server
     c64_server = C64Server()
-    app.c64_server = c64_server  # Attach for web endpoints
+    _c64_server = c64_server
 
     # Start web server in a separate thread
     web_thread = Thread(target=run_web, daemon=True)

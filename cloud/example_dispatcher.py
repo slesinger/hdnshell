@@ -5,7 +5,7 @@ Simple example demonstrating the request dispatcher
 This script shows how to use the dispatcher without running the full server.
 Useful for testing and understanding the request routing.
 """
-from cloud_server import RequestDispatcher
+from request_dispatcher import RequestDispatcher
 from base_handler import BaseHandler
 
 
@@ -18,11 +18,13 @@ def test_command(command: str):
     dispatcher = RequestDispatcher()
 
     # Convert command to PETSCII and dispatch
-    petscii_input = BaseHandler.utf8_to_petscii(command) + b'\x00'
+    petscii_input = BaseHandler.utf8_to_petscii(command) + b"\x00"
     petscii_output = dispatcher.dispatch(petscii_input)
 
     # Convert response back to UTF-8
-    response = BaseHandler.petscii_to_utf8(petscii_output[:-1])  # Remove null terminator
+    response = BaseHandler.petscii_to_utf8(
+        petscii_output[:-1]
+    )  # Remove null terminator
 
     print(f"Response:\n{response}")
     print()
@@ -55,5 +57,5 @@ def main():
     test_command("unknown command")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

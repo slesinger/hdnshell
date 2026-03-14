@@ -4,6 +4,7 @@ PythonEvalHandler - Evaluates Python expressions
 Provides safe Python expression evaluation for C64 users.
 Processes requests starting with "?"
 """
+
 import logging
 import math
 from typing import Any
@@ -13,39 +14,39 @@ logger = logging.getLogger(__name__)
 
 # Safe built-in functions allowed during eval
 SAFE_BUILTINS = {
-    'abs': abs,
-    'bin': bin,
-    'bool': bool,
-    'chr': chr,
-    'divmod': divmod,
-    'float': float,
-    'hex': hex,
-    'int': int,
-    'len': len,
-    'max': max,
-    'min': min,
-    'oct': oct,
-    'ord': ord,
-    'pow': pow,
-    'round': round,
-    'str': str,
-    'sum': sum,
-    'print': print,
+    "abs": abs,
+    "bin": bin,
+    "bool": bool,
+    "chr": chr,
+    "divmod": divmod,
+    "float": float,
+    "hex": hex,
+    "int": int,
+    "len": len,
+    "max": max,
+    "min": min,
+    "oct": oct,
+    "ord": ord,
+    "pow": pow,
+    "round": round,
+    "str": str,
+    "sum": sum,
+    "print": print,
 }
 
 # Safe math functions
 SAFE_MATH = {
-    'pi': math.pi,
-    'e': math.e,
-    'sqrt': math.sqrt,
-    'sin': math.sin,
-    'cos': math.cos,
-    'tan': math.tan,
-    'floor': math.floor,
-    'ceil': math.ceil,
-    'log': math.log,
-    'log10': math.log10,
-    'exp': math.exp,
+    "pi": math.pi,
+    "e": math.e,
+    "sqrt": math.sqrt,
+    "sin": math.sin,
+    "cos": math.cos,
+    "tan": math.tan,
+    "floor": math.floor,
+    "ceil": math.ceil,
+    "log": math.log,
+    "log10": math.log10,
+    "exp": math.exp,
 }
 
 
@@ -70,7 +71,6 @@ class PythonEvalHandler(BaseHandler):
             True if text starts with "?"
         """
         return text.strip().startswith("?")
-
 
     def handle(self, text: str, session_id: int = 0) -> str:
         """
@@ -134,7 +134,7 @@ class PythonEvalHandler(BaseHandler):
                 return f"{result} (${result:04X})"
             return str(result)
         elif isinstance(result, float):
-            return f"{result:.6f}".rstrip('0').rstrip('.')
+            return f"{result:.6f}".rstrip("0").rstrip(".")
         elif isinstance(result, str):
             return f'"{result}"'
         else:

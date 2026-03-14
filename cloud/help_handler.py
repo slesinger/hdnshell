@@ -4,6 +4,7 @@ HelpHandler - Handles help requests
 Provides static help text or uses LLM to find relevant help topics.
 Processes requests starting with "help"
 """
+
 import os
 import logging
 from base_handler import BaseHandler
@@ -60,7 +61,6 @@ Examples:
   I: what is peek and poke?
 
 The AI understands C64 context and will provide relevant answers.""",
-
     "python": """Python Eval Command (?)
 
 Evaluate Python expressions and get results.
@@ -74,7 +74,6 @@ Examples:
   ? bin(15)
 
 Security: Only basic math and functions are allowed for safety.""",
-
     "csdb": """CSDB Command (c:)
 
 Search the csdb.dk database for C64 releases, groups, and sceners.
@@ -87,7 +86,6 @@ Examples:
   c: rob hubbard music
 
 Returns information from the comprehensive C64 Scene Database.""",
-
     "commands": HELP_TEXT,
 }
 
@@ -103,10 +101,10 @@ class HelpHandler(BaseHandler):
     def _initialize_llm(self):
         """Initialize LLM for help topic search"""
         try:
-            azure_key = os.getenv('AZURE_OPENAI_API_KEY')
-            azure_endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
-            azure_deployment = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME')
-            azure_version = os.getenv('AZURE_OPENAI_API_VERSION', '2024-02-15-preview')
+            azure_key = os.getenv("AZURE_OPENAI_API_KEY")
+            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+            azure_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+            azure_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
 
             if azure_key and azure_endpoint and azure_deployment:
                 try:
@@ -117,7 +115,7 @@ class HelpHandler(BaseHandler):
                         api_version=azure_version,
                         azure_endpoint=azure_endpoint,
                         api_key=azure_key,
-                        temperature=0.3
+                        temperature=0.3,
                     )
                     logger.info("HelpHandler initialized with LLM support")
                 except ImportError:
@@ -186,10 +184,9 @@ class HelpHandler(BaseHandler):
             from langchain_core.messages import HumanMessage, SystemMessage
 
             # Create prompt to search help topics
-            topics_text = "\n\n".join([
-                f"Topic: {name}\n{content}"
-                for name, content in HELP_TOPICS.items()
-            ])
+            topics_text = "\n\n".join(
+                [f"Topic: {name}\n{content}" for name, content in HELP_TOPICS.items()]
+            )
 
             query = f"""User is asking for help about: {topic}
 
@@ -200,7 +197,7 @@ Find the most relevant help topic and return its content. If no exact match, pro
 
             messages = [
                 SystemMessage(content=HELP_SYSTEM_PROMPT),
-                HumanMessage(content=query)
+                HumanMessage(content=query),
             ]
 
             response = self.llm.invoke(messages)

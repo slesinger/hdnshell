@@ -1,6 +1,7 @@
 # TODO
 
 ```
+coding tool You can peek C64 Ultimate memory with: http://192.168.1.65/v1/machine:readmem?address=1000&length=16  (1000 is an example of 0x1000 address in hex, length is in bytes)
 screen roll - taky s D800
 m: jako AI manual protoze pri i: to nepouziva vzdy ten spravny tool
 use FAISS for in memory similarity search, pickle embeddings to disk

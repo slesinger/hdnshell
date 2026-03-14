@@ -15,6 +15,7 @@ It also includes parts of SMON, which is one of the best (if not the best) machi
 - [Memory Operations, Machine Language Monitor](memory-operations.md)
 - [PySIC Alternative to BASIC Programming](pysic.md)
 - [Networking, Cloud Integration](cloud-integration.md)
+- [Server-Side File Editor](server-file-editor.md)
 - [AI Assistance](ai-assistance.md)
 - [CSDB.dk Commodore 64 Scene Database](csdb.md)
 

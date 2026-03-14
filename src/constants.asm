@@ -75,12 +75,14 @@
 .const screen_history_write_ptr= $034c  // and $034d When screen scrolls, this index is updated to point to next history buffer empty line (ready for next write)
 .const screen_history_read_ptr = $034e  // and $034f When navigating history, this index is pointing to the last fetched history line
 .const socket_id = $03fc           // socket id for network connection
+.const console_id = $03fd          // current console id (upper 4 bits only) for HDN Cloud communication // switched by C= + 1234567890, left arrow will bring default local console. // left arrow:$00, 1:$10, 2:$20, 3:$30, 4:$40, 5:$50, 6:$60, 7:$70, 8:$80, 9:$90, 0:$a0
 
 // Read-only system constants
 .const PNT = $d1                   // Read-only $00D1-$00D2	PNT	Pointer to the Address of the Current Screen Line
 .const PNTR = $d3                  // Read-only $00D3	PNTR	Cursor Column on Current Line 0-PARSER_MAX_INPUT_LEN
 .const TBLX = $d6                  // Read-only $00D6	TBLX	Current Cursor Physical Line Number
 .const SCRHIADDR = $d9             // Read-only $00D9-$00F2		Pointer to the High Byte of the Current Screen Line Address, see $ECF0
+.const MODIFIER_KEY_BITS = $028D   // Modifier key bits CTRL, C=, SHIFT
 .const BKVEC = $0316               // BRK instruction vector (official name CBINV)
 .const BASIC_START = $0801         // Start of BASIC program area in memory
 
@@ -188,6 +190,7 @@
 .const KEY_CLOSE_SQUARE_BRACKET = $5d
 .const KEY_ARROW_UP = $5e
 .const KEY_ARROW_LEFT = $5f
+.const KEY_C_1 = $81
 .const KEY_RUN = $83
 .const KEY_F1 = $85
 .const KEY_F3 = $86
@@ -201,6 +204,8 @@
 .const KEY_UP = $91
 .const KEY_CLEAR = $93
 .const KEY_INSERT = $94
+.const KEY_C_2 = $95
+.const KEY_C_3 = $96
 .const KEY_LEFT = $9D
 .const KEY_SHIFT_U = $75
 

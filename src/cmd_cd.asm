@@ -36,7 +36,8 @@ cmd_cd:  // TODO for mounting d64 image on c64 ultimate maybe MOUNT instead of C
     cmp #SCR_Cc  // CSDB device
     bne !uii_device+
     // CSDB device
-    jsr send_cmd_to_hdn_cloud
+    lda #HDNCLD_CMD_SEND_CLI
+    jsr send_cmd_to_hdn_cloud_CHROUT
 !uii_device:
     // else Uii file system 
     jsr uii_change_dir

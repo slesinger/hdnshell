@@ -15,12 +15,14 @@ MAGIC_BYTES = bytes([0xFE, 0xFF])
 
 class CommandID:
     """Command IDs to send to server"""
+
     KEYPRESS = 0x01
     TEXT_INPUT = 0x02
 
 
 class ResponseType:
     """Response types from server"""
+
     PETSCII_NULL_TERMINATED = 0x01
     MIX_COMMANDS_SCREEN_CODES = 0x02
     MTEXT_FORMAT = 0x03
@@ -29,7 +31,7 @@ class ResponseType:
 class C64TestClient:
     """Test client that simulates C64 communication"""
 
-    def __init__(self, host: str = '127.0.0.1', port: int = 6464):
+    def __init__(self, host: str = "127.0.0.1", port: int = 6464):
         """
         Initialize test client
 
@@ -53,7 +55,9 @@ class C64TestClient:
             self.socket.close()
             print("Disconnected")
 
-    def send_keypress(self, key: str, shift: bool = False, ctrl: bool = False, commodore: bool = False):
+    def send_keypress(
+        self, key: str, shift: bool = False, ctrl: bool = False, commodore: bool = False
+    ):
         """
         Send a keypress command
 
@@ -77,8 +81,7 @@ class C64TestClient:
             modifiers |= 0x04
 
         # Build packet
-        packet = MAGIC_BYTES + \
-            bytes([CommandID.KEYPRESS, petscii_code, modifiers])
+        packet = MAGIC_BYTES + bytes([CommandID.KEYPRESS, petscii_code, modifiers])
 
         print(f"\nSending keypress: '{key}' (PETSCII ${petscii_code:02X})")
         print(f"  Modifiers: Shift={shift}, Ctrl={ctrl}, C={commodore}")
@@ -102,8 +105,9 @@ class C64TestClient:
         petscii_bytes = bytes([Petscii.ascii2petscii(ord(c)) for c in text])
 
         # Build packet (with null terminator)
-        packet = MAGIC_BYTES + \
-            bytes([CommandID.TEXT_INPUT]) + petscii_bytes + bytes([0x00])
+        packet = (
+            MAGIC_BYTES + bytes([CommandID.TEXT_INPUT]) + petscii_bytes + bytes([0x00])
+        )
 
         print(f"\nSending text: '{text}'")
         print(f"  PETSCII: {petscii_bytes.hex()}")
@@ -115,6 +119,55 @@ class C64TestClient:
         response = self.socket.recv(4096)
         self.print_response(response)
         return self.decode_response(response)
+
+    def send_code_chat_text(self, text: str) -> str:
+        """
+        Send a text input command to the C=+0 code-chat console
+        (console_id=10, cmd_id=TEXT_INPUT => console_cmd_id=0xA2).
+
+        Args:
+            text: UTF-8 text to send
+
+        Returns:
+            Decoded UTF-8 response string
+        """
+        # Convert to PETSCII
+        petscii_bytes = bytes([Petscii.ascii2petscii(ord(c)) for c in text])
+
+        # console_cmd_id: (console_id=10 << 4) | cmd_id=0x02 => 0xA2
+        CONSOLE_CMD_ID = 0xA2
+        packet = MAGIC_BYTES + bytes([CONSOLE_CMD_ID]) + petscii_bytes + bytes([0x00])
+
+        self.socket.send(packet)
+
+        # Collect full response (may arrive in chunks)
+        chunks = []
+        self.socket.settimeout(30.0)
+        try:
+            while True:
+                chunk = self.socket.recv(4096)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+                # Server sends raw PETSCII without a framing header;
+                # stop once we have at least one chunk and a short pause
+                self.socket.settimeout(0.5)
+        except OSError:
+            pass
+        finally:
+            self.socket.settimeout(None)
+
+        raw = b"".join(chunks)
+
+        # Decode PETSCII bytes to ASCII/UTF-8
+        try:
+            decoded = "".join(
+                chr(Petscii.petscii2ascii(b)) if b != 0x00 else "" for b in raw
+            )
+        except Exception:
+            decoded = raw.decode("latin-1", errors="replace")
+
+        return decoded.strip()
 
     def decode_response(self, response: bytes):
         """
@@ -150,9 +203,10 @@ class C64TestClient:
             if len(petscii_data) > 0:
                 # Convert to ASCII/UTF-8
                 try:
-                    ascii_bytes = bytes([Petscii.petscii2ascii(b)
-                                        for b in petscii_data])
-                    text = ascii_bytes.decode('ascii')
+                    ascii_bytes = bytes(
+                        [Petscii.petscii2ascii(b) for b in petscii_data]
+                    )
+                    text = ascii_bytes.decode("ascii")
                     return text
                 except Exception:
                     return None
@@ -185,7 +239,7 @@ class C64TestClient:
         type_names = {
             ResponseType.PETSCII_NULL_TERMINATED: "PETSCII NULL-TERMINATED",
             ResponseType.MIX_COMMANDS_SCREEN_CODES: "MIX COMMANDS/SCREEN CODES",
-            ResponseType.MTEXT_FORMAT: "MTEXT FORMAT"
+            ResponseType.MTEXT_FORMAT: "MTEXT FORMAT",
         }
 
         type_name = type_names.get(resp_type, f"UNKNOWN (${resp_type:02X})")
@@ -203,9 +257,10 @@ class C64TestClient:
             if len(petscii_data) > 0:
                 # Convert to ASCII/UTF-8
                 try:
-                    ascii_bytes = bytes([Petscii.petscii2ascii(b)
-                                        for b in petscii_data])
-                    text = ascii_bytes.decode('ascii')
+                    ascii_bytes = bytes(
+                        [Petscii.petscii2ascii(b) for b in petscii_data]
+                    )
+                    text = ascii_bytes.decode("ascii")
                     print(f"  Text: '{text}'")
                 except Exception as e:
                     print(f"  Could not decode: {e}")
@@ -239,24 +294,24 @@ def interactive_mode(client: C64TestClient):
             if not cmd:
                 continue
 
-            if cmd == 'q':
+            if cmd == "q":
                 break
 
             parts = cmd.split(maxsplit=1)
 
-            if parts[0] == 'k' and len(parts) == 2:
+            if parts[0] == "k" and len(parts) == 2:
                 if len(parts[1]) > 0:
                     client.send_keypress(parts[1][0])
 
-            elif parts[0] == 'ks' and len(parts) == 2:
+            elif parts[0] == "ks" and len(parts) == 2:
                 if len(parts[1]) > 0:
                     client.send_keypress(parts[1][0], shift=True)
 
-            elif parts[0] == 'kc' and len(parts) == 2:
+            elif parts[0] == "kc" and len(parts) == 2:
                 if len(parts[1]) > 0:
                     client.send_keypress(parts[1][0], ctrl=True)
 
-            elif parts[0] == 't' and len(parts) == 2:
+            elif parts[0] == "t" and len(parts) == 2:
                 client.send_text(parts[1])
 
             else:
@@ -281,10 +336,10 @@ def demo_mode(client: C64TestClient):
 
     # Send some test keypresses
     print("--- Test 1: Simple keypress ---")
-    client.send_keypress('a')
+    client.send_keypress("a")
 
     print("\n--- Test 2: Keypress with SHIFT ---")
-    client.send_keypress('A', shift=True)
+    client.send_keypress("A", shift=True)
 
     print("\n--- Test 3: Send text ---")
     client.send_text("hello")
@@ -298,17 +353,63 @@ def demo_mode(client: C64TestClient):
     print("\n--- Demo complete ---")
 
 
+def code_chat_mode(client: C64TestClient):
+    """
+    Interactive code-chat mode that mimics being in the C=+0 console on the C64.
+    All text is sent with console_cmd_id=0xA2 (console 10 / vibe-coding AI).
+
+    Args:
+        client: Connected test client
+    """
+    print("\n=== C64 Test Client - Code Chat Mode (C=+0) ===")
+    print("Type your message and press Enter to send.")
+    print("Type 'q' or press Ctrl+C to quit.")
+    print()
+
+    while True:
+        try:
+            text = input("you> ").strip()
+
+            if not text:
+                continue
+
+            if text.lower() == "q":
+                break
+
+            print(f"  Sending to C=+0 console (0xA2): '{text}'")
+            response = client.send_code_chat_text(text)
+
+            if response:
+                print(f"\nai> {response}\n")
+            else:
+                print("  (empty response)")
+
+        except KeyboardInterrupt:
+            print()
+            break
+        except Exception as e:
+            print(f"Error: {e}")
+
+
 def main():
     """Main entry point"""
     import argparse
 
-    parser = argparse.ArgumentParser(description='C64 Test Client')
-    parser.add_argument('--host', default='127.0.0.1',
-                        help='Server host (default: 127.0.0.1)')
-    parser.add_argument('--port', type=int, default=6464,
-                        help='Server port (default: 6464)')
-    parser.add_argument('--demo', action='store_true',
-                        help='Run demo mode instead of interactive')
+    parser = argparse.ArgumentParser(description="C64 Test Client")
+    parser.add_argument(
+        "--host", default="127.0.0.1", help="Server host (default: 127.0.0.1)"
+    )
+    parser.add_argument(
+        "--port", type=int, default=6464, help="Server port (default: 6464)"
+    )
+    parser.add_argument(
+        "--demo", action="store_true", help="Run demo mode instead of interactive"
+    )
+    parser.add_argument(
+        "--code",
+        action="store_true",
+        help="Run code chat mode to test vibe coding specifically",
+    )
 
     args = parser.parse_args()
 
@@ -319,6 +420,8 @@ def main():
 
         if args.demo:
             demo_mode(client)
+        elif args.code:
+            code_chat_mode(client)
         else:
             interactive_mode(client)
 
@@ -333,5 +436,5 @@ def main():
         client.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

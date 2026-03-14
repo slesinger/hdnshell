@@ -1,5 +1,3 @@
-
-
 from pydantic import validate_call
 
 

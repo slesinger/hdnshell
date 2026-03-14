@@ -124,14 +124,16 @@ def _extract_release_rows(table, include_roles: bool = False) -> list:
                     roles = td_text.strip("()")
                     break
 
-        rows.append({
-            "id": release_id,
-            "title": title,
-            "year": year,
-            "type": type_text,
-            "by": by,
-            "roles": roles,
-        })
+        rows.append(
+            {
+                "id": release_id,
+                "title": title,
+                "year": year,
+                "type": type_text,
+                "by": by,
+                "roles": roles,
+            }
+        )
 
     return rows
 

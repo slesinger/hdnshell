@@ -48,7 +48,8 @@ cmd_dir:
     CommandDone()  // jump to parser completion handler in parser.asm
 
 !use_csdb_dir:
-    jsr send_cmd_to_hdn_cloud
+    lda #HDNCLD_CMD_SEND_CLI
+    jsr send_cmd_to_hdn_cloud_CHROUT
     PrintReturn()
     CommandDone()  // jump to parser completion handler in parser.asm
 

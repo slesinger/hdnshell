@@ -76,7 +76,7 @@ uii_readdata_CHROUT:
     lda #>readdata_CHROUT_callback
     sta JSR_INDIRECT_ADDR+1
 // Reads data from Ultimate command interface and calls callback to output each byte in A register
-// Input: callback address in JSR_INDIRECT_ADDR (lo/hi). Optins are readdata_CHROUT_callback, readdata_PRG_callback
+// Input: callback address in JSR_INDIRECT_ADDR (lo/hi). Options are readdata_CHROUT_callback, readdata_PRG_callback
 // Output: effect depends on what callback pointer is set on input.
 uii_readdata:
 !skip_ff_bytes:
@@ -132,6 +132,7 @@ readdata_PRG_callback:
     rts  // in this call we only read second byte from header, next byte will go to the new callback
 
 readdata_PRG_callback_after_header_was_read:
+readdata_MEM_callback:
     ldy #$00
     sta (ZP_INDIRECT_ADDR),y
     inc ZP_INDIRECT_ADDR

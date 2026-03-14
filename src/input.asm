@@ -10,8 +10,57 @@
 // ============================================================================
 
 HandleInput:
+
+    // Check this regardless of selected console
+    cmp #KEY_C_1  // back to local console
+    bne !+
+    lda #$10  // console id for local console
+    jmp HandleConsoleSwitch
+!:
+    cmp #KEY_C_2  // server source file editor
+    bne !+
+    lda #$20  // console id for server file editor, upper 4 bits only !!
+    jmp HandleConsoleSwitch
+!:
+    cmp #KEY_C_3  // server code agent chat
+    bne !+
+    lda #$30  // console id for server code agent chat, upper 4 bits only !!
+    jmp HandleConsoleSwitch
+!:
+    // Check console type
+    ldx console_id
+    cpx #$10  // local console
+    beq !HandleLocalConsole+
+
+    // Remote console input handling
+    jsr server_send_key
+    rts
+
+    // Local console input handling
+!HandleLocalConsole:
     // Check rolling flag
-    jsr handle_if_rolling  // kills A
+    jsr handle_if_rolling  // preserves A
+
+//     // read modifier keys
+//     pha
+//     lda MODIFIER_KEY_BITS
+//     and #$02  // C= pressed
+//     bne !+
+//     pla
+//     jmp !no_modifier+
+// !:
+//     // check CTRL key
+//       // TBD
+
+//     pla
+//     jmp !commodore+
+
+// !commodore:
+//     // C= pressed
+//     sta $0400
+//     rts
+
+// !no_modifier:
     // Handle special keys
     cmp #KEY_RETURN
     bne !+
@@ -203,4 +252,19 @@ HandleF1:
 
 HandleF7:
     jsr get_newer_screen_history_line
+    rts
+
+// ============================================================================
+// Handle Console switching
+// Input: A console id (0-7)
+// ============================================================================
+HandleConsoleSwitch:    
+    sta console_id  // upper 4 bits only !!
+    cmp #$01  // is it local console?
+    bne !+
+    // switch to local console
+    jsr switch_to_local_console
+    rts
+!:
+    jsr server_get_console_screen
     rts

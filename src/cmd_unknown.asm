@@ -19,7 +19,8 @@ cmd_unknown:
     beq !suppress_empty_line+
 
     // Commands not recognized locally will be sent to HDN Cloud service
-    jsr send_cmd_to_hdn_cloud
+    lda #HDNCLD_CMD_SEND_CLI
+    jsr send_cmd_to_hdn_cloud_CHROUT
     PrintReturn()
     // TODO check for errors and only display message if cloud is not reachable
 

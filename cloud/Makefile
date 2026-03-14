@@ -7,8 +7,8 @@
 run-server:
 	python3 cloud.py
 
-run-client:
-	python3 cloud_test_client.py
+run-testclient:
+	python3 cloud_test_client.py  --code
 
 
 # Tests

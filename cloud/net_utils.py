@@ -14,11 +14,12 @@ def get_primary_ip() -> str:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         # Connect to a public address, doesn't actually send packets
-        s.connect(('8.8.8.8', 80))
+        s.connect(("8.8.8.8", 80))
         ip = s.getsockname()[0]
     finally:
         s.close()
     return ip
+
 
 # Get the network range from the IP and netmask
 
@@ -32,11 +33,15 @@ def _cidr_from_netmask(mask: str) -> int | None:
 
 def _get_network_linux(ip: str) -> ipaddress.IPv4Network | None:
     try:
-        iface = os.popen(
-            "ip route get 8.8.8.8 | awk '{print $5}'").read().strip()
+        iface = os.popen("ip route get 8.8.8.8 | awk '{print $5}'").read().strip()
         if iface:
-            netmask = os.popen(
-                f"ip addr show {iface} | grep 'inet ' | awk '{{print $2}}' | cut -d'/' -f2").read().strip()
+            netmask = (
+                os.popen(
+                    f"ip addr show {iface} | grep 'inet ' | awk '{{print $2}}' | cut -d'/' -f2"
+                )
+                .read()
+                .strip()
+            )
             if netmask:
                 return ipaddress.IPv4Network(f"{ip}/{netmask}", strict=False)
     except Exception:
@@ -96,7 +101,9 @@ def _get_network_windows(ip: str) -> ipaddress.IPv4Network | None:
                             netmask = parts[1].strip()
                             cidr = _cidr_from_netmask(netmask)
                             if cidr is not None:
-                                return ipaddress.IPv4Network(f"{ip}/{cidr}", strict=False)
+                                return ipaddress.IPv4Network(
+                                    f"{ip}/{cidr}", strict=False
+                                )
                         break
                 break
     except Exception:
@@ -119,10 +126,13 @@ def get_network(ip: str) -> ipaddress.IPv4Network:
     # Fallback: assume /24
     return ipaddress.IPv4Network(f"{ip}/24", strict=False)
 
+
 # Scan the network for machines with port 64 open
 
 
-def scan_network_for_port_64(network: ipaddress.IPv4Network, timeout: float = 0.05) -> str:
+def scan_network_for_port_64(
+    network: ipaddress.IPv4Network, timeout: float = 0.05
+) -> str:
     count = 0
     for ip in network.hosts():
         ip_str = str(ip)
@@ -139,12 +149,14 @@ def scan_network_for_port_64(network: ipaddress.IPv4Network, timeout: float = 0.
             s.close()
         count += 1
         if count % 10 == 0:
-            print('.', end='', flush=True)
+            print(".", end="", flush=True)
     print()  # Newline after scan
     return None
 
 
-def scan_network_for_modem(network: ipaddress.IPv4Network, timeout: float = 0.05) -> str:
+def scan_network_for_modem(
+    network: ipaddress.IPv4Network, timeout: float = 0.05
+) -> str:
     _MODEM_BANNERS = (
         b"Modem Software is currently not running",
         b"CONNECT",
@@ -173,7 +185,7 @@ def scan_network_for_modem(network: ipaddress.IPv4Network, timeout: float = 0.05
             s.close()
         count += 1
         if count % 10 == 0:
-            print('.', end='', flush=True)
+            print(".", end="", flush=True)
     print()  # Newline after scan
     return None
 

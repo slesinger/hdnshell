@@ -1,6 +1,7 @@
 """
 Base handler class for request processing
 """
+
 from abc import ABC, abstractmethod
 from generate_pet_asc_table import Petscii
 
@@ -48,7 +49,7 @@ class BaseHandler(ABC):
             UTF-8 string
         """
         ascii_bytes = bytes([Petscii.petscii2ascii(b) for b in petscii_bytes])
-        return ascii_bytes.decode('ascii', errors='replace')
+        return ascii_bytes.decode("ascii", errors="replace")
 
     @staticmethod
     def utf8_to_petscii(text: str) -> bytes:
@@ -62,7 +63,6 @@ class BaseHandler(ABC):
             PETSCII encoded bytes
         """
         # Convert '\n' (LF, 0x0a) to PETSCII newline (CR, 0x0d)
-        return bytes([
-            0x0d if c == '\n' else Petscii.ascii2petscii(ord(c))
-            for c in text
-        ])
+        return bytes(
+            [0x0D if c == "\n" else Petscii.ascii2petscii(ord(c)) for c in text]
+        )

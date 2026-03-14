@@ -214,10 +214,10 @@ The server uses a dispatcher system to route text input commands to specialized 
 
 ## PETSCII Protocol & Conversion
 
-- All client commands start with magic bytes `$FE $FF`
+- All client commands start with magic bytes `$FE`
 - Supported commands:
-	- `$01`: Keypress `[FE FF] [01] [PETSCII_CODE] [MODIFIER_FLAGS]`
-	- `$02`: Text input `[FE FF] [02] [PETSCII_TEXT...] [00]`
+	- `$01`: Keypress `[FE] [01] [PETSCII_CODE] [MODIFIER_FLAGS]`
+	- `$02`: Text input or command line `[FE] [02] [PETSCII_TEXT...] [00]`
 - Server responses:
 	- `$01`: PETSCII null-terminated string
 	- `$02`: Mix of commands and screen codes

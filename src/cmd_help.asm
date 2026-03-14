@@ -17,7 +17,8 @@
 
 cmd_help:
     ParsingInputsDone() // finish parsing input line
-    jsr send_cmd_to_hdn_cloud  // Display remote help if cloud is available
+    lda #HDNCLD_CMD_SEND_CLI
+    jsr send_cmd_to_hdn_cloud_CHROUT  // Display remote help if cloud is available
     bcc !cloud_available+
 
     // Display local help message

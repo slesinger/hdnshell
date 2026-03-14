@@ -1,6 +1,7 @@
 """
 Unit tests for request handlers
 """
+
 import pytest
 from dotenv import load_dotenv
 from base_handler import BaseHandler
@@ -8,6 +9,7 @@ from help_handler import HelpHandler
 from python_eval_handler import PythonEvalHandler
 from csdb_handler import CSDBHandler
 from chat_handler import ChatHandler
+
 # from generate_pet_asc_table import Petscii
 
 # Load environment variables for testing (override=True to prevent system vars from interfering)
@@ -190,7 +192,9 @@ class TestChatHandler:
         # If no LLM configured, should get fallback
         if not handler.llm:
             response = handler.handle("I: hello")
-            assert "unavailable" in response.lower() or "configuration" in response.lower()
+            assert (
+                "unavailable" in response.lower() or "configuration" in response.lower()
+            )
 
     def test_llm_response(self):
         """Test actual LLM response with Azure OpenAI"""
@@ -210,7 +214,7 @@ class TestRequestDispatcher:
 
     def test_dispatch_help(self):
         """Test dispatching help request"""
-        from cloud_server import RequestDispatcher
+        from request_dispatcher import RequestDispatcher
 
         dispatcher = RequestDispatcher()
 
@@ -228,7 +232,7 @@ class TestRequestDispatcher:
 
     def test_dispatch_python_eval(self):
         """Test dispatching Python eval request"""
-        from cloud_server import RequestDispatcher
+        from request_dispatcher import RequestDispatcher
 
         dispatcher = RequestDispatcher()
 
@@ -245,7 +249,7 @@ class TestRequestDispatcher:
 
     def test_dispatch_chat(self):
         """Test dispatching chat request"""
-        from cloud_server import RequestDispatcher
+        from request_dispatcher import RequestDispatcher
 
         dispatcher = RequestDispatcher()
 
@@ -260,7 +264,7 @@ class TestRequestDispatcher:
 
     def test_dispatch_csdb(self):
         """Test dispatching CSDB request"""
-        from cloud_server import RequestDispatcher
+        from request_dispatcher import RequestDispatcher
 
         dispatcher = RequestDispatcher()
 
@@ -275,7 +279,7 @@ class TestRequestDispatcher:
 
     def test_dispatch_unknown(self):
         """Test dispatching unknown command"""
-        from cloud_server import RequestDispatcher
+        from request_dispatcher import RequestDispatcher
 
         dispatcher = RequestDispatcher()
 
@@ -292,7 +296,7 @@ class TestRequestDispatcher:
 
     def test_dispatch_empty(self):
         """Test dispatching empty input"""
-        from cloud_server import RequestDispatcher
+        from request_dispatcher import RequestDispatcher
 
         dispatcher = RequestDispatcher()
 
@@ -305,5 +309,5 @@ class TestRequestDispatcher:
         assert len(response) > 0
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

@@ -74,6 +74,22 @@ run-ui:
 run-server:
 	$(MAKE) -C cloud run-server
 
+run-server-testclient:
+	$(MAKE) -C cloud run-testclient
+
+install-server-packages:
+	pip install -r cloud/requirements.txt
+
+upgrade-server-packages:
+	echo "This will take some time, please be patient"; \
+	pip-compile --upgrade
+
+check-server:
+	black cloud --exclude cloud/lightrag; \
+	flake8 --max-line-length=3000 --extend-ignore E203,E402,E501 cloud --exclude cloud/lightrag; \
+	echo; \
+	echo "Static code analysis is running..."; \
+	mypy --check-untyped-defs cloud/cloud.py
 
 # Tests
 

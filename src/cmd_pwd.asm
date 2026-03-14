@@ -26,7 +26,8 @@ cmd_pwd:
     jsr uii_get_path
     jmp !done+
 !use_csdb_dir:
-    jsr send_cmd_to_hdn_cloud
+    lda #HDNCLD_CMD_SEND_CLI
+    jsr send_cmd_to_hdn_cloud_CHROUT
     jmp !done+
 !use_iec_dir:
 !use_89_dir:
