@@ -209,6 +209,7 @@ class CodeChatAgent:
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
+
     load_dotenv(override=True)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     agent = CodeChatAgent()

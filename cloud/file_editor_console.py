@@ -21,76 +21,75 @@ from server_console import (
     SCREEN_SIZE,
     DEFAULT_SCREEN_CODE,
     ascii_to_screencode,
-    petscii_to_screencode,
 )
 from generate_pet_asc_table import Petscii
 
 logger = logging.getLogger(__name__)
 
 # ── Colour palette (C64 colour nybbles) ─────────────────────────────
-COL_MENU_BG      = 0   # black  (text on menu bar)
-COL_MENU_FG      = 1   # white
-COL_MENU_HI      = 7   # yellow  (highlighted menu item)
-COL_STATUS_BG    = 0
-COL_STATUS_FG    = 1   # white
-COL_TEXT_FG      = 14  # light blue
-COL_TEXT_FG2     = 13  # light green (split pane 2)
-COL_LINENO_FG    = 15  # light grey
-COL_CURSOR_FG    = 1   # white  (cursor highlight)
-COL_SELECT_FG    = 7   # yellow (selected block)
-COL_BROWSER_DIR  = 5   # green
+COL_MENU_BG = 0  # black  (text on menu bar)
+COL_MENU_FG = 1  # white
+COL_MENU_HI = 7  # yellow  (highlighted menu item)
+COL_STATUS_BG = 0
+COL_STATUS_FG = 1  # white
+COL_TEXT_FG = 14  # light blue
+COL_TEXT_FG2 = 13  # light green (split pane 2)
+COL_LINENO_FG = 15  # light grey
+COL_CURSOR_FG = 1  # white  (cursor highlight)
+COL_SELECT_FG = 7  # yellow (selected block)
+COL_BROWSER_DIR = 5  # green
 COL_BROWSER_FILE = 14  # light blue
-COL_HELP_FG      = 3   # cyan
-COL_PROMPT_FG    = 1   # white
-COL_CONSOLE_FG   = 5   # green
-COL_TAB_ACTIVE   = 1   # white
+COL_HELP_FG = 3  # cyan
+COL_PROMPT_FG = 1  # white
+COL_CONSOLE_FG = 5  # green
+COL_TAB_ACTIVE = 1  # white
 COL_TAB_INACTIVE = 11  # dark grey
-COL_FIND_MATCH   = 2   # red (highlight search matches)
+COL_FIND_MATCH = 2  # red (highlight search matches)
 
 # ── PETSCII key constants ────────────────────────────────────────────
-KEY_RETURN  = 0x0D
-KEY_DEL     = 0x14  # DELETE (backspace)
-KEY_INS     = 0x94  # INSERT (SHIFT+DEL)
-KEY_HOME    = 0x13
-KEY_CLR     = 0x93  # SHIFT+HOME
+KEY_RETURN = 0x0D
+KEY_DEL = 0x14  # DELETE (backspace)
+KEY_INS = 0x94  # INSERT (SHIFT+DEL)
+KEY_HOME = 0x13
+KEY_CLR = 0x93  # SHIFT+HOME
 KEY_CRSR_UP = 0x91
 KEY_CRSR_DN = 0x11
 KEY_CRSR_LT = 0x9D
 KEY_CRSR_RT = 0x1D
-KEY_F1      = 0x85
-KEY_F2      = 0x89  # actually F2 in PETSCII
-KEY_F3      = 0x86
-KEY_F4      = 0x8A
-KEY_F5      = 0x87
-KEY_F6      = 0x8B
-KEY_F7      = 0x88
-KEY_F8      = 0x8C
-KEY_ESC     = 0x1B  # RUN/STOP mapped as ESC
-KEY_TAB     = 0x09
+KEY_F1 = 0x85
+KEY_F2 = 0x89  # actually F2 in PETSCII
+KEY_F3 = 0x86
+KEY_F4 = 0x8A
+KEY_F5 = 0x87
+KEY_F6 = 0x8B
+KEY_F7 = 0x88
+KEY_F8 = 0x8C
+KEY_ESC = 0x1B  # RUN/STOP mapped as ESC
+KEY_TAB = 0x09
 
 # Modifier flags (from command_handler.py)
-MOD_SHIFT     = 0x01
-MOD_CTRL      = 0x02
+MOD_SHIFT = 0x01
+MOD_CTRL = 0x02
 MOD_COMMODORE = 0x04
 
 # ── Editor modes ─────────────────────────────────────────────────────
-MODE_EDIT       = 0
-MODE_MENU       = 1
-MODE_BROWSER    = 2
-MODE_FIND       = 3
-MODE_REPLACE    = 4
-MODE_GOTO_LINE  = 5
-MODE_HELP       = 6
-MODE_CONSOLE    = 7
-MODE_FILE_LIST  = 8
-MODE_CONFIRM    = 9
+MODE_EDIT = 0
+MODE_MENU = 1
+MODE_BROWSER = 2
+MODE_FIND = 3
+MODE_REPLACE = 4
+MODE_GOTO_LINE = 5
+MODE_HELP = 6
+MODE_CONSOLE = 7
+MODE_FILE_LIST = 8
+MODE_CONFIRM = 9
 
 # ── Layout constants ─────────────────────────────────────────────────
-MENU_ROW     = 0    # Row 0 = menu bar
-STATUS_ROW   = 24   # Row 24 = status bar
-EDIT_TOP     = 1    # First editable row
-EDIT_BOTTOM  = 23   # Last editable row
-EDIT_ROWS    = EDIT_BOTTOM - EDIT_TOP + 1  # 23 visible text rows
+MENU_ROW = 0  # Row 0 = menu bar
+STATUS_ROW = 24  # Row 24 = status bar
+EDIT_TOP = 1  # First editable row
+EDIT_BOTTOM = 23  # Last editable row
+EDIT_ROWS = EDIT_BOTTOM - EDIT_TOP + 1  # 23 visible text rows
 LINE_NUM_WIDTH = 5  # "1234 " -> 5 chars for line numbers
 TEXT_START_COL = LINE_NUM_WIDTH
 TEXT_COLS = SCREEN_COLS - TEXT_START_COL  # 35 usable text columns
@@ -112,10 +111,10 @@ class Document:
         self.path: Optional[str] = path
         self.lines: List[str] = [""]
         self.modified: bool = False
-        self.cursor_x: int = 0   # column within the line (char index)
-        self.cursor_y: int = 0   # line index in self.lines
-        self.scroll_x: int = 0   # horizontal scroll offset
-        self.scroll_y: int = 0   # first visible line index
+        self.cursor_x: int = 0  # column within the line (char index)
+        self.cursor_y: int = 0  # line index in self.lines
+        self.scroll_x: int = 0  # horizontal scroll offset
+        self.scroll_y: int = 0  # first visible line index
         # Block selection (None = no selection)
         self.sel_start: Optional[Tuple[int, int]] = None  # (line, col)
         self.sel_end: Optional[Tuple[int, int]] = None
@@ -198,7 +197,7 @@ class Document:
     def has_selection(self) -> bool:
         return self.sel_start is not None and self.sel_end is not None
 
-    def ordered_selection(self) -> Optional[Tuple[Tuple[int,int], Tuple[int,int]]]:
+    def ordered_selection(self) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
         """Return (start, end) with start <= end."""
         if not self.has_selection():
             return None
@@ -247,8 +246,8 @@ class Document:
             self.delete_selection()
         lines_to_insert = text.split("\n")
         line = self.cur_line()
-        before = line[:self.cursor_x]
-        after = line[self.cursor_x:]
+        before = line[: self.cursor_x]
+        after = line[self.cursor_x :]
         if len(lines_to_insert) == 1:
             self.lines[self.cursor_y] = before + lines_to_insert[0] + after
             self.cursor_x += len(lines_to_insert[0])
@@ -291,37 +290,37 @@ class FileEditorConsole(ServerConsole):
         self.submenu_sel: int = 0
         self.submenus: Dict[str, List[Tuple[str, str]]] = {
             "file": [
-                ("new",       "f1"),
-                ("open",      "f3"),
-                ("save",      "f5"),
-                ("save as",   "sf5"),
-                ("close",     "c+w"),
+                ("new", "f1"),
+                ("open", "f3"),
+                ("save", "f5"),
+                ("save as", "sf5"),
+                ("close", "c+w"),
                 ("file list", "f2"),
             ],
             "edit": [
-                ("cut",       "c+x"),
-                ("copy",      "c+c"),
-                ("paste",     "c+v"),
+                ("cut", "c+x"),
+                ("copy", "c+c"),
+                ("paste", "c+v"),
                 ("sel start", "c+b"),
-                ("sel end",   "c+e"),
-                ("sel all",   "c+a"),
-                ("del line",  "c+y"),
+                ("sel end", "c+e"),
+                ("sel all", "c+a"),
+                ("del line", "c+y"),
             ],
             "view": [
-                ("console",   "f7"),
-                ("split h",   "c+2"),
-                ("split v",   "c+3"),
-                ("no split",  "c+1"),
-                ("tabs",      "f2"),
+                ("console", "f7"),
+                ("split h", "c+2"),
+                ("split v", "c+3"),
+                ("no split", "c+1"),
+                ("tabs", "f2"),
             ],
             "search": [
-                ("find",      "c+f"),
+                ("find", "c+f"),
                 ("find next", "c+n"),
-                ("replace",   "c+r"),
+                ("replace", "c+r"),
                 ("goto line", "c+g"),
             ],
             "help": [
-                ("keys",      "f8"),
+                ("keys", "f8"),
             ],
         }
         # Find/replace state
@@ -364,16 +363,16 @@ class FileEditorConsole(ServerConsole):
     def handle_keypress(self, petscii_code: int, modifiers: int) -> Optional[bytes]:
         """Route keypress based on current editor mode."""
         handlers = {
-            MODE_EDIT:      self._key_edit,
-            MODE_MENU:      self._key_menu,
-            MODE_BROWSER:   self._key_browser,
-            MODE_FIND:      self._key_input_dialog,
-            MODE_REPLACE:   self._key_input_dialog,
+            MODE_EDIT: self._key_edit,
+            MODE_MENU: self._key_menu,
+            MODE_BROWSER: self._key_browser,
+            MODE_FIND: self._key_input_dialog,
+            MODE_REPLACE: self._key_input_dialog,
             MODE_GOTO_LINE: self._key_input_dialog,
-            MODE_HELP:      self._key_help,
-            MODE_CONSOLE:   self._key_console,
+            MODE_HELP: self._key_help,
+            MODE_CONSOLE: self._key_console,
             MODE_FILE_LIST: self._key_file_list,
-            MODE_CONFIRM:   self._key_confirm,
+            MODE_CONFIRM: self._key_confirm,
         }
         handler = handlers.get(self.mode, self._key_edit)
         handler(petscii_code, modifiers)
@@ -441,11 +440,11 @@ class FileEditorConsole(ServerConsole):
         elif key == KEY_INS:
             # Insert a space at cursor
             line = d.cur_line()
-            d.set_cur_line(line[:d.cursor_x] + " " + line[d.cursor_x:])
+            d.set_cur_line(line[: d.cursor_x] + " " + line[d.cursor_x :])
         elif key == KEY_TAB:
             # Insert 4 spaces
             line = d.cur_line()
-            d.set_cur_line(line[:d.cursor_x] + "    " + line[d.cursor_x:])
+            d.set_cur_line(line[: d.cursor_x] + "    " + line[d.cursor_x :])
             d.cursor_x += 4
 
         # ─ Function keys ─
@@ -486,7 +485,7 @@ class FileEditorConsole(ServerConsole):
                 if d.has_selection():
                     d.delete_selection()
                 line = d.cur_line()
-                d.set_cur_line(line[:d.cursor_x] + ch + line[d.cursor_x:])
+                d.set_cur_line(line[: d.cursor_x] + ch + line[d.cursor_x :])
                 d.cursor_x += 1
 
         d.clamp_cursor()
@@ -498,43 +497,43 @@ class FileEditorConsole(ServerConsole):
         if ch is None:
             return
         c = ch.lower()
-        if c == 'x':
+        if c == "x":
             self._cmd_cut(d)
-        elif c == 'c':
+        elif c == "c":
             self._cmd_copy(d)
-        elif c == 'v':
+        elif c == "v":
             self._cmd_paste(d)
-        elif c == 'b':
+        elif c == "b":
             d.sel_start = (d.cursor_y, d.cursor_x)
             if d.sel_end is None:
                 d.sel_end = d.sel_start
-        elif c == 'e':
+        elif c == "e":
             d.sel_end = (d.cursor_y, d.cursor_x)
             if d.sel_start is None:
                 d.sel_start = d.sel_end
-        elif c == 'a':
+        elif c == "a":
             d.sel_start = (0, 0)
             d.sel_end = (d.line_count - 1, len(d.lines[-1]))
-        elif c == 'y':
+        elif c == "y":
             self._cmd_delete_line(d)
-        elif c == 'f':
+        elif c == "f":
             self._start_input("find: ", "_cb_find")
-        elif c == 'n':
+        elif c == "n":
             self._cmd_find_next()
-        elif c == 'r':
+        elif c == "r":
             self._start_input("replace: ", "_cb_replace_prompt")
-        elif c == 'g':
+        elif c == "g":
             self._start_input("goto line: ", "_cb_goto_line")
-        elif c == 'w':
+        elif c == "w":
             self._cmd_close_file()
-        elif c == 's':
+        elif c == "s":
             self._cmd_save()
-        elif c == '1':
+        elif c == "1":
             self.split_mode = 0
-        elif c == '2':
+        elif c == "2":
             self.split_mode = 1
             self._ensure_split_doc()
-        elif c == '3':
+        elif c == "3":
             self.split_mode = 2
             self._ensure_split_doc()
 
@@ -544,19 +543,19 @@ class FileEditorConsole(ServerConsole):
         if ch is None:
             return
         c = ch.lower()
-        if c == 'f':
+        if c == "f":
             self._start_input("find: ", "_cb_find")
-        elif c == 'n':
+        elif c == "n":
             self._cmd_find_next()
-        elif c == 'r':
+        elif c == "r":
             self._start_input("replace: ", "_cb_replace_prompt")
-        elif c == 'g':
+        elif c == "g":
             self._start_input("goto line: ", "_cb_goto_line")
-        elif c == 'x':
+        elif c == "x":
             self._cmd_cut(d)
-        elif c == 'c':
+        elif c == "c":
             self._cmd_copy(d)
-        elif c == 'v':
+        elif c == "v":
             self._cmd_paste(d)
 
     # ── MENU mode ────────────────────────────────────────────────────
@@ -744,7 +743,7 @@ class FileEditorConsole(ServerConsole):
     # ── CONFIRM dialog mode ──────────────────────────────────────────
     def _key_confirm(self, key: int, mod: int):
         ch = self._petscii_to_char(key)
-        if ch and ch.lower() == 'y':
+        if ch and ch.lower() == "y":
             self.mode = MODE_EDIT
             if self.confirm_callback and hasattr(self, self.confirm_callback):
                 getattr(self, self.confirm_callback)()
@@ -811,8 +810,8 @@ class FileEditorConsole(ServerConsole):
         if d.has_selection():
             d.delete_selection()
         line = d.cur_line()
-        d.set_cur_line(line[:d.cursor_x])
-        d.lines.insert(d.cursor_y + 1, line[d.cursor_x:])
+        d.set_cur_line(line[: d.cursor_x])
+        d.lines.insert(d.cursor_y + 1, line[d.cursor_x :])
         d.cursor_y += 1
         d.cursor_x = 0
         d.modified = True
@@ -823,7 +822,7 @@ class FileEditorConsole(ServerConsole):
             return
         if d.cursor_x > 0:
             line = d.cur_line()
-            d.set_cur_line(line[:d.cursor_x - 1] + line[d.cursor_x:])
+            d.set_cur_line(line[: d.cursor_x - 1] + line[d.cursor_x :])
             d.cursor_x -= 1
         elif d.cursor_y > 0:
             prev_len = len(d.lines[d.cursor_y - 1])
@@ -836,18 +835,18 @@ class FileEditorConsole(ServerConsole):
     def _word_left(self, d: Document):
         line = d.cur_line()
         x = d.cursor_x
-        while x > 0 and (x - 1 >= len(line) or line[x - 1] == ' '):
+        while x > 0 and (x - 1 >= len(line) or line[x - 1] == " "):
             x -= 1
-        while x > 0 and x - 1 < len(line) and line[x - 1] != ' ':
+        while x > 0 and x - 1 < len(line) and line[x - 1] != " ":
             x -= 1
         d.cursor_x = x
 
     def _word_right(self, d: Document):
         line = d.cur_line()
         x = d.cursor_x
-        while x < len(line) and line[x] != ' ':
+        while x < len(line) and line[x] != " ":
             x += 1
-        while x < len(line) and line[x] == ' ':
+        while x < len(line) and line[x] == " ":
             x += 1
         d.cursor_x = x
 
@@ -1018,8 +1017,12 @@ class FileEditorConsole(ServerConsole):
         self.console_lines.append(f"$ {cmd}")
         try:
             result = subprocess.run(
-                cmd, shell=True, capture_output=True, text=True,
-                timeout=10, cwd=self.browser_cwd
+                cmd,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=self.browser_cwd,
             )
             output = result.stdout + result.stderr
             for line in output.split("\n"):
@@ -1090,8 +1093,9 @@ class FileEditorConsole(ServerConsole):
                 self._render_editor_pane(EDIT_TOP, mid - 1, self.doc, True)
                 self._render_hsplit_divider(mid)
                 if self.split_doc_idx < len(self.documents):
-                    self._render_editor_pane(mid + 1, EDIT_BOTTOM,
-                                             self.documents[self.split_doc_idx], False)
+                    self._render_editor_pane(
+                        mid + 1, EDIT_BOTTOM, self.documents[self.split_doc_idx], False
+                    )
             elif self.split_mode == 2:
                 # Vertical split (left/right)
                 self._render_vsplit_panes()
@@ -1104,7 +1108,7 @@ class FileEditorConsole(ServerConsole):
             self.color[c] = COL_MENU_FG
         col = 1
         for idx, name in enumerate(self.menu_items):
-            is_sel = (self.mode == MODE_MENU and idx == self.menu_sel)
+            is_sel = self.mode == MODE_MENU and idx == self.menu_sel
             fg = COL_MENU_HI if is_sel else COL_MENU_FG
             self._put_text(0, col, name.upper(), fg, reverse=is_sel)
             col += len(name) + 1
@@ -1130,7 +1134,7 @@ class FileEditorConsole(ServerConsole):
             row = MENU_ROW + 1 + i
             if row > EDIT_BOTTOM:
                 break
-            is_sel = (i == self.submenu_sel)
+            is_sel = i == self.submenu_sel
             fg = COL_MENU_HI if is_sel else COL_MENU_FG
             # Clear the row area
             for c in range(x, min(x + w, SCREEN_COLS)):
@@ -1141,9 +1145,15 @@ class FileEditorConsole(ServerConsole):
             self._put_text(row, x + w - len(key) - 1, key, COL_LINENO_FG)
 
     # ── Editor pane ──────────────────────────────────────────────────
-    def _render_editor_pane(self, top_row: int, bottom_row: int,
-                            doc: Document, show_cursor: bool,
-                            col_offset: int = 0, pane_cols: int = SCREEN_COLS):
+    def _render_editor_pane(
+        self,
+        top_row: int,
+        bottom_row: int,
+        doc: Document,
+        show_cursor: bool,
+        col_offset: int = 0,
+        pane_cols: int = SCREEN_COLS,
+    ):
         """Render a document into screen rows [top_row..bottom_row]."""
         visible_rows = bottom_row - top_row + 1
         text_cols = pane_cols - LINE_NUM_WIDTH
@@ -1179,7 +1189,11 @@ class FileEditorConsole(ServerConsole):
                 pos = screen_row * SCREEN_COLS + scol
                 if char_idx < len(line):
                     ch = line[char_idx]
-                    sc = ascii_to_screencode(ord(ch)) if ord(ch) < 128 else DEFAULT_SCREEN_CODE
+                    sc = (
+                        ascii_to_screencode(ord(ch))
+                        if ord(ch) < 128
+                        else DEFAULT_SCREEN_CODE
+                    )
                     self.screen[pos] = sc
                 else:
                     self.screen[pos] = DEFAULT_SCREEN_CODE
@@ -1192,7 +1206,7 @@ class FileEditorConsole(ServerConsole):
                         fg = COL_SELECT_FG
 
                 # Check if on search match
-                for (ml, mc, mlen) in self.find_matches:
+                for ml, mc, mlen in self.find_matches:
                     if ml == line_idx and mc <= char_idx < mc + mlen:
                         fg = COL_FIND_MATCH
                         break
@@ -1210,8 +1224,9 @@ class FileEditorConsole(ServerConsole):
                     if pos < SCREEN_SIZE:
                         self.screen[pos] = self.screen[pos] | 0x80  # reverse bit
 
-    def _in_selection(self, line: int, col: int,
-                      start: Tuple[int, int], end: Tuple[int, int]) -> bool:
+    def _in_selection(
+        self, line: int, col: int, start: Tuple[int, int], end: Tuple[int, int]
+    ) -> bool:
         sy, sx = start
         ey, ex = end
         if line < sy or line > ey:
@@ -1235,8 +1250,9 @@ class FileEditorConsole(ServerConsole):
     def _render_vsplit_panes(self):
         half = SCREEN_COLS // 2  # 20 columns each
         # Left pane: active doc
-        self._render_editor_pane(EDIT_TOP, EDIT_BOTTOM, self.doc, True,
-                                 col_offset=0, pane_cols=half)
+        self._render_editor_pane(
+            EDIT_TOP, EDIT_BOTTOM, self.doc, True, col_offset=0, pane_cols=half
+        )
         # Divider
         for r in range(EDIT_TOP, EDIT_BOTTOM + 1):
             pos = r * SCREEN_COLS + half
@@ -1244,10 +1260,14 @@ class FileEditorConsole(ServerConsole):
             self.color[pos] = COL_LINENO_FG
         # Right pane
         if self.split_doc_idx < len(self.documents):
-            self._render_editor_pane(EDIT_TOP, EDIT_BOTTOM,
-                                     self.documents[self.split_doc_idx], False,
-                                     col_offset=half + 1,
-                                     pane_cols=SCREEN_COLS - half - 1)
+            self._render_editor_pane(
+                EDIT_TOP,
+                EDIT_BOTTOM,
+                self.documents[self.split_doc_idx],
+                False,
+                col_offset=half + 1,
+                pane_cols=SCREEN_COLS - half - 1,
+            )
 
     # ── Status bar (row 24) ──────────────────────────────────────────
     def _render_status_bar(self):
@@ -1287,7 +1307,7 @@ class FileEditorConsole(ServerConsole):
         # Title
         title = self.browser_cwd
         if len(title) > SCREEN_COLS - 2:
-            title = "..." + title[-(SCREEN_COLS - 5):]
+            title = "..." + title[-(SCREEN_COLS - 5) :]
         self._put_text(EDIT_TOP, 0, title, COL_HELP_FG)
 
         max_visible = EDIT_ROWS - 1  # -1 for title row
@@ -1297,7 +1317,7 @@ class FileEditorConsole(ServerConsole):
             if entry_idx >= len(self.browser_entries):
                 break
             name, is_dir = self.browser_entries[entry_idx]
-            is_sel = (entry_idx == self.browser_sel)
+            is_sel = entry_idx == self.browser_sel
             fg = COL_BROWSER_DIR if is_dir else COL_BROWSER_FILE
             if is_dir:
                 display = f"[{name}]"
@@ -1313,7 +1333,7 @@ class FileEditorConsole(ServerConsole):
             row = EDIT_TOP + 1 + i
             if row > EDIT_BOTTOM:
                 break
-            is_active = (i == self.active_doc_idx)
+            is_active = i == self.active_doc_idx
             mod = "*" if d.modified else " "
             name = d.name[:30]
             fg = COL_TAB_ACTIVE if is_active else COL_TAB_INACTIVE
@@ -1426,8 +1446,7 @@ class FileEditorConsole(ServerConsole):
                 self._put_text(row, 0, text, COL_HELP_FG)
 
     # ── Low-level text rendering helper ──────────────────────────────
-    def _put_text(self, row: int, col: int, text: str, fg: int,
-                  reverse: bool = False):
+    def _put_text(self, row: int, col: int, text: str, fg: int, reverse: bool = False):
         """Write ASCII text to screen buffer at (row, col) with colour."""
         for i, ch in enumerate(text):
             c = col + i

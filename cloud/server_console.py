@@ -22,8 +22,8 @@ SCREEN_SIZE = SCREEN_COLS * SCREEN_ROWS  # 1000 bytes
 
 # Defaults
 DEFAULT_SCREEN_CODE = 0x20  # Space
-DEFAULT_FG_COLOR = 14       # Light blue
-DEFAULT_BG_COLOR = 6        # Blue (VIC background, informational only)
+DEFAULT_FG_COLOR = 14  # Light blue
+DEFAULT_BG_COLOR = 6  # Blue (VIC background, informational only)
 
 
 class ServerConsole:
@@ -163,9 +163,7 @@ class ServerConsole:
 
         Default: unrecognised – returns None.
         """
-        logger.warning(
-            f"Console {self.console_id}: unhandled command 0x{data[0]:02X}"
-        )
+        logger.warning(f"Console {self.console_id}: unhandled command 0x{data[0]:02X}")
         return None
 
     # ------------------------------------------------------------------
@@ -190,6 +188,7 @@ class ServerConsole:
 # ======================================================================
 # Screen-code conversion utilities
 # ======================================================================
+
 
 def ascii_to_screencode(ascii_code: int) -> int:
     """

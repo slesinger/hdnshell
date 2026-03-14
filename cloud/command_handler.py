@@ -165,7 +165,9 @@ class CommandHandler:
         return MIN_CONSOLE_ID <= console_id <= MAX_CONSOLE_ID
 
     @staticmethod
-    def handle_command(console_id: int, data: bytes, session_id: int = 0) -> Optional[bytes]:
+    def handle_command(
+        console_id: int, data: bytes, session_id: int = 0
+    ) -> Optional[bytes]:
         """
         Handle a command for a server-side console.
 

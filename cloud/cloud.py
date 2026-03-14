@@ -21,32 +21,6 @@ from flask import send_from_directory
 from network_helper import (
     read_last_c64_ip,
     _send_tcp_cmd,
-    send_screen_data,
-    SOCKET_CMD_DMA,
-    SOCKET_CMD_DMARUN,
-    SOCKET_CMD_KEYB,
-    SOCKET_CMD_RESET,
-    SOCKET_CMD_WAIT,
-    SOCKET_CMD_DMAWRITE,
-    SOCKET_CMD_REUWRITE,
-    SOCKET_CMD_KERNALWRITE,
-    SOCKET_CMD_DMAJUMP,
-    SOCKET_CMD_MOUNT_IMG,
-    SOCKET_CMD_RUN_IMG,
-    SOCKET_CMD_POWEROFF,
-    SOCKET_CMD_RUN_CRT,
-    SOCKET_CMD_IDENTIFY,
-    SOCKET_CMD_AUTHENTICATE,
-    SOCKET_CMD_VICSTREAM_ON,
-    SOCKET_CMD_AUDIOSTREAM_ON,
-    SOCKET_CMD_DEBUGSTREAM_ON,
-    SOCKET_CMD_VICSTREAM_OFF,
-    SOCKET_CMD_AUDIOSTREAM_OFF,
-    SOCKET_CMD_DEBUGSTREAM_OFF,
-    SOCKET_CMD_LOADSIDCRT,
-    SOCKET_CMD_LOADBOOTCRT,
-    SOCKET_CMD_READFLASH,
-    SOCKET_CMD_DEBUG_REG,
 )
 
 
@@ -121,9 +95,6 @@ def _get_outbound_ip() -> str:
         return "127.0.0.1"
 
 
-
-
-
 @app.route("/")
 def root():
     return send_from_directory(app.static_folder or "static", "index.html")
@@ -141,9 +112,6 @@ def static_files(filepath: str):
 @app.route("/status")
 def status():
     return jsonify({"status": "ok"})
-
-
-
 
 
 @app.route("/c64/status")

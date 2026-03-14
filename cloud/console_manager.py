@@ -118,9 +118,7 @@ class ConsoleManager:
         for k in keys:
             del self._consoles[k]
         if keys:
-            logger.info(
-                f"Removed {len(keys)} console(s) for session {session_id}"
-            )
+            logger.info(f"Removed {len(keys)} console(s) for session {session_id}")
 
     # ------------------------------------------------------------------
     # Convenience: route commands directly

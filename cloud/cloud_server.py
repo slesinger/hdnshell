@@ -46,8 +46,8 @@ class C64Server:
 
         # Register custom server-console factories
         mgr = ConsoleManager.instance()
-        mgr.register_factory(2, FileEditorConsole)   # Console 2 → File Editor
-        mgr.register_factory(10, CodeChatConsole)     # C=+0 → Vibe Coding AI Chat
+        mgr.register_factory(2, FileEditorConsole)  # Console 2 → File Editor
+        mgr.register_factory(10, CodeChatConsole)  # C=+0 → Vibe Coding AI Chat
 
     def start(self):
         """Start the server and begin accepting connections"""
@@ -155,7 +155,9 @@ class C64Server:
             elif CommandHandler.is_server_console(console_id):
                 # Consoles 1-10 — server-side virtual consoles
                 if cmd_id == CommandID.COMMAND:
-                    logger.info(f"Received command for console {console_id}: {data.hex()}")
+                    logger.info(
+                        f"Received command for console {console_id}: {data.hex()}"
+                    )
                     resp = CommandHandler.handle_command(console_id, data, session_id)
                     if resp:
                         logger.info(f"ResponseC: {resp.hex()}")
@@ -182,9 +184,7 @@ class C64Server:
                         return resp
 
                 else:
-                    logger.warning(
-                        f"Unknown cmd_id {cmd_id} for console {console_id}"
-                    )
+                    logger.warning(f"Unknown cmd_id {cmd_id} for console {console_id}")
 
             else:
                 logger.warning(f"Console {console_id} out of range")
