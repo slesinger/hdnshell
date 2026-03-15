@@ -203,7 +203,7 @@ def ascii_to_screencode(ascii_code: int) -> int:
     if 0x20 <= ascii_code <= 0x3F:
         return ascii_code
     if 0x40 <= ascii_code <= 0x5F:
-        return ascii_code - 0x40
+        return ascii_code
     if 0x60 <= ascii_code <= 0x7F:
         return ascii_code - 0x60
     return DEFAULT_SCREEN_CODE

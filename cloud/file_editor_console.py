@@ -64,8 +64,8 @@ KEY_F5 = 0x87
 KEY_F6 = 0x8B
 KEY_F7 = 0x88
 KEY_F8 = 0x8C
-KEY_ESC = 0x1B  # RUN/STOP mapped as ESC
-KEY_TAB = 0x09
+KEY_ESC = 0x03  # RUN/STOP mapped as ESC
+
 
 # Modifier flags (from command_handler.py)
 MOD_SHIFT = 0x01
@@ -284,12 +284,12 @@ class FileEditorConsole(ServerConsole):
         self.mode: int = MODE_EDIT
         self.prev_mode: int = MODE_EDIT
         # Menu state
-        self.menu_items = ["file", "edit", "view", "search", "help"]
+        self.menu_items = ["File", "Edit", "View", "Search", "Help(F8)"]
         self.menu_sel: int = 0
         self.submenu_open: bool = False
         self.submenu_sel: int = 0
         self.submenus: Dict[str, List[Tuple[str, str]]] = {
-            "file": [
+            "File": [
                 ("new", "f1"),
                 ("open", "f3"),
                 ("save", "f5"),
@@ -297,7 +297,7 @@ class FileEditorConsole(ServerConsole):
                 ("close", "c+w"),
                 ("file list", "f2"),
             ],
-            "edit": [
+            "Edit": [
                 ("cut", "c+x"),
                 ("copy", "c+c"),
                 ("paste", "c+v"),
@@ -306,27 +306,28 @@ class FileEditorConsole(ServerConsole):
                 ("sel all", "c+a"),
                 ("del line", "c+y"),
             ],
-            "view": [
+            "View": [
                 ("console", "f7"),
                 ("split h", "c+2"),
                 ("split v", "c+3"),
                 ("no split", "c+1"),
                 ("tabs", "f2"),
             ],
-            "search": [
+            "Search": [
                 ("find", "c+f"),
                 ("find next", "c+n"),
                 ("replace", "c+r"),
                 ("goto line", "c+g"),
             ],
-            "help": [
+            "Help": [
                 ("keys", "f8"),
             ],
         }
         # Find/replace state
         self.find_pattern: str = ""
         self.replace_text: str = ""
-        self.find_matches: List[Tuple[int, int, int]] = []  # (line, col, length)
+        # (line, col, length)
+        self.find_matches: List[Tuple[int, int, int]] = []
         self.find_match_idx: int = -1
         # Input buffer for dialogs (find, goto line, save-as, console)
         self.input_buf: str = ""
@@ -441,11 +442,7 @@ class FileEditorConsole(ServerConsole):
             # Insert a space at cursor
             line = d.cur_line()
             d.set_cur_line(line[: d.cursor_x] + " " + line[d.cursor_x :])
-        elif key == KEY_TAB:
-            # Insert 4 spaces
-            line = d.cur_line()
-            d.set_cur_line(line[: d.cursor_x] + "    " + line[d.cursor_x :])
-            d.cursor_x += 4
+
 
         # ─ Function keys ─
         elif key == KEY_F1:
@@ -1106,11 +1103,11 @@ class FileEditorConsole(ServerConsole):
         for c in range(SCREEN_COLS):
             self.screen[c] = DEFAULT_SCREEN_CODE
             self.color[c] = COL_MENU_FG
-        col = 1
+        col = 0
         for idx, name in enumerate(self.menu_items):
             is_sel = self.mode == MODE_MENU and idx == self.menu_sel
             fg = COL_MENU_HI if is_sel else COL_MENU_FG
-            self._put_text(0, col, name.upper(), fg, reverse=is_sel)
+            self._put_text(0, col, name, fg, reverse=is_sel)
             col += len(name) + 1
 
         # Show tab indicators on right side
@@ -1222,7 +1219,8 @@ class FileEditorConsole(ServerConsole):
                     self.color[pos] = COL_CURSOR_FG
                     # Show cursor as reverse character
                     if pos < SCREEN_SIZE:
-                        self.screen[pos] = self.screen[pos] | 0x80  # reverse bit
+                        # reverse bit
+                        self.screen[pos] = self.screen[pos] | 0x80
 
     def _in_selection(
         self, line: int, col: int, start: Tuple[int, int], end: Tuple[int, int]
@@ -1365,7 +1363,7 @@ class FileEditorConsole(ServerConsole):
     # ── Console view ─────────────────────────────────────────────────
     def _render_console_view(self):
         # Title
-        self._put_text(EDIT_TOP, 0, "console (esc=back)", COL_HELP_FG)
+        self._put_text(EDIT_TOP, 0, "console (R/S=back)", COL_HELP_FG)
         max_visible = EDIT_ROWS - 2  # -1 title, -1 input line
         # Clamp scroll
         max_scroll = max(0, len(self.console_lines) - max_visible)
@@ -1403,7 +1401,7 @@ class FileEditorConsole(ServerConsole):
             " return     new line",
             " del        backspace",
             " ins        insert space",
-            " tab        insert 4 spaces",
+            "  ",
             "",
             " file operations:",
             " f1         new file",
@@ -1411,32 +1409,32 @@ class FileEditorConsole(ServerConsole):
             " f3         open (browser)",
             " f5         save",
             " shift+f5   save as",
-            " c=+w       close file",
+            " C=+w       close file",
             "",
             " clipboard:",
-            " c=+b       mark block start",
-            " c=+e       mark block end",
-            " c=+a       select all",
-            " c=+x       cut",
-            " c=+c       copy",
-            " c=+v       paste",
-            " c=+y       delete line",
+            " C=+b       mark block start",
+            " C=+e       mark block end",
+            " C=+a       select all",
+            " C=+x       cut",
+            " C=+c       copy",
+            " C=+v       paste",
+            " C=+y       delete line",
             "",
             " search:",
-            " c=+f       find (regex)",
-            " c=+n       find next",
-            " c=+r       replace all",
-            " c=+g       goto line",
+            " C=+f       find (regex)",
+            " C=+n       find next",
+            " C=+r       replace all",
+            " C=+g       goto line",
             "",
             " view:",
             " f7         console/shell",
             " f8         this help",
-            " c=+1       no split",
-            " c=+2       split top/bottom",
-            " c=+3       split left/right",
-            " esc        open menu",
+            " C=+1       no split",
+            " C=+2       split top/bottom",
+            " C=+3       split left/right",
+            " RUN/STOP   open menu",
             "",
-            " press esc to return",
+            " press RUN/STOP to return",
         ]
         for vi in range(EDIT_ROWS):
             li = self.help_scroll + vi
