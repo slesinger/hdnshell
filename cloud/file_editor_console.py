@@ -47,24 +47,117 @@ COL_TAB_INACTIVE = 11  # dark grey
 COL_FIND_MATCH = 2  # red (highlight search matches)
 
 # ── PETSCII key constants ────────────────────────────────────────────
+# See https://www.c64-wiki.com/wiki/PETSCII for a complete table.
+# These are the codes sent by the C64 client to the server.
+
+# Control characters
 KEY_RETURN = 0x0D
-KEY_DEL = 0x14  # DELETE (backspace)
+KEY_DEL_CTRLT = 0x14  # DELETE (backspace)
 KEY_INS = 0x94  # INSERT (SHIFT+DEL)
-KEY_HOME = 0x13
+KEY_HOME_CTRLS = 0x13
 KEY_CLR = 0x93  # SHIFT+HOME
 KEY_CRSR_UP = 0x91
-KEY_CRSR_DN = 0x11
+KEY_CRSR_DN_CTRLQ = 0x11
 KEY_CRSR_LT = 0x9D
-KEY_CRSR_RT = 0x1D
+KEY_CRSR_RT_CTRLSEMICOLON = 0x1D
+KEY_RUNSTOP_ESC_CTRLC = 0x03  # RUN/STOP mapped as ESC
+
+# Function keys
 KEY_F1 = 0x85
-KEY_F2 = 0x89  # actually F2 in PETSCII
+KEY_F2 = 0x89
 KEY_F3 = 0x86
 KEY_F4 = 0x8A
 KEY_F5 = 0x87
 KEY_F6 = 0x8B
 KEY_F7 = 0x88
 KEY_F8 = 0x8C
-KEY_ESC = 0x03  # RUN/STOP mapped as ESC
+
+# Colour keys (Ctrl + 1-8)
+KEY_WHITE_CTRL2_CTRLE = 0x05
+KEY_RED_CTRL3_CTRLPOUND = 0x1C
+KEY_GREEN_CTRL6_CTRLUPARROW = 0x1E
+KEY_BLUE_CTRL7_CTRLEQUAL = 0x1F
+KEY_BLACK_CTRL1 = 0x90
+KEY_PURPLE_CTRL5 = 0x9C
+KEY_YELLOW_CTRL8 = 0x9E
+KEY_CYAN_CTRL4 = 0x9F
+
+KEY_ORANGE_CMD1 = 0x81
+KEY_BROWN_CMD2 = 0x95
+KEY_PINK_CMD3 = 0x96
+KEY_DARKGREY_CMD4 = 0x97
+KEY_GREY_CMD5 = 0x98
+KEY_LIGHTGREEN_CMD6 = 0x99
+KEY_LIGHTBLUE_CMD7 = 0x9A
+KEY_LIGHTGREY_CMD8 = 0x9B
+KEY__CMD = 0x8
+KEY__CMD = 0x8
+
+# control keys
+KEY_REVERSE_ON_CTRL9_CTRLR = 0x12
+KEY_REVERSE_OFF_CTRL0 = 0x92
+KEY_CHARSET_UPPER_CTRLN = 0x0E
+KEY_CHARSET_LOWER = 0x8E
+KEY_CTRL_AT = 0x00
+KEY_CTRL_A = 0x01
+KEY_CTRL_B = 0x02
+KEY_CTRL_C = 0x03
+KEY_CTRL_D = 0x04
+KEY_CTRL_F = 0x06
+KEY_CTRL_G = 0x07
+KEY_CTRL_H = 0x08
+KEY_CTRL_I = 0x09
+KEY_CTRL_J = 0x0A
+KEY_CTRL_K = 0x0B
+KEY_CTRL_L = 0x0C
+KEY_CTRL_O = 0x0F
+KEY_CTRL_P = 0x10
+KEY_CTRL_U = 0x15
+KEY_CTRL_V = 0x16
+KEY_CTRL_W = 0x17
+KEY_CTRL_X = 0x18
+KEY_CTRL_Y = 0x19
+KEY_CTRL_Z = 0x1A
+KEY_CTRL_COLON = 0x1B
+KEY_CTRL_SEMICOLON = 0x1D
+KEY_POUND = 0x5C
+KEY_UP_ARROW = 0x5E
+KEY_LEFT_ARROW = 0x5F
+
+# CBM C= keys
+KEY_CBM_K = 0xA1
+KEY_CBM_I = 0xA2
+KEY_CBM_T = 0xA3
+
+KEY_CBM_AT = 0xA4
+KEY_CBM_G = 0xA5
+KEY_CBM_PLUS = 0xA6
+KEY_CBM_M = 0xA7
+KEY_CBM_POUND = 0xA8
+
+KEY_CBM_N = 0xAA
+KEY_CBM_Q = 0xAB
+KEY_CBM_D = 0xAC
+KEY_CBM_Z = 0xAD
+KEY_CBM_S = 0xAE
+KEY_CBM_P = 0xAF
+KEY_CBM_A = 0xB0
+KEY_CBM_E = 0xB1
+KEY_CBM_R = 0xB2
+KEY_CBM_W = 0xB3
+KEY_CBM_H = 0xB4
+KEY_CBM_J = 0xB5
+KEY_CBM_L = 0xB6
+KEY_CBM_Y = 0xB7
+KEY_CBM_U = 0xB8
+KEY_CBM_O = 0xB9
+KEY_CBM_F = 0xBB
+KEY_CBM_C = 0xBC
+KEY_CBM_X = 0xBD
+KEY_CBM_V = 0xBE
+KEY_CBM_B = 0xBF
+KEY_CBM_MINUS = 0xDC
+KEY_CBM_ASTERISK = 0xDF
 
 
 # Modifier flags (from command_handler.py)
@@ -401,7 +494,7 @@ class FileEditorConsole(ServerConsole):
                 d.scroll_y = max(0, d.scroll_y - 1)
             else:
                 d.cursor_y -= 1
-        elif key == KEY_CRSR_DN:
+        elif key == KEY_CRSR_DN_CTRLQ:
             if ctrl:
                 d.scroll_y += 1
             else:
@@ -415,7 +508,7 @@ class FileEditorConsole(ServerConsole):
                 if d.cursor_x < 0 and d.cursor_y > 0:
                     d.cursor_y -= 1
                     d.cursor_x = len(d.cur_line())
-        elif key == KEY_CRSR_RT:
+        elif key == KEY_CRSR_RT_CTRLSEMICOLON:
             if ctrl:
                 self._word_right(d)
             else:
@@ -423,7 +516,7 @@ class FileEditorConsole(ServerConsole):
                 if d.cursor_x > len(d.cur_line()) and d.cursor_y < d.line_count - 1:
                     d.cursor_y += 1
                     d.cursor_x = 0
-        elif key == KEY_HOME:
+        elif key == KEY_HOME_CTRLS:
             if shift:
                 d.cursor_y = 0
                 d.cursor_x = 0
@@ -436,13 +529,12 @@ class FileEditorConsole(ServerConsole):
         # ─ Editing ─
         elif key == KEY_RETURN:
             self._insert_newline(d)
-        elif key == KEY_DEL:
+        elif key == KEY_DEL_CTRLT:
             self._backspace(d)
         elif key == KEY_INS:
             # Insert a space at cursor
             line = d.cur_line()
             d.set_cur_line(line[: d.cursor_x] + " " + line[d.cursor_x :])
-
 
         # ─ Function keys ─
         elif key == KEY_F1:
@@ -470,7 +562,7 @@ class FileEditorConsole(ServerConsole):
             self._handle_ctrl_combo(key, d)
 
         # ─ ESC → open menu ─
-        elif key == KEY_ESC:
+        elif key == KEY_RUNSTOP_ESC_CTRLC:
             self.mode = MODE_MENU
             self.menu_sel = 0
             self.submenu_open = False
@@ -563,13 +655,13 @@ class FileEditorConsole(ServerConsole):
                 self.submenu_sel = 0
             else:
                 self.menu_sel = (self.menu_sel - 1) % len(self.menu_items)
-        elif key == KEY_CRSR_RT:
+        elif key == KEY_CRSR_RT_CTRLSEMICOLON:
             if self.submenu_open:
                 self.menu_sel = (self.menu_sel + 1) % len(self.menu_items)
                 self.submenu_sel = 0
             else:
                 self.menu_sel = (self.menu_sel + 1) % len(self.menu_items)
-        elif key == KEY_CRSR_DN:
+        elif key == KEY_CRSR_DN_CTRLQ:
             if self.submenu_open:
                 items = self.submenus[self.menu_items[self.menu_sel]]
                 self.submenu_sel = (self.submenu_sel + 1) % len(items)
@@ -586,7 +678,7 @@ class FileEditorConsole(ServerConsole):
             else:
                 self.submenu_open = True
                 self.submenu_sel = 0
-        elif key == KEY_ESC:
+        elif key == KEY_RUNSTOP_ESC_CTRLC:
             self.mode = MODE_EDIT
 
     def _execute_menu_item(self):
@@ -656,7 +748,7 @@ class FileEditorConsole(ServerConsole):
     # ── BROWSER mode ─────────────────────────────────────────────────
     def _key_browser(self, key: int, mod: int):
         max_visible = EDIT_ROWS
-        if key == KEY_CRSR_DN:
+        if key == KEY_CRSR_DN_CTRLQ:
             if self.browser_sel < len(self.browser_entries) - 1:
                 self.browser_sel += 1
             if self.browser_sel >= self.browser_scroll + max_visible:
@@ -679,18 +771,18 @@ class FileEditorConsole(ServerConsole):
                     path = os.path.join(self.browser_cwd, name)
                     self._open_file(path)
                     self.mode = MODE_EDIT
-        elif key == KEY_ESC:
+        elif key == KEY_RUNSTOP_ESC_CTRLC:
             self.mode = MODE_EDIT
 
     # ── FILE LIST mode ───────────────────────────────────────────────
     def _key_file_list(self, key: int, mod: int):
-        if key == KEY_CRSR_DN:
+        if key == KEY_CRSR_DN_CTRLQ:
             self.active_doc_idx = (self.active_doc_idx + 1) % len(self.documents)
         elif key == KEY_CRSR_UP:
             self.active_doc_idx = (self.active_doc_idx - 1) % len(self.documents)
         elif key == KEY_RETURN:
             self.mode = MODE_EDIT
-        elif key == KEY_ESC:
+        elif key == KEY_RUNSTOP_ESC_CTRLC:
             self.mode = MODE_EDIT
 
     # ── INPUT DIALOG mode (find, replace, goto line, save-as) ────────
@@ -700,9 +792,9 @@ class FileEditorConsole(ServerConsole):
             self.mode = MODE_EDIT
             if cb and hasattr(self, cb):
                 getattr(self, cb)()
-        elif key == KEY_ESC:
+        elif key == KEY_RUNSTOP_ESC_CTRLC:
             self.mode = MODE_EDIT
-        elif key == KEY_DEL:
+        elif key == KEY_DEL_CTRLT:
             if self.input_buf:
                 self.input_buf = self.input_buf[:-1]
         else:
@@ -712,25 +804,25 @@ class FileEditorConsole(ServerConsole):
 
     # ── HELP mode ────────────────────────────────────────────────────
     def _key_help(self, key: int, mod: int):
-        if key == KEY_ESC or key == KEY_F8:
+        if key == KEY_RUNSTOP_ESC_CTRLC or key == KEY_F8:
             self.mode = MODE_EDIT
-        elif key == KEY_CRSR_DN:
+        elif key == KEY_CRSR_DN_CTRLQ:
             self.help_scroll += 1
         elif key == KEY_CRSR_UP:
             self.help_scroll = max(0, self.help_scroll - 1)
 
     # ── CONSOLE (shell) mode ─────────────────────────────────────────
     def _key_console(self, key: int, mod: int):
-        if key == KEY_ESC or key == KEY_F7:
+        if key == KEY_RUNSTOP_ESC_CTRLC or key == KEY_F7:
             self.mode = MODE_EDIT
         elif key == KEY_RETURN:
             self._execute_console_command()
-        elif key == KEY_DEL:
+        elif key == KEY_DEL_CTRLT:
             if self.console_input:
                 self.console_input = self.console_input[:-1]
         elif key == KEY_CRSR_UP:
             self.console_scroll = max(0, self.console_scroll - 1)
-        elif key == KEY_CRSR_DN:
+        elif key == KEY_CRSR_DN_CTRLQ:
             self.console_scroll += 1
         else:
             ch = self._petscii_to_char(key)
@@ -1393,9 +1485,9 @@ class FileEditorConsole(ServerConsole):
             " navigation:",
             " arrows     move cursor",
             " home       start of line",
-            " shift+home top of file",
-            " clr        end of file",
-            " ctrl+arrow scroll/word",
+            "Xshift+home top of file -> clr",
+            " clr        end of file -> ",
+            "Xctrl+arrow scroll/word",
             "",
             " editing:",
             " return     new line",
@@ -1404,14 +1496,14 @@ class FileEditorConsole(ServerConsole):
             "  ",
             "",
             " file operations:",
-            " f1         new file",
-            " f2         file list/tabs",
+            " f1         new file -> f2",
+            " f2         file list/tabs -> f1",
             " f3         open (browser)",
             " f5         save",
-            " shift+f5   save as",
-            " C=+w       close file",
+            "Xshift+f5   save as -> F6",
+            "XC=+w       close file -> CTRL+w",
             "",
-            " clipboard:",
+            "Xclipboard:",
             " C=+b       mark block start",
             " C=+e       mark block end",
             " C=+a       select all",
