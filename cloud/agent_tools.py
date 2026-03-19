@@ -315,9 +315,8 @@ def compile_code(program_name: str) -> str:
 
 def _read_last_c64_ip() -> str:
     """Read the last known C64 IP from cloud_config.cfg."""
-    config_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "cloud_config.cfg"
-    )
+    from workspace_init import get_workspace_config_path
+    config_path = get_workspace_config_path()
     if not os.path.isfile(config_path):
         return ""
     with open(config_path, "r") as f:

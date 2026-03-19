@@ -12,6 +12,7 @@ import queue
 import threading
 from version import __version__
 from cloud_server import C64Server
+from workspace_init import init_workspace, get_workspace_config_path
 from flask_cors import CORS
 from threading import Thread
 from flask import Flask, jsonify, request
@@ -573,7 +574,7 @@ def find_c64u():
     time.sleep(25)  # Simulate scan duration
     logger.info(f"Scan complete. Found: {found_ip}")
     # Always write config so the file exists; update IP only when found
-    config_path = os.path.join(os.path.dirname(__file__), "cloud_config.cfg")
+    config_path = get_workspace_config_path()
     if found_ip:
         with open(config_path, "w") as f:
             f.write(f'last_c64_ip = "{found_ip}"\n')
@@ -842,11 +843,11 @@ def run_web():
 
 if __name__ == "__main__":
 
-    # Ensure config file exists
-    config_path = os.path.join(os.path.dirname(__file__), "cloud_config.cfg")
-    if not os.path.exists(config_path):
-        with open(config_path, "w") as f:
-            f.write('last_c64_ip = ""\n')
+    # Initialise workspace directory tree (creates dirs + seed files on first run)
+    init_workspace()
+
+    # Config now lives inside workspace/.config/
+    config_path = get_workspace_config_path()
 
     # Read config file
     last_c64_ip = ""

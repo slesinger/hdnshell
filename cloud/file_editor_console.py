@@ -23,6 +23,7 @@ from server_console import (
     ascii_to_screencode,
 )
 from generate_pet_asc_table import Petscii
+from workspace_init import WORKSPACE_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -181,7 +182,7 @@ TEXT_COLS = SCREEN_COLS - TEXT_START_COL  # 35 usable text columns
 MAX_OPEN_FILES = 8
 
 # ── Working directory (server-side) ──────────────────────────────────
-DEFAULT_CWD = os.path.expanduser("~")
+DEFAULT_CWD = WORKSPACE_DIR
 
 
 # =====================================================================
@@ -727,9 +728,13 @@ class FileEditorConsole(ServerConsole):
                 name, is_dir = self.browser_entries[self.browser_sel]
                 if is_dir:
                     if name == "..":
-                        self.browser_cwd = os.path.dirname(self.browser_cwd)
+                        new_cwd = os.path.dirname(self.browser_cwd)
                     else:
-                        self.browser_cwd = os.path.join(self.browser_cwd, name)
+                        new_cwd = os.path.join(self.browser_cwd, name)
+                    new_cwd = os.path.realpath(new_cwd)
+                    # Stay within the workspace boundary
+                    if new_cwd.startswith(os.path.realpath(WORKSPACE_DIR)):
+                        self.browser_cwd = new_cwd
                     self._refresh_browser()
                 else:
                     path = os.path.join(self.browser_cwd, name)
@@ -1068,6 +1073,14 @@ class FileEditorConsole(ServerConsole):
             self.console_lines.append("$ ")
             return
         self.console_lines.append(f"$ {cmd}")
+
+        # Handle cd as a built-in so we can enforce the workspace boundary
+        if cmd == "cd" or cmd.startswith("cd "):
+            self._handle_cd(cmd)
+            self.console_lines.append("$ ")
+            self.console_scroll = max(0, len(self.console_lines) - EDIT_ROWS)
+            return
+
         try:
             result = subprocess.run(
                 cmd,
@@ -1087,6 +1100,24 @@ class FileEditorConsole(ServerConsole):
         self.console_lines.append("$ ")
         # Scroll to bottom
         self.console_scroll = max(0, len(self.console_lines) - EDIT_ROWS)
+
+    def _handle_cd(self, cmd: str):
+        """Built-in cd that keeps browser_cwd inside WORKSPACE_DIR."""
+        parts = cmd.split(None, 1)
+        if len(parts) < 2:
+            # bare "cd" → go to workspace root
+            self.browser_cwd = os.path.realpath(WORKSPACE_DIR)
+            return
+        target = parts[1].strip()
+        if os.path.isabs(target):
+            new_cwd = os.path.realpath(target)
+        else:
+            new_cwd = os.path.realpath(os.path.join(self.browser_cwd, target))
+        ws_real = os.path.realpath(WORKSPACE_DIR)
+        if new_cwd.startswith(ws_real) and os.path.isdir(new_cwd):
+            self.browser_cwd = new_cwd
+        else:
+            self.console_lines.append("restricted: cannot leave workspace")
 
     # ── Help ─────────────────────────────────────────────────────────
     def _enter_help(self):
@@ -1358,8 +1389,13 @@ class FileEditorConsole(ServerConsole):
 
     # ── File browser view ────────────────────────────────────────────
     def _render_browser(self):
-        # Title
-        title = self.browser_cwd
+        # Title — show path relative to workspace root, mapped as /
+        ws_real = os.path.realpath(WORKSPACE_DIR)
+        cwd_real = os.path.realpath(self.browser_cwd)
+        if cwd_real == ws_real:
+            title = "/"
+        else:
+            title = "/" + os.path.relpath(cwd_real, ws_real)
         if len(title) > SCREEN_COLS - 2:
             title = "..." + title[-(SCREEN_COLS - 5) :]
         self._put_text(EDIT_TOP, 0, title, COL_HELP_FG)

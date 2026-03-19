@@ -35,7 +35,8 @@ SOCKET_CMD_DEBUG_REG = 0x76  # Debug registers
 
 def read_last_c64_ip() -> str:
     """Read the last known C64 IP address from the config file."""
-    config_path = os.path.join(os.path.dirname(__file__), "cloud_config.cfg")
+    from workspace_init import get_workspace_config_path
+    config_path = get_workspace_config_path()
     if not os.path.exists(config_path):
         return ""
     with open(config_path, "r") as f:
