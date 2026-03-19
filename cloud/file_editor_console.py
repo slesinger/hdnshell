@@ -47,62 +47,15 @@ COL_TAB_INACTIVE = 11  # dark grey
 COL_FIND_MATCH = 2  # red (highlight search matches)
 
 # ── PETSCII key constants ────────────────────────────────────────────
-# See https://www.c64-wiki.com/wiki/PETSCII for a complete table.
+# See https://sta.c64.org/cbm64petkey.html for a complete table.
 # These are the codes sent by the C64 client to the server.
 
-# Control characters
-KEY_RETURN = 0x0D
-KEY_DEL_CTRLT = 0x14  # DELETE (backspace)
-KEY_INS = 0x94  # INSERT (SHIFT+DEL)
-KEY_HOME_CTRLS = 0x13
-KEY_CLR = 0x93  # SHIFT+HOME
-KEY_CRSR_UP = 0x91
-KEY_CRSR_DN_CTRLQ = 0x11
-KEY_CRSR_LT = 0x9D
-KEY_CRSR_RT_CTRLSEMICOLON = 0x1D
-KEY_RUNSTOP_ESC_CTRLC = 0x03  # RUN/STOP mapped as ESC
-
-# Function keys
-KEY_F1 = 0x85
-KEY_F2 = 0x89
-KEY_F3 = 0x86
-KEY_F4 = 0x8A
-KEY_F5 = 0x87
-KEY_F6 = 0x8B
-KEY_F7 = 0x88
-KEY_F8 = 0x8C
-
-# Colour keys (Ctrl + 1-8)
-KEY_WHITE_CTRL2_CTRLE = 0x05
-KEY_RED_CTRL3_CTRLPOUND = 0x1C
-KEY_GREEN_CTRL6_CTRLUPARROW = 0x1E
-KEY_BLUE_CTRL7_CTRLEQUAL = 0x1F
-KEY_BLACK_CTRL1 = 0x90
-KEY_PURPLE_CTRL5 = 0x9C
-KEY_YELLOW_CTRL8 = 0x9E
-KEY_CYAN_CTRL4 = 0x9F
-
-KEY_ORANGE_CMD1 = 0x81
-KEY_BROWN_CMD2 = 0x95
-KEY_PINK_CMD3 = 0x96
-KEY_DARKGREY_CMD4 = 0x97
-KEY_GREY_CMD5 = 0x98
-KEY_LIGHTGREEN_CMD6 = 0x99
-KEY_LIGHTBLUE_CMD7 = 0x9A
-KEY_LIGHTGREY_CMD8 = 0x9B
-KEY__CMD = 0x8
-KEY__CMD = 0x8
-
-# control keys
-KEY_REVERSE_ON_CTRL9_CTRLR = 0x12
-KEY_REVERSE_OFF_CTRL0 = 0x92
-KEY_CHARSET_UPPER_CTRLN = 0x0E
-KEY_CHARSET_LOWER = 0x8E
 KEY_CTRL_AT = 0x00
 KEY_CTRL_A = 0x01
 KEY_CTRL_B = 0x02
-KEY_CTRL_C = 0x03
+KEY_RUNSTOP_ESC_CTRLC = 0x03  # RUN/STOP mapped as ESC
 KEY_CTRL_D = 0x04
+KEY_WHITE_CTRL2_CTRLE = 0x05
 KEY_CTRL_F = 0x06
 KEY_CTRL_G = 0x07
 KEY_CTRL_H = 0x08
@@ -110,8 +63,14 @@ KEY_CTRL_I = 0x09
 KEY_CTRL_J = 0x0A
 KEY_CTRL_K = 0x0B
 KEY_CTRL_L = 0x0C
+KEY_RETURN = 0x0D
+KEY_CHARSET_UPPER_CTRLN = 0x0E
 KEY_CTRL_O = 0x0F
 KEY_CTRL_P = 0x10
+KEY_CRSR_DN_CTRLQ = 0x11
+KEY_REVERSE_ON_CTRL9_CTRLR = 0x12
+KEY_HOME_CTRLS = 0x13
+KEY_DEL_CTRLT = 0x14  # DELETE (backspace)
 KEY_CTRL_U = 0x15
 KEY_CTRL_V = 0x16
 KEY_CTRL_W = 0x17
@@ -119,22 +78,49 @@ KEY_CTRL_X = 0x18
 KEY_CTRL_Y = 0x19
 KEY_CTRL_Z = 0x1A
 KEY_CTRL_COLON = 0x1B
-KEY_CTRL_SEMICOLON = 0x1D
+KEY_RED_CTRL3_CTRLPOUND = 0x1C
+KEY_CRSR_RT_CTRLSEMICOLON = 0x1D
+KEY_GREEN_CTRL6_CTRLUPARROW = 0x1E
+KEY_BLUE_CTRL7_CTRLEQUAL = 0x1F
 KEY_POUND = 0x5C
 KEY_UP_ARROW = 0x5E
 KEY_LEFT_ARROW = 0x5F
-
-# CBM C= keys
+KEY_ORANGE_CMD1 = 0x81
+KEY_SH_RUNSTOP = 0x83  # RUN
+KEY_F1 = 0x85
+KEY_F3 = 0x86
+KEY_F5 = 0x87
+KEY_F7 = 0x88
+KEY_F2 = 0x89
+KEY_F4 = 0x8A
+KEY_F6 = 0x8B
+KEY_F8 = 0x8C
+KEY_CHARSET_LOWER = 0x8E
+KEY_BLACK_CTRL1 = 0x90
+KEY_CRSR_UP = 0x91
+KEY_REVERSE_OFF_CTRL0 = 0x92
+KEY_CLR = 0x93  # SHIFT+HOME
+KEY_INS = 0x94  # INSERT (SHIFT+DEL)
+KEY_BROWN_CMD2 = 0x95
+KEY_PINK_CMD3 = 0x96
+KEY_DARKGREY_CMD4 = 0x97
+KEY_GREY_CMD5 = 0x98
+KEY_LIGHTGREEN_CMD6 = 0x99
+KEY_LIGHTBLUE_CMD7 = 0x9A
+KEY_LIGHTGREY_CMD8 = 0x9B
+KEY_PURPLE_CTRL5 = 0x9C
+KEY_CRSR_LT = 0x9D
+KEY_YELLOW_CTRL8 = 0x9E
+KEY_CYAN_CTRL4 = 0x9F
+KEY_SHIFT_SPACE = 0xA0
 KEY_CBM_K = 0xA1
 KEY_CBM_I = 0xA2
 KEY_CBM_T = 0xA3
-
 KEY_CBM_AT = 0xA4
 KEY_CBM_G = 0xA5
 KEY_CBM_PLUS = 0xA6
 KEY_CBM_M = 0xA7
 KEY_CBM_POUND = 0xA8
-
 KEY_CBM_N = 0xAA
 KEY_CBM_Q = 0xAB
 KEY_CBM_D = 0xAC
@@ -151,19 +137,23 @@ KEY_CBM_L = 0xB6
 KEY_CBM_Y = 0xB7
 KEY_CBM_U = 0xB8
 KEY_CBM_O = 0xB9
+KEY_SHIFT_AT = 0xBA
 KEY_CBM_F = 0xBB
 KEY_CBM_C = 0xBC
 KEY_CBM_X = 0xBD
 KEY_CBM_V = 0xBE
 KEY_CBM_B = 0xBF
+KEY_SHIFT_ASTERISK = 0xC0
+KEY_SHIFT_PLUS = 0xDB
 KEY_CBM_MINUS = 0xDC
+KEY_SHIFT_UPARROW = 0xDE
 KEY_CBM_ASTERISK = 0xDF
 
 
 # Modifier flags (from command_handler.py)
-MOD_SHIFT = 0x01
-MOD_CTRL = 0x02
-MOD_COMMODORE = 0x04
+# MOD_SHIFT = 0x01
+# MOD_CTRL = 0x02
+# MOD_COMMODORE = 0x04
 
 # ── Editor modes ─────────────────────────────────────────────────────
 MODE_EDIT = 0
@@ -377,42 +367,41 @@ class FileEditorConsole(ServerConsole):
         self.mode: int = MODE_EDIT
         self.prev_mode: int = MODE_EDIT
         # Menu state
-        self.menu_items = ["File", "Edit", "View", "Search", "Help(F8)"]
+        self.menu_items = ["File", "Edit", "View", "Search", "Help(f8)"]
         self.menu_sel: int = 0
         self.submenu_open: bool = False
         self.submenu_sel: int = 0
         self.submenus: Dict[str, List[Tuple[str, str]]] = {
             "File": [
-                ("new", "f1"),
-                ("open", "f3"),
-                ("save", "f5"),
-                ("save as", "sf5"),
-                ("close", "c+w"),
-                ("file list", "f2"),
+                ("File list", "f1"),
+                ("New", "f2"),
+                ("Open", "f3"),
+                ("Save", "f5"),
+                ("Save as", "f6"),
+                ("Close", "ctrl+w"),
             ],
             "Edit": [
-                ("cut", "c+x"),
-                ("copy", "c+c"),
-                ("paste", "c+v"),
-                ("sel start", "c+b"),
-                ("sel end", "c+e"),
-                ("sel all", "c+a"),
-                ("del line", "c+y"),
+                ("Cut", "C=+x"),
+                ("Copy", "C=+c"),
+                ("Paste", "C=+v"),
+                ("Sel start", "ctrl+b"),
+                ("Sel end", "ctrl+h"),
+                ("Sel all", "ctrl+a"),
+                ("Del line", "ctrl+y"),
             ],
             "View": [
-                ("console", "f7"),
-                ("split h", "c+2"),
-                ("split v", "c+3"),
-                ("no split", "c+1"),
-                ("tabs", "f2"),
+                ("Console", "f7"),
+                ("Cyc split", "ctrl+\x5e"),  # TODO this should be up arrow
+                ("Swap pane", "sh+\x5e"),
+                ("Tabs", "f2"),
             ],
             "Search": [
-                ("find", "c+f"),
-                ("find next", "c+n"),
-                ("replace", "c+r"),
-                ("goto line", "c+g"),
+                ("Find", "C=+f"),
+                ("Find next", "C=+n"),
+                ("Replace", "C=+r"),
+                ("Goto line", "C=+g"),
             ],
-            "Help": [
+            "Help(f8)": [
                 ("keys", "f8"),
             ],
         }
@@ -484,47 +473,38 @@ class FileEditorConsole(ServerConsole):
     # ── EDIT mode ────────────────────────────────────────────────────
     def _key_edit(self, key: int, mod: int):
         d = self.doc
-        ctrl = bool(mod & MOD_CTRL)
-        shift = bool(mod & MOD_SHIFT)
-        cbm = bool(mod & MOD_COMMODORE)
 
         # ─ Navigation ─
+        # Note: CBM+cursor_down sends KEY_CRSR_UP (0x91) with mod=0x02
+        #       CBM+cursor_right sends KEY_CRSR_LT (0x9D) with mod=0x02
         if key == KEY_CRSR_UP:
-            if ctrl:
-                d.scroll_y = max(0, d.scroll_y - 1)
+            if mod & 0x02:  # CBM+cursor_down → word left
+                self._word_left(d)
             else:
                 d.cursor_y -= 1
         elif key == KEY_CRSR_DN_CTRLQ:
-            if ctrl:
-                d.scroll_y += 1
-            else:
-                d.cursor_y += 1
+            d.cursor_y += 1
         elif key == KEY_CRSR_LT:
-            if ctrl:
-                # word left
-                self._word_left(d)
+            if mod & 0x02:  # CBM+cursor_right → word right
+                self._word_right(d)
             else:
                 d.cursor_x -= 1
                 if d.cursor_x < 0 and d.cursor_y > 0:
                     d.cursor_y -= 1
                     d.cursor_x = len(d.cur_line())
         elif key == KEY_CRSR_RT_CTRLSEMICOLON:
-            if ctrl:
-                self._word_right(d)
-            else:
-                d.cursor_x += 1
-                if d.cursor_x > len(d.cur_line()) and d.cursor_y < d.line_count - 1:
-                    d.cursor_y += 1
-                    d.cursor_x = 0
-        elif key == KEY_HOME_CTRLS:
-            if shift:
-                d.cursor_y = 0
+            d.cursor_x += 1
+            if d.cursor_x > len(d.cur_line()) and d.cursor_y < d.line_count - 1:
+                d.cursor_y += 1
                 d.cursor_x = 0
+        elif key == KEY_HOME_CTRLS:
+            if mod & 0x02:  # CTRL modifier
+                d.cursor_x = len(d.cur_line())
             else:
                 d.cursor_x = 0
         elif key == KEY_CLR:
-            d.cursor_y = d.line_count - 1
-            d.cursor_x = len(d.cur_line())
+            d.cursor_y = 0
+            d.cursor_x = 0
 
         # ─ Editing ─
         elif key == KEY_RETURN:
@@ -532,36 +512,88 @@ class FileEditorConsole(ServerConsole):
         elif key == KEY_DEL_CTRLT:
             self._backspace(d)
         elif key == KEY_INS:
-            # Insert a space at cursor
             line = d.cur_line()
             d.set_cur_line(line[: d.cursor_x] + " " + line[d.cursor_x :])
 
         # ─ Function keys ─
         elif key == KEY_F1:
-            self._cmd_new_file()
-        elif key == KEY_F2:
             self._enter_file_list()
+        elif key == KEY_F2:
+            self._cmd_new_file()
         elif key == KEY_F3:
             self._enter_browser()
         elif key == KEY_F5:
-            if shift:
-                self._start_input("save as: ", "_cb_save_as")
-            else:
-                self._cmd_save()
+            self._cmd_save()
+        elif key == KEY_F6:
+            self._start_input("save as: ", "_cb_save_as")
         elif key == KEY_F7:
             self._enter_console()
         elif key == KEY_F8:
             self._enter_help()
 
-        # ─ Commodore key combos ─
-        elif cbm:
-            self._handle_cbm_combo(key, d)
+        # ─ CBM key combos ─
+        elif key == KEY_CTRL_B:
+            d.sel_start = (d.cursor_y, d.cursor_x)
+            if d.sel_end is None:
+                d.sel_end = d.sel_start
+        elif key == KEY_CTRL_H:
+            d.sel_end = (d.cursor_y, d.cursor_x)
+            if d.sel_start is None:
+                d.sel_start = d.sel_end
+        elif key == KEY_CTRL_A:
+            d.sel_start = (0, 0)
+            d.sel_end = (d.line_count - 1, len(d.lines[-1]))
+        elif key == KEY_CBM_X:
+            self._cmd_cut(d)
+        elif key == KEY_CBM_C:
+            self._cmd_copy(d)
+        elif key == KEY_CBM_V:
+            self._cmd_paste(d)
+        elif key == KEY_CTRL_Y:
+            self._cmd_delete_line(d)
+        elif key == KEY_CBM_F:
+            self._start_input("find: ", "_cb_find")
+        elif key == KEY_CBM_N:
+            self._cmd_find_next()
+        elif key == KEY_CBM_R:
+            self._start_input("replace: ", "_cb_replace_prompt")
+        elif key == KEY_CBM_G:
+            self._start_input("goto line: ", "_cb_goto_line")
+        elif key == KEY_CTRL_W:
+            self._cmd_close_file()
+        elif key == KEY_CBM_S:
+            self._cmd_save()
+        elif key == KEY_ORANGE_CMD1:  # CBM+1 → no split
+            self.split_mode = 0
+        elif key == KEY_BROWN_CMD2:  # CBM+2 → horizontal split
+            self.split_mode = 1
+            self._ensure_split_doc()
+        elif key == KEY_PINK_CMD3:  # CBM+3 → vertical split
+            self.split_mode = 2
+            self._ensure_split_doc()
+        elif key == KEY_GREEN_CTRL6_CTRLUPARROW:  # CTRL+6 → cycle split mode
+            self.split_mode = (self.split_mode + 1) % 3
+            if self.split_mode > 0:
+                self._ensure_split_doc()
+        elif key == KEY_SHIFT_UPARROW:  # SHIFT+UP-ARROW → swap active pane
+            if self.split_mode > 0:
+                self.active_doc_idx, self.split_doc_idx = self.split_doc_idx, self.active_doc_idx
 
-        # ─ CTRL combos ─
-        elif ctrl:
-            self._handle_ctrl_combo(key, d)
+        # ─ CTRL key combos ─
+        elif key == KEY_CTRL_F:
+            self._start_input("find: ", "_cb_find")
+        elif key == KEY_CHARSET_UPPER_CTRLN:  # CTRL+N
+            self._cmd_find_next()
+        elif key == KEY_REVERSE_ON_CTRL9_CTRLR:  # CTRL+R
+            self._start_input("replace: ", "_cb_replace_prompt")
+        elif key == KEY_CTRL_G:
+            self._start_input("goto line: ", "_cb_goto_line")
+        elif key == KEY_CTRL_X:
+            self._cmd_cut(d)
+        elif key == KEY_CTRL_V:
+            self._cmd_paste(d)
 
-        # ─ ESC → open menu ─
+        # ─ ESC / RUN-STOP → open menu ─
         elif key == KEY_RUNSTOP_ESC_CTRLC:
             self.mode = MODE_MENU
             self.menu_sel = 0
@@ -579,73 +611,6 @@ class FileEditorConsole(ServerConsole):
 
         d.clamp_cursor()
         d.ensure_visible(self._edit_rows(), TEXT_COLS)
-
-    def _handle_cbm_combo(self, key: int, d: Document):
-        """Handle Commodore+key combos."""
-        ch = self._petscii_to_char(key)
-        if ch is None:
-            return
-        c = ch.lower()
-        if c == "x":
-            self._cmd_cut(d)
-        elif c == "c":
-            self._cmd_copy(d)
-        elif c == "v":
-            self._cmd_paste(d)
-        elif c == "b":
-            d.sel_start = (d.cursor_y, d.cursor_x)
-            if d.sel_end is None:
-                d.sel_end = d.sel_start
-        elif c == "e":
-            d.sel_end = (d.cursor_y, d.cursor_x)
-            if d.sel_start is None:
-                d.sel_start = d.sel_end
-        elif c == "a":
-            d.sel_start = (0, 0)
-            d.sel_end = (d.line_count - 1, len(d.lines[-1]))
-        elif c == "y":
-            self._cmd_delete_line(d)
-        elif c == "f":
-            self._start_input("find: ", "_cb_find")
-        elif c == "n":
-            self._cmd_find_next()
-        elif c == "r":
-            self._start_input("replace: ", "_cb_replace_prompt")
-        elif c == "g":
-            self._start_input("goto line: ", "_cb_goto_line")
-        elif c == "w":
-            self._cmd_close_file()
-        elif c == "s":
-            self._cmd_save()
-        elif c == "1":
-            self.split_mode = 0
-        elif c == "2":
-            self.split_mode = 1
-            self._ensure_split_doc()
-        elif c == "3":
-            self.split_mode = 2
-            self._ensure_split_doc()
-
-    def _handle_ctrl_combo(self, key: int, d: Document):
-        """Handle CTRL+key combos."""
-        ch = self._petscii_to_char(key)
-        if ch is None:
-            return
-        c = ch.lower()
-        if c == "f":
-            self._start_input("find: ", "_cb_find")
-        elif c == "n":
-            self._cmd_find_next()
-        elif c == "r":
-            self._start_input("replace: ", "_cb_replace_prompt")
-        elif c == "g":
-            self._start_input("goto line: ", "_cb_goto_line")
-        elif c == "x":
-            self._cmd_cut(d)
-        elif c == "c":
-            self._cmd_copy(d)
-        elif c == "v":
-            self._cmd_paste(d)
 
     # ── MENU mode ────────────────────────────────────────────────────
     def _key_menu(self, key: int, mod: int):
@@ -688,59 +653,58 @@ class FileEditorConsole(ServerConsole):
         label, _ = items[self.submenu_sel]
         self.mode = MODE_EDIT  # leave menu first
 
-        if label == "new":
+        if label == "New":
             self._cmd_new_file()
-        elif label == "open":
+        elif label == "Open":
             self._enter_browser()
-        elif label == "save":
+        elif label == "Save":
             self._cmd_save()
-        elif label == "save as":
+        elif label == "Save as":
             self._start_input("save as: ", "_cb_save_as")
-        elif label == "close":
+        elif label == "Close":
             self._cmd_close_file()
-        elif label == "file list":
+        elif label == "File list":
             self._enter_file_list()
-        elif label == "cut":
+        elif label == "Cut":
             self._cmd_cut(self.doc)
-        elif label == "copy":
+        elif label == "Copy":
             self._cmd_copy(self.doc)
-        elif label == "paste":
+        elif label == "Paste":
             self._cmd_paste(self.doc)
-        elif label == "sel start":
+        elif label == "Sel start":
             d = self.doc
             d.sel_start = (d.cursor_y, d.cursor_x)
             if d.sel_end is None:
                 d.sel_end = d.sel_start
-        elif label == "sel end":
+        elif label == "Sel end":
             d = self.doc
             d.sel_end = (d.cursor_y, d.cursor_x)
             if d.sel_start is None:
                 d.sel_start = d.sel_end
-        elif label == "sel all":
+        elif label == "Sel all":
             d = self.doc
             d.sel_start = (0, 0)
             d.sel_end = (d.line_count - 1, len(d.lines[-1]))
-        elif label == "del line":
+        elif label == "Del line":
             self._cmd_delete_line(self.doc)
-        elif label == "console":
+        elif label == "Console":
             self._enter_console()
-        elif label == "split h":
-            self.split_mode = 1
-            self._ensure_split_doc()
-        elif label == "split v":
-            self.split_mode = 2
-            self._ensure_split_doc()
-        elif label == "no split":
-            self.split_mode = 0
-        elif label == "tabs":
+        elif label == "Cyc split":
+            self.split_mode = (self.split_mode + 1) % 3
+            if self.split_mode > 0:
+                self._ensure_split_doc()
+        elif label == "Swap pane":
+            if self.split_mode > 0:
+                self.active_doc_idx, self.split_doc_idx = self.split_doc_idx, self.active_doc_idx
+        elif label == "Tabs":
             self._enter_file_list()
-        elif label == "find":
+        elif label == "Find":
             self._start_input("find: ", "_cb_find")
-        elif label == "find next":
+        elif label == "Find next":
             self._cmd_find_next()
-        elif label == "replace":
+        elif label == "Replace":
             self._start_input("replace: ", "_cb_replace_prompt")
-        elif label == "goto line":
+        elif label == "Goto line":
             self._start_input("goto line: ", "_cb_goto_line")
         elif label == "keys":
             self._enter_help()
@@ -1370,8 +1334,8 @@ class FileEditorConsole(ServerConsole):
 
         mod_char = "*" if d.modified else " "
         name = d.name[:15]
-        pos_str = f"l{d.cursor_y + 1}c{d.cursor_x + 1}"
-        lines_str = f"{d.line_count}ln"
+        pos_str = f"L{d.cursor_y + 1}C{d.cursor_x + 1}"
+        lines_str = f"{d.line_count}LN"
 
         mode_labels = {
             MODE_EDIT: "edt",
@@ -1482,35 +1446,34 @@ class FileEditorConsole(ServerConsole):
         help_lines = [
             "=== hdn editor keys ===",
             "",
-            " navigation:",
+            " Navigation:",
             " arrows     move cursor",
             " home       start of line",
-            "Xshift+home top of file -> clr",
-            " clr        end of file -> ",
-            "Xctrl+arrow scroll/word",
+            " sh+home    top of file",
+            " C=right    next word",
+            " C=left     prev word",
             "",
-            " editing:",
+            " Editing:",
             " return     new line",
             " del        backspace",
             " ins        insert space",
-            "  ",
             "",
-            " file operations:",
-            " f1         new file -> f2",
-            " f2         file list/tabs -> f1",
+            " File operations:",
+            " f1         file list/tabs",
+            " f2         new file",
             " f3         open (browser)",
             " f5         save",
-            "Xshift+f5   save as -> F6",
-            "XC=+w       close file -> CTRL+w",
+            " f6         save as",
+            " ctrl+w     close file",
             "",
-            "Xclipboard:",
-            " C=+b       mark block start",
-            " C=+e       mark block end",
-            " C=+a       select all",
+            " Clipboard:",
+            " ctrl+b     mark block start",
+            " ctrl+h     mark block end",
+            " ctrl+a     select all",
             " C=+x       cut",
             " C=+c       copy",
             " C=+v       paste",
-            " C=+y       delete line",
+            " ctrl+y     delete line",
             "",
             " search:",
             " C=+f       find (regex)",
@@ -1521,9 +1484,8 @@ class FileEditorConsole(ServerConsole):
             " view:",
             " f7         console/shell",
             " f8         this help",
-            " C=+1       no split",
-            " C=+2       split top/bottom",
-            " C=+3       split left/right",
+            " ctrl+uparw cycle split mode",
+            " sh+uparrow swap pane focus",
             " RUN/STOP   open menu",
             "",
             " press RUN/STOP to return",
