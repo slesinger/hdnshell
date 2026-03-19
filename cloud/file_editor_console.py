@@ -12,6 +12,7 @@ import logging
 import os
 import re
 import subprocess
+import sys
 from typing import Optional, List, Tuple, Dict
 
 from server_console import (
@@ -368,7 +369,7 @@ class FileEditorConsole(ServerConsole):
         self.mode: int = MODE_EDIT
         self.prev_mode: int = MODE_EDIT
         # Menu state
-        self.menu_items = ["File", "Edit", "View", "Search", "Help(f8)"]
+        self.menu_items = ["File", "Edit", "View", "Search", "Run", "Help(f8)"]
         self.menu_sel: int = 0
         self.submenu_open: bool = False
         self.submenu_sel: int = 0
@@ -402,6 +403,10 @@ class FileEditorConsole(ServerConsole):
                 ("Replace", "C=+r"),
                 ("Goto line", "C=+g"),
             ],
+            "Run": [
+                ("Compile", "ctrl+e"),
+                ("Run", "ctrl+r"),
+            ],
             "Help(f8)": [
                 ("keys", "f8"),
             ],
@@ -428,6 +433,10 @@ class FileEditorConsole(ServerConsole):
         # Split view
         self.split_mode: int = 0  # 0=none, 1=horizontal, 2=vertical
         self.split_doc_idx: int = 0  # doc index shown in second pane
+        # Status message (shown temporarily in status bar)
+        self.status_msg: str = ""
+        # Compile state
+        self._compile_ok: bool = False
         # Confirm dialog
         self.confirm_msg: str = ""
         self.confirm_callback: Optional[str] = None
@@ -446,6 +455,7 @@ class FileEditorConsole(ServerConsole):
     # =================================================================
     def handle_keypress(self, petscii_code: int, modifiers: int) -> Optional[bytes]:
         """Route keypress based on current editor mode."""
+        self.status_msg = ""  # clear transient status on any keypress
         handlers = {
             MODE_EDIT: self._key_edit,
             MODE_MENU: self._key_menu,
@@ -586,13 +596,16 @@ class FileEditorConsole(ServerConsole):
         elif key == KEY_CHARSET_UPPER_CTRLN:  # CTRL+N
             self._cmd_find_next()
         elif key == KEY_REVERSE_ON_CTRL9_CTRLR:  # CTRL+R
-            self._start_input("replace: ", "_cb_replace_prompt")
+            self._cmd_compile_and_run()
         elif key == KEY_CTRL_G:
             self._start_input("goto line: ", "_cb_goto_line")
         elif key == KEY_CTRL_X:
             self._cmd_cut(d)
         elif key == KEY_CTRL_V:
             self._cmd_paste(d)
+
+        elif key == KEY_WHITE_CTRL2_CTRLE:  # CTRL+E → compile
+            self._cmd_compile()
 
         # ─ ESC / RUN-STOP → open menu ─
         elif key == KEY_RUNSTOP_ESC_CTRLC:
@@ -707,6 +720,10 @@ class FileEditorConsole(ServerConsole):
             self._start_input("replace: ", "_cb_replace_prompt")
         elif label == "Goto line":
             self._start_input("goto line: ", "_cb_goto_line")
+        elif label == "Compile":
+            self._cmd_compile()
+        elif label == "Run":
+            self._cmd_compile_and_run()
         elif label == "keys":
             self._enter_help()
 
@@ -1124,6 +1141,125 @@ class FileEditorConsole(ServerConsole):
         self.mode = MODE_HELP
         self.help_scroll = 0
 
+    # ── Oscar64 compile / run ─────────────────────────────────────────
+
+    @staticmethod
+    def _oscar_dir() -> str:
+        """Return the absolute path to the oscar/ directory."""
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            return os.path.join(meipass, "oscar")
+        return os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "oscar"
+        )
+
+    def _cmd_compile(self) -> bool:
+        """Save current file and compile it with oscar64. Returns True on success."""
+        self._compile_ok = False
+        self.status_msg = ""
+        d = self.doc
+        if not d.path:
+            self.status_msg = "Save file first"
+            return False
+        # Save
+        d.save()
+
+        oscar_dir = self._oscar_dir()
+        compiler = os.path.join(oscar_dir, "bin", "oscar64")
+        include_dir = os.path.join(oscar_dir, "include")
+
+        if not os.path.isfile(compiler):
+            self.status_msg = "oscar64 not found"
+            return False
+
+        try:
+            result = subprocess.run(
+                [compiler, f"-i={include_dir}", d.path],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+        except subprocess.TimeoutExpired:
+            self.status_msg = "Compile timeout"
+            return False
+        except Exception as e:
+            self.status_msg = f"Error: {e}"
+            return False
+
+        output = (result.stdout + result.stderr).strip()
+
+        if result.returncode == 0:
+            self.status_msg = "Compiled OK"
+            self._compile_ok = True
+            # Close error split if it was showing clog.txt
+            self._close_clog_split()
+            return True
+
+        # Compilation failed — write errors to clog.txt and show in split
+        self.status_msg = "Compile FAILED"
+        clog_path = os.path.join(os.path.dirname(d.path), "clog.txt")
+        try:
+            with open(clog_path, "w") as f:
+                f.write(output)
+        except OSError:
+            pass
+        self._open_clog_split(clog_path)
+        return False
+
+    def _open_clog_split(self, clog_path: str):
+        """Open clog.txt in the bottom split pane."""
+        # Check if clog.txt is already open
+        for i, doc in enumerate(self.documents):
+            if doc.path and os.path.realpath(doc.path) == os.path.realpath(clog_path):
+                doc.load(clog_path)
+                self.split_doc_idx = i
+                self.split_mode = 1
+                return
+        # Open as a new document
+        if len(self.documents) < MAX_OPEN_FILES:
+            new_doc = Document(clog_path)
+            new_doc.load(clog_path)
+            self.documents.append(new_doc)
+            self.split_doc_idx = len(self.documents) - 1
+            self.split_mode = 1
+
+    def _close_clog_split(self):
+        """If the split pane is showing clog.txt, close the split."""
+        if self.split_mode != 1:
+            return
+        if self.split_doc_idx < len(self.documents):
+            sdoc = self.documents[self.split_doc_idx]
+            if sdoc.name == "clog.txt":
+                self.split_mode = 0
+
+    def _cmd_compile_and_run(self):
+        """Compile the current file and, if successful, send the .prg to the C64."""
+        if not self._cmd_compile():
+            return
+        d = self.doc
+        # Determine .prg path: same directory and base name as source, with .prg ext
+        src_dir = os.path.dirname(d.path)
+        base = os.path.splitext(os.path.basename(d.path))[0]
+        prg_path = os.path.join(src_dir, f"{base}.prg")
+        if not os.path.isfile(prg_path):
+            self.status_msg = ".prg not found"
+            return
+
+        # Send .prg to C64 via DMA service SOCKET_CMD_DMARUN
+        from network_helper import read_last_c64_ip, _send_tcp_cmd, SOCKET_CMD_DMARUN
+        c64_ip = read_last_c64_ip()
+        if not c64_ip:
+            self.status_msg = "No C64 IP configured"
+            return
+
+        try:
+            with open(prg_path, "rb") as f:
+                prg_data = f.read()
+            _send_tcp_cmd(c64_ip, SOCKET_CMD_DMARUN, prg_data)
+            self.status_msg = "Running on C64"
+        except Exception as e:
+            self.status_msg = f"C64 err: {e}"
+
     # ── Split view ───────────────────────────────────────────────────
     def _ensure_split_doc(self):
         if self.split_doc_idx >= len(self.documents):
@@ -1382,7 +1518,10 @@ class FileEditorConsole(ServerConsole):
         }
         mode_str = mode_labels.get(self.mode, "?")
 
-        status = f"{mod_char}{name} {pos_str} {lines_str} {mode_str}"
+        if self.status_msg:
+            status = f"{mod_char}{name} {self.status_msg}"
+        else:
+            status = f"{mod_char}{name} {pos_str} {lines_str} {mode_str}"
         # Truncate or pad to 40
         status = status[:SCREEN_COLS].ljust(SCREEN_COLS)
         self._put_text(STATUS_ROW, 0, status, COL_STATUS_FG)
@@ -1517,12 +1656,17 @@ class FileEditorConsole(ServerConsole):
             " C=+r       replace all",
             " C=+g       goto line",
             "",
+            " oscar64 (Run menu):",
+            " ctrl+e     compile",
+            " ctrl+r     compile & run",
+            "",
             " view:",
             " f7         console/shell",
             " f8         this help",
             " ctrl+uparw cycle split mode",
             " sh+uparrow swap pane focus",
             " RUN/STOP   open menu",
+            " C=+sh      change lo/up font",
             "",
             " press RUN/STOP to return",
         ]

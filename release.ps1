@@ -40,7 +40,7 @@ Push-Location $CLOUD_DIR
 Set-Content "version.py" "__version__ = `"$VERSION`""
 # Cleanup old build artifacts
 Remove-Item -Recurse -Force build, dist, *.spec -ErrorAction SilentlyContinue
-pyinstaller --clean --onefile --name hdnsh-server-win --add-data "static;static" cloud.py
+pyinstaller --clean --onefile --name hdnsh-server-win --add-data "static;static" --add-data "../oscar/bin/oscar64;oscar/bin" --add-data "../oscar/include;oscar/include" --add-data "../oscar/docs/C_0*.md;oscar/docs" cloud.py
 Pop-Location
 
 # Ensure Release Dir exists

@@ -123,12 +123,12 @@ package-win:
 
 package-linux: build-ui clean-dist
 	echo '__version__ = "$(VERSION)"' > $(CLOUD_DIR)/version.py
-	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name hdnsh-server-linux --add-data "static:static" cloud.py
+	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name hdnsh-server-linux --add-data "static:static" --add-data "../oscar/bin/oscar64:oscar/bin" --add-data "../oscar/include:oscar/include" --add-data "../oscar/docs/C_0*.md:oscar/docs" cloud.py
 	$(MAKE) copy-to-release
 
 package-mac:
 	echo '__version__ = "$(VERSION)"' > $(CLOUD_DIR)/version.py
-	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name hdnsh-server-mac --add-data "static:static" cloud.py
+	cd $(CLOUD_DIR) && python3 -m PyInstaller --clean --onefile --name hdnsh-server-mac --add-data "static:static" --add-data "../oscar/bin/oscar64:oscar/bin" --add-data "../oscar/include:oscar/include" --add-data "../oscar/docs/C_0*.md:oscar/docs" cloud.py
 	$(MAKE) copy-to-release
 
 

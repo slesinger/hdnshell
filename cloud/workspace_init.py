@@ -16,6 +16,8 @@ creates the canonical directory tree and seed files:
 """
 
 import os
+import glob
+import shutil
 import logging
 
 from cloud_config_template import CLOUD_CONFIG_TEMPLATE
@@ -61,6 +63,9 @@ def init_workspace() -> str:
     for name in ("games", "docs", "demos"):
         _ensure_dir(os.path.join(WORKSPACE_DIR, name))
 
+    # Copy bundled oscar docs (C_0*.md) into workspace/docs/
+    _copy_bundled_docs(os.path.join(WORKSPACE_DIR, "docs"))
+
     logger.info("Workspace ready at %s", WORKSPACE_DIR)
     return WORKSPACE_DIR
 
@@ -72,3 +77,18 @@ def get_workspace_config_path() -> str:
 
 def _ensure_dir(path: str):
     os.makedirs(path, exist_ok=True)
+
+
+def _copy_bundled_docs(docs_dir: str):
+    """Copy bundled oscar/docs/C_0*.md files into the workspace docs directory."""
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    # PyInstaller bundle path: oscar/docs next to the executable
+    bundled_docs_dir = os.path.join(base_dir, "oscar", "docs")
+    # Development path: oscar/docs is one level up from cloud/
+    dev_docs_dir = os.path.join(base_dir, "..", "oscar", "docs")
+    for search_dir in (bundled_docs_dir, dev_docs_dir):
+        for src in glob.glob(os.path.join(search_dir, "C_0*.md")):
+            dst = os.path.join(docs_dir, os.path.basename(src))
+            if not os.path.exists(dst):
+                shutil.copy2(src, dst)
+                logger.info("Copied %s -> %s", src, dst)
