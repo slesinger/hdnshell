@@ -400,6 +400,7 @@ class FileEditorConsole(ServerConsole):
                 ("Cyc split", "ctrl+\x5e"),  # TODO this should be up arrow
                 ("Swap pane", "sh+\x5e"),
                 ("Tabs", "f2"),
+                ("Wrap", "C=+w"),
             ],
             "Search": [
                 ("Find", "C=+f"),
@@ -446,6 +447,8 @@ class FileEditorConsole(ServerConsole):
         self.confirm_callback: Optional[str] = None
         # Help scroll
         self.help_scroll: int = 0
+        # Word wrap
+        self.word_wrap: bool = False
         # Initial render
         self._full_render()
 
@@ -624,6 +627,12 @@ class FileEditorConsole(ServerConsole):
         elif key == KEY_WHITE_CTRL2_CTRLE:  # CTRL+E → compile
             self._cmd_compile()
 
+        elif key == KEY_CBM_W:  # CBM+W → toggle word wrap
+            self.word_wrap = not self.word_wrap
+            self.status_msg = "wrap ON" if self.word_wrap else "wrap OFF"
+            if self.word_wrap:
+                self.doc.scroll_x = 0
+
         # ─ ESC / RUN-STOP → open menu ─
         elif key == KEY_RUNSTOP_ESC_CTRLC:
             self.mode = MODE_MENU
@@ -641,7 +650,11 @@ class FileEditorConsole(ServerConsole):
                 d.cursor_x += 1
 
         d.clamp_cursor()
-        d.ensure_visible(self._edit_rows(), TEXT_COLS)
+        if self.word_wrap:
+            d.scroll_x = 0
+            d.ensure_visible(self._edit_rows(), 10000)
+        else:
+            d.ensure_visible(self._edit_rows(), TEXT_COLS)
 
     # ── MENU mode ────────────────────────────────────────────────────
     def _key_menu(self, key: int, mod: int):
@@ -729,6 +742,11 @@ class FileEditorConsole(ServerConsole):
                 self.active_doc_idx, self.split_doc_idx = self.split_doc_idx, self.active_doc_idx
         elif label == "Tabs":
             self._enter_file_list()
+        elif label == "Wrap":
+            self.word_wrap = not self.word_wrap
+            self.status_msg = "wrap ON" if self.word_wrap else "wrap OFF"
+            if self.word_wrap:
+                self.doc.scroll_x = 0
         elif label == "Find":
             self._start_input("find: ", "_cb_find")
         elif label == "Find next":
@@ -1402,6 +1420,14 @@ class FileEditorConsole(ServerConsole):
         sel_start = sel[0] if sel else None
         sel_end = sel[1] if sel else None
 
+        if self.word_wrap:
+            self._render_editor_pane_wrapped(
+                top_row, visible_rows, text_cols, doc,
+                show_cursor, col_offset, pane_cols,
+                sel_start, sel_end,
+            )
+            return
+
         for vi in range(visible_rows):
             screen_row = top_row + vi
             line_idx = doc.scroll_y + vi
@@ -1461,6 +1487,86 @@ class FileEditorConsole(ServerConsole):
                     if pos < SCREEN_SIZE:
                         # reverse bit
                         self.screen[pos] = self.screen[pos] | 0x80
+
+    def _render_editor_pane_wrapped(
+        self,
+        top_row: int,
+        visible_rows: int,
+        text_cols: int,
+        doc: Document,
+        show_cursor: bool,
+        col_offset: int,
+        pane_cols: int,
+        sel_start,
+        sel_end,
+    ):
+        """Render document with word-wrap into screen rows."""
+        screen_row = top_row
+        line_idx = doc.scroll_y
+
+        while screen_row < top_row + visible_rows and line_idx < doc.line_count:
+            line = doc.lines[line_idx]
+            # Number of screen rows this line needs
+            n_chunks = max(1, (len(line) + text_cols - 1) // text_cols)
+
+            for chunk in range(n_chunks):
+                if screen_row >= top_row + visible_rows:
+                    break
+                chunk_start = chunk * text_cols
+
+                # Line number only on first chunk
+                if chunk == 0:
+                    lnum_str = f"{line_idx + 1:4d} "
+                else:
+                    lnum_str = "     "  # blank gutter for continuation
+                for ci, ch in enumerate(lnum_str):
+                    if ci < LINE_NUM_WIDTH and col_offset + ci < pane_cols:
+                        pos = screen_row * SCREEN_COLS + col_offset + ci
+                        self.screen[pos] = ascii_to_screencode(ord(ch))
+                        self.color[pos] = COL_LINENO_FG
+
+                # Text content for this chunk
+                for ci in range(text_cols):
+                    char_idx = chunk_start + ci
+                    scol = col_offset + LINE_NUM_WIDTH + ci
+                    if scol >= col_offset + pane_cols:
+                        break
+                    pos = screen_row * SCREEN_COLS + scol
+                    if char_idx < len(line):
+                        ch = line[char_idx]
+                        sc = (
+                            ascii_to_screencode(ord(ch))
+                            if ord(ch) < 128
+                            else DEFAULT_SCREEN_CODE
+                        )
+                        self.screen[pos] = sc
+                    else:
+                        self.screen[pos] = DEFAULT_SCREEN_CODE
+
+                    # Determine color
+                    fg = COL_TEXT_FG
+                    if sel_start and sel_end:
+                        if self._in_selection(line_idx, char_idx, sel_start, sel_end):
+                            fg = COL_SELECT_FG
+                    for ml, mc, mlen in self.find_matches:
+                        if ml == line_idx and mc <= char_idx < mc + mlen:
+                            fg = COL_FIND_MATCH
+                            break
+                    self.color[pos] = fg
+
+                # Cursor
+                if show_cursor and line_idx == doc.cursor_y:
+                    if chunk_start <= doc.cursor_x < chunk_start + text_cols:
+                        cx_screen = doc.cursor_x - chunk_start
+                        scol = col_offset + LINE_NUM_WIDTH + cx_screen
+                        pos = screen_row * SCREEN_COLS + scol
+                        self.color[pos] = COL_CURSOR_FG
+                        if pos < SCREEN_SIZE:
+                            self.screen[pos] = self.screen[pos] | 0x80
+
+                screen_row += 1
+
+            line_idx += 1
 
     def _in_selection(
         self, line: int, col: int, start: Tuple[int, int], end: Tuple[int, int]
@@ -1535,10 +1641,11 @@ class FileEditorConsole(ServerConsole):
         }
         mode_str = mode_labels.get(self.mode, "?")
 
+        wrap_str = " W" if self.word_wrap else ""
         if self.status_msg:
             status = f"{mod_char}{name} {self.status_msg}"
         else:
-            status = f"{mod_char}{name} {pos_str} {lines_str} {mode_str}"
+            status = f"{mod_char}{name} {pos_str} {lines_str} {mode_str}{wrap_str}"
         # Truncate or pad to 40
         status = status[:SCREEN_COLS].ljust(SCREEN_COLS)
         self._put_text(STATUS_ROW, 0, status, COL_STATUS_FG)
@@ -1686,6 +1793,7 @@ class FileEditorConsole(ServerConsole):
             " ctrl+uparw cycle split mode",
             " sh+uparrow swap pane focus",
             " RUN/STOP   open menu",
+            " C=+w       toggle wrap",
             " C=+sh      change lo/up font",
             "",
             " press RUN/STOP to return",
