@@ -84,7 +84,11 @@ KEY_RED_CTRL3_CTRLPOUND = 0x1C
 KEY_CRSR_RT_CTRLSEMICOLON = 0x1D
 KEY_GREEN_CTRL6_CTRLUPARROW = 0x1E
 KEY_BLUE_CTRL7_CTRLEQUAL = 0x1F
+KEY_SHIFT_COMA = 0x3C
+KEY_SHIFT_PERIOD = 0x3E
+KEY_SHIFT_COLON = 0x5B
 KEY_POUND = 0x5C
+KEY_SHIFT_SEMICOLON = 0x5D
 KEY_UP_ARROW = 0x5E
 KEY_LEFT_ARROW = 0x5F
 KEY_ORANGE_CMD1 = 0x81
@@ -516,6 +520,10 @@ class FileEditorConsole(ServerConsole):
         elif key == KEY_CLR:
             d.cursor_y = 0
             d.cursor_x = 0
+        elif key == KEY_SHIFT_COMA and mod & 0x02:  # CBM+< → page up
+            d.cursor_y -= self._edit_rows()
+        elif key == KEY_SHIFT_PERIOD and mod & 0x02:  # CBM+> → page down
+            d.cursor_y += self._edit_rows()
 
         # ─ Editing ─
         elif key == KEY_RETURN:
@@ -574,6 +582,15 @@ class FileEditorConsole(ServerConsole):
             self._cmd_close_file()
         elif key == KEY_CBM_S:
             self._cmd_save()
+        elif key == KEY_SHIFT_SEMICOLON and mod & 0x02:  # CBM+; → indent line by 2 spaces
+            d.set_cur_line("  " + d.cur_line())
+            d.cursor_x += 2
+        elif key == KEY_SHIFT_COLON and mod & 0x02:  # CBM+: → dedent line by up to 2 spaces
+            line = d.cur_line()
+            removed = min(2, len(line) - len(line.lstrip(" ")))
+            if removed:
+                d.set_cur_line(line[removed:])
+                d.cursor_x = max(0, d.cursor_x - removed)
         elif key == KEY_ORANGE_CMD1:  # CBM+1 → no split
             self.split_mode = 0
         elif key == KEY_BROWN_CMD2:  # CBM+2 → horizontal split
@@ -1627,11 +1644,14 @@ class FileEditorConsole(ServerConsole):
             " sh+home    top of file",
             " C=right    next word",
             " C=left     prev word",
+            " C=<        page up",
+            " C=>        page down",
             "",
             " Editing:",
             " return     new line",
             " del        backspace",
             " ins        insert space",
+            " C=[ ]      (un)indent line"  # TODO fix [ ] PETSCII
             "",
             " File operations:",
             " f1         file list/tabs",
@@ -1650,17 +1670,17 @@ class FileEditorConsole(ServerConsole):
             " C=+v       paste",
             " ctrl+y     delete line",
             "",
-            " search:",
+            " Search:",
             " C=+f       find (regex)",
             " C=+n       find next",
             " C=+r       replace all",
             " C=+g       goto line",
             "",
-            " oscar64 (Run menu):",
+            " Oscar64 (Run menu):",
             " ctrl+e     compile",
             " ctrl+r     compile & run",
             "",
-            " view:",
+            " View:",
             " f7         console/shell",
             " f8         this help",
             " ctrl+uparw cycle split mode",
