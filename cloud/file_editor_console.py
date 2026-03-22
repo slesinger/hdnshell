@@ -1278,22 +1278,51 @@ class FileEditorConsole(ServerConsole):
         prg_path = os.path.join(src_dir, f"{base}.prg")
         if not os.path.isfile(prg_path):
             self.status_msg = ".prg not found"
+            self._log_run(f"[run] .prg not found: {prg_path}")
             return
 
-        # Send .prg to C64 via DMA service SOCKET_CMD_DMARUN
-        from network_helper import read_last_c64_ip, _send_tcp_cmd, SOCKET_CMD_DMARUN
+        from network_helper import read_last_c64_ip, send_dmarun
         c64_ip = read_last_c64_ip()
         if not c64_ip:
             self.status_msg = "No C64 IP configured"
+            self._log_run("[run] no C64 IP — check config")
             return
 
         try:
             with open(prg_path, "rb") as f:
                 prg_data = f.read()
-            _send_tcp_cmd(c64_ip, SOCKET_CMD_DMARUN, prg_data)
+
+            # ── Debug info ──────────────────────────────────────────
+            prg_size = len(prg_data)
+            if prg_size < 2:
+                self.status_msg = ".prg too small"
+                self._log_run(f"[run] .prg too small ({prg_size} bytes)")
+                return
+
+            load_addr = int.from_bytes(prg_data[:2], "little")
+            self._log_run(f"[run] {os.path.basename(prg_path)}")
+            self._log_run(f"      load=${load_addr:04X}  size={prg_size}B")
+            self._log_run(f"      target={c64_ip}")
+
+            # Uses CMD_DMA (load only) + CMD_KEYB ("RUN\r") so the program
+            # runs via the custom BASIC's RUN command, not LOAD.
+            response = send_dmarun(c64_ip, prg_data)
+            if response:
+                self._log_run(f"      fw response: {response.hex()}")
+            else:
+                self._log_run("      fw response: (none)")
+
             self.status_msg = "Running on C64"
+            self._log_run("[run] DMA+RUN sent OK")
         except Exception as e:
             self.status_msg = f"C64 err: {e}"
+            self._log_run(f"[run] error: {e}")
+        finally:
+            self.console_scroll = max(0, len(self.console_lines) - EDIT_ROWS)
+
+    def _log_run(self, msg: str) -> None:
+        """Append a debug line to the console log (visible via F7)."""
+        self.console_lines.append(msg)
 
     # ── Split view ───────────────────────────────────────────────────
     def _ensure_split_doc(self):

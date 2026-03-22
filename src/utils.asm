@@ -492,7 +492,8 @@ MSG_HELP:
 
 // TODO move this varaible memory
 // Network
-host_ip:   .text "192.168.1.2"
+// host_ip:   .text "192.168.1.2"
+host_ip:   .text "192.192.178.22"
            .byte 0
 
 

@@ -58,6 +58,26 @@ def _send_tcp_cmd(host: str, cmd: int, payload: bytes = b"") -> None:
     s.close()
 
 
+def send_dmarun(host: str, prg_data: bytes) -> bytes:
+    """DMA-load a PRG then inject "RUN\\r" via the keyboard command.
+
+    Uses CMD_DMA (load only) + CMD_KEYB instead of CMD_DMARUN, because the
+    custom BASIC has RUN but not LOAD.  Returns b"" (kept for API compat).
+    """
+    # Load the PRG into C64 memory via DMA
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(5)
+    s.connect((host, 64))
+    s.sendall((0xFF00 | SOCKET_CMD_DMA).to_bytes(2, "little"))
+    s.sendall(len(prg_data).to_bytes(2, "little"))
+    s.sendall(prg_data)
+    s.close()
+
+    # Inject "RUN\r" into the BASIC keyboard buffer
+    _send_tcp_cmd(host, SOCKET_CMD_KEYB, b"RUN\r")
+    return b""
+
+
 def send_screen_data(screen_data: bytes, color_data: bytes) -> None:
     """Send screen + color data to Ultimate64 for DMA display."""
     _send_tcp_cmd(

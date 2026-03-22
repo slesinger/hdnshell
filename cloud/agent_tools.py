@@ -327,7 +327,7 @@ def _read_last_c64_ip() -> str:
 
 
 def run_prg(project_name: str) -> str:
-    """Upload and run the compiled .prg on the C64 Ultimate via its REST API."""
+    """Upload and run the compiled .prg on the C64 via DMA + RUN keyboard inject."""
     project_name = project_name.strip()
     if not project_name:
         return "Error: project_name must not be empty."
@@ -344,19 +344,13 @@ def run_prg(project_name: str) -> str:
     if not c64_ip:
         return "Error: No C64 IP configured. Run a network scan first."
 
-    url = f"http://{c64_ip}/v1/runners:run_prg"
     try:
+        from network_helper import send_dmarun
         with open(prg_path, "rb") as f:
-            resp = requests.post(
-                url,
-                headers={"Content-Type": "application/octet-stream"},
-                data=f,
-                timeout=10,
-            )
-        if resp.ok:
-            return f"Program '{project_name}' sent to C64 and running."
-        return f"C64 returned HTTP {resp.status_code}: {resp.text.strip()}"
-    except requests.RequestException as e:
+            prg_data = f.read()
+        send_dmarun(c64_ip, prg_data)
+        return f"Program '{project_name}' sent to C64 and running."
+    except Exception as e:
         return f"Error sending .prg to C64: {e}"
 
 
