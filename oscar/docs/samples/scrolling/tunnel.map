@@ -1,0 +1,61 @@
+sections
+0880 - 0de5 : DATA, code
+0de5 - 0de8 : DATA, data
+0de8 - 1019 : BSS, bss
+1020 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, rand@stack
+a000 - a000 : SSTACK, buildTunnel@stack
+a000 - a000 : SSTACK, prepcol@stack
+a000 - a000 : SSTACK, expand@stack
+a000 - a000 : SSTACK, scrollLeft@stack
+a000 - a000 : SSTACK, scrollRight@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0de8, 0799, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 09be : main, NATIVE_CODE:code
+09be - 0a43 : buildTunnel, NATIVE_CODE:code
+0a43 - 0a6a : rand, NATIVE_CODE:code
+0a6a - 0adb : prepcol, NATIVE_CODE:code
+0adb - 0b73 : expand, NATIVE_CODE:code
+0b73 - 0cae : scrollLeft, NATIVE_CODE:code
+0cae - 0de5 : scrollRight, NATIVE_CODE:code
+0de5 - 0de6 : spentry, DATA:data
+0de6 - 0de8 : seed, DATA:data
+0de8 - 0de8 : BSSStart, START:bss
+0e00 - 0f00 : ytop, DATA:bss
+0f00 - 1000 : ybottom, DATA:bss
+1000 - 1019 : rbuff, DATA:bss
+1019 - 1019 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0880 (013e) : main, NATIVE_CODE:code
+0b73 (013b) : scrollLeft, NATIVE_CODE:code
+0cae (0137) : scrollRight, NATIVE_CODE:code
+0e00 (0100) : ytop, DATA:bss
+0f00 (0100) : ybottom, DATA:bss
+0adb (0098) : expand, NATIVE_CODE:code
+09be (0085) : buildTunnel, NATIVE_CODE:code
+0a6a (0071) : prepcol, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0a43 (0027) : rand, NATIVE_CODE:code
+1000 (0019) : rbuff, DATA:bss
+0de6 (0002) : seed, DATA:data
+0de5 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0de8 (0000) : BSSStart, START:bss
+1019 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

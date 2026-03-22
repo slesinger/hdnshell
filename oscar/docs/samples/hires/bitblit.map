@@ -1,0 +1,188 @@
+sections
+0880 - 252b : DATA, code
+252b - 2815 : DATA, data
+2815 - 2b20 : BSS, bss
+2b20 - 9000 : HEAP, heap
+9000 - 9f96 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9fcf - a000 : SSTACK, sstack
+9fcf - 9fcf : SSTACK, mmap_trampoline@stack
+9fcf - 9fcf : SSTACK, memset@stack
+9fcf - 9fcf : SSTACK, vic_setmode@stack
+9fcf - 9fcf : SSTACK, bm_init@stack
+9fcf - 9fcf : SSTACK, init@stack
+9fcf - 9fcf : SSTACK, bm_alloc@stack
+9fcf - 9fcf : SSTACK, bm_fill@stack
+9fcf - 9fcf : SSTACK, bm_scan_fill@stack
+9fbd - 9fcf : SSTACK, bm_polygon_nc_fill@stack
+9fcf - 9fcf : SSTACK, builddop_src@stack
+9fcf - 9fcf : SSTACK, builddop_op@stack
+9fcf - 9fcf : SSTACK, builddop@stack
+9fc9 - 9fcf : SSTACK, bmu_bitblit@stack
+9fcf - 9fcf : SSTACK, bmu_text@stack
+9fc9 - 9fc9 : SSTACK, bm_bitblit@stack
+9fb9 - 9fc9 : SSTACK, bm_put_chars@stack
+9fcf - 9fcf : SSTACK, strlen@stack
+9fcf - 9fcf : SSTACK, convch@stack
+9fcf - 9fcf : SSTACK, getch@stack
+9fcf - 9fcf : SSTACK, done@stack
+9f96 - 9fb9 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 2815, 22a0, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0a2c : main, NATIVE_CODE:code
+0a2c - 0a98 : init, NATIVE_CODE:code
+0a98 - 0aad : mmap_trampoline, NATIVE_CODE:code
+0aad - 0ac4 : NMITrampoline, NATIVE_CODE:code
+0ac4 - 0acb : DoneTrampoline, NATIVE_CODE:code
+0acb - 0ae2 : IRQTrampoline, NATIVE_CODE:code
+0ae2 - 0b06 : memset, NATIVE_CODE:code
+0b06 - 0b58 : vic_setmode, NATIVE_CODE:code
+0b58 - 0b8a : bm_init, NATIVE_CODE:code
+0b8a - 0c03 : bm_alloc, NATIVE_CODE:code
+0c03 - 0c37 : bm_fill, NATIVE_CODE:code
+0c37 - 0c3f : *, DATA:code
+0c3f - 1167 : bm_polygon_nc_fill, NATIVE_CODE:code
+1167 - 130a : bm_scan_fill, NATIVE_CODE:code
+130a - 16bc : bmu_bitblit, NATIVE_CODE:code
+16bc - 19ae : builddop, NATIVE_CODE:code
+19ae - 1aee : builddop_src, NATIVE_CODE:code
+1aee - 1bef : builddop_op, NATIVE_CODE:code
+1bef - 1bf7 : *, DATA:code
+1bf7 - 1bfb : *, DATA:code
+1bfb - 1c01 : *, DATA:code
+1c01 - 1c05 : *, DATA:code
+1c05 - 1c09 : *, DATA:code
+1c09 - 1c0c : *, DATA:code
+1c0c - 1c10 : *, DATA:code
+1c10 - 1c15 : *, DATA:code
+1c15 - 1c1a : *, DATA:code
+1c1a - 1c20 : *, DATA:code
+1c20 - 1c28 : *, DATA:code
+1c28 - 1c30 : *, DATA:code
+1c30 - 1eb0 : bm_put_chars, NATIVE_CODE:code
+1eb0 - 2057 : bmu_text, NATIVE_CODE:code
+2057 - 21d8 : bm_bitblit, NATIVE_CODE:code
+21d8 - 21f4 : strlen, NATIVE_CODE:code
+21f4 - 220e : done, NATIVE_CODE:code
+220e - 221a : getch, NATIVE_CODE:code
+221a - 224c : convch, NATIVE_CODE:code
+224c - 2284 : mul16by8, NATIVE_CODE:code
+2284 - 22ba : mul32by8, NATIVE_CODE:code
+22ba - 2322 : mul32, NATIVE_CODE:code
+2322 - 2340 : divs32, NATIVE_CODE:code
+2340 - 235a : negaccu32, NATIVE_CODE:code
+235a - 2374 : negtmp32, NATIVE_CODE:code
+2374 - 244b : divmod32, NATIVE_CODE:code
+244b - 2519 : crt_malloc, NATIVE_CODE:code
+2519 - 251d : __multab80L, DATA:code
+251d - 2520 : __multab66L, DATA:code
+2520 - 252b : __multab3L, DATA:code
+252b - 252c : spentry, DATA:data
+252c - 2534 : lmask, DATA:data
+2534 - 253c : rmask, DATA:data
+253c - 2554 : poly_x, DATA:data
+2554 - 256c : poly_y, DATA:data
+256c - 25b4 : NineShadesOfGrey, DATA:data
+25b4 - 25b8 : blitops_op, DATA:data
+25b8 - 25c0 : pat, DATA:data
+25c0 - 25e1 : blitDemos, DATA:data
+25e1 - 280c : TinyFont, DATA:data
+280c - 2814 : tbitmap, DATA:data
+2814 - 2815 : giocharmap, DATA:data
+2815 - 281d : Screen, DATA:bss
+2815 - 2815 : BSSStart, START:bss
+281d - 2825 : Brush, DATA:bss
+2825 - 282d : tworks, DATA:bss
+282d - 2831 : HeapNode, DATA:bss
+2900 - 29e0 : BLIT_CODE, DATA:bss
+29e0 - 2b20 : tbuffer, DATA:bss
+2b20 - 2b20 : BSSEnd, END:bss
+2b20 - 2b20 : HeapStart, START:heap
+9000 - 9000 : HeapEnd, END:heap
+9f96 - 9f96 : StackEnd, END:stack
+9f96 - 9fa8 : main@stack, BSS:main@stack
+9fa8 - 9fb0 : scr, BSS:main@stack
+9fb0 - 9fb8 : bcr, BSS:main@stack
+9fb9 - 9fc9 : bm_put_chars@stack, BSS:bm_put_chars@stack
+9fbd - 9fcf : bm_polygon_nc_fill@stack, BSS:bm_polygon_nc_fill@stack
+9fc9 - 9fcf : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+9fcf - a000 : sstack, STACK:sstack
+
+objects by size
+0c3f (0528) : bm_polygon_nc_fill, NATIVE_CODE:code
+130a (03b2) : bmu_bitblit, NATIVE_CODE:code
+16bc (02f2) : builddop, NATIVE_CODE:code
+1c30 (0280) : bm_put_chars, NATIVE_CODE:code
+25e1 (022b) : TinyFont, DATA:data
+0880 (01ac) : main, NATIVE_CODE:code
+1eb0 (01a7) : bmu_text, NATIVE_CODE:code
+1167 (01a3) : bm_scan_fill, NATIVE_CODE:code
+2057 (0181) : bm_bitblit, NATIVE_CODE:code
+19ae (0140) : builddop_src, NATIVE_CODE:code
+29e0 (0140) : tbuffer, DATA:bss
+1aee (0101) : builddop_op, NATIVE_CODE:code
+2900 (00e0) : BLIT_CODE, DATA:bss
+2374 (00d7) : divmod32, NATIVE_CODE:code
+244b (00ce) : crt_malloc, NATIVE_CODE:code
+0b8a (0079) : bm_alloc, NATIVE_CODE:code
+0a2c (006c) : init, NATIVE_CODE:code
+22ba (0068) : mul32, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0b06 (0052) : vic_setmode, NATIVE_CODE:code
+256c (0048) : NineShadesOfGrey, DATA:data
+224c (0038) : mul16by8, NATIVE_CODE:code
+2284 (0036) : mul32by8, NATIVE_CODE:code
+0c03 (0034) : bm_fill, NATIVE_CODE:code
+0b58 (0032) : bm_init, NATIVE_CODE:code
+221a (0032) : convch, NATIVE_CODE:code
+9fcf (0031) : sstack, STACK:sstack
+0ae2 (0024) : memset, NATIVE_CODE:code
+25c0 (0021) : blitDemos, DATA:data
+2322 (001e) : divs32, NATIVE_CODE:code
+21d8 (001c) : strlen, NATIVE_CODE:code
+21f4 (001a) : done, NATIVE_CODE:code
+2340 (001a) : negaccu32, NATIVE_CODE:code
+235a (001a) : negtmp32, NATIVE_CODE:code
+253c (0018) : poly_x, DATA:data
+2554 (0018) : poly_y, DATA:data
+0aad (0017) : NMITrampoline, NATIVE_CODE:code
+0acb (0017) : IRQTrampoline, NATIVE_CODE:code
+0a98 (0015) : mmap_trampoline, NATIVE_CODE:code
+9f96 (0012) : main@stack, BSS:main@stack
+9fbd (0012) : bm_polygon_nc_fill@stack, BSS:bm_polygon_nc_fill@stack
+9fb9 (0010) : bm_put_chars@stack, BSS:bm_put_chars@stack
+220e (000c) : getch, NATIVE_CODE:code
+2520 (000b) : __multab3L, DATA:code
+252c (0008) : lmask, DATA:data
+2534 (0008) : rmask, DATA:data
+25b8 (0008) : pat, DATA:data
+280c (0008) : tbitmap, DATA:data
+2815 (0008) : Screen, DATA:bss
+281d (0008) : Brush, DATA:bss
+2825 (0008) : tworks, DATA:bss
+9fa8 (0008) : scr, BSS:main@stack
+9fb0 (0008) : bcr, BSS:main@stack
+0ac4 (0007) : DoneTrampoline, NATIVE_CODE:code
+9fc9 (0006) : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+2519 (0004) : __multab80L, DATA:code
+25b4 (0004) : blitops_op, DATA:data
+282d (0004) : HeapNode, DATA:bss
+251d (0003) : __multab66L, DATA:code
+252b (0001) : spentry, DATA:data
+2814 (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+2815 (0000) : BSSStart, START:bss
+2b20 (0000) : BSSEnd, END:bss
+2b20 (0000) : HeapStart, START:heap
+9000 (0000) : HeapEnd, END:heap
+9f96 (0000) : StackEnd, END:stack

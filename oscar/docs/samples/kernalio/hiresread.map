@@ -1,0 +1,91 @@
+sections
+0880 - 0b66 : DATA, code
+0b66 - 0b68 : DATA, data
+0b68 - 0b80 : BSS, bss
+0b80 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, mmap_trampoline@stack
+a000 - a000 : SSTACK, bm_init@stack
+a000 - a000 : SSTACK, memset@stack
+a000 - a000 : SSTACK, vic_setmode@stack
+a000 - a000 : SSTACK, krnio_setnam@stack
+a000 - a000 : SSTACK, krnio_open@stack
+a000 - a000 : SSTACK, krnio_chkin@stack
+a000 - a000 : SSTACK, krnio_chrin@stack
+a000 - a000 : SSTACK, krnio_status@stack
+a000 - a000 : SSTACK, krnio_clrchn@stack
+a000 - a000 : SSTACK, krnio_read@stack
+a000 - a000 : SSTACK, krnio_close@stack
+a000 - a000 : SSTACK, convch@stack
+a000 - a000 : SSTACK, getpch@stack
+a000 - a000 : SSTACK, getchar@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0b68, 0300, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 093b : main, NATIVE_CODE:code
+093b - 0950 : mmap_trampoline, NATIVE_CODE:code
+0950 - 0967 : NMITrampoline, NATIVE_CODE:code
+0967 - 096e : DoneTrampoline, NATIVE_CODE:code
+096e - 0985 : IRQTrampoline, NATIVE_CODE:code
+0985 - 09b7 : bm_init, NATIVE_CODE:code
+09b7 - 09db : memset, NATIVE_CODE:code
+09db - 0a2d : vic_setmode, NATIVE_CODE:code
+0a2d - 0a43 : krnio_setnam, NATIVE_CODE:code
+0a43 - 0a51 : *, DATA:code
+0a51 - 0a7f : krnio_open, NATIVE_CODE:code
+0a7f - 0af5 : krnio_read, NATIVE_CODE:code
+0af5 - 0b0a : krnio_chkin, NATIVE_CODE:code
+0b0a - 0b12 : krnio_chrin, NATIVE_CODE:code
+0b12 - 0b1e : krnio_status, NATIVE_CODE:code
+0b1e - 0b22 : krnio_clrchn, NATIVE_CODE:code
+0b22 - 0b2a : krnio_close, NATIVE_CODE:code
+0b2a - 0b34 : getpch, NATIVE_CODE:code
+0b34 - 0b66 : convch, NATIVE_CODE:code
+0b66 - 0b67 : spentry, DATA:data
+0b67 - 0b68 : giocharmap, DATA:data
+0b68 - 0b70 : Screen, DATA:bss
+0b68 - 0b68 : BSSStart, START:bss
+0b70 - 0b80 : krnio_pstatus, DATA:bss
+0b80 - 0b80 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0880 (00bb) : main, NATIVE_CODE:code
+0a7f (0076) : krnio_read, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+09db (0052) : vic_setmode, NATIVE_CODE:code
+0985 (0032) : bm_init, NATIVE_CODE:code
+0b34 (0032) : convch, NATIVE_CODE:code
+0a51 (002e) : krnio_open, NATIVE_CODE:code
+09b7 (0024) : memset, NATIVE_CODE:code
+0950 (0017) : NMITrampoline, NATIVE_CODE:code
+096e (0017) : IRQTrampoline, NATIVE_CODE:code
+0a2d (0016) : krnio_setnam, NATIVE_CODE:code
+093b (0015) : mmap_trampoline, NATIVE_CODE:code
+0af5 (0015) : krnio_chkin, NATIVE_CODE:code
+0b70 (0010) : krnio_pstatus, DATA:bss
+0b12 (000c) : krnio_status, NATIVE_CODE:code
+0b2a (000a) : getpch, NATIVE_CODE:code
+0b0a (0008) : krnio_chrin, NATIVE_CODE:code
+0b22 (0008) : krnio_close, NATIVE_CODE:code
+0b68 (0008) : Screen, DATA:bss
+0967 (0007) : DoneTrampoline, NATIVE_CODE:code
+0b1e (0004) : krnio_clrchn, NATIVE_CODE:code
+0b66 (0001) : spentry, DATA:data
+0b67 (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0b68 (0000) : BSSStart, START:bss
+0b80 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

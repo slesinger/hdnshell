@@ -1,0 +1,559 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c:135
+$00 R0(P), $00 R1(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  80)		STOREA1		<-	V(-1 '')+1 , CC:54	{VM}
+0001 ( 141)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0002 ( 141)		CONST	R1(P)[1024..1024]	<-	CA0(-1:1024 '')	{S}
+0003 ( 141)		STOREC2		<-	V(1 '')+0 , R1(P)+0 {V(-1 'ABS')} [1024..1024]	{}
+0004 ( 141)		CONST	R0(P)[6144..6144]	<-	CA0(-1:6144 '')	{S}
+0005 ( 141)		STOREC2		<-	V(3 '')+0 , R0(PF)+0 {V(-1 'ABS')} [6144..6144]	{}
+0006 ( 141)		CALLN		<-	V(1 'vic_setmode')+0 	{}
+0007 ( 144)		STOREC2		<-	V(2 '')+0 , R1(PF)+0 {V(-1 'ABS')} [1024..1024]	{}
+0008 ( 144)		STOREC1		<-	V(4 '')+0 , CC:0	{}
+0009 ( 144)		STOREC1		<-	V(5 '')+0 , CC:0	{}
+000a ( 144)		STOREC1		<-	V(6 '')+0 , CC:40	{}
+000b ( 144)		STOREC1		<-	V(7 '')+0 , CC:25	{}
+000c ( 144)		CONST	R0(P)[0..0]	<-	CG12(7:0 'cw' A)	{S}
+000d ( 144)		STOREC2		<-	V(0 '')+0 , R0(P)+0 {V(7 'cw' A)} [0..0]	{}
+000e ( 144)		CALLN		<-	V(2 'cwin_init')+0 	{}
+000f (  56)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(7 'cw' A)} [0..0]	{}
+0010 (  56)		STOREC1		<-	V(2 '')+0 , CC:32	{}
+0011 (  56)		STOREC1		<-	V(3 '')+0 , CC:1	{}
+0012 (  56)		CALLN		<-	V(4 'cwin_fill')+0 	{}
+0013 ( 148)		CONST	R0(P)[0..0]	<-	CG0(13:0 '')	{S}
+0014 ( 148)		STOREC2		<-	V(4 '')+0 , R0(PF)+0 {V(13 '')} [0..0]	{}
+0015 ( 148)		CALLN		<-	V(5 'load')+0 	{}
+0016 ( 149)		CALLN		<-	V(14 'print1')+0 	{}
+0017 ( 152)		CONST	R0(P)[0..0]	<-	CG0(21:0 '')	{S}
+0018 ( 152)		STOREC2		<-	V(4 '')+0 , R0(PF)+0 {V(21 '')} [0..0]	{}
+0019 ( 152)		CALLN		<-	V(5 'load')+0 	{}
+001a ( 153)		CALLN		<-	V(18 'print2')+0 	{}
+001b ( 155)		CONST	R0(P)[0..0]	<-	CG0(23:0 '')	{S}
+001c ( 155)		STOREC2		<-	V(4 '')+0 , R0(PF)+0 {V(23 '')} [0..0]	{}
+001d ( 155)		CALLN		<-	V(5 'load')+0 	{}
+001e ( 156)		CALLN		<-	V(19 'print3')+0 	{}
+001f ( 158)		CONST	R0(P)[0..0]	<-	CG0(25:0 '')	{S}
+0020 ( 158)		STOREC2		<-	V(4 '')+0 , R0(PF)+0 {V(25 '')} [0..0]	{}
+0021 ( 158)		CALLN		<-	V(5 'load')+0 	{}
+0022 ( 159)		CALLN		<-	V(20 'print4')+0 	{}
+0023 ( 161)		CONST	R0(P)[0..0]	<-	CG0(27:0 '')	{S}
+0024 ( 161)		STOREC2		<-	V(4 '')+0 , R0(PF)+0 {V(27 '')} [0..0]	{}
+0025 ( 161)		CALLN		<-	V(5 'load')+0 	{}
+0026 ( 162)		CALLN		<-	V(21 'print5')+0 	{}
+0027 ( 164)		CONST	R0(P)[0..0]	<-	CG0(29:0 '')	{S}
+0028 ( 164)		STOREC2		<-	V(4 '')+0 , R0(PF)+0 {V(29 '')} [0..0]	{}
+0029 ( 164)		CALLN		<-	V(5 'load')+0 	{}
+002a ( 165)		CALLN		<-	V(22 'print6')+0 	{}
+002b (  80)		STOREA1		<-	V(-1 '')+1 , CC:55	{VM}
+002c ( 169)		RETV		<-	CI:0	{}
+--------------------------------------------------------------------
+vic_setmode: /home/honza/projects/c64/projects/oscar64/include/c64/vic.h:94
+$00 R0(I), $00 R1(P), $00 R2(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		LOADZ1	R0(C)[0..4]	<-	V(0 '')+0 	{S}
+0001 (  26)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0002 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  37)		STOREA1		<-	V(-1 '')+53265 , CC:91	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  38)		STOREA1		<-	V(-1 '')+53270 , CC:8	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  52)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56576 	{V}
+0001 (  52)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  52)		BINOP9	R0(I)[0..252]	<-	R0(IF)[0..255], CI:252	{}
+0003 (  52)		LOADZ2	R1(P)	<-	V(1 '')+0 	{S}
+0004 (  52)		CAST	R1(I)	<-	R1(PF)	{S}
+0005 (  52)		BINOP17	R2(I)[0..3]	<-	R1(I), CI:14	{S}
+0006 (  52)		BINOP10	R2(I)[0..3]	<-	R2(IF)[0..3], CI:3	{S}
+0007 (  52)		BINOP8	R0(I)[0..255]	<-	R2(IF)[0..3], R0(IF)[0..252]	{}
+0008 (  52)		STOREA1		<-	V(-1 '')+56576 , R0(CF)[0..255]	{V}
+0009 (  53)		BINOP17	R1(I)[0..1023]	<-	R1(IF), CI:6	{S}
+000a (  53)		BINOP9	R1(I)[0..240]	<-	R1(IF)[0..1023], CI:240	{S}
+000b (  53)		LOADZ2	R0(P)	<-	V(3 '')+0 	{S}
+000c (  53)		CAST	R0(I)	<-	R0(PF)	{S}
+000d (  53)		BINOP17	R0(I)[0..63]	<-	R0(IF), CI:10	{S}
+000e (  53)		BINOP9	R0(I)[0..14]	<-	R0(IF)[0..63], CI:14	{S}
+000f (  53)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..14], R1(IF)[0..240]	{S}
+0010 (  53)		STOREA1		<-	V(-1 '')+53272 , R0(CF)[0..255]	{V}
+0011 (  54)		RET		<-		{}
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0001 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 4
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  33)		STOREA1		<-	V(-1 '')+53265 , CC:27	{V}
+0001 (  26)		BRANCH		<-	R0(CF)[0..1]	{}
+		==> 7
+		==> 6
+L7: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  46)		STOREA1		<-	V(-1 '')+53270 , CC:24	{V}
+0001 (  47)		JUMP		<-		{}
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  41)		STOREA1		<-	V(-1 '')+53265 , CC:59	{V}
+0001 (  26)		RELOP19	R0(B)[0..1]	<-	R0(CF)[2..4], CC:3	{S}
+0002 (  26)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+--------------------------------------------------------------------
+cwin_init: /home/honza/projects/c64/projects/oscar64/include/c64/charwin.h:15
+$00 R0(P), $00 R1(I), $00 R2(I), $00 R3(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  43)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 (  47)		STOREI1		<-	R0(P)+4, CC:0	{}
+0002 (  48)		STOREI1		<-	R0(P)+5, CC:0	{}
+0003 (  43)		LOADZ1	R1(C)[0..255]	<-	V(4 '')+0 	{S}
+0004 (  43)		STOREI1		<-	R0(P)+0, R1(C)[0..255]	{}
+0005 (  44)		LOADZ1	R2(C)[0..24]	<-	V(5 '')+0 	{S}
+0006 (  44)		STOREI1		<-	R0(P)+1, R2(C)[0..24]	{}
+0007 (  45)		LOADZ1	R3(C)[0..255]	<-	V(6 '')+0 	{S}
+0008 (  45)		STOREI1		<-	R0(P)+2, R3(CF)[0..255]	{}
+0009 (  46)		LOADZ1	R3(C)[0..255]	<-	V(7 '')+0 	{S}
+000a (  46)		STOREI1		<-	R0(P)+3, R3(CF)[0..255]	{}
+000b (  49)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{S}
+000c (  49)		CONV37	R2(I)[0..24]	<-	R2(CF)[0..24]	{S}
+000d (  49)		BINOP16	R2(I)[0..48]	<-	R2(IF)[0..24], CI:1	{S}
+000e (  49)		LEAG	R2(P)[0..48]	<-	V(6 'mul40')+0 , R2(IF)[0..48]	{S}
+000f (  49)		LOADI2	R2(I)[0..65535]	<-	R2(PF)+0 {V(6 'mul40')} [0..48]	{}
+0010 (  50)		LEAA	R3(P)[55296..120831]	<-	V(-1 '')+55296 , R2(I)[0..65535]	{}
+0011 (  50)		LEAI	R3(P)+0 {V(-1 'ABS')} [55296..121086]	<-	R3(PF)+0 {V(-1 'ABS')} [55296..120831], R1(I)[0..255]	{}
+0012 (  50)		STOREI2		<-	R0(P)+10, R3(PF)+0 {V(-1 'ABS')} [55296..121086]	{}
+0013 (  49)		LOADZ2	R3(P)	<-	V(2 '')+0 	{S}
+0014 (  49)		LEAI	R3(P)+0	<-	R3(PF)+0, R2(IF)[0..65535]	{}
+0015 (  49)		LEAI	R3(P)+0	<-	R3(PF)+0, R1(IF)[0..255]	{}
+0016 (  49)		STOREI2		<-	R0(PF)+8, R3(PF)	{}
+0017 (  51)		RET		<-		{}
+--------------------------------------------------------------------
+cwin_clear: /home/honza/projects/c64/projects/oscar64/include/c64/charwin.h:20
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  56)		LOADZ2	R0(P)	<-	V(4 '')+0 	{S}
+0001 (  56)		STOREC2		<-	V(0 '')+0 , R0(PF)	{}
+0002 (  56)		STOREC1		<-	V(2 '')+0 , CC:32	{}
+0003 (  56)		STOREC1		<-	V(3 '')+0 , CC:1	{}
+0004 (  56)		CALLN		<-	V(4 'cwin_fill')+0 	{}
+0005 (  57)		RET		<-		{}
+--------------------------------------------------------------------
+cwin_fill: /home/honza/projects/c64/projects/oscar64/include/c64/charwin.h:24
+$00 R0(P), $00 R1(P), $00 R2(P), $00 R3(I), $00 R4(P), $00 R5(C), $00 R6(C), $00 R7(C), $00 R8(C), $00 R9(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  61)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 (  62)		LOADI1	R1(C)[0..255]	<-	R0(P)+3	{}
+0002 (  62)		RELOP28	R1(B)[0..1]	<-	CC:0, R1(CF)[0..255]	{}
+0003 (  62)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 6
+		==> 2
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  62)		CONST	R5(C)[0..0]	<-	CI:0	{}
+0001 (  61)		LOADI2	R1(P)	<-	R0(P)+8	{}
+0002 (  61)		LOADI2	R2(P)	<-	R0(P)+10	{}
+0003 (  64)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  64)		LOADI1	R6(C)[0..255]	<-	R0(P)+2	{}
+0001 (  23)		RELOP28	R3(B)[0..1]	<-	CC:0, R6(C)[0..255]	{}
+0002 (  23)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 5
+		==> 3
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  23)		CONST	R7(C)[0..0]	<-	CI:0	{}
+0001 (  64)		LOADZ1	R8(C)[0..255]	<-	V(2 '')+0 	{S}
+0002 (  64)		LOADZ1	R9(C)[0..255]	<-	V(3 '')+0 	{S}
+0003 (  25)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  25)		CONV37	R3(I)[0..254]	<-	R7(C)[0..254]	{}
+0001 (  25)		LEAI	R4(P)+0	<-	R1(P)+0, R3(I)[0..254]	{}
+0002 (  25)		STOREI1		<-	R4(PF)+0, R8(C)[0..255]	{}
+0003 (  26)		LEAI	R3(P)+0	<-	R2(P)+0, R3(IF)[0..254]	{}
+0004 (  26)		STOREI1		<-	R3(PF)+0, R9(C)[0..255]	{}
+0005 (  23)		BINOP1	R7(C)[1..255]	<-	R7(CF)[0..254], CI:1	{}
+0006 (  23)		RELOP28	R3(B)[0..1]	<-	R7(C)[1..255], R6(C)[1..255]	{}
+0007 (  23)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 4
+		==> 3
+L3: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  66)		LEAI	R2(P)+0	<-	R2(PF)+0, CI:40	{}
+0001 (  65)		LEAI	R1(P)+0	<-	R1(PF)+0, CI:40	{}
+0002 (  62)		BINOP1	R5(C)[1..255]	<-	R5(CF)[0..254], CI:1	{}
+0003 (  62)		LOADI1	R3(C)[0..255]	<-	R0(P)+3	{}
+0004 (  62)		RELOP28	R3(B)[0..1]	<-	R5(C)[1..255], R3(CF)[0..255]	{}
+0005 (  62)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  68)		RET		<-		{}
+--------------------------------------------------------------------
+load: /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c:117
+$00 R0(P), $06 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 ( 119)		LOADZ2	R0(P)	<-	V(4 '')+0 	{S}
+0001 ( 119)		STOREC2		<-	V(0 '')+0 , R0(PF)	{}
+0002 ( 119)		CALLN		<-	V(6 'krnio_setnam')+0 	{}
+0003 ( 120)		STOREC1		<-	V(0 '')+0 , CC:2	{}
+0004 ( 120)		STOREC1		<-	V(1 '')+0 , CC:8	{}
+0005 ( 120)		STOREC1		<-	V(2 '')+0 , CC:2	{}
+0006 ( 120)		CALLN	R0(B)	<-	V(7 'krnio_open')+0 	{}
+0007 ( 120)		BRANCH		<-	R0(BF)	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 ( 122)		STOREC1		<-	V(0 '')+0 , CC:2	{}
+0001 ( 122)		CALLN	R0(B)	<-	V(8 'krnio_chkin')+0 	{}
+0002 ( 122)		BRANCH		<-	R0(BF)	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 ( 129)		STOREC1		<-	V(1 '')+0 , CC:2	{}
+0001 ( 124)		CALLN	R1(C)	<-	V(9 'krnio_chrin')+0 	{}
+0002 ( 125)		CALLN	R0(C)	<-	V(9 'krnio_chrin')+0 	{}
+0003 ( 127)		CONV37	R0(I)[0..255]	<-	R0(CF)	{}
+0004 ( 127)		BINOP16	R0(I)[0..65280]	<-	R0(IF)[0..255], CI:8	{}
+0005 ( 127)		CONV37	R1(I)[0..255]	<-	R1(CF)	{}
+0006 ( 127)		BINOP8	R0(I)	<-	R1(IF)[0..255], R0(IF)[0..65280]	{}
+0007 ( 127)		CAST	R0(P)	<-	R0(IF)	{}
+0008 ( 129)		STOREC2		<-	V(2 '')+0 , R0(PF)	{}
+0009 ( 128)		CALLN		<-	V(10 'krnio_clrchn')+0 	{}
+000a ( 129)		CALLN		<-	V(11 'krnio_read_lzo')+0 	{}
+000b ( 120)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 ( 131)		STOREC1		<-	V(0 '')+0 , CC:2	{}
+0001 ( 131)		CALLN		<-	V(13 'krnio_close')+0 	{}
+0002 ( 120)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 ( 133)		RET		<-		{}
+--------------------------------------------------------------------
+krnio_setnam: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:29
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 (  92)		JSR		<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 113)		RET		<-		{}
+--------------------------------------------------------------------
+krnio_open: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:35
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 140)		LOADZ1	R0(C)[0..15]	<-	V(0 '')+0 	{S}
+0001 ( 140)		CONV37	R0(I)[0..15]	<-	R0(CF)[0..15]	{S}
+0002 ( 140)		LEAG	R0(P)[0..15]	<-	V(8 'krnio_pstatus' A)+0 , R0(IF)[0..15]	{S}
+0003 ( 140)		STOREI1		<-	R0(PF)+0 {V(8 'krnio_pstatus' A)} [0..15], CC:0	{}
+0004 ( 144)		JSR	R0(L)	<-	V(2 '')+0 , V(1 '')+0 , V(0 '')+0 , V(-1 '')+0 	{V}
+0005 ( 177)		RELOP20	R0(B)[0..1]	<-	R0(CF), CC:0	{}
+0006 ( 142)		RETV		<-	R0(BF)[0..1]	{}
+--------------------------------------------------------------------
+krnio_chkin: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:55
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 296)		JSR	R0(L)	<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 307)		RELOP20	R0(B)[0..1]	<-	R0(CF), CC:0	{}
+0002 ( 293)		RETV		<-	R0(BF)[0..1]	{}
+--------------------------------------------------------------------
+krnio_chrin: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:67
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 343)		JSR	R0(L)	<-	V(-1 '')+0 	{V}
+0001 ( 340)		RETV		<-	R0(CF)	{}
+--------------------------------------------------------------------
+krnio_clrchn: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:59
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 317)		JSR		<-	V(-1 '')+0 	{V}
+0001 ( 320)		RET		<-		{}
+--------------------------------------------------------------------
+krnio_read_lzo: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:93
+$00 R0(I), $00 R1(I), $02 R2(I), $00 R3(P), $03 R4(P), $04 R5(I), $00 R6(C), $00 R7(C), $00 R8(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 453)		LOADZ1	R1(C)[0..15]	<-	V(1 '')+0 	{S}
+0001 ( 453)		CONV37	R0(I)[0..15]	<-	R1(C)[0..15]	{S}
+0002 ( 453)		LEAG	R4(P)[0..15]	<-	V(8 'krnio_pstatus' A)+0 , R0(IF)[0..15]	{S}
+0003 ( 453)		LOADI1	R0(C)[0..128]	<-	R4(P)+0 {V(8 'krnio_pstatus' A)} [0..15]	{}
+0004 ( 453)		RELOP19	R0(B)[0..1]	<-	R0(CF)[0..128], CC:64	{}
+0005 ( 453)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 454)		RETV		<-	CI:0	{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 456)		STOREC1		<-	V(0 '')+0 , R1(CF)[0..15]	{}
+0001 ( 456)		CALLN	R0(B)	<-	V(8 'krnio_chkin')+0 	{}
+0002 ( 456)		BRANCH		<-	R0(BF)	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 458)		CONST	R5(I)[0..0]	<-	CI:0	{}
+0001 ( 483)		JUMP		<-		{}
+		==> 16
+L16: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 483)		CONST	R2(C)[0..0]	<-	CI:0	{}
+0001 ( 465)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 465)		CALLN	R1(C)	<-	V(9 'krnio_chrin')+0 	{}
+0001 ( 466)		CALLN	R6(C)	<-	V(12 'krnio_status')+0 	{}
+0002 ( 467)		BRANCH		<-	R6(C)	{}
+		==> 8
+		==> 7
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 467)		RELOP20	R0(B)[0..1]	<-	R6(C), CC:64	{}
+0001 ( 467)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (5)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 500)		STOREI1		<-	R4(PF)+0 {V(8 'krnio_pstatus' A)} [0..15], R6(CF)	{}
+0001 ( 502)		CALLN		<-	V(10 'krnio_clrchn')+0 	{}
+0002 ( 503)		RETV		<-	R5(IF)	{}
+L7: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 470)		CONV37	R0(I)[0..255]	<-	R2(C)	{}
+0001 ( 470)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0002 ( 470)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0003 ( 470)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 10
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 473)		LOADZ2	R0(P)	<-	V(2 '')+0 	{S}
+0001 ( 473)		LEAI	R0(P)+0	<-	R0(PF)+0, R5(I)	{}
+0002 ( 473)		CONV37	R1(I)[0..255]	<-	R1(CF)	{}
+0003 ( 473)		UNOP11	R1(I)[-255..0]	<-	R1(IF)[0..255]	{}
+0004 ( 473)		LEAI	R1(P)+0	<-	R0(P)+0, R1(IF)[-255..0]	{}
+0005 ( 475)		BINOP9	R7(C)[0..127]	<-	R2(CF), CC:127	{}
+0006 ( 476)		CONV37	R2(I)[0..127]	<-	R7(C)[0..127]	{}
+0007 ( 476)		BINOP1	R5(I)	<-	R2(IF)[0..127], R5(IF)	{}
+0008 ( 478)		CONST	R8(C)[0..0]	<-	CI:0	{}
+0009 ( 480)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 480)		CONV37	R2(I)[0..255]	<-	R8(C)[0..]	{}
+0001 ( 480)		LEAI	R3(P)+0	<-	R1(P)+0, R2(I)[0..255]	{}
+0002 ( 480)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0	{}
+0003 ( 480)		LEAI	R2(P)+0	<-	R0(P)+0, R2(IF)[0..255]	{}
+0004 ( 480)		STOREI1		<-	R2(PF)+0, R3(CF)[0..255]	{}
+0005 ( 481)		BINOP1	R8(C)[1..]	<-	R8(CF)[0..], CI:1	{}
+0006 ( 482)		RELOP20	R2(B)[0..1]	<-	R8(C)[1..], R7(C)[0..127]	{}
+0007 ( 482)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 11
+		==> 12
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 495)		BRANCH		<-	R6(C)[0..64]	{}
+		==> 6
+		==> 16
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 485)		BRANCH		<-	R2(C)	{}
+		==> 13
+		==> 14
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 487)		LOADZ2	R0(P)	<-	V(2 '')+0 	{S}
+0001 ( 487)		LEAI	R0(P)+0	<-	R0(PF)+0, R5(I)	{}
+0002 ( 487)		STOREI1		<-	R0(PF)+0, R1(CF)	{}
+0003 ( 488)		BINOP1	R2(C)	<-	R2(CF), CI:-1	{}
+0004 ( 487)		BINOP1	R5(I)	<-	R5(IF), CI:1	{}
+0005 ( 495)		BRANCH		<-	R6(C)[0..64]	{}
+		==> 6
+		==> 5
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 490)		BRANCH		<-	R1(C)	{}
+		==> 15
+		==> 6
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 491)		MOVE	R2(C)	<-	R1(CF)	{}
+0001 ( 495)		BRANCH		<-	R6(C)[0..64]	{}
+		==> 6
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 506)		RETV		<-	CI:-1	{}
+--------------------------------------------------------------------
+krnio_status: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:43
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 207)		JSR	R0(L)	<-	V(-1 '')+0 	{V}
+0001 ( 201)		RETV		<-	R0(CF)	{}
+--------------------------------------------------------------------
+krnio_close: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:39
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 187)		JSR		<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 195)		RET		<-		{}
+--------------------------------------------------------------------
+print1: /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c:57
+$00 R0(P), $00 R1(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 (  59)		STOREC1		<-	V(11 '')+0 , CC:7	{}
+0001 (  59)		CONST	R1(P)[0..0]	<-	CG12(7:0 'cw' A)	{S}
+0002 (  59)		STOREC2		<-	V(7 '')+0 , R1(P)+0 {V(7 'cw' A)} [0..0]	{}
+0003 (  59)		CONST	R0(P)[0..0]	<-	CG0(20:0 '')	{S}
+0004 (  59)		STOREC2		<-	V(9 '')+0 , R0(PF)+0 {V(20 '')} [0..0]	{}
+0005 (  59)		CALLN		<-	V(15 'cwin_put_string')+0 	{}
+0006 (  60)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(7 'cw' A)} [0..0]	{}
+0007 (  60)		CALLN		<-	V(17 'cwin_cursor_newline')+0 	{}
+0008 (  61)		RET		<-		{}
+--------------------------------------------------------------------
+cwin_put_string: /home/honza/projects/c64/projects/oscar64/include/c64/charwin.h:64
+$00 R0(P), $00 R1(I), $00 R2(P), $00 R3(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 254)		LOADZ2	R2(P)	<-	V(7 '')+0 	{S}
+0001 ( 254)		STOREC2		<-	V(0 '')+0 , R2(P)	{}
+0002 ( 254)		LOADI1	R0(C)[0..255]	<-	R2(P)+4	{}
+0003 ( 254)		LOADI1	R1(C)[0..255]	<-	R2(P)+5	{}
+0004 ( 254)		STOREC1		<-	V(3 '')+0 , R1(CF)[0..255]	{}
+0005 ( 254)		STOREC1		<-	V(2 '')+0 , R0(CF)[0..255]	{}
+0006 ( 254)		LOADZ2	R0(P)	<-	V(9 '')+0 	{S}
+0007 ( 254)		STOREC2		<-	V(4 '')+0 , R0(PF)	{}
+0008 ( 254)		LOADZ1	R0(C)[0..255]	<-	V(11 '')+0 	{S}
+0009 ( 254)		STOREC1		<-	V(6 '')+0 , R0(CF)[0..255]	{}
+000a ( 254)		CALLN	R3(C)	<-	V(16 'cwin_putat_string')+0 	{}
+000b ( 255)		LOADI1	R0(C)[0..255]	<-	R2(P)+4	{}
+000c ( 255)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+000d ( 255)		CONV37	R1(I)[0..255]	<-	R3(C)	{}
+000e ( 255)		BINOP1	R0(I)[0..510]	<-	R1(IF)[0..255], R0(IF)[0..255]	{}
+000f ( 255)		STOREI1		<-	R2(P)+4, R0(C)[0..510]	{}
+0010 ( 256)		LOADI1	R1(C)[0..255]	<-	R2(P)+2	{}
+0011 ( 256)		RELOP25	R0(B)[0..1]	<-	R0(CF)[0..510], R1(CF)[0..255]	{}
+0012 ( 256)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 258)		STOREI1		<-	R2(P)+4, CC:0	{}
+0001 ( 259)		LOADI1	R0(C)[0..255]	<-	R2(P)+5	{}
+0002 ( 259)		BINOP1	R0(C)	<-	R0(CF)[0..255], CI:1	{}
+0003 ( 259)		STOREI1		<-	R2(PF)+5, R0(CF)	{}
+0004 ( 261)		RETV		<-	R3(CF)	{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 261)		RETV		<-	R3(CF)	{}
+--------------------------------------------------------------------
+cwin_putat_string: /home/honza/projects/c64/projects/oscar64/include/c64/charwin.h:90
+$00 R0(I), $00 R1(I), $00 R2(P), $00 R3(I), $00 R4(P), $00 R5(C), $00 R6(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 331)		LOADZ1	R0(C)[0..255]	<-	V(2 '')+0 	{S}
+0001 ( 331)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0002 ( 331)		LOADZ1	R1(C)[0..24]	<-	V(3 '')+0 	{S}
+0003 ( 331)		CONV37	R1(I)[0..24]	<-	R1(CF)[0..24]	{S}
+0004 ( 331)		BINOP16	R1(I)[0..48]	<-	R1(IF)[0..24], CI:1	{S}
+0005 ( 331)		LEAG	R1(P)[0..48]	<-	V(6 'mul40')+0 , R1(IF)[0..48]	{S}
+0006 ( 331)		LOADI2	R1(I)[0..65535]	<-	R1(PF)+0 {V(6 'mul40')} [0..48]	{}
+0007 ( 331)		BINOP1	R0(I)	<-	R1(IF)[0..65535], R0(IF)[0..255]	{}
+0008 ( 333)		LOADZ2	R1(P)	<-	V(0 '')+0 	{S}
+0009 ( 333)		LOADI2	R2(P)	<-	R1(P)+8	{}
+000a ( 333)		LEAI	R2(P)+0	<-	R2(PF)+0, R0(I)	{}
+000b ( 334)		LOADI2	R1(P)	<-	R1(PF)+10	{}
+000c ( 334)		LEAI	R1(P)+0	<-	R1(PF)+0, R0(IF)	{}
+000d ( 336)		CONST	R5(C)[0..0]	<-	CI:0	{}
+000e ( 337)		LOADZ2	R0(P)	<-	V(4 '')+0 	{IS}
+000f ( 337)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 337)		CONV37	R3(I)[0..255]	<-	R5(C)[0..]	{}
+0001 ( 337)		LEAI	R4(P)+0	<-	R0(P)+0, R3(I)[0..255]	{}
+0002 ( 337)		LOADI1	R6(C)[0..255]	<-	R4(PF)+0	{}
+0003 ( 337)		BRANCH		<-	R6(C)[0..255]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 337)		CONV37	R4(I)[0..255]	<-	R6(C)[0..255]	{}
+0001 ( 184)		BINOP17	R4(I)[0..7]	<-	R4(IF)[0..255], CI:5	{}
+0002 ( 184)		LEAG	R4(P)[0..7]	<-	V(14 'p2smap' A)+0 , R4(IF)[0..7]	{}
+0003 ( 184)		LOADI1	R4(C)[0..255]	<-	R4(PF)+0 {V(14 'p2smap' A)} [0..7]	{}
+0004 ( 184)		BINOP10	R6(C)	<-	R4(CF)[0..255], R6(CF)[0..255]	{}
+0005 ( 339)		LEAI	R4(P)+0	<-	R2(P)+0, R3(I)[0..255]	{}
+0006 ( 339)		STOREI1		<-	R4(PF)+0, R6(CF)	{}
+0007 ( 340)		LOADZ1	R4(C)[0..255]	<-	V(6 '')+0 	{S}
+0008 ( 340)		LEAI	R3(P)+0	<-	R1(P)+0, R3(IF)[0..255]	{}
+0009 ( 340)		STOREI1		<-	R3(PF)+0, R4(CF)[0..255]	{}
+000a ( 341)		BINOP1	R5(C)[1..]	<-	R5(CF)[0..], CI:1	{}
+000b ( 337)		JUMP		<-		{}
+		==> 1
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 344)		RETV		<-	R5(CF)[0..]	{}
+--------------------------------------------------------------------
+cwin_cursor_newline: /home/honza/projects/c64/projects/oscar64/include/c64/charwin.h:44
+$00 R0(P), $00 R1(I), $00 R2(I), $00 R3(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 133)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 ( 133)		STOREI1		<-	R0(P)+4, CC:0	{}
+0002 ( 134)		LOADI1	R1(C)[0..255]	<-	R0(P)+3	{}
+0003 ( 134)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0004 ( 134)		LOADI1	R3(C)[0..255]	<-	R0(P)+5	{}
+0005 ( 134)		CONV37	R2(I)[0..255]	<-	R3(C)[0..255]	{}
+0006 ( 134)		BINOP1	R2(I)[1..256]	<-	R2(IF)[0..255], CI:1	{}
+0007 ( 134)		RELOP28	R1(B)[0..1]	<-	R2(IF)[1..256], R1(IF)[0..255]	{}
+0008 ( 134)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 136)		BINOP1	R3(C)	<-	R3(CF)[0..255], CI:1	{}
+0001 ( 136)		STOREI1		<-	R0(PF)+5, R3(CF)	{}
+0002 ( 137)		RETV		<-	CB:1	{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 140)		RETV		<-	CB:0	{}
+--------------------------------------------------------------------
+print2: /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c:68
+$00 R0(P), $00 R1(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 (  70)		STOREC1		<-	V(11 '')+0 , CC:7	{}
+0001 (  70)		CONST	R1(P)[0..0]	<-	CG12(7:0 'cw' A)	{S}
+0002 (  70)		STOREC2		<-	V(7 '')+0 , R1(P)+0 {V(7 'cw' A)} [0..0]	{}
+0003 (  70)		CONST	R0(P)[0..0]	<-	CG0(22:0 '')	{S}
+0004 (  70)		STOREC2		<-	V(9 '')+0 , R0(PF)+0 {V(22 '')} [0..0]	{}
+0005 (  70)		CALLN		<-	V(15 'cwin_put_string')+0 	{}
+0006 (  71)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(7 'cw' A)} [0..0]	{}
+0007 (  71)		CALLN		<-	V(17 'cwin_cursor_newline')+0 	{}
+0008 (  72)		RET		<-		{}
+--------------------------------------------------------------------
+print3: /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c:77
+$00 R0(P), $00 R1(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 (  79)		STOREC1		<-	V(11 '')+0 , CC:7	{}
+0001 (  79)		CONST	R1(P)[0..0]	<-	CG12(7:0 'cw' A)	{S}
+0002 (  79)		STOREC2		<-	V(7 '')+0 , R1(P)+0 {V(7 'cw' A)} [0..0]	{}
+0003 (  79)		CONST	R0(P)[0..0]	<-	CG0(24:0 '')	{S}
+0004 (  79)		STOREC2		<-	V(9 '')+0 , R0(PF)+0 {V(24 '')} [0..0]	{}
+0005 (  79)		CALLN		<-	V(15 'cwin_put_string')+0 	{}
+0006 (  80)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(7 'cw' A)} [0..0]	{}
+0007 (  80)		CALLN		<-	V(17 'cwin_cursor_newline')+0 	{}
+0008 (  81)		RET		<-		{}
+--------------------------------------------------------------------
+print4: /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c:86
+$00 R0(P), $00 R1(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 (  88)		STOREC1		<-	V(11 '')+0 , CC:7	{}
+0001 (  88)		CONST	R1(P)[0..0]	<-	CG12(7:0 'cw' A)	{S}
+0002 (  88)		STOREC2		<-	V(7 '')+0 , R1(P)+0 {V(7 'cw' A)} [0..0]	{}
+0003 (  88)		CONST	R0(P)[0..0]	<-	CG0(26:0 '')	{S}
+0004 (  88)		STOREC2		<-	V(9 '')+0 , R0(PF)+0 {V(26 '')} [0..0]	{}
+0005 (  88)		CALLN		<-	V(15 'cwin_put_string')+0 	{}
+0006 (  89)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(7 'cw' A)} [0..0]	{}
+0007 (  89)		CALLN		<-	V(17 'cwin_cursor_newline')+0 	{}
+0008 (  90)		RET		<-		{}
+--------------------------------------------------------------------
+print5: /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c:95
+$00 R0(P), $00 R1(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 (  97)		STOREC1		<-	V(11 '')+0 , CC:7	{}
+0001 (  97)		CONST	R1(P)[0..0]	<-	CG12(7:0 'cw' A)	{S}
+0002 (  97)		STOREC2		<-	V(7 '')+0 , R1(P)+0 {V(7 'cw' A)} [0..0]	{}
+0003 (  97)		CONST	R0(P)[0..0]	<-	CG0(28:0 '')	{S}
+0004 (  97)		STOREC2		<-	V(9 '')+0 , R0(PF)+0 {V(28 '')} [0..0]	{}
+0005 (  97)		CALLN		<-	V(15 'cwin_put_string')+0 	{}
+0006 (  98)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(7 'cw' A)} [0..0]	{}
+0007 (  98)		CALLN		<-	V(17 'cwin_cursor_newline')+0 	{}
+0008 (  99)		RET		<-		{}
+--------------------------------------------------------------------
+print6: /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c:104
+$00 R0(P), $00 R1(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/memmap/overlaylzo.c
+0000 ( 106)		STOREC1		<-	V(11 '')+0 , CC:7	{}
+0001 ( 106)		CONST	R1(P)[0..0]	<-	CG12(7:0 'cw' A)	{S}
+0002 ( 106)		STOREC2		<-	V(7 '')+0 , R1(P)+0 {V(7 'cw' A)} [0..0]	{}
+0003 ( 106)		CONST	R0(P)[0..0]	<-	CG0(30:0 '')	{S}
+0004 ( 106)		STOREC2		<-	V(9 '')+0 , R0(PF)+0 {V(30 '')} [0..0]	{}
+0005 ( 106)		CALLN		<-	V(15 'cwin_put_string')+0 	{}
+0006 ( 107)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(7 'cw' A)} [0..0]	{}
+0007 ( 107)		CALLN		<-	V(17 'cwin_cursor_newline')+0 	{}
+0008 ( 108)		RET		<-		{}

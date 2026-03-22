@@ -1,0 +1,118 @@
+sections
+0a00 - 1d2b : DATA, code
+1d2b - 1d49 : DATA, data
+1d49 - 1d4d : BSS, bss
+1d50 - c000 : HEAP, heap
+c000 - cf98 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+cff2 - d000 : SSTACK, sstack
+cff2 - cff2 : SSTACK, putpch@stack
+cff2 - cff2 : SSTACK, puts@stack
+cfe2 - cff2 : SSTACK, nformi@stack
+cfe2 - cff2 : SSTACK, nforml@stack
+cff2 - cff2 : SSTACK, isinf@stack
+cfe9 - cff2 : SSTACK, nformf@stack
+cfd0 - cfe2 : SSTACK, sformat@stack
+cf9e - cfd0 : SSTACK, printf@stack
+cf98 - cf9e : SSTACK, main@stack
+
+regions
+0a00 - c000 : 1d49, 134d, main
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0a00 - 0a91 : main, NATIVE_CODE:code
+0a91 - 0ab9 : printf, NATIVE_CODE:code
+0ab9 - 0efa : sformat, NATIVE_CODE:code
+0efa - 0f0d : puts, NATIVE_CODE:code
+0f0d - 0f70 : putpch, NATIVE_CODE:code
+0f70 - 108b : nformi, NATIVE_CODE:code
+108b - 11d5 : nforml, NATIVE_CODE:code
+11d5 - 1739 : nformf, NATIVE_CODE:code
+1739 - 1748 : isinf, NATIVE_CODE:code
+1748 - 175f : *, DATA:code
+175f - 17a4 : freg, NATIVE_CODE:code
+17a4 - 1891 : faddsub, NATIVE_CODE:code
+1891 - 192b : crt_fmul, NATIVE_CODE:code
+192b - 1959 : crt_fmul8, NATIVE_CODE:code
+1959 - 1a07 : crt_fdiv, NATIVE_CODE:code
+1a07 - 1a25 : divs16, NATIVE_CODE:code
+1a25 - 1a33 : negaccu, NATIVE_CODE:code
+1a33 - 1a41 : negtmp, NATIVE_CODE:code
+1a41 - 1ac6 : divmod, NATIVE_CODE:code
+1ac6 - 1ae5 : mods16, NATIVE_CODE:code
+1ae5 - 1af3 : negtmpb, NATIVE_CODE:code
+1af3 - 1b3f : f32_to_i16, NATIVE_CODE:code
+1b3f - 1b5d : sint16_to_float, NATIVE_CODE:code
+1b5d - 1b86 : uint16_to_float, NATIVE_CODE:code
+1b86 - 1c5d : divmod32, NATIVE_CODE:code
+1c5d - 1d2b : crt_malloc, NATIVE_CODE:code
+1d2b - 1d2c : spentry, DATA:data
+1d2c - 1d2d : giocharmap, DATA:data
+1d2d - 1d49 : fround5, DATA:data
+1d49 - 1d4d : HeapNode, DATA:bss
+1d49 - 1d49 : BSSStart, START:bss
+1d4d - 1d4d : BSSEnd, END:bss
+1d50 - 1d50 : HeapStart, START:heap
+c000 - c000 : HeapEnd, END:heap
+cf98 - cf9e : main@stack, BSS:main@stack
+cf98 - cf98 : StackEnd, END:stack
+cf9e - cfd0 : buff, BSS:printf@stack
+cfd0 - cfda : sformat@stack, BSS:sformat@stack
+cfda - cfe2 : si, BSS:sformat@stack
+cfe2 - cff2 : buffer, BSS:nforml@stack
+cfe2 - cff2 : buffer, BSS:nformi@stack
+cfe9 - cff2 : nformf@stack, BSS:nformf@stack
+cff2 - d000 : sstack, STACK:sstack
+
+objects by size
+11d5 (0564) : nformf, NATIVE_CODE:code
+0ab9 (0441) : sformat, NATIVE_CODE:code
+108b (014a) : nforml, NATIVE_CODE:code
+0f70 (011b) : nformi, NATIVE_CODE:code
+17a4 (00ed) : faddsub, NATIVE_CODE:code
+1b86 (00d7) : divmod32, NATIVE_CODE:code
+1c5d (00ce) : crt_malloc, NATIVE_CODE:code
+1959 (00ae) : crt_fdiv, NATIVE_CODE:code
+1891 (009a) : crt_fmul, NATIVE_CODE:code
+0a00 (0091) : main, NATIVE_CODE:code
+1a41 (0085) : divmod, NATIVE_CODE:code
+0f0d (0063) : putpch, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+1af3 (004c) : f32_to_i16, NATIVE_CODE:code
+175f (0045) : freg, NATIVE_CODE:code
+cf9e (0032) : buff, BSS:printf@stack
+192b (002e) : crt_fmul8, NATIVE_CODE:code
+1b5d (0029) : uint16_to_float, NATIVE_CODE:code
+0a91 (0028) : printf, NATIVE_CODE:code
+1ac6 (001f) : mods16, NATIVE_CODE:code
+1a07 (001e) : divs16, NATIVE_CODE:code
+1b3f (001e) : sint16_to_float, NATIVE_CODE:code
+1d2d (001c) : fround5, DATA:data
+0efa (0013) : puts, NATIVE_CODE:code
+cfe2 (0010) : buffer, BSS:nforml@stack
+cfe2 (0010) : buffer, BSS:nformi@stack
+1739 (000f) : isinf, NATIVE_CODE:code
+1a25 (000e) : negaccu, NATIVE_CODE:code
+1a33 (000e) : negtmp, NATIVE_CODE:code
+1ae5 (000e) : negtmpb, NATIVE_CODE:code
+cff2 (000e) : sstack, STACK:sstack
+cfd0 (000a) : sformat@stack, BSS:sformat@stack
+cfe9 (0009) : nformf@stack, BSS:nformf@stack
+cfda (0008) : si, BSS:sformat@stack
+cf98 (0006) : main@stack, BSS:main@stack
+1d49 (0004) : HeapNode, DATA:bss
+1d2b (0001) : spentry, DATA:data
+1d2c (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+1d49 (0000) : BSSStart, START:bss
+1d4d (0000) : BSSEnd, END:bss
+1d50 (0000) : HeapStart, START:heap
+c000 (0000) : HeapEnd, END:heap
+cf98 (0000) : StackEnd, END:stack

@@ -1,0 +1,191 @@
+sections
+0880 - 1c9a : DATA, code
+1c9a - 335f : DATA, data
+335f - 3653 : BSS, bss
+3658 - 9000 : HEAP, heap
+9000 - 9ff4 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9ffb - a000 : SSTACK, sstack
+9ffb - 9ffb : SSTACK, mmap_trampoline@stack
+9ffb - 9ffb : SSTACK, memcpy@stack
+9ffb - 9ffb : SSTACK, vic_setmode@stack
+9ffb - 9ffb : SSTACK, spr_init@stack
+9ffb - 9ffb : SSTACK, cwin_init@stack
+9ffb - 9ffb : SSTACK, ai_init@stack
+9ffb - 9ffb : SSTACK, cwin_fill_rect_raw@stack
+9ffb - 9ffb : SSTACK, board_init@stack
+9ffb - 9ffb : SSTACK, cwin_putat_char_raw@stack
+9ffb - 9ffb : SSTACK, board_draw_item@stack
+9ffb - 9ffb : SSTACK, board_draw_main@stack
+9ffb - 9ffb : SSTACK, board_init_main@stack
+9ffb - 9ffb : SSTACK, spr_set@stack
+9ffb - 9ffb : SSTACK, column_select_anim@stack
+9ffb - 9ffb : SSTACK, cwin_putat_string@stack
+9ffb - 9ffb : SSTACK, game_state@stack
+9ffb - 9ffb : SSTACK, kbhit@stack
+9ffb - 9ffb : SSTACK, convch@stack
+9ffb - 9ffb : SSTACK, getch@stack
+9ffb - 9ffb : SSTACK, joy_poll@stack
+9ffb - 9ffb : SSTACK, item_drop_anim@stack
+9ffb - 9ffb : SSTACK, board_eval@stack
+9ffb - 9ffb : SSTACK, board_opening@stack
+9ffb - 9ffb : SSTACK, board_draw@stack
+9ffb - 9ffb : SSTACK, itoa@stack
+9ffb - 9ffb : SSTACK, board_check@stack
+9ff4 - 9ffb : SSTACK, game_loop@stack
+9ff4 - 9ff4 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 335f, 2dd3, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 098e : main, NATIVE_CODE:code
+098e - 09a3 : mmap_trampoline, NATIVE_CODE:code
+09a3 - 09ba : NMITrampoline, NATIVE_CODE:code
+09ba - 09c1 : DoneTrampoline, NATIVE_CODE:code
+09c1 - 09d8 : IRQTrampoline, NATIVE_CODE:code
+09d8 - 0a07 : memcpy, NATIVE_CODE:code
+0a07 - 0a59 : vic_setmode, NATIVE_CODE:code
+0a59 - 0aa8 : cwin_init, NATIVE_CODE:code
+0aa8 - 0cbd : ai_init, NATIVE_CODE:code
+0cbd - 0d87 : game_state, NATIVE_CODE:code
+0d87 - 0df7 : cwin_fill_rect_raw, NATIVE_CODE:code
+0df7 - 0e0b : board_init, NATIVE_CODE:code
+0e0b - 0ecc : board_init_main, NATIVE_CODE:code
+0ecc - 0f0a : cwin_putat_char_raw, NATIVE_CODE:code
+0f0a - 0f64 : board_draw_main, NATIVE_CODE:code
+0f64 - 104a : board_draw_item, NATIVE_CODE:code
+104a - 116b : column_select_anim, NATIVE_CODE:code
+116b - 11f5 : spr_set, NATIVE_CODE:code
+11f5 - 1243 : cwin_putat_string, NATIVE_CODE:code
+1243 - 124f : *, DATA:code
+124f - 125d : *, DATA:code
+125d - 1269 : *, DATA:code
+1269 - 1277 : *, DATA:code
+1277 - 1285 : *, DATA:code
+1285 - 146c : game_loop, NATIVE_CODE:code
+146c - 1473 : kbhit, NATIVE_CODE:code
+1473 - 147f : getch, NATIVE_CODE:code
+147f - 14b1 : convch, NATIVE_CODE:code
+14b1 - 14f1 : joy_poll, NATIVE_CODE:code
+14f1 - 166b : item_drop_anim, NATIVE_CODE:code
+166b - 16f8 : board_eval, NATIVE_CODE:code
+16f8 - 1889 : board_opening, NATIVE_CODE:code
+1889 - 1ad9 : board_check, NATIVE_CODE:code
+1ad9 - 1b42 : board_draw, NATIVE_CODE:code
+1b42 - 1bc8 : itoa, NATIVE_CODE:code
+1bc8 - 1c00 : mul16by8, NATIVE_CODE:code
+1c00 - 1c85 : divmod, NATIVE_CODE:code
+1c85 - 1c8a : __multab25L, DATA:code
+1c8a - 1c8e : __multab343L, DATA:code
+1c8e - 1c92 : __multab343H, DATA:code
+1c92 - 1c96 : __multab7L, DATA:code
+1c96 - 1c9a : __multab49L, DATA:code
+1c9a - 1c9b : spentry, DATA:data
+1c9b - 249b : charset, DATA:data
+249b - 2c9b : spriteset, DATA:data
+2c9b - 2ccd : mul40, DATA:data
+2ccd - 2cd7 : score, DATA:data
+2cd7 - 2cdf : p2smap, DATA:data
+2cdf - 2ce0 : giocharmap, DATA:data
+2ce0 - 2cfc : open2, DATA:data
+2cfc - 2cfe : vspriteScreen, DATA:bss
+2cfe - 2d00 : joyy, DATA:bss
+2d00 - 2dc4 : open3, DATA:data
+2dc4 - 3320 : open4, DATA:data
+3320 - 3327 : optx, DATA:data
+3327 - 335f : bitshift, DATA:data
+335f - 335f : BSSStart, START:bss
+335f - 336b : cws, DATA:bss
+336b - 3377 : cwm, DATA:bss
+3377 - 3383 : cw, DATA:bss
+3383 - 338f : cwt, DATA:bss
+338f - 33a8 : TheGame, DATA:bss
+33a8 - 33df : board, DATA:bss
+33df - 33e1 : joyx, DATA:bss
+33e1 - 33e3 : joyb, DATA:bss
+33e3 - 33f7 : buff, DATA:bss
+3400 - 34fa : fscore, DATA:bss
+34fa - 3653 : frows, DATA:bss
+3653 - 3653 : BSSEnd, END:bss
+9ff4 - 9ff4 : StackEnd, END:stack
+9ff4 - 9ffb : game_loop@stack, BSS:game_loop@stack
+9ffb - a000 : sstack, STACK:sstack
+
+objects by size
+1c9b (0800) : charset, DATA:data
+249b (0800) : spriteset, DATA:data
+2dc4 (055c) : open4, DATA:data
+1889 (0250) : board_check, NATIVE_CODE:code
+0aa8 (0215) : ai_init, NATIVE_CODE:code
+1285 (01e7) : game_loop, NATIVE_CODE:code
+16f8 (0191) : board_opening, NATIVE_CODE:code
+14f1 (017a) : item_drop_anim, NATIVE_CODE:code
+34fa (0159) : frows, DATA:bss
+104a (0121) : column_select_anim, NATIVE_CODE:code
+0880 (010e) : main, NATIVE_CODE:code
+3400 (00fa) : fscore, DATA:bss
+0f64 (00e6) : board_draw_item, NATIVE_CODE:code
+0cbd (00ca) : game_state, NATIVE_CODE:code
+2d00 (00c4) : open3, DATA:data
+0e0b (00c1) : board_init_main, NATIVE_CODE:code
+166b (008d) : board_eval, NATIVE_CODE:code
+116b (008a) : spr_set, NATIVE_CODE:code
+1b42 (0086) : itoa, NATIVE_CODE:code
+1c00 (0085) : divmod, NATIVE_CODE:code
+0d87 (0070) : cwin_fill_rect_raw, NATIVE_CODE:code
+1ad9 (0069) : board_draw, NATIVE_CODE:code
+0f0a (005a) : board_draw_main, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0a07 (0052) : vic_setmode, NATIVE_CODE:code
+0a59 (004f) : cwin_init, NATIVE_CODE:code
+11f5 (004e) : cwin_putat_string, NATIVE_CODE:code
+14b1 (0040) : joy_poll, NATIVE_CODE:code
+0ecc (003e) : cwin_putat_char_raw, NATIVE_CODE:code
+1bc8 (0038) : mul16by8, NATIVE_CODE:code
+3327 (0038) : bitshift, DATA:data
+33a8 (0037) : board, DATA:bss
+147f (0032) : convch, NATIVE_CODE:code
+2c9b (0032) : mul40, DATA:data
+09d8 (002f) : memcpy, NATIVE_CODE:code
+2ce0 (001c) : open2, DATA:data
+338f (0019) : TheGame, DATA:bss
+09a3 (0017) : NMITrampoline, NATIVE_CODE:code
+09c1 (0017) : IRQTrampoline, NATIVE_CODE:code
+098e (0015) : mmap_trampoline, NATIVE_CODE:code
+0df7 (0014) : board_init, NATIVE_CODE:code
+33e3 (0014) : buff, DATA:bss
+1473 (000c) : getch, NATIVE_CODE:code
+335f (000c) : cws, DATA:bss
+336b (000c) : cwm, DATA:bss
+3377 (000c) : cw, DATA:bss
+3383 (000c) : cwt, DATA:bss
+2ccd (000a) : score, DATA:data
+2cd7 (0008) : p2smap, DATA:data
+09ba (0007) : DoneTrampoline, NATIVE_CODE:code
+146c (0007) : kbhit, NATIVE_CODE:code
+3320 (0007) : optx, DATA:data
+9ff4 (0007) : game_loop@stack, BSS:game_loop@stack
+1c85 (0005) : __multab25L, DATA:code
+9ffb (0005) : sstack, STACK:sstack
+1c8a (0004) : __multab343L, DATA:code
+1c8e (0004) : __multab343H, DATA:code
+1c92 (0004) : __multab7L, DATA:code
+1c96 (0004) : __multab49L, DATA:code
+2cfc (0002) : vspriteScreen, DATA:bss
+2cfe (0002) : joyy, DATA:bss
+33df (0002) : joyx, DATA:bss
+33e1 (0002) : joyb, DATA:bss
+1c9a (0001) : spentry, DATA:data
+2cdf (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+335f (0000) : BSSStart, START:bss
+3653 (0000) : BSSEnd, END:bss
+9ff4 (0000) : StackEnd, END:stack

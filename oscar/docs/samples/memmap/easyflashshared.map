@@ -1,0 +1,121 @@
+sections
+0900 - 0b94 : DATA, code
+0b94 - 0bce : DATA, data
+0bce - 0bda : BSS, bss
+0be0 - 7000 : HEAP, heap
+7000 - 7ffd : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+8000 - 8035 : DATA, bcode1
+10000 - 10000 : DATA, bdata1
+8000 - 8036 : DATA, bcode2
+10000 - 10000 : DATA, bdata2
+8000 - 8035 : DATA, bcode3
+10000 - 10000 : DATA, bdata3
+8000 - 8036 : DATA, bcode4
+10000 - 10000 : DATA, bdata4
+8000 - 8035 : DATA, bcode5
+10000 - 10000 : DATA, bdata5
+8000 - 8035 : DATA, bcode6
+10000 - 10000 : DATA, bdata6
+bf00 - bf13 : DATA, ccode
+0800 - 08d6 : DATA, startup
+7ffd - 8000 : SSTACK, sstack
+7ffd - 7ffd : SSTACK, cia_init@stack
+7ffd - 7ffd : SSTACK, vic_setmode@stack
+7ffd - 7ffd : SSTACK, cwin_init@stack
+7ffd - 7ffd : SSTACK, cwin_fill@stack
+7ffd - 7ffd : SSTACK, cwin_clear@stack
+7ffd - 7ffd : SSTACK, callbank@stack
+7ffd - 7ffd : SSTACK, cwin_putat_string@stack
+7ffd - 7ffd : SSTACK, cwin_put_string@stack
+7ffd - 7ffd : SSTACK, cwin_cursor_newline@stack
+7ffd - 7ffd : SSTACK, print1@stack
+7ffd - 7ffd : SSTACK, print2@stack
+7ffd - 7ffd : SSTACK, print3@stack
+7ffd - 7ffd : SSTACK, print4@stack
+7ffd - 7ffd : SSTACK, print5@stack
+7ffd - 7ffd : SSTACK, print6@stack
+7ffd - 7ffd : SSTACK, main@stack
+
+regions
+0900 - 7000 : 0bce, 02da, main
+8000 - bf00 : 8035, 0035, bank1
+8000 - bf00 : 8036, 0036, bank2
+8000 - bf00 : 8035, 0035, bank3
+8000 - bf00 : 8036, 0036, bank4
+8000 - bf00 : 8035, 0035, bank5
+8000 - bf00 : 8035, 0035, bank6
+bf00 - c000 : bf13, 0013, cbank
+00f7 - 00ff : 0000, 0000, zeropage
+0800 - 0900 : 08d6, 00d6, startup
+
+objects
+--:00f7 - 00f7 : ZeroStart, START:zeropage
+--:00f7 - 00f7 : ZeroEnd, END:zeropage
+--:0800 - 08d6 : startup, NATIVE_CODE:startup
+--:0900 - 09b8 : main, NATIVE_CODE:code
+--:0900 - 0900 : CodeStart, START:code
+--:09b8 - 09ef : cia_init, NATIVE_CODE:code
+--:09ef - 0a41 : vic_setmode, NATIVE_CODE:code
+--:0a41 - 0a90 : cwin_init, NATIVE_CODE:code
+--:0a90 - 0ae3 : cwin_fill, NATIVE_CODE:code
+--:0ae3 - 0b23 : cwin_put_string, NATIVE_CODE:code
+--:0b23 - 0b71 : cwin_putat_string, NATIVE_CODE:code
+--:0b71 - 0b94 : cwin_cursor_newline, NATIVE_CODE:code
+--:0b94 - 0bc6 : mul40, DATA:data
+--:0bc6 - 0bce : p2smap, DATA:data
+--:0bce - 0bce : BSSStart, START:bss
+--:0bce - 0bda : cw, DATA:bss
+--:0bda - 0bda : BSSEnd, END:bss
+--:7ffd - 8000 : sstack, STACK:sstack
+--:7ffd - 7ffd : StackEnd, END:stack
+01:8000 - 8022 : print1, NATIVE_CODE:bcode1
+01:8022 - 8035 : *, DATA:bcode1
+01:bf00 - bf13 : callbank, NATIVE_CODE:ccode
+02:8000 - 8022 : print2, NATIVE_CODE:bcode2
+02:8022 - 8036 : *, DATA:bcode2
+03:8000 - 8022 : print3, NATIVE_CODE:bcode3
+03:8022 - 8035 : *, DATA:bcode3
+04:8000 - 8022 : print4, NATIVE_CODE:bcode4
+04:8022 - 8036 : *, DATA:bcode4
+05:8000 - 8022 : print5, NATIVE_CODE:bcode5
+05:8022 - 8035 : *, DATA:bcode5
+06:8000 - 8022 : print6, NATIVE_CODE:bcode6
+06:8022 - 8035 : *, DATA:bcode6
+
+banks
+00 : 8000 .. 847e (047e)
+01 : 8000 .. bf13 (3f13)
+02 : 8000 .. bf13 (3f13)
+03 : 8000 .. bf13 (3f13)
+04 : 8000 .. bf13 (3f13)
+05 : 8000 .. bf13 (3f13)
+06 : 8000 .. bf13 (3f13)
+
+objects by size
+--:0800 (00d6) : startup, NATIVE_CODE:startup
+--:0900 (00b8) : main, NATIVE_CODE:code
+--:0a90 (0053) : cwin_fill, NATIVE_CODE:code
+--:09ef (0052) : vic_setmode, NATIVE_CODE:code
+--:0a41 (004f) : cwin_init, NATIVE_CODE:code
+--:0b23 (004e) : cwin_putat_string, NATIVE_CODE:code
+--:0ae3 (0040) : cwin_put_string, NATIVE_CODE:code
+--:09b8 (0037) : cia_init, NATIVE_CODE:code
+--:0b94 (0032) : mul40, DATA:data
+--:0b71 (0023) : cwin_cursor_newline, NATIVE_CODE:code
+01:8000 (0022) : print1, NATIVE_CODE:bcode1
+02:8000 (0022) : print2, NATIVE_CODE:bcode2
+03:8000 (0022) : print3, NATIVE_CODE:bcode3
+04:8000 (0022) : print4, NATIVE_CODE:bcode4
+05:8000 (0022) : print5, NATIVE_CODE:bcode5
+06:8000 (0022) : print6, NATIVE_CODE:bcode6
+01:bf00 (0013) : callbank, NATIVE_CODE:ccode
+--:0bce (000c) : cw, DATA:bss
+--:0bc6 (0008) : p2smap, DATA:data
+--:7ffd (0003) : sstack, STACK:sstack
+--:00f7 (0000) : ZeroStart, START:zeropage
+--:00f7 (0000) : ZeroEnd, END:zeropage
+--:0900 (0000) : CodeStart, START:code
+--:0bce (0000) : BSSStart, START:bss
+--:0bda (0000) : BSSEnd, END:bss
+--:7ffd (0000) : StackEnd, END:stack

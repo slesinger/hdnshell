@@ -1,0 +1,65 @@
+sections
+0880 - 0cf8 : DATA, code
+0cf8 - 0cfb : DATA, data
+0cfb - 14fb : BSS, bss
+1500 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, mmap_trampoline@stack
+a000 - a000 : SSTACK, memcpy@stack
+a000 - a000 : SSTACK, copyFont@stack
+a000 - a000 : SSTACK, scrollLeft@stack
+a000 - a000 : SSTACK, expand@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0cfb, 0c7b, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0938 : main, NATIVE_CODE:code
+0938 - 094d : mmap_trampoline, NATIVE_CODE:code
+094d - 0964 : NMITrampoline, NATIVE_CODE:code
+0964 - 096b : DoneTrampoline, NATIVE_CODE:code
+096b - 0982 : IRQTrampoline, NATIVE_CODE:code
+0982 - 09a4 : copyFont, NATIVE_CODE:code
+09a4 - 09d3 : memcpy, NATIVE_CODE:code
+09d3 - 0a3b : scrollLeft, NATIVE_CODE:code
+0a3b - 0a88 : expand, NATIVE_CODE:code
+0a88 - 0cd8 : *, DATA:code
+0cd8 - 0ce8 : __multab40L, DATA:code
+0ce8 - 0cf8 : __multab40H, DATA:code
+0cf8 - 0cf9 : spentry, DATA:data
+0cf9 - 0cfb : text, DATA:data
+0cfb - 14fb : font, DATA:bss
+0cfb - 0cfb : BSSStart, START:bss
+14fb - 14fb : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0cfb (0800) : font, DATA:bss
+0880 (00b8) : main, NATIVE_CODE:code
+09d3 (0068) : scrollLeft, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0a3b (004d) : expand, NATIVE_CODE:code
+09a4 (002f) : memcpy, NATIVE_CODE:code
+0982 (0022) : copyFont, NATIVE_CODE:code
+094d (0017) : NMITrampoline, NATIVE_CODE:code
+096b (0017) : IRQTrampoline, NATIVE_CODE:code
+0938 (0015) : mmap_trampoline, NATIVE_CODE:code
+0cd8 (0010) : __multab40L, DATA:code
+0ce8 (0010) : __multab40H, DATA:code
+0964 (0007) : DoneTrampoline, NATIVE_CODE:code
+0cf9 (0002) : text, DATA:data
+0cf8 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0cfb (0000) : BSSStart, START:bss
+14fb (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

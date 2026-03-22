@@ -1,0 +1,10 @@
+al 00f7 .ZeroEnd
+al 00f7 .ZeroStart
+al 0801 .startup
+al 0880 .main
+al 08bd .vic_setmode
+al 090f .spentry
+al 0910 .BSSEnd
+al 0910 .BSSStart
+al a000 .StackEnd
+al c800 .charset

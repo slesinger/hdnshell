@@ -1,0 +1,79 @@
+sections
+0880 - 0d29 : DATA, code
+0d29 - 0d34 : DATA, data
+0d34 - 0f42 : BSS, bss
+0f48 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, screen_init@stack
+a000 - a000 : SSTACK, snake_init@stack
+a000 - a000 : SSTACK, rand@stack
+a000 - a000 : SSTACK, screen_fruit@stack
+a000 - a000 : SSTACK, game_state@stack
+a000 - a000 : SSTACK, joy_poll@stack
+a000 - a000 : SSTACK, snake_control@stack
+a000 - a000 : SSTACK, snake_advance@stack
+a000 - a000 : SSTACK, snake_flash@stack
+a000 - a000 : SSTACK, game_loop@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0d34, 06c2, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 08a1 : main, NATIVE_CODE:code
+08a1 - 08cd : game_state, NATIVE_CODE:code
+08cd - 0934 : screen_init, NATIVE_CODE:code
+0934 - 0961 : snake_init, NATIVE_CODE:code
+0961 - 09ba : screen_fruit, NATIVE_CODE:code
+09ba - 09e1 : rand, NATIVE_CODE:code
+09e1 - 0a67 : game_loop, NATIVE_CODE:code
+0a67 - 0aa7 : joy_poll, NATIVE_CODE:code
+0aa7 - 0acd : snake_control, NATIVE_CODE:code
+0acd - 0c23 : snake_advance, NATIVE_CODE:code
+0c23 - 0ca4 : snake_flash, NATIVE_CODE:code
+0ca4 - 0d29 : divmod, NATIVE_CODE:code
+0d29 - 0d2a : spentry, DATA:data
+0d2a - 0d2c : seed, DATA:data
+0d2c - 0d34 : FlashColors, DATA:data
+0d34 - 0f3c : TheGame, DATA:bss
+0d34 - 0d34 : BSSStart, START:bss
+0f3c - 0f3e : joyy, DATA:bss
+0f3e - 0f40 : joyx, DATA:bss
+0f40 - 0f42 : joyb, DATA:bss
+0f42 - 0f42 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0d34 (0208) : TheGame, DATA:bss
+0acd (0156) : snake_advance, NATIVE_CODE:code
+09e1 (0086) : game_loop, NATIVE_CODE:code
+0ca4 (0085) : divmod, NATIVE_CODE:code
+0c23 (0081) : snake_flash, NATIVE_CODE:code
+08cd (0067) : screen_init, NATIVE_CODE:code
+0961 (0059) : screen_fruit, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0a67 (0040) : joy_poll, NATIVE_CODE:code
+0934 (002d) : snake_init, NATIVE_CODE:code
+08a1 (002c) : game_state, NATIVE_CODE:code
+09ba (0027) : rand, NATIVE_CODE:code
+0aa7 (0026) : snake_control, NATIVE_CODE:code
+0880 (0021) : main, NATIVE_CODE:code
+0d2c (0008) : FlashColors, DATA:data
+0d2a (0002) : seed, DATA:data
+0f3c (0002) : joyy, DATA:bss
+0f3e (0002) : joyx, DATA:bss
+0f40 (0002) : joyb, DATA:bss
+0d29 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0d34 (0000) : BSSStart, START:bss
+0f42 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

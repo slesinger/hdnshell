@@ -1,0 +1,464 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/games/snake.c:261
+$00 R0(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 268)		STOREC1		<-	V(6 '')+0 , CC:0	{}
+0001 ( 264)		STOREA1		<-	V(-1 '')+53280 , CC:0	{V}
+0002 ( 265)		STOREA1		<-	V(-1 '')+53281 , CC:0	{V}
+0003 ( 268)		CALLN		<-	V(1 'game_state')+0 	{}
+0004 ( 274)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 274)		CALLN		<-	V(6 'game_loop')+0 	{}
+0001 (  76)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  76)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  76)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  76)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  76)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  76)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  78)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  78)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  78)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  78)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 1
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  78)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  78)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  78)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  78)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 1
+		==> 4
+--------------------------------------------------------------------
+game_state: /home/honza/projects/c64/projects/oscar64/samples/games/snake.c:183
+$00 R0(P), $00 R1(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 186)		LOADZ1	R0(C)[0..2]	<-	V(6 '')+0 	{S}
+0001 ( 186)		STOREG1		<-	V(6 'TheGame' A)+0 , R0(C)[0..2]	{}
+0002 ( 188)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..2], CC:1	{S}
+0003 ( 188)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 198)		CONST	R0(P)[2..2]	<-	CG518(6:2 'TheGame' A)	{S}
+0001 ( 198)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(6 'TheGame' A)} [2..2]	{}
+0002 ( 198)		CALLN		<-	V(3 'snake_init')+0 	{}
+0003 ( 201)		CALLN		<-	V(4 'screen_fruit')+0 	{}
+0004 ( 204)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 207)		STOREG1		<-	V(6 'TheGame' A)+1 , CC:16	{}
+0001 ( 208)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 210)		RET		<-		{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 188)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..2], CC:1	{S}
+0001 ( 188)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 2
+		==> 5
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 192)		CALLN		<-	V(2 'screen_init')+0 	{}
+0001 ( 193)		STOREG1		<-	V(6 'TheGame' A)+1 , CC:32	{}
+0002 ( 194)		JUMP		<-		{}
+		==> 1
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 188)		RELOP19	R0(B)[0..1]	<-	R0(CF)[1..2], CC:2	{S}
+0001 ( 188)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 1
+--------------------------------------------------------------------
+screen_init: /home/honza/projects/c64/projects/oscar64/samples/games/snake.c:76
+$00 R0(I), $00 R1(P), $00 R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 (  79)		FILLA1000		<-	V(-1 '')+1024 , CC:32	{}
+0001 (  82)		CONST	R2(C)[0..0]	<-	CI:0	{}
+0002 (  47)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 (  47)		CONV37	R0(I)[0..39]	<-	R2(C)[0..39]	{}
+0001 (  47)		LEAA	R1(P)[1024..1063]	<-	V(-1 '')+1024 , R0(I)[0..39]	{}
+0002 (  47)		STOREI1		<-	R1(P)+0 {V(-1 'ABS')} [1024..1063], CC:160	{}
+0003 (  48)		LEAI	R1(P)+0 {V(-1 'ABS')} [55296..55335]	<-	R1(PF)+0 {V(-1 'ABS')} [1024..1063], CI:54272	{}
+0004 (  48)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55296..55335], CC:15	{}
+0005 (  47)		LEAA	R0(P)[1984..2023]	<-	V(-1 '')+1984 , R0(IF)[0..39]	{}
+0006 (  47)		STOREI1		<-	R0(P)+0 {V(-1 'ABS')} [1984..2023], CC:160	{}
+0007 (  48)		LEAI	R0(P)+0 {V(-1 'ABS')} [56256..56295]	<-	R0(PF)+0 {V(-1 'ABS')} [1984..2023], CI:54272	{}
+0008 (  48)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [56256..56295], CC:15	{}
+0009 (  82)		BINOP1	R2(C)[1..40]	<-	R2(CF)[0..39], CI:1	{}
+000a (  82)		RELOP28	R0(B)[0..1]	<-	R2(C)[1..40], CC:40	{}
+000b (  82)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 (  47)		CONST	R0(P)[1024..1024]	<-	CA0(-1:1024 '')	{}
+0001 (  47)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 (  47)		STOREI1		<-	R0(P)+0 {V(-1 'ABS')} [1024..], CC:160	{}
+0001 (  47)		STOREI1		<-	R0(P)+39 {V(-1 'ABS')} [1024..], CC:160	{}
+0002 (  48)		STOREI1		<-	R0(P)+54272 {V(-1 'ABS')} [1024..], CC:15	{}
+0003 (  48)		STOREI1		<-	R0(P)+54311 {V(-1 'ABS')} [1024..], CC:15	{}
+0004 (  47)		LEAI	R0(P)+0 {V(-1 'ABS')} [1064..2024]	<-	R0(PF)+0 {V(-1 'ABS')} [1024..1984], CI:40	{}
+0005 (  89)		RELOP20	R1(B)[0..1]	<-	R0(P)+0 {V(-1 'ABS')} [1064..2024], V(-1 '')+2024 	{}
+0006 (  89)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 (  95)		RET		<-		{}
+--------------------------------------------------------------------
+snake_init: /home/honza/projects/c64/projects/oscar64/samples/games/snake.c:98
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 101)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 ( 105)		STOREI1		<-	R0(P)+0, CC:20	{}
+0002 ( 106)		STOREI1		<-	R0(P)+1, CC:12	{}
+0003 ( 109)		STOREI1		<-	R0(P)+2, CC:1	{}
+0004 ( 110)		STOREI1		<-	R0(P)+3, CC:0	{}
+0005 ( 101)		STOREI1		<-	R0(P)+516, CC:1	{}
+0006 ( 102)		STOREI1		<-	R0(PF)+517, CC:0	{}
+0007 (  47)		STOREA1		<-	V(-1 '')+1524 , CC:81	{}
+0008 (  48)		STOREA1		<-	V(-1 '')+55796 , CC:1	{}
+0009 ( 114)		RET		<-		{}
+--------------------------------------------------------------------
+screen_fruit: /home/honza/projects/c64/projects/oscar64/samples/games/snake.c:58
+$00 R0(I), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 (  64)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 (  64)		CALLN	R0(I)	<-	V(5 'rand')+0 	{}
+0001 (  64)		BINOP6	R1(I)[0..37]	<-	R0(IF), CI:38	{}
+0002 (  65)		CALLN	R0(I)	<-	V(5 'rand')+0 	{}
+0003 (  65)		BINOP6	R0(I)[0..22]	<-	R0(IF), CI:23	{}
+0004 (  65)		BINOP1	R0(I)[1..23]	<-	R0(IF)[0..22], CI:1	{}
+0005 (  54)		BINOP3	R0(I)[40..920]	<-	R0(IF)[1..23], CI:40	{}
+0006 (  54)		LEAA	R0(P)[1065..1945]	<-	V(-1 '')+1025 , R0(IF)[40..920]	{}
+0007 (  54)		LEAI	R0(P)+0 {V(-1 'ABS')} [1065..1982]	<-	R0(PF)+0 {V(-1 'ABS')} [1065..1945], R1(IF)[0..37]	{}
+0008 (  54)		LOADI1	R1(C)[0..255]	<-	R0(P)+0 {V(-1 'ABS')} [1065..1982]	{}
+0009 (  68)		RELOP20	R1(B)[0..1]	<-	R1(CF)[0..255], CC:32	{}
+000a (  68)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 (  47)		STOREI1		<-	R0(P)+0 {V(-1 'ABS')} [1065..1982], CC:83	{}
+0001 (  48)		STOREI1		<-	R0(PF)+54272 {V(-1 'ABS')} [1065..1982], CC:7	{}
+0002 (  73)		RET		<-		{}
+--------------------------------------------------------------------
+rand: /home/honza/projects/c64/projects/oscar64/include/stdlib.h:68
+$00 R0(I), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 ( 818)		LOADG2	R0(I)[0..65535]	<-	V(27 'seed')+0 	{}
+0001 ( 818)		BINOP16	R1(I)	<-	R0(I)[0..65535], CI:7	{}
+0002 ( 818)		BINOP10	R0(I)	<-	R1(IF), R0(IF)[0..65535]	{}
+0003 ( 819)		BINOP17	R1(I)[0..127]	<-	R0(I), CI:9	{}
+0004 ( 819)		BINOP10	R0(I)	<-	R1(IF)[0..127], R0(IF)	{}
+0005 ( 820)		BINOP16	R1(I)	<-	R0(I), CI:8	{}
+0006 ( 820)		BINOP10	R0(I)	<-	R1(IF), R0(IF)	{}
+0007 ( 820)		STOREG2		<-	V(27 'seed')+0 , R0(I)	{}
+0008 ( 821)		RETV		<-	R0(IF)	{}
+--------------------------------------------------------------------
+game_loop: /home/honza/projects/c64/projects/oscar64/samples/games/snake.c:225
+$04 R0(P), $05 R1(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 227)		LOADG1	R0(C)[0..2]	<-	V(6 'TheGame' A)+0 	{}
+0001 ( 227)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..2], CC:1	{}
+0002 ( 227)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 4
+		==> 10
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 236)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0001 ( 236)		CALLN		<-	V(7 'joy_poll')+0 	{}
+0002 ( 237)		CONST	R0(P)[2..2]	<-	CG518(6:2 'TheGame' A)	{S}
+0003 ( 237)		STOREC2		<-	V(0 '')+0 , R0(P)+0 {V(6 'TheGame' A)} [2..2]	{}
+0004 ( 237)		LOADG1	R1(C)[-128..127]	<-	V(38 'joyx' A)+0 	{}
+0005 ( 237)		STOREC1		<-	V(2 '')+0 , R1(CF)[-128..127]	{}
+0006 ( 237)		LOADG1	R1(C)[-128..127]	<-	V(37 'joyy' A)+0 	{}
+0007 ( 237)		STOREC1		<-	V(3 '')+0 , R1(CF)[-128..127]	{}
+0008 ( 237)		CALLN		<-	V(8 'snake_control')+0 	{}
+0009 ( 239)		LOADG1	R1(C)[0..255]	<-	V(6 'TheGame' A)+1 	{}
+000a ( 239)		BINOP1	R1(C)[-1..254]	<-	R1(CF)[0..255], CI:-1	{}
+000b ( 239)		STOREG1		<-	V(6 'TheGame' A)+1 , R1(C)[-1..254]	{}
+000c ( 239)		BRANCH		<-	R1(CF)[-1..254]	{}
+		==> 1
+		==> 5
+L1: <= D-1: (6)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 257)		RET		<-		{}
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 243)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(6 'TheGame' A)} [2..2]	{}
+0001 ( 243)		CALLN	R0(B)	<-	V(9 'snake_advance')+0 	{}
+0002 ( 243)		BRANCH		<-	R0(BF)	{}
+		==> 6
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 244)		STOREC1		<-	V(6 '')+0 , CC:2	{}
+0001 ( 243)		JUMP		<-		{}
+		==> 12
+L12: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 244)		CALLN		<-	V(1 'game_state')+0 	{}
+0001 ( 243)		JUMP		<-		{}
+		==> 1
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 246)		STOREG1		<-	V(6 'TheGame' A)+1 , CC:4	{}
+0001 ( 243)		JUMP		<-		{}
+		==> 1
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 227)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..2], CC:1	{}
+0001 ( 227)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 2
+		==> 11
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 231)		LOADG1	R0(C)[0..255]	<-	V(6 'TheGame' A)+1 	{}
+0001 ( 231)		BINOP1	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:-1	{}
+0002 ( 231)		STOREG1		<-	V(6 'TheGame' A)+1 , R0(C)[-1..254]	{}
+0003 ( 231)		BRANCH		<-	R0(CF)[-1..254]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 232)		STOREC1		<-	V(6 '')+0 , CC:1	{}
+0001 ( 231)		JUMP		<-		{}
+		==> 12
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 227)		RELOP19	R0(B)[0..1]	<-	R0(CF)[1..2], CC:2	{}
+0001 ( 227)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 1
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 251)		CONST	R0(P)[2..2]	<-	CG518(6:2 'TheGame' A)	{S}
+0001 ( 251)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(6 'TheGame' A)} [2..2]	{}
+0002 ( 251)		LOADG1	R1(C)[0..255]	<-	V(6 'TheGame' A)+1 	{}
+0003 ( 251)		CONV37	R0(I)[0..255]	<-	R1(C)[0..255]	{}
+0004 ( 251)		BINOP2	R0(I)[-239..16]	<-	CI:16, R0(IF)[0..255]	{}
+0005 ( 251)		BINOP5	R0(I)[0..7]	<-	R0(IF)[-239..16], CI:2	{}
+0006 ( 251)		LEAG	R0(P)	<-	V(63 'FlashColors' A)+0 , R0(IF)[0..7]	{}
+0007 ( 251)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(63 'FlashColors' A)} 	{}
+0008 ( 251)		STOREC1		<-	V(2 '')+0 , R0(CF)[0..255]	{}
+0009 ( 251)		CALLN		<-	V(10 'snake_flash')+0 	{E}
+000a ( 252)		BINOP1	R0(C)[-1..254]	<-	R1(CF)[0..255], CI:-1	{}
+000b ( 252)		STOREG1		<-	V(6 'TheGame' A)+1 , R0(C)[-1..254]	{}
+000c ( 252)		BRANCH		<-	R0(CF)[-1..254]	{}
+		==> 1
+		==> 9
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 253)		STOREC1		<-	V(6 '')+0 , CC:0	{}
+0001 ( 252)		JUMP		<-		{}
+		==> 12
+--------------------------------------------------------------------
+joy_poll: /home/honza/projects/c64/projects/oscar64/include/c64/joystick.h:13
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (   8)		LOADZ1	R0(C)[0..1]	<-	V(0 '')+0 	{S}
+0001 (   8)		CONV37	R0(I)[0..1]	<-	R0(CF)[0..1]	{S}
+0002 (   8)		LEAA	R1(P)[56320..56321]	<-	V(-1 '')+56320 , R0(I)[0..1]	{S}
+0003 (   8)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(-1 'ABS')} [56320..56321]	{V}
+0004 (  10)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0005 (  24)		BINOP9	R2(I)[0..16]	<-	R1(I)[0..255], CI:16	{}
+0006 (  24)		RELOP19	R3(B)[0..1]	<-	R2(IF)[0..16], CI:0	{}
+0007 (  24)		LEAG	R2(P)[0..1]	<-	V(39 'joyb' A)+0 , R0(I)[0..1]	{S}
+0008 (  24)		STOREI1		<-	R2(PF)+0 {V(39 'joyb' A)} [0..1], R3(BF)[0..1]	{}
+0009 (  15)		LEAG	R2(P)[0..1]	<-	V(37 'joyy' A)+0 , R0(I)[0..1]	{S}
+000a (  10)		BINOP9	R3(I)[0..1]	<-	R1(I)[0..255], CI:1	{}
+000b (  10)		BRANCH		<-	R3(IF)[0..1]	{}
+		==> 2
+		==> 1
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  12)		BINOP9	R3(I)[0..2]	<-	R1(I)[0..255], CI:2	{}
+0001 (  12)		BRANCH		<-	R3(IF)[0..2]	{}
+		==> 4
+		==> 3
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  15)		STOREI1		<-	R2(PF)+0 {V(37 'joyy' A)} [0..1], CC:0	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  22)		LEAG	R0(P)[0..1]	<-	V(38 'joyx' A)+0 , R0(IF)[0..1]	{S}
+0001 (  17)		BINOP9	R2(I)[0..4]	<-	R1(I)[0..255], CI:4	{}
+0002 (  17)		BRANCH		<-	R2(IF)[0..4]	{}
+		==> 6
+		==> 5
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  19)		BINOP9	R1(I)[0..8]	<-	R1(IF)[0..255], CI:8	{}
+0001 (  19)		BRANCH		<-	R1(IF)[0..8]	{}
+		==> 9
+		==> 8
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  22)		STOREI1		<-	R0(PF)+0 {V(38 'joyx' A)} [0..1], CC:0	{}
+0001 (  19)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  25)		RET		<-		{}
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  20)		STOREI1		<-	R0(PF)+0 {V(38 'joyx' A)} [0..1], CC:1	{}
+0001 (  19)		JUMP		<-		{}
+		==> 7
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  18)		STOREI1		<-	R0(PF)+0 {V(38 'joyx' A)} [0..1], CC:-1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 7
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  13)		STOREI1		<-	R2(PF)+0 {V(37 'joyy' A)} [0..1], CC:1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  11)		STOREI1		<-	R2(PF)+0 {V(37 'joyy' A)} [0..1], CC:-1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+--------------------------------------------------------------------
+snake_control: /home/honza/projects/c64/projects/oscar64/samples/games/snake.c:167
+$00 R0(P), $00 R1(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 171)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 ( 171)		LOADI1	R1(C)[-128..127]	<-	R0(P)+2	{}
+0002 ( 171)		BRANCH		<-	R1(CF)[-128..127]	{}
+		==> 4
+		==> 2
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 171)		LOADZ1	R1(C)[-128..127]	<-	V(3 '')+0 	{S}
+0001 ( 171)		BRANCH		<-	R1(C)[-128..127]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 173)		STOREI1		<-	R0(P)+2, CC:0	{}
+0001 ( 174)		STOREI1		<-	R0(PF)+3, R1(CF)[-128..127]	{}
+0002 ( 171)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 181)		RET		<-		{}
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 176)		LOADI1	R1(C)[-128..127]	<-	R0(P)+3	{}
+0001 ( 176)		BRANCH		<-	R1(CF)[-128..127]	{}
+		==> 6
+		==> 3
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 176)		LOADZ1	R1(C)[-128..127]	<-	V(2 '')+0 	{S}
+0001 ( 176)		BRANCH		<-	R1(C)[-128..127]	{}
+		==> 5
+		==> 3
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 179)		STOREI1		<-	R0(P)+2, R1(CF)[-128..127]	{}
+0001 ( 178)		STOREI1		<-	R0(PF)+3, CC:0	{}
+0002 ( 176)		JUMP		<-		{}
+		==> 3
+--------------------------------------------------------------------
+snake_advance: /home/honza/projects/c64/projects/oscar64/samples/games/snake.c:116
+$00 R0(P), $01 R1(I), $00 R2(I), $00 R3(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 119)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 ( 119)		LOADI1	R1(C)[0..255]	<-	R0(P)+517	{}
+0002 ( 119)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0003 ( 119)		BINOP16	R1(I)[0..510]	<-	R1(IF)[0..255], CI:1	{}
+0004 ( 119)		LEAI	R1(P)+0	<-	R0(P)+0, R1(IF)[0..510]	{}
+0005 ( 119)		COPY2:II		<-	R1(PF)+4, R0(P)+0	{}
+0006 ( 120)		LOADI1	R1(C)[0..255]	<-	R0(P)+517	{}
+0007 ( 120)		BINOP1	R1(C)	<-	R1(CF)[0..255], CI:1	{}
+0008 ( 120)		STOREI1		<-	R0(P)+517, R1(CF)	{}
+0009 ( 122)		LOADI1	R1(C)[-128..127]	<-	R0(P)+0	{}
+000a (  47)		CONV37	R1(I)[0..255]	<-	R1(CF)[-128..127]	{}
+000b ( 122)		LOADI1	R2(C)[-128..127]	<-	R0(P)+1	{}
+000c (  47)		CONV37	R2(I)[0..255]	<-	R2(CF)[-128..127]	{}
+000d (  47)		BINOP3	R2(I)[0..10200]	<-	R2(IF)[0..255], CI:40	{}
+000e (  47)		LEAA	R2(P)[1024..11224]	<-	V(-1 '')+1024 , R2(IF)[0..10200]	{}
+000f (  47)		LEAI	R2(P)+0 {V(-1 'ABS')} [1024..11479]	<-	R2(PF)+0 {V(-1 'ABS')} [1024..11224], R1(IF)[0..255]	{}
+0010 (  47)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1024..11479], CC:81	{}
+0011 (  48)		STOREI1		<-	R2(PF)+54272 {V(-1 'ABS')} [1024..11479], CC:14	{}
+0012 ( 125)		LOADI1	R1(C)[-128..127]	<-	R0(P)+0	{}
+0013 ( 125)		CONV40	R1(I)[-128..127]	<-	R1(CF)[-128..127]	{}
+0014 ( 125)		LOADI1	R2(C)[-128..127]	<-	R0(P)+2	{}
+0015 ( 125)		CONV40	R2(I)[-128..127]	<-	R2(CF)[-128..127]	{}
+0016 ( 125)		BINOP1	R1(I)[-256..254]	<-	R2(IF)[-128..127], R1(IF)[-128..127]	{}
+0017 ( 125)		STOREI1		<-	R0(P)+0, R1(C)[-256..254]	{}
+0018 ( 126)		LOADI1	R2(C)[-128..127]	<-	R0(P)+1	{}
+0019 ( 126)		CONV40	R2(I)[-128..127]	<-	R2(CF)[-128..127]	{}
+001a ( 126)		LOADI1	R3(C)[-128..127]	<-	R0(P)+3	{}
+001b ( 126)		CONV40	R3(I)[-128..127]	<-	R3(CF)[-128..127]	{}
+001c ( 126)		BINOP1	R2(I)[-256..254]	<-	R3(IF)[-128..127], R2(IF)[-128..127]	{}
+001d ( 126)		STOREI1		<-	R0(P)+1, R2(C)[-256..254]	{}
+001e (  54)		CONV37	R1(I)[0..255]	<-	R1(CF)[-256..254]	{}
+001f (  54)		CONV37	R2(I)[0..255]	<-	R2(CF)[-256..254]	{}
+0020 (  54)		BINOP3	R2(I)[0..10200]	<-	R2(IF)[0..255], CI:40	{}
+0021 (  54)		LEAA	R2(P)[1024..11224]	<-	V(-1 '')+1024 , R2(IF)[0..10200]	{}
+0022 (  54)		LEAI	R2(P)+0 {V(-1 'ABS')} [1024..11479]	<-	R2(PF)+0 {V(-1 'ABS')} [1024..11224], R1(IF)[0..255]	{}
+0023 (  48)		STOREI1		<-	R2(P)+54272 {V(-1 'ABS')} [1024..11479], CC:1	{}
+0024 (  54)		LOADI1	R3(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1024..11479]	{}
+0025 (  47)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1024..11479], CC:81	{}
+0026 ( 135)		LOADI1	R1(C)[0..255]	<-	R0(P)+517	{}
+0027 ( 135)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0028 ( 135)		LOADI1	R2(C)[0..255]	<-	R0(P)+516	{}
+0029 ( 135)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+002a ( 135)		BINOP2	R1(I)[-255..255]	<-	R1(IF)[0..255], R2(IF)[0..255]	{}
+002b ( 136)		CONV37	R1(I)[0..255]	<-	R1(CF)[-255..255]	{}
+002c ( 136)		BINOP16	R1(I)[0..510]	<-	R1(IF)[0..255], CI:1	{}
+002d ( 119)		LEAI	R2(P)+0	<-	R0(P)+0, CI:4	{S}
+002e ( 136)		LEAI	R2(P)+0	<-	R2(PF)+0, R1(IF)[0..510]	{}
+002f ( 136)		LOADI1	R1(C)[-128..127]	<-	R2(P)+0	{}
+0030 (  47)		CONV37	R1(I)[0..255]	<-	R1(CF)[-128..127]	{}
+0031 ( 136)		LOADI1	R2(C)[-128..127]	<-	R2(PF)+1	{}
+0032 (  47)		CONV37	R2(I)[0..255]	<-	R2(CF)[-128..127]	{}
+0033 (  47)		BINOP3	R2(I)[0..10200]	<-	R2(IF)[0..255], CI:40	{}
+0034 (  47)		LEAA	R2(P)[1024..11224]	<-	V(-1 '')+1024 , R2(IF)[0..10200]	{}
+0035 (  47)		LEAI	R2(P)+0 {V(-1 'ABS')} [1024..11479]	<-	R2(PF)+0 {V(-1 'ABS')} [1024..11224], R1(IF)[0..255]	{}
+0036 (  47)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1024..11479], CC:32	{}
+0037 (  48)		STOREI1		<-	R2(PF)+54272 {V(-1 'ABS')} [1024..11479], CC:0	{}
+0038 ( 139)		RELOP19	R1(B)[0..1]	<-	R3(C)[0..255], CC:83	{}
+0039 ( 139)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 142)		LOADI1	R1(C)[0..255]	<-	R0(P)+516	{}
+0001 ( 142)		BINOP1	R1(C)	<-	R1(CF)[0..255], CI:1	{}
+0002 ( 142)		STOREI1		<-	R0(PF)+516, R1(CF)	{}
+0003 ( 143)		CALLN		<-	V(4 'screen_fruit')+0 	{}
+0004 ( 151)		RETV		<-	CB:0	{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 145)		RELOP20	R0(B)[0..1]	<-	R3(CF)[0..255], CC:32	{}
+0001 ( 145)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 3
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 148)		RETV		<-	CB:1	{}
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 151)		RETV		<-	CB:0	{}
+--------------------------------------------------------------------
+snake_flash: /home/honza/projects/c64/projects/oscar64/samples/games/snake.c:155
+$00 R0(P), $00 R1(P), $02 R2(I), $00 R3(I), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 158)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0001 ( 158)		LOADZ2	R0(P)	<-	V(0 '')+0 	{IS}
+0002 ( 162)		LEAI	R1(P)+0	<-	R0(P)+0, CI:4	{IS}
+0003 ( 158)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 158)		LOADI1	R2(C)[0..255]	<-	R0(P)+516	{}
+0001 ( 158)		RELOP28	R2(B)[0..1]	<-	R4(C)[0..255], R2(CF)[0..255]	{}
+0002 ( 158)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 158)		CONV37	R2(I)[0..254]	<-	R4(C)[0..254]	{}
+0001 ( 161)		LOADI1	R3(C)[0..255]	<-	R0(P)+517	{}
+0002 ( 161)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+0003 ( 161)		BINOP2	R2(I)[-254..255]	<-	R3(IF)[0..255], R2(IF)[0..254]	{}
+0004 ( 161)		BINOP2	R2(I)[-255..254]	<-	R2(IF)[-254..255], CI:1	{}
+0005 ( 162)		CONV37	R2(I)[0..255]	<-	R2(CF)[-255..254]	{}
+0006 ( 162)		BINOP16	R2(I)[0..510]	<-	R2(IF)[0..255], CI:1	{}
+0007 ( 162)		LEAI	R2(P)+0	<-	R1(P)+0, R2(IF)[0..510]	{}
+0008 ( 162)		LOADI1	R3(C)[-128..127]	<-	R2(P)+0	{}
+0009 (  47)		CONV37	R3(I)[0..255]	<-	R3(CF)[-128..127]	{}
+000a ( 162)		LOADI1	R2(C)[-128..127]	<-	R2(PF)+1	{}
+000b (  47)		CONV37	R2(I)[0..255]	<-	R2(CF)[-128..127]	{}
+000c (  47)		BINOP3	R2(I)[0..10200]	<-	R2(IF)[0..255], CI:40	{}
+000d (  47)		LEAA	R2(P)[1024..11224]	<-	V(-1 '')+1024 , R2(IF)[0..10200]	{}
+000e (  47)		LEAI	R2(P)+0 {V(-1 'ABS')} [1024..11479]	<-	R2(PF)+0 {V(-1 'ABS')} [1024..11224], R3(IF)[0..255]	{}
+000f (  47)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1024..11479], CC:81	{}
+0010 ( 162)		LOADZ1	R3(C)[0..255]	<-	V(2 '')+0 	{S}
+0011 (  48)		STOREI1		<-	R2(PF)+54272 {V(-1 'ABS')} [1024..11479], R3(CF)[0..255]	{}
+0012 ( 158)		BINOP1	R4(C)[1..255]	<-	R4(CF)[0..254], CI:1	{}
+0013 ( 158)		JUMP		<-		{}
+		==> 1
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/snake.c
+0000 ( 164)		RET		<-		{}

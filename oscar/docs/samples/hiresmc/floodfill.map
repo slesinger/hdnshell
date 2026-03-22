@@ -1,0 +1,105 @@
+sections
+0a00 - 14eb : DATA, code
+14eb - 1594 : DATA, data
+1594 - 16e0 : BSS, bss
+16e0 - b800 : HEAP, heap
+b800 - c7d8 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+c7f6 - c800 : SSTACK, sstack
+c7f6 - c7f6 : SSTACK, mmap_trampoline@stack
+c7f6 - c7f6 : SSTACK, vic_setmode@stack
+c7f6 - c7f6 : SSTACK, memset@stack
+c7f6 - c7f6 : SSTACK, bm_init@stack
+c7f6 - c7f6 : SSTACK, bm_usqrt@stack
+c7f6 - c7f6 : SSTACK, bm_scan_fill@stack
+c7ee - c7f6 : SSTACK, bmmc_circle_fill@stack
+c7f6 - c7f6 : SSTACK, rand@stack
+c7eb - c7f6 : SSTACK, bmmc_flood_fill@stack
+c7f6 - c7f6 : SSTACK, convch@stack
+c7f6 - c7f6 : SSTACK, getch@stack
+c7d8 - c7eb : SSTACK, main@stack
+
+regions
+0a00 - b800 : 1594, 0ce0, main
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0a00 - 0b9d : main, NATIVE_CODE:code
+0b9d - 0bb2 : mmap_trampoline, NATIVE_CODE:code
+0bb2 - 0bc9 : NMITrampoline, NATIVE_CODE:code
+0bc9 - 0bd0 : DoneTrampoline, NATIVE_CODE:code
+0bd0 - 0be7 : IRQTrampoline, NATIVE_CODE:code
+0be7 - 0c39 : vic_setmode, NATIVE_CODE:code
+0c39 - 0c5d : memset, NATIVE_CODE:code
+0c5d - 0c8f : bm_init, NATIVE_CODE:code
+0c8f - 0c97 : *, DATA:code
+0c97 - 0e72 : bmmc_circle_fill, NATIVE_CODE:code
+0e72 - 0f51 : bm_usqrt, NATIVE_CODE:code
+0f51 - 10f4 : bm_scan_fill, NATIVE_CODE:code
+10f4 - 111b : rand, NATIVE_CODE:code
+111b - 13ec : bmmc_flood_fill, NATIVE_CODE:code
+13ec - 1424 : mul16by8, NATIVE_CODE:code
+1424 - 1466 : mul16, NATIVE_CODE:code
+1466 - 14eb : divmod, NATIVE_CODE:code
+14eb - 14ec : spentry, DATA:data
+14ec - 14f4 : lmask, DATA:data
+14f4 - 14fc : rmask, DATA:data
+14fc - 14fe : seed, DATA:data
+1500 - 1580 : MixedColors, DATA:data
+1580 - 1584 : cbytes, DATA:data
+1584 - 158c : ormask, DATA:data
+158c - 1594 : andmask, DATA:data
+1594 - 1594 : BSSStart, START:bss
+1594 - 159c : sbm, DATA:bss
+1600 - 16e0 : BLIT_CODE, DATA:bss
+16e0 - 16e0 : BSSEnd, END:bss
+c7d8 - c7e2 : main@stack, BSS:main@stack
+c7d8 - c7d8 : StackEnd, END:stack
+c7e2 - c7ea : scr, BSS:main@stack
+c7eb - c7f6 : bmmc_flood_fill@stack, BSS:bmmc_flood_fill@stack
+c7ee - c7f6 : bmmc_circle_fill@stack, BSS:bmmc_circle_fill@stack
+c7f6 - c800 : sstack, STACK:sstack
+
+objects by size
+111b (02d1) : bmmc_flood_fill, NATIVE_CODE:code
+0c97 (01db) : bmmc_circle_fill, NATIVE_CODE:code
+0f51 (01a3) : bm_scan_fill, NATIVE_CODE:code
+0a00 (019d) : main, NATIVE_CODE:code
+1600 (00e0) : BLIT_CODE, DATA:bss
+0e72 (00df) : bm_usqrt, NATIVE_CODE:code
+1466 (0085) : divmod, NATIVE_CODE:code
+1500 (0080) : MixedColors, DATA:data
+0801 (0052) : startup, NATIVE_CODE:startup
+0be7 (0052) : vic_setmode, NATIVE_CODE:code
+1424 (0042) : mul16, NATIVE_CODE:code
+13ec (0038) : mul16by8, NATIVE_CODE:code
+0c5d (0032) : bm_init, NATIVE_CODE:code
+10f4 (0027) : rand, NATIVE_CODE:code
+0c39 (0024) : memset, NATIVE_CODE:code
+0bb2 (0017) : NMITrampoline, NATIVE_CODE:code
+0bd0 (0017) : IRQTrampoline, NATIVE_CODE:code
+0b9d (0015) : mmap_trampoline, NATIVE_CODE:code
+c7eb (000b) : bmmc_flood_fill@stack, BSS:bmmc_flood_fill@stack
+c7d8 (000a) : main@stack, BSS:main@stack
+c7f6 (000a) : sstack, STACK:sstack
+14ec (0008) : lmask, DATA:data
+14f4 (0008) : rmask, DATA:data
+1584 (0008) : ormask, DATA:data
+158c (0008) : andmask, DATA:data
+1594 (0008) : sbm, DATA:bss
+c7e2 (0008) : scr, BSS:main@stack
+c7ee (0008) : bmmc_circle_fill@stack, BSS:bmmc_circle_fill@stack
+0bc9 (0007) : DoneTrampoline, NATIVE_CODE:code
+1580 (0004) : cbytes, DATA:data
+14fc (0002) : seed, DATA:data
+14eb (0001) : spentry, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+1594 (0000) : BSSStart, START:bss
+16e0 (0000) : BSSEnd, END:bss
+c7d8 (0000) : StackEnd, END:stack

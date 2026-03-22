@@ -1,0 +1,121 @@
+sections
+0880 - 1ba7 : DATA, code
+1ba7 - 1bd3 : DATA, data
+1bd3 - 1bd3 : BSS, bss
+1bd8 - 9000 : HEAP, heap
+9000 - 9ca8 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9ffc - a000 : SSTACK, sstack
+9ffc - 9ffc : SSTACK, mmap_trampoline@stack
+9ffc - 9ffc : SSTACK, vic_setmode@stack
+9ffc - 9ffc : SSTACK, memset@stack
+9ffc - 9ffc : SSTACK, sin@stack
+9ffc - 9ffc : SSTACK, cos@stack
+9ff8 - 9ffc : SSTACK, log@stack
+9ff1 - 9ff8 : SSTACK, iter@stack
+9ff8 - 9ffc : SSTACK, exp@stack
+9ff8 - 9ff8 : SSTACK, pow@stack
+9ff8 - 9ffc : SSTACK, sqrt@stack
+9ff8 - 9ff8 : SSTACK, light@stack
+9ffc - 9ffc : SSTACK, VLine@stack
+9ffc - 9ffc : SSTACK, convch@stack
+9ffc - 9ffc : SSTACK, getch@stack
+9ca8 - 9ff1 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 1bd3, 1353, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0cb0 : main, NATIVE_CODE:code
+0cb0 - 0cc5 : mmap_trampoline, NATIVE_CODE:code
+0cc5 - 0cdc : NMITrampoline, NATIVE_CODE:code
+0cdc - 0ce3 : DoneTrampoline, NATIVE_CODE:code
+0ce3 - 0cfa : IRQTrampoline, NATIVE_CODE:code
+0cfa - 0d4c : vic_setmode, NATIVE_CODE:code
+0d4c - 0d70 : memset, NATIVE_CODE:code
+0d70 - 0f07 : sin, NATIVE_CODE:code
+0f07 - 10d6 : iter, NATIVE_CODE:code
+10d6 - 120c : log, NATIVE_CODE:code
+120c - 1248 : pow, NATIVE_CODE:code
+1248 - 1399 : exp, NATIVE_CODE:code
+1399 - 14f2 : light, NATIVE_CODE:code
+14f2 - 1656 : sqrt, NATIVE_CODE:code
+1656 - 172d : VLine, NATIVE_CODE:code
+172d - 1739 : getch, NATIVE_CODE:code
+1739 - 176b : convch, NATIVE_CODE:code
+176b - 17b0 : freg, NATIVE_CODE:code
+17b0 - 189d : faddsub, NATIVE_CODE:code
+189d - 1937 : crt_fmul, NATIVE_CODE:code
+1937 - 1965 : crt_fmul8, NATIVE_CODE:code
+1965 - 1a13 : crt_fdiv, NATIVE_CODE:code
+1a13 - 1b0d : fround, NATIVE_CODE:code
+1b0d - 1b59 : f32_to_i16, NATIVE_CODE:code
+1b59 - 1b77 : sint16_to_float, NATIVE_CODE:code
+1b77 - 1ba0 : uint16_to_float, NATIVE_CODE:code
+1ba0 - 1ba7 : __shrtab192L, DATA:code
+1ba7 - 1ba8 : spentry, DATA:data
+1ba8 - 1bca : colors, DATA:data
+1bca - 1bcb : giocharmap, DATA:data
+1bcb - 1bd3 : ubitmask, DATA:data
+1bd3 - 1bd3 : BSSEnd, END:bss
+1bd3 - 1bd3 : BSSStart, START:bss
+9ca8 - 9ca8 : StackEnd, END:stack
+9ca8 - 9cd0 : main@stack, BSS:main@stack
+9cd0 - 9ff0 : hl, BSS:main@stack
+9ff1 - 9ff8 : iter@stack, BSS:iter@stack
+9ff8 - 9ffc : x, BSS:log@stack
+9ff8 - 9ffc : x, BSS:sqrt@stack
+9ff8 - 9ffc : x, BSS:exp@stack
+9ffc - a000 : sstack, STACK:sstack
+
+objects by size
+0880 (0430) : main, NATIVE_CODE:code
+9cd0 (0320) : hl, BSS:main@stack
+0f07 (01cf) : iter, NATIVE_CODE:code
+0d70 (0197) : sin, NATIVE_CODE:code
+14f2 (0164) : sqrt, NATIVE_CODE:code
+1399 (0159) : light, NATIVE_CODE:code
+1248 (0151) : exp, NATIVE_CODE:code
+10d6 (0136) : log, NATIVE_CODE:code
+1a13 (00fa) : fround, NATIVE_CODE:code
+17b0 (00ed) : faddsub, NATIVE_CODE:code
+1656 (00d7) : VLine, NATIVE_CODE:code
+1965 (00ae) : crt_fdiv, NATIVE_CODE:code
+189d (009a) : crt_fmul, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0cfa (0052) : vic_setmode, NATIVE_CODE:code
+1b0d (004c) : f32_to_i16, NATIVE_CODE:code
+176b (0045) : freg, NATIVE_CODE:code
+120c (003c) : pow, NATIVE_CODE:code
+1739 (0032) : convch, NATIVE_CODE:code
+1937 (002e) : crt_fmul8, NATIVE_CODE:code
+1b77 (0029) : uint16_to_float, NATIVE_CODE:code
+9ca8 (0028) : main@stack, BSS:main@stack
+0d4c (0024) : memset, NATIVE_CODE:code
+1ba8 (0022) : colors, DATA:data
+1b59 (001e) : sint16_to_float, NATIVE_CODE:code
+0cc5 (0017) : NMITrampoline, NATIVE_CODE:code
+0ce3 (0017) : IRQTrampoline, NATIVE_CODE:code
+0cb0 (0015) : mmap_trampoline, NATIVE_CODE:code
+172d (000c) : getch, NATIVE_CODE:code
+1bcb (0008) : ubitmask, DATA:data
+0cdc (0007) : DoneTrampoline, NATIVE_CODE:code
+1ba0 (0007) : __shrtab192L, DATA:code
+9ff1 (0007) : iter@stack, BSS:iter@stack
+9ff8 (0004) : x, BSS:log@stack
+9ff8 (0004) : x, BSS:sqrt@stack
+9ff8 (0004) : x, BSS:exp@stack
+9ffc (0004) : sstack, STACK:sstack
+1ba7 (0001) : spentry, DATA:data
+1bca (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+1bd3 (0000) : BSSEnd, END:bss
+1bd3 (0000) : BSSStart, START:bss
+9ca8 (0000) : StackEnd, END:stack

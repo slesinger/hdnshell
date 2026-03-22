@@ -1,0 +1,42 @@
+sections
+0880 - 090f : DATA, code
+090f - 0910 : DATA, data
+0910 - 0910 : BSS, bss
+0910 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+c800 - d000 : DATA, charset
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, vic_setmode@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+c800 - d000 : d000, 0800, charset
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0910, 0090, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 08bd : main, NATIVE_CODE:code
+08bd - 090f : vic_setmode, NATIVE_CODE:code
+090f - 0910 : spentry, DATA:data
+0910 - 0910 : BSSEnd, END:bss
+0910 - 0910 : BSSStart, START:bss
+a000 - a000 : StackEnd, END:stack
+c800 - d000 : charset, DATA:charset
+
+objects by size
+c800 (0800) : charset, DATA:charset
+0801 (0052) : startup, NATIVE_CODE:startup
+08bd (0052) : vic_setmode, NATIVE_CODE:code
+0880 (003d) : main, NATIVE_CODE:code
+090f (0001) : spentry, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+0910 (0000) : BSSEnd, END:bss
+0910 (0000) : BSSStart, START:bss
+a000 (0000) : StackEnd, END:stack

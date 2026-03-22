@@ -1,0 +1,65 @@
+sections
+0880 - 17ee : DATA, code
+17ee - 1820 : DATA, data
+1820 - 1d00 : BSS, bss
+1d00 - 9000 : HEAP, heap
+9000 - 9fca : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+9fe8 - a000 : SSTACK, fill_row@stack
+a000 - a000 : SSTACK, getch@stack
+9fca - 9fe8 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 1820, 1480, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 13cc : main, NATIVE_CODE:code
+13cc - 13d4 : fill_row@proxy, NATIVE_CODE:code
+13d4 - 16ed : fill_row, NATIVE_CODE:code
+16ed - 16fa : getch, NATIVE_CODE:code
+16fa - 1732 : mul16by8, NATIVE_CODE:code
+1732 - 174d : divs16, NATIVE_CODE:code
+174d - 175b : negaccu, NATIVE_CODE:code
+175b - 1769 : negtmp, NATIVE_CODE:code
+1769 - 17ee : divmod, NATIVE_CODE:code
+17ee - 17ef : spentry, DATA:data
+1800 - 1820 : colors, DATA:data
+1820 - 1820 : BSSStart, START:bss
+1900 - 1b00 : sqb, DATA:bss
+1b00 - 1c00 : shlb4, DATA:bss
+1c00 - 1d00 : shrb4, DATA:bss
+1d00 - 1d00 : BSSEnd, END:bss
+9fca - 9fca : StackEnd, END:stack
+9fca - 9fe8 : main@stack, BSS:main@stack
+9fe8 - a000 : fill_row@stack, BSS:fill_row@stack
+
+objects by size
+0880 (0b4c) : main, NATIVE_CODE:code
+13d4 (0319) : fill_row, NATIVE_CODE:code
+1900 (0200) : sqb, DATA:bss
+1b00 (0100) : shlb4, DATA:bss
+1c00 (0100) : shrb4, DATA:bss
+1769 (0085) : divmod, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+16fa (0038) : mul16by8, NATIVE_CODE:code
+1800 (0020) : colors, DATA:data
+9fca (001e) : main@stack, BSS:main@stack
+1732 (001b) : divs16, NATIVE_CODE:code
+9fe8 (0018) : fill_row@stack, BSS:fill_row@stack
+174d (000e) : negaccu, NATIVE_CODE:code
+175b (000e) : negtmp, NATIVE_CODE:code
+16ed (000d) : getch, NATIVE_CODE:code
+13cc (0008) : fill_row@proxy, NATIVE_CODE:code
+17ee (0001) : spentry, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+1820 (0000) : BSSStart, START:bss
+1d00 (0000) : BSSEnd, END:bss
+9fca (0000) : StackEnd, END:stack

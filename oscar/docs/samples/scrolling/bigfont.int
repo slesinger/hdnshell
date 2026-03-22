@@ -1,0 +1,249 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c:67
+$00 R0(I), $02 R1(I), $04 R2(I), $05 R3(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  70)		CALLN		<-	V(1 'mmap_trampoline')+0 	{}
+0001 (  73)		CALLN		<-	V(2 'copyFont')+0 	{}
+0002 (  76)		FILLA1000		<-	V(-1 '')+1024 , CC:32	{}
+0003 (  79)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0004 (  80)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  80)		BINOP1	R1(I)[1..16]	<-	R0(I)[0..15], CI:1	{}
+0001 (  80)		BINOP3	R0(I)[0..600]	<-	R0(IF)[0..15], CI:40	{}
+0002 (  80)		LEAA	R0(P)[55496..56096]	<-	V(-1 '')+55496 , R0(IF)[0..600]	{}
+0003 (  80)		FILLI40		<-	R0(PF)+0 {V(-1 'ABS')} [55496..56096], R1(C)[1..16]	{}
+0004 (  79)		MOVE	R0(I)[1..16]	<-	R1(I)[1..16]	{}
+0005 (  79)		RELOP28	R1(B)[0..1]	<-	R1(IF)[1..16], CI:16	{}
+0006 (  79)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  82)		STOREA1		<-	V(-1 '')+53281 , CC:0	{V}
+0001 (  83)		STOREA1		<-	V(-1 '')+53280 , CC:0	{V}
+0002 (  86)		STOREA1		<-	V(-1 '')+53270 , CC:0	{V}
+0003 (  89)		CONST	R1(I)[0..0]	<-	CI:0	{}
+0004 (  93)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  93)		CONST	R2(C)[128..128]	<-	CI:128	{}
+0001 (  96)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  96)		CONST	R3(C)[2..2]	<-	CI:2	{}
+0001 (  64)		JUMP		<-		{}
+		==> 18
+L18: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 ( 100)		STOREA1		<-	V(-1 '')+53270 , CC:4	{V}
+0001 (  70)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 11
+L11: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 ( 104)		STOREA1		<-	V(-1 '')+53270 , CC:2	{V}
+0001 (  70)		JUMP		<-		{}
+		==> 12
+L12: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 12
+		==> 14
+L14: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 13
+		==> 14
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 ( 108)		STOREA1		<-	V(-1 '')+53270 , CC:0	{V}
+0001 (  70)		JUMP		<-		{}
+		==> 15
+L15: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 15
+		==> 17
+L17: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 16
+		==> 17
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 ( 116)		STOREC1		<-	V(1 '')+0 , R2(C)[0..128]	{}
+0001 ( 112)		STOREA1		<-	V(-1 '')+53270 , CC:6	{V}
+0002 ( 115)		CALLN		<-	V(4 'scrollLeft')+0 	{E}
+0003 ( 116)		LOADG2	R0(P)	<-	V(15 'text')+0 	{}
+0004 ( 116)		LEAI	R0(P)+0	<-	R0(PF)+0, R1(I)[0..]	{}
+0005 ( 116)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0	{}
+0006 ( 116)		STOREC1		<-	V(0 '')+0 , R0(CF)[0..255]	{}
+0007 ( 116)		CALLN		<-	V(5 'expand')+0 	{E}
+0008 (  96)		BINOP2	R3(C)[0..1]	<-	R3(CF)[1..2], CI:1	{}
+0009 (  96)		RELOP27	R0(B)[0..1]	<-	R3(C)[0..1], CC:0	{}
+000a (  96)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 18
+		==> 6
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 ( 120)		CONV37	R0(I)[0..128]	<-	R2(CF)[0..128]	{}
+0001 ( 120)		BINOP17	R2(I)[0..64]	<-	R0(IF)[0..128], CI:1	{}
+0002 (  94)		BRANCH		<-	R2(C)[0..64]	{}
+		==> 4
+		==> 5
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 ( 124)		BINOP1	R1(I)[1..]	<-	R1(IF)[0..], CI:1	{}
+0001 (  90)		JUMP		<-		{}
+		==> 3
+--------------------------------------------------------------------
+mmap_trampoline: /home/honza/projects/c64/projects/oscar64/include/c64/memmap.h:25
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  71)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'NMITrampoline')	{S}
+0001 (  71)		STOREA2		<-	V(-1 '')+65530 , R0(PF)+0 {V(-1 'NMITrampoline')} [0..0]	{}
+0002 (  72)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'IRQTrampoline')	{S}
+0003 (  72)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'IRQTrampoline')} [0..0]	{}
+0004 (  73)		RET		<-		{}
+--------------------------------------------------------------------
+copyFont: /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c:8
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  80)		STOREA1		<-	V(-1 '')+1 , CC:49	{VM}
+0001 (  12)		STOREC2		<-	V(4 '')+0 , CI:2048	{}
+0002 (  12)		CONST	R0(P)[0..0]	<-	CG2048(6:0 'font' A)	{S}
+0003 (  12)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(6 'font' A)} [0..0]	{}
+0004 (  12)		CONST	R0(P)[55296..55296]	<-	CA0(-1:55296 '')	{S}
+0005 (  12)		STOREC2		<-	V(2 '')+0 , R0(PF)+0 {V(-1 'ABS')} [55296..55296]	{}
+0006 (  12)		CALLN		<-	V(3 'memcpy')+0 	{}
+0007 (  80)		STOREA1		<-	V(-1 '')+1 , CC:55	{VM}
+0008 (  15)		RET		<-		{}
+--------------------------------------------------------------------
+memcpy: /home/honza/projects/c64/projects/oscar64/include/string.h:30
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/string.c
+0000 ( 307)		JSR		<-	V(0 '')+0 , V(2 '')+0 , V(4 '')+0 , V(-1 '')+0 	{V}
+0001 ( 307)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0002 ( 334)		RETV		<-	R0(PF)	{}
+--------------------------------------------------------------------
+scrollLeft: /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c:28
+$00 R0(I), $00 R1(P), $00 R2(P), $00 R3(C), $00 R4(C), $00 R5(C), $00 R6(C), $00 R7(C), $00 R8(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  31)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0001 (  37)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  37)		CONV37	R0(I)[0..38]	<-	R3(C)[0..38]	{}
+0001 (  37)		LEAA	R1(P)[1225..1263]	<-	V(-1 '')+1225 , R0(I)[0..38]	{}
+0002 (  37)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1225..1263]	{}
+0003 (  37)		LEAA	R2(P)[1224..1262]	<-	V(-1 '')+1224 , R0(I)[0..38]	{}
+0004 (  37)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1224..1262], R4(CF)[0..255]	{}
+0005 (  37)		LOADI1	R2(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1225..1263]	{}
+0006 (  37)		LOADI1	R4(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1225..1263]	{}
+0007 (  37)		LOADI1	R5(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1225..1263]	{}
+0008 (  37)		LOADI1	R6(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1225..1263]	{}
+0009 (  37)		LOADI1	R7(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1225..1263]	{}
+000a (  37)		LOADI1	R8(C)[0..255]	<-	R1(P)+240 {V(-1 'ABS')} [1225..1263]	{}
+000b (  37)		STOREI1		<-	R1(P)+39 {V(-1 'ABS')} [1225..1263], R2(CF)[0..255]	{}
+000c (  37)		STOREI1		<-	R1(P)+79 {V(-1 'ABS')} [1225..1263], R4(CF)[0..255]	{}
+000d (  37)		STOREI1		<-	R1(P)+119 {V(-1 'ABS')} [1225..1263], R5(CF)[0..255]	{}
+000e (  37)		STOREI1		<-	R1(P)+159 {V(-1 'ABS')} [1225..1263], R6(CF)[0..255]	{}
+000f (  37)		STOREI1		<-	R1(P)+199 {V(-1 'ABS')} [1225..1263], R7(CF)[0..255]	{}
+0010 (  37)		STOREI1		<-	R1(PF)+239 {V(-1 'ABS')} [1225..1263], R8(CF)[0..255]	{}
+0011 (  37)		LEAA	R1(P)[1505..1543]	<-	V(-1 '')+1505 , R0(I)[0..38]	{}
+0012 (  37)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1505..1543]	{}
+0013 (  37)		LEAA	R2(P)[1504..1542]	<-	V(-1 '')+1504 , R0(I)[0..38]	{}
+0014 (  37)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1504..1542], R4(CF)[0..255]	{}
+0015 (  37)		LOADI1	R2(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1505..1543]	{}
+0016 (  37)		LOADI1	R4(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1505..1543]	{}
+0017 (  37)		LOADI1	R5(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1505..1543]	{}
+0018 (  37)		LOADI1	R6(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1505..1543]	{}
+0019 (  37)		LOADI1	R7(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1505..1543]	{}
+001a (  37)		LOADI1	R8(C)[0..255]	<-	R1(P)+240 {V(-1 'ABS')} [1505..1543]	{}
+001b (  37)		STOREI1		<-	R1(P)+39 {V(-1 'ABS')} [1505..1543], R2(CF)[0..255]	{}
+001c (  37)		STOREI1		<-	R1(P)+79 {V(-1 'ABS')} [1505..1543], R4(CF)[0..255]	{}
+001d (  37)		STOREI1		<-	R1(P)+119 {V(-1 'ABS')} [1505..1543], R5(CF)[0..255]	{}
+001e (  37)		STOREI1		<-	R1(P)+159 {V(-1 'ABS')} [1505..1543], R6(CF)[0..255]	{}
+001f (  37)		STOREI1		<-	R1(P)+199 {V(-1 'ABS')} [1505..1543], R7(CF)[0..255]	{}
+0020 (  37)		STOREI1		<-	R1(PF)+239 {V(-1 'ABS')} [1505..1543], R8(CF)[0..255]	{}
+0021 (  37)		LEAA	R1(P)[1785..1823]	<-	V(-1 '')+1785 , R0(I)[0..38]	{}
+0022 (  37)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1785..1823]	{}
+0023 (  37)		LEAA	R0(P)[1784..1822]	<-	V(-1 '')+1784 , R0(IF)[0..38]	{}
+0024 (  37)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [1784..1822], R2(CF)[0..255]	{}
+0025 (  37)		LOADI1	R0(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1785..1823]	{}
+0026 (  37)		STOREI1		<-	R1(PF)+39 {V(-1 'ABS')} [1785..1823], R0(CF)[0..255]	{}
+0027 (  31)		BINOP1	R3(C)[1..39]	<-	R3(CF)[0..38], CI:1	{}
+0028 (  31)		RELOP28	R0(B)[0..1]	<-	R3(C)[1..39], CC:39	{}
+0029 (  31)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  40)		RET		<-		{}
+--------------------------------------------------------------------
+expand: /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c:43
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(C), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  46)		LOADZ1	R0(C)[0..255]	<-	V(0 '')+0 	{S}
+0001 (  46)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0002 (  46)		BINOP16	R0(I)[0..2040]	<-	R0(IF)[0..255], CI:3	{S}
+0003 (  46)		LEAG	R0(P)[0..2040]	<-	V(6 'font' A)+0 , R0(IF)[0..2040]	{S}
+0004 (  50)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0005 (  53)		CONST	R1(P)[1263..1263]	<-	CA0(-1:1263 '')	{}
+0006 (  52)		LOADZ1	R4(C)[0..255]	<-	V(1 '')+0 	{IS}
+0007 (  52)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  52)		CONV37	R2(I)[0..7]	<-	R3(C)[0..7]	{}
+0001 (  52)		LEAI	R2(P)+0 {V(6 'font' A)} [0..2047]	<-	R0(P)+0 {V(6 'font' A)} [0..2040], R2(IF)[0..7]	{}
+0002 (  52)		LOADI1	R2(C)[0..255]	<-	R2(PF)+0 {V(6 'font' A)} [0..2047]	{}
+0003 (  52)		BINOP9	R2(C)	<-	R2(CF)[0..255], R4(C)[0..255]	{}
+0004 (  52)		BRANCH		<-	R2(CF)	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  52)		CONST	R2(I)[160..160]	<-	CI:160	{}
+0001 (  52)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  53)		STOREI1		<-	R1(P)+0 {V(-1 'ABS')} [1263..], R2(C)[32..160]	{}
+0001 (  54)		STOREI1		<-	R1(P)+40 {V(-1 'ABS')} [1263..], R2(CF)[32..160]	{}
+0002 (  53)		LEAI	R1(P)+0 {V(-1 'ABS')} [1343..]	<-	R1(PF)+0 {V(-1 'ABS')} [1263..], CI:80	{}
+0003 (  50)		BINOP1	R3(C)[1..8]	<-	R3(CF)[0..7], CI:1	{}
+0004 (  50)		RELOP28	R2(B)[0..1]	<-	R3(C)[1..8], CC:8	{}
+0005 (  50)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  56)		RET		<-		{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/bigfont.c
+0000 (  52)		CONST	R2(I)[32..32]	<-	CI:32	{}
+0001 (  52)		JUMP		<-		{}
+		==> 5

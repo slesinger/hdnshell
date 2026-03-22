@@ -1,0 +1,295 @@
+sections
+0a00 - 5432 : DATA, code
+5432 - 5738 : DATA, data
+5738 - baa0 : BSS, bss
+baa0 - c400 : HEAP, heap
+c400 - c731 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+c7be - c800 : SSTACK, sstack
+c7be - c7be : SSTACK, vic_setmode@stack
+c7be - c7be : SSTACK, mmap_trampoline@stack
+c7be - c7be : SSTACK, memset@stack
+c7be - c7be : SSTACK, init@stack
+c7be - c7be : SSTACK, bmu_text@stack
+c7be - c7be : SSTACK, builddop_src@stack
+c7be - c7be : SSTACK, builddop_op@stack
+c7be - c7be : SSTACK, builddop@stack
+c7b8 - c7be : SSTACK, bmu_bitblit@stack
+c7b8 - c7b8 : SSTACK, bm_bitblit@stack
+c7a8 - c7b8 : SSTACK, bm_put_chars@stack
+c7be - c7be : SSTACK, strlen@stack
+c7be - c7be : SSTACK, mat4_ident@stack
+c7be - c7be : SSTACK, sin@stack
+c7be - c7be : SSTACK, cos@stack
+c7be - c7be : SSTACK, tan@stack
+c7bc - c7be : SSTACK, mat4_make_perspective@stack
+c7ba - c7be : SSTACK, sqrt@stack
+c7ba - c7be : SSTACK, exp@stack
+c7be - c7be : SSTACK, vec3_scale@stack
+c7be - c7be : SSTACK, vec3_vmul@stack
+c7be - c7be : SSTACK, vec3_qlength@stack
+c7ba - c7ba : SSTACK, vec3_length@stack
+c7ba - c7ba : SSTACK, vec3_norm@stack
+c7be - c7be : SSTACK, mat4_scale@stack
+c7be - c7be : SSTACK, mat4_set_rotate_x@stack
+c7be - c7be : SSTACK, mat4_set_rotate_y@stack
+c79e - c7be : SSTACK, mat4_rmmul@stack
+c79e - c7be : SSTACK, mat4_mmul@stack
+c7b0 - c7be : SSTACK, vec3_mmulp@stack
+c7b0 - c7b0 : SSTACK, vec3_project@stack
+c7be - c7be : SSTACK, qsort@stack
+c7be - c7be : SSTACK, vec3_diff@stack
+c7ae - c7be : SSTACK, vec3_xmul@stack
+c7be - c7be : SSTACK, bm_scan_fill@stack
+c7ad - c7be : SSTACK, bm_trapezoid_fill@stack
+c799 - c7ad : SSTACK, bm_triangle_fill@stack
+c78b - c799 : SSTACK, bm_quad_fill@stack
+c7be - c7be : SSTACK, lmuldiv16s@stack
+c7be - c7be : SSTACK, bmu_line@stack
+c7b0 - c7be : SSTACK, bm_line@stack
+c7be - c7be : SSTACK, convch@stack
+c7be - c7be : SSTACK, getch@stack
+c7be - c7be : SSTACK, restore@stack
+c731 - c78b : SSTACK, main@stack
+
+regions
+0a00 - c400 : 5738, b0a0, main
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0a00 - 150e : main, NATIVE_CODE:code
+150e - 155e : init, NATIVE_CODE:code
+155e - 15b0 : vic_setmode, NATIVE_CODE:code
+15b0 - 15c5 : mmap_trampoline, NATIVE_CODE:code
+15c5 - 15dc : NMITrampoline, NATIVE_CODE:code
+15dc - 15e3 : DoneTrampoline, NATIVE_CODE:code
+15e3 - 15fa : IRQTrampoline, NATIVE_CODE:code
+15fa - 161e : memset, NATIVE_CODE:code
+161e - 1631 : *, DATA:code
+1631 - 18b1 : bm_put_chars, NATIVE_CODE:code
+18b1 - 1a58 : bmu_text, NATIVE_CODE:code
+1a58 - 1bd9 : bm_bitblit, NATIVE_CODE:code
+1bd9 - 1f8b : bmu_bitblit, NATIVE_CODE:code
+1f8b - 227d : builddop, NATIVE_CODE:code
+227d - 23bd : builddop_src, NATIVE_CODE:code
+23bd - 24be : builddop_op, NATIVE_CODE:code
+24be - 24da : strlen, NATIVE_CODE:code
+24da - 2525 : mat4_ident, NATIVE_CODE:code
+2525 - 2783 : mat4_make_perspective, NATIVE_CODE:code
+2783 - 2801 : tan, NATIVE_CODE:code
+2801 - 2998 : sin, NATIVE_CODE:code
+2998 - 2afc : sqrt, NATIVE_CODE:code
+2afc - 2c4d : exp, NATIVE_CODE:code
+2c4d - 2c61 : *, DATA:code
+2c61 - 2cad : vec3_norm, NATIVE_CODE:code
+2cad - 2cf7 : vec3_scale, NATIVE_CODE:code
+2cf7 - 2d19 : vec3_length, NATIVE_CODE:code
+2d19 - 2ddb : vec3_vmul, NATIVE_CODE:code
+2ddb - 2e25 : mat4_scale, NATIVE_CODE:code
+2e25 - 2f7c : mat4_set_rotate_x, NATIVE_CODE:code
+2f7c - 30d6 : mat4_set_rotate_y, NATIVE_CODE:code
+30d6 - 3285 : mat4_rmmul, NATIVE_CODE:code
+3285 - 3430 : mat4_mmul, NATIVE_CODE:code
+3430 - 34c4 : vec3_project, NATIVE_CODE:code
+34c4 - 35da : vec3_mmulp, NATIVE_CODE:code
+35da - 35eb : *, DATA:code
+35eb - 378e : qsort, NATIVE_CODE:code
+378e - 379f : *, DATA:code
+379f - 37ef : vec3_diff, NATIVE_CODE:code
+37ef - 3995 : vec3_xmul, NATIVE_CODE:code
+3995 - 3a96 : bm_quad_fill, NATIVE_CODE:code
+3a96 - 3ee4 : bm_triangle_fill, NATIVE_CODE:code
+3ee4 - 4166 : bm_trapezoid_fill, NATIVE_CODE:code
+4166 - 4309 : bm_scan_fill, NATIVE_CODE:code
+4309 - 4784 : bm_line, NATIVE_CODE:code
+4784 - 4843 : lmuldiv16s, NATIVE_CODE:code
+4843 - 4d59 : bmu_line, NATIVE_CODE:code
+4d59 - 4d65 : getch, NATIVE_CODE:code
+4d65 - 4d97 : convch, NATIVE_CODE:code
+4d97 - 4daf : restore, NATIVE_CODE:code
+4daf - 4de7 : mul16by8, NATIVE_CODE:code
+4de7 - 4e1d : mul32by8, NATIVE_CODE:code
+4e1d - 4e62 : freg, NATIVE_CODE:code
+4e62 - 4f4f : faddsub, NATIVE_CODE:code
+4f4f - 4fe9 : crt_fmul, NATIVE_CODE:code
+4fe9 - 5017 : crt_fmul8, NATIVE_CODE:code
+5017 - 50c5 : crt_fdiv, NATIVE_CODE:code
+50c5 - 51bf : fround, NATIVE_CODE:code
+51bf - 520b : f32_to_i16, NATIVE_CODE:code
+520b - 5229 : sint16_to_float, NATIVE_CODE:code
+5229 - 5252 : uint16_to_float, NATIVE_CODE:code
+5252 - 52a1 : crt_fcmp, NATIVE_CODE:code
+52a1 - 5309 : mul32, NATIVE_CODE:code
+5309 - 5327 : divs32, NATIVE_CODE:code
+5327 - 5341 : negaccu32, NATIVE_CODE:code
+5341 - 535b : negtmp32, NATIVE_CODE:code
+535b - 5432 : divmod32, NATIVE_CODE:code
+5432 - 5433 : spentry, DATA:data
+5433 - 543b : Screen, DATA:data
+543b - 5443 : SRect, DATA:data
+5443 - 566e : TinyFont, DATA:data
+566e - 5676 : tbitmap, DATA:data
+5676 - 567e : lmask, DATA:data
+567e - 5686 : rmask, DATA:data
+5686 - 568a : blitops_op, DATA:data
+568a - 56d2 : NineShadesOfGrey, DATA:data
+56d2 - 56d3 : giocharmap, DATA:data
+56d3 - 56db : ubitmask, DATA:data
+56db - 56e3 : tworks, DATA:bss
+56e3 - 56ef : vlight, DATA:bss
+5700 - 5738 : bitshift, DATA:data
+5738 - 5878 : tbuffer, DATA:bss
+5738 - 5738 : BSSStart, START:bss
+5878 - 58b8 : wmat, DATA:bss
+58b8 - 58f8 : pmat, DATA:bss
+5900 - 59e0 : BLIT_CODE, DATA:bss
+59e0 - 86ec : v, DATA:bss
+8700 - 8740 : rmat, DATA:bss
+8740 - 8780 : tmat, DATA:bss
+8780 - 9684 : p, DATA:bss
+9684 - a588 : z, DATA:bss
+a588 - baa0 : surfs, DATA:bss
+baa0 - baa0 : BSSEnd, END:bss
+c731 - c758 : main@stack, BSS:main@stack
+c731 - c731 : StackEnd, END:stack
+c758 - c764 : n, BSS:main@stack
+c764 - c770 : d1, BSS:main@stack
+c770 - c77c : d0, BSS:main@stack
+c77c - c788 : vp, BSS:main@stack
+c78b - c799 : bm_quad_fill@stack, BSS:bm_quad_fill@stack
+c799 - c7ad : bm_triangle_fill@stack, BSS:bm_triangle_fill@stack
+c79e - c7ac : mat4_mmul@stack, BSS:mat4_mmul@stack
+c79e - c7ac : mat4_rmmul@stack, BSS:mat4_rmmul@stack
+c7a8 - c7b8 : bm_put_chars@stack, BSS:bm_put_chars@stack
+c7ac - c7bc : ma, BSS:mat4_mmul@stack
+c7ac - c7bc : ma, BSS:mat4_rmmul@stack
+c7ad - c7be : bm_trapezoid_fill@stack, BSS:bm_trapezoid_fill@stack
+c7ae - c7be : vec3_xmul@stack, BSS:vec3_xmul@stack
+c7b0 - c7be : bm_line@stack, BSS:bm_line@stack
+c7b0 - c7bc : vt, BSS:vec3_mmulp@stack
+c7b8 - c7be : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+c7ba - c7be : x, BSS:sqrt@stack
+c7ba - c7be : x, BSS:exp@stack
+c7bc - c7be : mat4_make_perspective@stack, BSS:mat4_make_perspective@stack
+c7be - c800 : sstack, STACK:sstack
+
+objects by size
+59e0 (2d0c) : v, DATA:bss
+a588 (1518) : surfs, DATA:bss
+8780 (0f04) : p, DATA:bss
+9684 (0f04) : z, DATA:bss
+0a00 (0b0e) : main, NATIVE_CODE:code
+4843 (0516) : bmu_line, NATIVE_CODE:code
+4309 (047b) : bm_line, NATIVE_CODE:code
+3a96 (044e) : bm_triangle_fill, NATIVE_CODE:code
+1bd9 (03b2) : bmu_bitblit, NATIVE_CODE:code
+1f8b (02f2) : builddop, NATIVE_CODE:code
+3ee4 (0282) : bm_trapezoid_fill, NATIVE_CODE:code
+1631 (0280) : bm_put_chars, NATIVE_CODE:code
+2525 (025e) : mat4_make_perspective, NATIVE_CODE:code
+5443 (022b) : TinyFont, DATA:data
+30d6 (01af) : mat4_rmmul, NATIVE_CODE:code
+3285 (01ab) : mat4_mmul, NATIVE_CODE:code
+18b1 (01a7) : bmu_text, NATIVE_CODE:code
+37ef (01a6) : vec3_xmul, NATIVE_CODE:code
+35eb (01a3) : qsort, NATIVE_CODE:code
+4166 (01a3) : bm_scan_fill, NATIVE_CODE:code
+2801 (0197) : sin, NATIVE_CODE:code
+1a58 (0181) : bm_bitblit, NATIVE_CODE:code
+2998 (0164) : sqrt, NATIVE_CODE:code
+2f7c (015a) : mat4_set_rotate_y, NATIVE_CODE:code
+2e25 (0157) : mat4_set_rotate_x, NATIVE_CODE:code
+2afc (0151) : exp, NATIVE_CODE:code
+227d (0140) : builddop_src, NATIVE_CODE:code
+5738 (0140) : tbuffer, DATA:bss
+34c4 (0116) : vec3_mmulp, NATIVE_CODE:code
+23bd (0101) : builddop_op, NATIVE_CODE:code
+3995 (0101) : bm_quad_fill, NATIVE_CODE:code
+50c5 (00fa) : fround, NATIVE_CODE:code
+4e62 (00ed) : faddsub, NATIVE_CODE:code
+5900 (00e0) : BLIT_CODE, DATA:bss
+535b (00d7) : divmod32, NATIVE_CODE:code
+2d19 (00c2) : vec3_vmul, NATIVE_CODE:code
+4784 (00bf) : lmuldiv16s, NATIVE_CODE:code
+5017 (00ae) : crt_fdiv, NATIVE_CODE:code
+4f4f (009a) : crt_fmul, NATIVE_CODE:code
+3430 (0094) : vec3_project, NATIVE_CODE:code
+2783 (007e) : tan, NATIVE_CODE:code
+52a1 (0068) : mul32, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+155e (0052) : vic_setmode, NATIVE_CODE:code
+150e (0050) : init, NATIVE_CODE:code
+379f (0050) : vec3_diff, NATIVE_CODE:code
+5252 (004f) : crt_fcmp, NATIVE_CODE:code
+2c61 (004c) : vec3_norm, NATIVE_CODE:code
+51bf (004c) : f32_to_i16, NATIVE_CODE:code
+24da (004b) : mat4_ident, NATIVE_CODE:code
+2cad (004a) : vec3_scale, NATIVE_CODE:code
+2ddb (004a) : mat4_scale, NATIVE_CODE:code
+568a (0048) : NineShadesOfGrey, DATA:data
+4e1d (0045) : freg, NATIVE_CODE:code
+c7be (0042) : sstack, STACK:sstack
+5878 (0040) : wmat, DATA:bss
+58b8 (0040) : pmat, DATA:bss
+8700 (0040) : rmat, DATA:bss
+8740 (0040) : tmat, DATA:bss
+4daf (0038) : mul16by8, NATIVE_CODE:code
+5700 (0038) : bitshift, DATA:data
+4de7 (0036) : mul32by8, NATIVE_CODE:code
+4d65 (0032) : convch, NATIVE_CODE:code
+4fe9 (002e) : crt_fmul8, NATIVE_CODE:code
+5229 (0029) : uint16_to_float, NATIVE_CODE:code
+c731 (0027) : main@stack, BSS:main@stack
+15fa (0024) : memset, NATIVE_CODE:code
+2cf7 (0022) : vec3_length, NATIVE_CODE:code
+520b (001e) : sint16_to_float, NATIVE_CODE:code
+5309 (001e) : divs32, NATIVE_CODE:code
+24be (001c) : strlen, NATIVE_CODE:code
+5327 (001a) : negaccu32, NATIVE_CODE:code
+5341 (001a) : negtmp32, NATIVE_CODE:code
+4d97 (0018) : restore, NATIVE_CODE:code
+15c5 (0017) : NMITrampoline, NATIVE_CODE:code
+15e3 (0017) : IRQTrampoline, NATIVE_CODE:code
+15b0 (0015) : mmap_trampoline, NATIVE_CODE:code
+c799 (0014) : bm_triangle_fill@stack, BSS:bm_triangle_fill@stack
+c7ad (0011) : bm_trapezoid_fill@stack, BSS:bm_trapezoid_fill@stack
+c7a8 (0010) : bm_put_chars@stack, BSS:bm_put_chars@stack
+c7ac (0010) : ma, BSS:mat4_mmul@stack
+c7ac (0010) : ma, BSS:mat4_rmmul@stack
+c7ae (0010) : vec3_xmul@stack, BSS:vec3_xmul@stack
+c78b (000e) : bm_quad_fill@stack, BSS:bm_quad_fill@stack
+c79e (000e) : mat4_mmul@stack, BSS:mat4_mmul@stack
+c79e (000e) : mat4_rmmul@stack, BSS:mat4_rmmul@stack
+c7b0 (000e) : bm_line@stack, BSS:bm_line@stack
+4d59 (000c) : getch, NATIVE_CODE:code
+56e3 (000c) : vlight, DATA:bss
+c758 (000c) : n, BSS:main@stack
+c764 (000c) : d1, BSS:main@stack
+c770 (000c) : d0, BSS:main@stack
+c77c (000c) : vp, BSS:main@stack
+c7b0 (000c) : vt, BSS:vec3_mmulp@stack
+5433 (0008) : Screen, DATA:data
+543b (0008) : SRect, DATA:data
+566e (0008) : tbitmap, DATA:data
+5676 (0008) : lmask, DATA:data
+567e (0008) : rmask, DATA:data
+56d3 (0008) : ubitmask, DATA:data
+56db (0008) : tworks, DATA:bss
+15dc (0007) : DoneTrampoline, NATIVE_CODE:code
+c7b8 (0006) : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+5686 (0004) : blitops_op, DATA:data
+c7ba (0004) : x, BSS:sqrt@stack
+c7ba (0004) : x, BSS:exp@stack
+c7bc (0002) : mat4_make_perspective@stack, BSS:mat4_make_perspective@stack
+5432 (0001) : spentry, DATA:data
+56d2 (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+5738 (0000) : BSSStart, START:bss
+baa0 (0000) : BSSEnd, END:bss
+c731 (0000) : StackEnd, END:stack

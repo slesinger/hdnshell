@@ -1,0 +1,1188 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c:183
+$00 R0(I), $03 R1(P), $05 R2(P), $07 R3(I), $09 R4(I), $0b R5(I), $0d R6(I), $10 R7(I), $12 R8(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 190)		CONST	R2(P)[0..0]	<-	CG1024(7:0 'grid' A)	{I}
+0001 ( 190)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 190)		CONST	R3(I)[0..0]	<-	CI:0	{}
+0001 ( 190)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 190)		CALLN	R0(I)	<-	V(1 'rand')+0 	{}
+0001 ( 190)		BINOP9	R0(I)[0..3]	<-	R0(IF), CI:3	{}
+0002 ( 190)		LEAI	R1(P)+0 {V(7 'grid' A)} [0..1023]	<-	R2(P)+0 {V(7 'grid' A)} [0..992], R3(I)[0..31]	{}
+0003 ( 190)		STOREI1		<-	R1(PF)+0 {V(7 'grid' A)} [0..1023], R0(CF)[0..3]	{}
+0004 ( 190)		BINOP1	R3(I)[1..32]	<-	R3(IF)[0..31], CI:1	{}
+0005 ( 188)		RELOP20	R0(B)[0..1]	<-	R3(I)[1..32], CI:32	{}
+0006 ( 188)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 190)		LEAG	R2(P)[32..992]	<-	R2(PF)[0..992], CI:32	{}
+0001 ( 186)		RELOP20	R0(B)[0..1]	<-	R2(P)[32..992], V(7 'grid' A)+1024 	{}
+0002 ( 186)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 194)		STOREA1		<-	V(-1 '')+53280 , CC:0	{V}
+0001 ( 601)		CALLN		<-	V(2 'rirq_init_kernal')+0 	{}
+0002 ( 200)		STOREC1		<-	V(2 '')+0 , CC:1	{}
+0003 ( 200)		CONST	R0(P)[0..0]	<-	CG32(56:0 'blank' A)	{S}
+0004 ( 200)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(56 'blank' A)} [0..0]	{}
+0005 ( 200)		CALLN		<-	V(5 'rirq_build')+0 	{}
+0006 ( 205)		STOREC1		<-	V(2 '')+0 , CC:3	{}
+0007 ( 409)		STOREG1		<-	V(8 'rasterIRQRows' A)+0 , CC:86	{}
+0008 ( 452)		STOREG1		<-	V(56 'blank' A)+2 , CC:0	{}
+0009 ( 449)		STOREG1		<-	V(56 'blank' A)+11 , CC:17	{}
+000a ( 450)		STOREG1		<-	V(56 'blank' A)+12 , CC:208	{}
+000b ( 449)		CONST	R0(P)[1..1]	<-	CG32(56:1 'blank' A)	{S}
+000c ( 406)		CAST	R0(I)	<-	R0(PF)+0 {V(56 'blank' A)} [1..1]	{S}
+000d ( 406)		BINOP9	R1(I)[0..255]	<-	R0(I), CI:255	{S}
+000e ( 406)		STOREG1		<-	V(12 'rasterIRQLow' A)+0 , R1(CF)[0..255]	{}
+000f ( 407)		BINOP17	R0(I)[0..255]	<-	R0(IF), CI:8	{S}
+0010 ( 407)		STOREG1		<-	V(13 'rasterIRQHigh' A)+0 , R0(CF)[0..255]	{}
+0011 ( 205)		CONST	R0(P)[0..0]	<-	CG32(59:0 'scroll' A)	{S}
+0012 ( 205)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(59 'scroll' A)} [0..0]	{}
+0013 ( 205)		CALLN		<-	V(5 'rirq_build')+0 	{}
+0014 ( 212)		STOREC1		<-	V(2 '')+0 , CC:2	{}
+0015 ( 409)		STOREG1		<-	V(8 'rasterIRQRows' A)+1 , CC:94	{}
+0016 ( 465)		STOREG1		<-	V(59 'scroll' A)+2 , CC:10	{}
+0017 ( 452)		STOREG1		<-	V(59 'scroll' A)+4 , CC:16	{}
+0018 ( 466)		STOREG1		<-	V(59 'scroll' A)+10 , CC:136	{}
+0019 ( 467)		STOREG1		<-	V(59 'scroll' A)+11 , CC:208	{}
+001a ( 468)		STOREG1		<-	V(59 'scroll' A)+12 , CC:253	{}
+001b ( 449)		STOREG1		<-	V(59 'scroll' A)+14 , CC:17	{}
+001c ( 450)		STOREG1		<-	V(59 'scroll' A)+15 , CC:208	{}
+001d ( 452)		STOREG1		<-	V(59 'scroll' A)+17 , CC:0	{}
+001e ( 449)		STOREG1		<-	V(59 'scroll' A)+19 , CC:22	{}
+001f ( 450)		STOREG1		<-	V(59 'scroll' A)+20 , CC:208	{}
+0020 ( 465)		CONST	R0(P)[1..1]	<-	CG32(59:1 'scroll' A)	{S}
+0021 ( 406)		CAST	R0(I)	<-	R0(PF)+0 {V(59 'scroll' A)} [1..1]	{S}
+0022 ( 406)		BINOP9	R1(I)[0..255]	<-	R0(I), CI:255	{S}
+0023 ( 406)		STOREG1		<-	V(12 'rasterIRQLow' A)+1 , R1(CF)[0..255]	{}
+0024 ( 407)		BINOP17	R0(I)[0..255]	<-	R0(IF), CI:8	{S}
+0025 ( 407)		STOREG1		<-	V(13 'rasterIRQHigh' A)+1 , R0(CF)[0..255]	{}
+0026 ( 212)		CONST	R0(P)[0..0]	<-	CG32(60:0 'bottom' A)	{S}
+0027 ( 212)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(60 'bottom' A)} [0..0]	{}
+0028 ( 212)		CALLN		<-	V(5 'rirq_build')+0 	{}
+0029 ( 217)		STOREC1		<-	V(0 '')+0 , CB:0	{}
+002a ( 409)		STOREG1		<-	V(8 'rasterIRQRows' A)+2 , CC:250	{}
+002b ( 452)		STOREG1		<-	V(60 'bottom' A)+2 , CC:24	{}
+002c ( 452)		STOREG1		<-	V(60 'bottom' A)+4 , CC:8	{}
+002d ( 449)		STOREG1		<-	V(60 'bottom' A)+11 , CC:17	{}
+002e ( 450)		STOREG1		<-	V(60 'bottom' A)+12 , CC:208	{}
+002f ( 449)		STOREG1		<-	V(60 'bottom' A)+14 , CC:22	{}
+0030 ( 450)		STOREG1		<-	V(60 'bottom' A)+15 , CC:208	{}
+0031 ( 449)		CONST	R0(P)[1..1]	<-	CG32(60:1 'bottom' A)	{S}
+0032 ( 406)		CAST	R0(I)	<-	R0(PF)+0 {V(60 'bottom' A)} [1..1]	{S}
+0033 ( 406)		BINOP9	R1(I)[0..255]	<-	R0(I), CI:255	{S}
+0034 ( 406)		STOREG1		<-	V(12 'rasterIRQLow' A)+2 , R1(CF)[0..255]	{}
+0035 ( 407)		BINOP17	R0(I)[0..255]	<-	R0(IF), CI:8	{S}
+0036 ( 407)		STOREG1		<-	V(13 'rasterIRQHigh' A)+2 , R0(CF)[0..255]	{}
+0037 ( 217)		CALLN		<-	V(6 'rirq_sort')+0 	{}
+0038 ( 219)		CALLN		<-	V(7 'rirq_start')+0 	{}
+0039 ( 222)		CONST	R3(I)[1280..1280]	<-	CI:1280	{}
+003a ( 222)		CONST	R4(I)[1280..1280]	<-	CI:1280	{}
+003b ( 222)		CONST	R5(I)[0..0]	<-	CI:0	{}
+003c ( 222)		CONST	R6(I)[0..0]	<-	CI:0	{}
+003d ( 222)		CONST	R7(I)[0..0]	<-	CI:0	{}
+003e ( 222)		CONST	R8(I)[0..0]	<-	CI:0	{}
+003f ( 229)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 229)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53280 	{V}
+0001 ( 229)		BINOP1	R0(C)	<-	R0(CF)[0..255], CI:1	{}
+0002 ( 229)		STOREA1		<-	V(-1 '')+53280 , R0(CF)	{V}
+0003 ( 230)		CALLN		<-	V(8 'rirq_wait')+0 	{}
+0004 ( 231)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53280 	{V}
+0005 ( 231)		BINOP1	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:-1	{}
+0006 ( 231)		STOREA1		<-	V(-1 '')+53280 , R0(CF)[-1..254]	{V}
+0007 ( 226)		BINOP18	R0(I)[-1024..1023]	<-	R3(I), CI:5	{}
+0008 ( 234)		BINOP2	R1(I)[-1016..1031]	<-	CI:7, R0(I)[-1024..1023]	{}
+0009 ( 234)		BINOP9	R1(I)[0..7]	<-	R1(IF)[-1016..1031], CI:7	{}
+000a ( 234)		BINOP8	R2(I)[0..127]	<-	R1(I)[0..7], CI:112	{}
+000b ( 443)		STOREG1		<-	V(56 'blank' A)+2 , R2(CF)[0..127]	{V}
+000c ( 247)		CONST	R2(P)[1224..1224]	<-	CA0(-1:1224 '')	{IS}
+000d ( 247)		STOREC2		<-	V(5 '')+0 , R2(PF)+0 {V(-1 'ABS')} [1224..1224]	{}
+000e ( 247)		CONST	R2(P)[0..0]	<-	CG1(7:0 'grid' A)	{IS}
+000f ( 247)		STOREC2		<-	V(7 '')+0 , R2(PF)+0 {V(7 'grid' A)} [0..0]	{}
+0010 ( 247)		BINOP18	R2(I)[-128..127]	<-	R0(I)[-1024..1023], CI:3	{}
+0011 ( 247)		STOREC1		<-	V(10 '')+0 , R2(CF)[-128..127]	{}
+0012 ( 237)		BINOP9	R0(I)[0..7]	<-	R0(IF)[-1024..1023], CI:7	{}
+0013 ( 237)		RELOP19	R0(B)[0..1]	<-	R0(IF)[0..7], CI:0	{}
+0014 ( 237)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 443)		STOREG1		<-	V(59 'scroll' A)+2 , CC:4	{V}
+0001 ( 238)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 234)		BINOP8	R1(I)[0..31]	<-	R1(IF)[0..7], CI:16	{}
+0001 ( 443)		STOREG1		<-	V(59 'scroll' A)+4 , R1(CF)[0..31]	{V}
+0002 ( 226)		BINOP18	R0(I)[-1024..1023]	<-	R4(I), CI:5	{}
+0003 ( 244)		BINOP2	R1(I)[-1016..1031]	<-	CI:7, R0(I)[-1024..1023]	{}
+0004 ( 244)		BINOP9	R1(I)[0..7]	<-	R1(IF)[-1016..1031], CI:7	{}
+0005 ( 443)		STOREG1		<-	V(59 'scroll' A)+17 , R1(CF)[0..7]	{V}
+0006 ( 247)		BINOP18	R0(I)[-128..127]	<-	R0(IF)[-1024..1023], CI:3	{}
+0007 ( 247)		STOREC1		<-	V(9 '')+0 , R0(CF)[-128..127]	{}
+0008 ( 247)		CALLN		<-	V(9 'expand')+0 	{}
+0009 ( 251)		BINOP1	R1(I)	<-	R5(IF), R8(I)[-32..31]	{}
+000a ( 250)		BINOP1	R2(I)	<-	R6(IF), R7(I)[-32..31]	{}
+000b ( 254)		CALLN	R0(I)	<-	V(1 'rand')+0 	{}
+000c ( 254)		BINOP9	R0(I)[0..63]	<-	R0(IF), CI:63	{}
+000d ( 254)		RELOP19	R0(B)[0..1]	<-	R0(IF)[0..63], CI:0	{}
+000e ( 254)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 10
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 256)		CALLN	R5(I)	<-	V(1 'rand')+0 	{}
+0001 ( 257)		CALLN	R0(I)	<-	V(1 'rand')+0 	{}
+0002 ( 257)		BINOP9	R0(I)[0..63]	<-	R0(IF), CI:63	{}
+0003 ( 257)		BINOP2	R8(I)[-32..31]	<-	R0(IF)[0..63], CI:32	{}
+0004 ( 256)		BINOP9	R0(I)[0..63]	<-	R5(IF), CI:63	{}
+0005 ( 256)		BINOP2	R7(I)[-32..31]	<-	R0(IF)[0..63], CI:32	{}
+0006 ( 254)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 261)		BINOP1	R0(I)	<-	R2(I), CI:8	{}
+0001 ( 261)		BINOP18	R0(I)[-2048..2047]	<-	R0(IF), CI:4	{}
+0002 ( 261)		BINOP2	R6(I)	<-	R2(IF), R0(IF)[-2048..2047]	{}
+0003 ( 262)		BINOP1	R0(I)	<-	R1(I), CI:8	{}
+0004 ( 262)		BINOP18	R0(I)[-2048..2047]	<-	R0(IF), CI:4	{}
+0005 ( 262)		BINOP2	R0(I)	<-	R1(IF), R0(IF)[-2048..2047]	{}
+0006 ( 265)		BINOP1	R3(I)	<-	R0(I), R3(IF)	{}
+0007 ( 266)		RELOP24	R1(B)[0..1]	<-	R3(I), CI:0	{}
+0008 ( 266)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 11
+		==> 13
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 268)		UNOP11	R5(I)	<-	R0(IF)	{}
+0001 ( 269)		BINOP1	R3(I)	<-	R5(I), R3(IF)[-32768..32767]	{}
+0002 ( 266)		JUMP		<-		{}
+		==> 12
+L12: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 272)		BINOP1	R4(I)	<-	R4(IF), R6(I)	{}
+0001 ( 273)		RELOP24	R0(B)[0..1]	<-	R4(I), CI:0	{}
+0002 ( 273)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 14
+		==> 15
+L14: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 275)		UNOP11	R6(I)	<-	R6(IF)	{}
+0001 ( 276)		BINOP1	R4(I)	<-	R6(I), R4(IF)[-32768..32767]	{}
+0002 ( 273)		JUMP		<-		{}
+		==> 5
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 273)		RELOP27	R0(B)[0..1]	<-	R4(I)[0..32767], CI:22528	{}
+0001 ( 273)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 14
+		==> 5
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 262)		MOVE	R5(I)	<-	R0(I)	{}
+0001 ( 266)		RELOP27	R1(B)[0..1]	<-	R3(I)[0..32767], CI:26624	{}
+0002 ( 266)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 11
+		==> 12
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 443)		STOREG1		<-	V(59 'scroll' A)+2 , CC:10	{V}
+0001 ( 240)		JUMP		<-		{}
+		==> 8
+--------------------------------------------------------------------
+rand: /home/honza/projects/c64/projects/oscar64/include/stdlib.h:68
+$00 R0(I), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 ( 818)		LOADG2	R0(I)[0..65535]	<-	V(6 'seed')+0 	{}
+0001 ( 818)		BINOP16	R1(I)	<-	R0(I)[0..65535], CI:7	{}
+0002 ( 818)		BINOP10	R0(I)	<-	R1(IF), R0(IF)[0..65535]	{}
+0003 ( 819)		BINOP17	R1(I)[0..127]	<-	R0(I), CI:9	{}
+0004 ( 819)		BINOP10	R0(I)	<-	R1(IF)[0..127], R0(IF)	{}
+0005 ( 820)		BINOP16	R1(I)	<-	R0(I), CI:8	{}
+0006 ( 820)		BINOP10	R0(I)	<-	R1(IF), R0(IF)	{}
+0007 ( 820)		STOREG2		<-	V(6 'seed')+0 , R0(I)	{}
+0008 ( 821)		RETV		<-	R0(IF)	{}
+--------------------------------------------------------------------
+rirq_init_kernal: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:161
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 496)		CALLN		<-	V(3 'rirq_init_tables')+0 	{}
+0001 ( 500)		JSR		<-	V(-1 '')+0 	{V}
+0002 ( 505)		STOREA1		<-	V(-1 '')+53274 , CC:1	{V}
+0003 ( 503)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'rirq_isr_kernal_io')	{S}
+0004 ( 503)		STOREA2		<-	V(-1 '')+788 , R0(PF)+0 {V(-1 'rirq_isr_kernal_io')} [0..0]	{}
+0005 ( 506)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0006 ( 506)		BINOP9	R0(C)[0..127]	<-	R0(CF)[0..255], CC:127	{}
+0007 ( 506)		STOREA1		<-	V(-1 '')+53265 , R0(CF)[0..127]	{V}
+0008 ( 507)		STOREA1		<-	V(-1 '')+53266 , CC:255	{V}
+0009 ( 509)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_init_tables: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c:482
+$00 R0(I), $00 R1(P), $00 R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 484)		CONST	R2(C)[0..0]	<-	CI:0	{}
+0001 ( 486)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 486)		CONV37	R0(I)[0..15]	<-	R2(C)[0..15]	{}
+0001 ( 486)		LEAG	R1(P)[0..15]	<-	V(8 'rasterIRQRows' A)+0 , R0(I)[0..15]	{}
+0002 ( 486)		STOREI1		<-	R1(PF)+0 {V(8 'rasterIRQRows' A)} [0..15], CC:255	{}
+0003 ( 487)		LEAG	R0(P)[1..16]	<-	V(9 'rasterIRQIndex' A)+1 , R0(IF)[0..15]	{}
+0004 ( 487)		STOREI1		<-	R0(PF)+0 {V(9 'rasterIRQIndex' A)} [1..16], R2(C)[0..15]	{}
+0005 ( 484)		BINOP1	R2(C)[1..16]	<-	R2(CF)[0..15], CI:1	{}
+0006 ( 484)		RELOP28	R0(B)[0..1]	<-	R2(C)[1..16], CC:16	{}
+0007 ( 484)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 491)		STOREG1		<-	V(10 'rasterIRQNext' A)+16 , CC:255	{}
+0001 ( 490)		STOREG1		<-	V(8 'rasterIRQRows' A)+16 , CC:0	{}
+0002 ( 489)		STOREG1		<-	V(9 'rasterIRQIndex' A)+0 , CC:16	{}
+0003 ( 492)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_init_io: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:177
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 566)		CALLN		<-	V(3 'rirq_init_tables')+0 	{}
+0001 ( 570)		JSR		<-	V(-1 '')+0 	{V}
+0002 ( 575)		STOREA1		<-	V(-1 '')+53274 , CC:1	{V}
+0003 ( 573)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'rirq_isr_ram_io')	{S}
+0004 ( 573)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'rirq_isr_ram_io')} [0..0]	{}
+0005 ( 576)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0006 ( 576)		BINOP9	R0(C)[0..127]	<-	R0(CF)[0..255], CC:127	{}
+0007 ( 576)		STOREA1		<-	V(-1 '')+53265 , R0(CF)[0..127]	{V}
+0008 ( 577)		STOREA1		<-	V(-1 '')+53266 , CC:255	{V}
+0009 ( 579)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_build: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:120
+$00 R0(P), $00 R1(I), $00 R2(P), $00 R3(P), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 365)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 (  31)		STOREI1		<-	R0(P)+1, CC:160	{}
+0002 (  32)		STOREI1		<-	R0(P)+2, CC:0	{}
+0003 (  31)		STOREI1		<-	R0(P)+3, CC:162	{}
+0004 (  32)		STOREI1		<-	R0(P)+4, CC:0	{}
+0005 (  52)		STOREI1		<-	R0(P)+5, CC:205	{}
+0006 (  53)		STOREI1		<-	R0(P)+6, CC:18	{}
+0007 (  54)		STOREI1		<-	R0(P)+7, CC:208	{}
+0008 (  24)		STOREI1		<-	R0(P)+8, CC:176	{}
+0009 (  25)		STOREI1		<-	R0(P)+9, CC:-5	{}
+000a (  52)		STOREI1		<-	R0(P)+10, CC:140	{}
+000b (  53)		STOREI1		<-	R0(P)+11, CC:0	{}
+000c (  54)		STOREI1		<-	R0(P)+12, CC:0	{}
+000d ( 363)		LOADZ1	R2(C)[0..255]	<-	V(2 '')+0 	{S}
+000e ( 365)		STOREI1		<-	R0(P)+0, R2(C)[0..25]	{}
+000f ( 373)		BRANCH		<-	R2(C)[0..25]	{}
+		==> 1
+		==> 8
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 377)		RELOP19	R1(B)[0..1]	<-	R2(C)[0..25], CC:1	{S}
+0001 ( 377)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/asm6502.c
+0000 (   5)		STOREI1		<-	R0(PF)+13, CC:96	{}
+0001 ( 377)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 393)		RET		<-		{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/asm6502.c
+0000 (  52)		STOREI1		<-	R0(P)+13, CC:142	{}
+0001 (  53)		STOREI1		<-	R0(P)+14, CC:0	{}
+0002 (  54)		STOREI1		<-	R0(P)+15, CC:0	{}
+0003 ( 385)		CONST	R1(C)[15..15]	<-	CI:15	{}
+0004 ( 386)		RELOP28	R3(B)[0..1]	<-	CC:2, R2(C)[0..25]	{S}
+0005 ( 386)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 7
+		==> 6
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 386)		BINOP2	R4(C)[1..23]	<-	R2(CF)[3..25], CC:2	{}
+0001 ( 388)		LEAI	R2(P)+0	<-	R0(P)+0, CI:1	{IS}
+0002 ( 388)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 388)		CONV37	R1(I)[15..125]	<-	R1(CF)[15..125]	{}
+0001 ( 388)		LEAI	R3(P)+0	<-	R2(P)+0, R1(I)[15..125]	{}
+0002 (  31)		STOREI1		<-	R3(P)+0, CC:169	{}
+0003 (  32)		STOREI1		<-	R3(P)+1, CC:0	{}
+0004 (  52)		STOREI1		<-	R3(P)+2, CC:141	{}
+0005 (  53)		STOREI1		<-	R3(P)+3, CC:0	{}
+0006 (  54)		STOREI1		<-	R3(PF)+4, CC:0	{}
+0007 ( 389)		BINOP1	R1(I)[20..130]	<-	R1(IF)[15..125], CI:5	{}
+0008 ( 386)		BINOP2	R4(C)[0..22]	<-	R4(CF)[1..23], CI:1	{}
+0009 ( 386)		RELOP27	R3(B)[0..1]	<-	R4(C)[0..22], CC:0	{}
+000a ( 386)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 5
+		==> 6
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 391)		CONV37	R1(I)[15..130]	<-	R1(CF)[15..130]	{}
+0001 ( 391)		LEAI	R0(P)+0	<-	R0(PF)+0, R1(IF)[15..130]	{S}
+0002 ( 377)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/asm6502.c
+0000 (   5)		STOREI1		<-	R0(PF)+1, CC:96	{}
+0001 ( 377)		JUMP		<-		{}
+		==> 2
+--------------------------------------------------------------------
+rirq_sort: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:192
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(C), $00 R4(C), $00 R5(C), $00 R6(B), $00 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 628)		LOADG1	R0(C)[0..16]	<-	V(9 'rasterIRQIndex' A)+1 	{}
+0001 ( 626)		STOREG1		<-	V(11 'nextIRQ' A)+0 , CC:255	{V}
+0002 ( 628)		CONV37	R0(I)[0..16]	<-	R0(CF)[0..16]	{}
+0003 ( 628)		LEAG	R0(P)[0..16]	<-	V(8 'rasterIRQRows' A)+0 , R0(IF)[0..16]	{}
+0004 ( 628)		LOADI1	R3(C)[0..255]	<-	R0(PF)+0 {V(8 'rasterIRQRows' A)} [0..16]	{}
+0005 ( 629)		CONST	R4(C)[2..2]	<-	CI:2	{}
+0006 ( 631)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 631)		CONV37	R0(I)[1..16]	<-	R4(C)[1..16]	{}
+0001 ( 631)		LEAG	R1(P)[1..16]	<-	V(9 'rasterIRQIndex' A)+0 , R0(I)[1..16]	{}
+0002 ( 631)		LOADI1	R5(C)[0..16]	<-	R1(P)+0 {V(9 'rasterIRQIndex' A)} [1..16]	{}
+0003 ( 632)		CONV37	R2(I)[0..16]	<-	R5(C)[0..16]	{}
+0004 ( 632)		LEAG	R2(P)[0..16]	<-	V(8 'rasterIRQRows' A)+0 , R2(IF)[0..16]	{}
+0005 ( 632)		LOADI1	R2(C)[0..255]	<-	R2(PF)+0 {V(8 'rasterIRQRows' A)} [0..16]	{}
+0006 ( 633)		RELOP28	R6(B)[0..1]	<-	R2(C)[0..255], R3(C)[0..255]	{}
+0007 ( 633)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 4
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 635)		LEAG	R0(P)[0..15]	<-	V(9 'rasterIRQIndex' A)+-1 , R0(IF)[1..16]	{}
+0001 ( 635)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(9 'rasterIRQIndex' A)} [0..15]	{}
+0002 ( 635)		STOREI1		<-	R1(PF)+0 {V(9 'rasterIRQIndex' A)} [1..16], R0(CF)[0..255]	{}
+0003 ( 636)		MOVE	R6(C)[1..16]	<-	R4(C)[1..16]	{}
+0004 ( 637)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 637)		CONV37	R0(I)[2..16]	<-	R6(C)[2..16]	{}
+0001 ( 637)		LEAG	R0(P)[0..14]	<-	V(9 'rasterIRQIndex' A)+-2 , R0(IF)[2..16]	{}
+0002 ( 637)		LOADI1	R7(C)[0..16]	<-	R0(P)+0 {V(9 'rasterIRQIndex' A)} [0..14]	{}
+0003 ( 637)		CONV37	R1(I)[0..16]	<-	R7(C)[0..16]	{}
+0004 ( 637)		LEAG	R1(P)[0..16]	<-	V(8 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+0005 ( 637)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(8 'rasterIRQRows' A)} [0..16]	{}
+0006 ( 637)		RELOP28	R1(B)[0..1]	<-	R2(C)[0..254], R1(CF)[0..255]	{}
+0007 ( 637)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 639)		STOREI1		<-	R0(PF)+1 {V(9 'rasterIRQIndex' A)} [0..14], R7(CF)[0..16]	{}
+0001 ( 640)		BINOP1	R6(C)[1..15]	<-	R6(CF)[2..16], CI:-1	{}
+0002 ( 637)		JUMP		<-		{}
+		==> 6
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 642)		STOREI1		<-	R0(PF)+1 {V(9 'rasterIRQIndex' A)} [0..14], R5(CF)[0..16]	{}
+0001 ( 629)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 629)		BINOP1	R4(C)[1..17]	<-	R4(CF)[0..16], CI:1	{}
+0001 ( 629)		RELOP28	R0(B)[0..1]	<-	R4(C)[1..17], CC:17	{}
+0002 ( 629)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 666)		CONST	R2(C)[3..3]	<-	CI:3	{}
+0001 ( 670)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 670)		CONV37	R0(I)[0..3]	<-	R2(C)[0..3]	{}
+0001 ( 670)		LEAG	R1(P)[1..4]	<-	V(9 'rasterIRQIndex' A)+1 , R0(I)[0..3]	{}
+0002 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(9 'rasterIRQIndex' A)} [1..4]	{}
+0003 ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+0004 ( 670)		LEAG	R1(P)[0..16]	<-	V(8 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+0005 ( 670)		LOADI1	R3(C)[0..255]	<-	R1(PF)+0 {V(8 'rasterIRQRows' A)} [0..16]	{}
+0006 ( 670)		LEAG	R1(P)[0..3]	<-	V(10 'rasterIRQNext' A)+0 , R0(I)[0..3]	{}
+0007 ( 670)		STOREI1		<-	R1(PF)+0 {V(10 'rasterIRQNext' A)} [0..3], R3(CF)[0..255]	{}
+0008 ( 670)		LEAG	R1(P)[5..8]	<-	V(9 'rasterIRQIndex' A)+5 , R0(I)[0..3]	{}
+0009 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(9 'rasterIRQIndex' A)} [5..8]	{}
+000a ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+000b ( 670)		LEAG	R1(P)[0..16]	<-	V(8 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+000c ( 670)		LOADI1	R3(C)[0..255]	<-	R1(PF)+0 {V(8 'rasterIRQRows' A)} [0..16]	{}
+000d ( 670)		LEAG	R1(P)[4..7]	<-	V(10 'rasterIRQNext' A)+4 , R0(I)[0..3]	{}
+000e ( 670)		STOREI1		<-	R1(PF)+0 {V(10 'rasterIRQNext' A)} [4..7], R3(CF)[0..255]	{}
+000f ( 670)		LEAG	R1(P)[9..12]	<-	V(9 'rasterIRQIndex' A)+9 , R0(I)[0..3]	{}
+0010 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(9 'rasterIRQIndex' A)} [9..12]	{}
+0011 ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+0012 ( 670)		LEAG	R1(P)[0..16]	<-	V(8 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+0013 ( 670)		LOADI1	R3(C)[0..255]	<-	R1(PF)+0 {V(8 'rasterIRQRows' A)} [0..16]	{}
+0014 ( 670)		LEAG	R1(P)[8..11]	<-	V(10 'rasterIRQNext' A)+8 , R0(I)[0..3]	{}
+0015 ( 670)		STOREI1		<-	R1(PF)+0 {V(10 'rasterIRQNext' A)} [8..11], R3(CF)[0..255]	{}
+0016 ( 670)		LEAG	R1(P)[13..16]	<-	V(9 'rasterIRQIndex' A)+13 , R0(I)[0..3]	{}
+0017 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(9 'rasterIRQIndex' A)} [13..16]	{}
+0018 ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+0019 ( 670)		LEAG	R1(P)[0..16]	<-	V(8 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+001a ( 670)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(8 'rasterIRQRows' A)} [0..16]	{}
+001b ( 670)		LEAG	R0(P)[12..15]	<-	V(10 'rasterIRQNext' A)+12 , R0(IF)[0..3]	{}
+001c ( 670)		STOREI1		<-	R0(PF)+0 {V(10 'rasterIRQNext' A)} [12..15], R1(CF)[0..255]	{}
+001d ( 666)		BINOP1	R2(C)[-1..2]	<-	R2(CF)[0..3], CI:-1	{}
+001e ( 666)		RELOP21	R0(B)[0..1]	<-	R2(C)[-1..2], CC:0	{}
+001f ( 666)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 10
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 674)		LOADG1	R0(C)[0..255]	<-	V(14 'rirq_count' A)+0 	{V}
+0001 ( 674)		STOREG1		<-	V(61 'rirq_pcount')+0 , R0(CF)[0..255]	{}
+0002 ( 675)		LOADZ1	R0(B)[0..1]	<-	V(0 '')+0 	{S}
+0003 ( 675)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 12
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 676)		STOREG1		<-	V(11 'nextIRQ' A)+0 , CC:15	{V}
+0001 ( 675)		JUMP		<-		{}
+		==> 13
+L13: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 686)		RET		<-		{}
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 679)		LOADG1	R0(C)[0..255]	<-	V(10 'rasterIRQNext' A)+0 	{}
+0001 ( 680)		RELOP20	R1(B)[0..1]	<-	R0(C)[0..255], CC:255	{}
+0002 ( 680)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 14
+		==> 13
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 682)		BINOP2	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:1	{}
+0001 ( 682)		STOREA1		<-	V(-1 '')+53266 , R0(CF)[-1..254]	{V}
+0002 ( 683)		STOREG1		<-	V(11 'nextIRQ' A)+0 , CC:0	{V}
+0003 ( 680)		JUMP		<-		{}
+		==> 13
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 645)		MOVE	R3(C)[0..255]	<-	R2(CF)[0..255]	{}
+0001 ( 629)		JUMP		<-		{}
+		==> 1
+--------------------------------------------------------------------
+rirq_start: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:184
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 692)		JSR		<-	V(-1 '')+0 	{V}
+0001 ( 702)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_wait: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:198
+$00 R0(C), $00 R1(C), $00 R2(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 608)		LOADG1	R0(C)[0..255]	<-	V(61 'rirq_pcount')+0 	{}
+0001 ( 611)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 611)		LOADG1	R1(C)[0..255]	<-	V(14 'rirq_count' A)+0 	{V}
+0001 ( 612)		RELOP19	R2(B)[0..1]	<-	R0(C)[0..255], R1(C)[0..255]	{}
+0002 ( 612)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 613)		STOREG1		<-	V(61 'rirq_pcount')+0 , R1(CF)[0..255]	{}
+0001 ( 614)		RET		<-		{}
+--------------------------------------------------------------------
+expand: /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c:129
+$00 R0(I), $00 R1(I), $00 R2(P), $00 R3(I), $00 R4(B), $01 R5(B), $02 R6(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 133)		LOADZ1	R0(C)[0..255]	<-	V(9 '')+0 	{S}
+0001 ( 133)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0002 ( 139)		BINOP17	R1(I)[0..63]	<-	R0(I)[0..255], CI:2	{S}
+0003 ( 139)		LOADZ2	R2(P)	<-	V(7 '')+0 	{S}
+0004 ( 139)		LEAI	R2(P)+0	<-	R2(PF)+0, R1(IF)[0..63]	{S}
+0005 ( 132)		LOADZ1	R1(C)[0..255]	<-	V(10 '')+0 	{S}
+0006 ( 132)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{S}
+0007 ( 139)		BINOP9	R3(I)[0..252]	<-	R1(I)[0..255], CI:252	{S}
+0008 ( 139)		BINOP16	R3(I)[0..2016]	<-	R3(IF)[0..252], CI:3	{S}
+0009 ( 139)		LEAI	R2(P)+0	<-	R2(PF)+0, R3(IF)[0..2016]	{}
+000a ( 133)		BINOP9	R0(I)[0..3]	<-	R0(IF)[0..255], CI:3	{S}
+000b ( 145)		RELOP19	R5(B)[0..1]	<-	R0(C)[0..3], CC:1	{IS}
+000c ( 132)		BINOP9	R1(I)[0..3]	<-	R1(IF)[0..255], CI:3	{S}
+000d ( 132)		BINOP16	R1(I)[0..12]	<-	R1(IF)[0..3], CI:2	{}
+000e ( 142)		CONST	R6(C)[20..20]	<-	CI:20	{}
+000f ( 136)		LOADZ2	R3(P)	<-	V(5 '')+0 	{}
+0010 ( 151)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 151)		STOREC2		<-	V(0 '')+0 , R3(P)	{}
+0001 ( 151)		STOREC2		<-	V(2 '')+0 , R2(P)	{}
+0002 ( 151)		STOREC1		<-	V(4 '')+0 , R1(C)[0..]	{}
+0003 ( 145)		BRANCH		<-	R5(B)[0..1]	{}
+		==> 6
+		==> 9
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 151)		CALLN		<-	V(11 'expandrow1')+0 	{}
+0001 ( 152)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 163)		BINOP1	R1(C)[4..]	<-	R1(CF)[0..], CC:4	{}
+0001 ( 166)		RELOP19	R4(B)[0..1]	<-	R1(C)[4..], CC:16	{}
+0002 ( 166)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 11
+		==> 1
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 169)		LEAI	R2(P)+0	<-	R2(PF)+0, CI:32	{}
+0001 ( 168)		CONST	R1(C)[0..0]	<-	CI:0	{}
+0002 ( 142)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 162)		LEAI	R3(P)+0	<-	R3(PF)+0, CI:40	{}
+0001 ( 142)		BINOP2	R6(C)[0..19]	<-	R6(CF)[1..20], CI:1	{}
+0002 ( 142)		RELOP27	R4(B)[0..1]	<-	R6(C)[0..19], CC:0	{}
+0003 ( 142)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 172)		RET		<-		{}
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 145)		RELOP28	R4(B)[0..1]	<-	R0(C)[0..3], CC:1	{IS}
+0001 ( 145)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 5
+		==> 10
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 148)		CALLN		<-	V(10 'expandrow0')+0 	{}
+0001 ( 149)		JUMP		<-		{}
+		==> 4
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 145)		RELOP19	R4(B)[0..1]	<-	R0(C)[1..3], CC:2	{IS}
+0001 ( 145)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 154)		CALLN		<-	V(12 'expandrow2')+0 	{}
+0001 ( 145)		CONST	R0(C)[1..3]	<-	CI:2	{}
+0002 ( 155)		JUMP		<-		{}
+		==> 4
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 157)		CALLN		<-	V(13 'expandrow3')+0 	{}
+0001 ( 158)		JUMP		<-		{}
+		==> 4
+--------------------------------------------------------------------
+expandrow0: /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c:46
+$00 R0(P), $00 R1(I), $00 R2(P), $00 R3(P), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 (  52)		LOADZ2	R0(P)	<-	V(2 '')+0 	{S}
+0001 (  52)		LOADI1	R1(C)[0..255]	<-	R0(P)+0	{}
+0002 (  52)		LOADZ1	R4(C)[0..255]	<-	V(4 '')+0 	{S}
+0003 (  52)		BINOP8	R1(C)[0..15]	<-	R4(C)[0..255], R1(CF)[0..255]	{}
+0004 (  53)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0005 (  53)		LEAG	R2(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0006 (  53)		LOADI1	R3(C)[0..225]	<-	R2(PF)+0 {V(66 'quad')} [0..15]	{}
+0007 (  53)		LOADZ2	R2(P)	<-	V(0 '')+0 	{S}
+0008 (  53)		STOREI1		<-	R2(P)+0, R3(CF)[0..225]	{}
+0009 (  54)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+000a (  54)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+000b (  54)		STOREI1		<-	R2(P)+1, R3(CF)[0..226]	{}
+000c (  55)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+000d (  55)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+000e (  55)		STOREI1		<-	R2(P)+2, R3(CF)[0..226]	{}
+000f (  56)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0010 (  56)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0011 (  56)		STOREI1		<-	R2(P)+3, R1(CF)[32..126]	{}
+0012 (  52)		LOADI1	R1(C)[0..255]	<-	R0(P)+1	{}
+0013 (  52)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0014 (  53)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0015 (  53)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0016 (  53)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0017 (  53)		STOREI1		<-	R2(P)+4, R3(CF)[0..225]	{}
+0018 (  54)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0019 (  54)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+001a (  54)		STOREI1		<-	R2(P)+5, R3(CF)[0..226]	{}
+001b (  55)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+001c (  55)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+001d (  55)		STOREI1		<-	R2(P)+6, R3(CF)[0..226]	{}
+001e (  56)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+001f (  56)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0020 (  56)		STOREI1		<-	R2(P)+7, R1(CF)[32..126]	{}
+0021 (  52)		LOADI1	R1(C)[0..255]	<-	R0(P)+2	{}
+0022 (  52)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0023 (  53)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0024 (  53)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0025 (  53)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0026 (  53)		STOREI1		<-	R2(P)+8, R3(CF)[0..225]	{}
+0027 (  54)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0028 (  54)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0029 (  54)		STOREI1		<-	R2(P)+9, R3(CF)[0..226]	{}
+002a (  55)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+002b (  55)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+002c (  55)		STOREI1		<-	R2(P)+10, R3(CF)[0..226]	{}
+002d (  56)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+002e (  56)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+002f (  56)		STOREI1		<-	R2(P)+11, R1(CF)[32..126]	{}
+0030 (  52)		LOADI1	R1(C)[0..255]	<-	R0(P)+3	{}
+0031 (  52)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0032 (  53)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0033 (  53)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0034 (  53)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0035 (  53)		STOREI1		<-	R2(P)+12, R3(CF)[0..225]	{}
+0036 (  54)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0037 (  54)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0038 (  54)		STOREI1		<-	R2(P)+13, R3(CF)[0..226]	{}
+0039 (  55)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+003a (  55)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+003b (  55)		STOREI1		<-	R2(P)+14, R3(CF)[0..226]	{}
+003c (  56)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+003d (  56)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+003e (  56)		STOREI1		<-	R2(P)+15, R1(CF)[32..126]	{}
+003f (  52)		LOADI1	R1(C)[0..255]	<-	R0(P)+4	{}
+0040 (  52)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0041 (  53)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0042 (  53)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0043 (  53)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0044 (  53)		STOREI1		<-	R2(P)+16, R3(CF)[0..225]	{}
+0045 (  54)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0046 (  54)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0047 (  54)		STOREI1		<-	R2(P)+17, R3(CF)[0..226]	{}
+0048 (  55)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0049 (  55)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+004a (  55)		STOREI1		<-	R2(P)+18, R3(CF)[0..226]	{}
+004b (  56)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+004c (  56)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+004d (  56)		STOREI1		<-	R2(P)+19, R1(CF)[32..126]	{}
+004e (  52)		LOADI1	R1(C)[0..255]	<-	R0(P)+5	{}
+004f (  52)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0050 (  53)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0051 (  53)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0052 (  53)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0053 (  53)		STOREI1		<-	R2(P)+20, R3(CF)[0..225]	{}
+0054 (  54)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0055 (  54)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0056 (  54)		STOREI1		<-	R2(P)+21, R3(CF)[0..226]	{}
+0057 (  55)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0058 (  55)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0059 (  55)		STOREI1		<-	R2(P)+22, R3(CF)[0..226]	{}
+005a (  56)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+005b (  56)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+005c (  56)		STOREI1		<-	R2(P)+23, R1(CF)[32..126]	{}
+005d (  52)		LOADI1	R1(C)[0..255]	<-	R0(P)+6	{}
+005e (  52)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+005f (  53)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0060 (  53)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0061 (  53)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0062 (  53)		STOREI1		<-	R2(P)+24, R3(CF)[0..225]	{}
+0063 (  54)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0064 (  54)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0065 (  54)		STOREI1		<-	R2(P)+25, R3(CF)[0..226]	{}
+0066 (  55)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0067 (  55)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0068 (  55)		STOREI1		<-	R2(P)+26, R3(CF)[0..226]	{}
+0069 (  56)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+006a (  56)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+006b (  56)		STOREI1		<-	R2(P)+27, R1(CF)[32..126]	{}
+006c (  52)		LOADI1	R1(C)[0..255]	<-	R0(P)+7	{}
+006d (  52)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+006e (  53)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+006f (  53)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0070 (  53)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0071 (  53)		STOREI1		<-	R2(P)+28, R3(CF)[0..225]	{}
+0072 (  54)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0073 (  54)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0074 (  54)		STOREI1		<-	R2(P)+29, R3(CF)[0..226]	{}
+0075 (  55)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0076 (  55)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0077 (  55)		STOREI1		<-	R2(P)+30, R3(CF)[0..226]	{}
+0078 (  56)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0079 (  56)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+007a (  56)		STOREI1		<-	R2(P)+31, R1(CF)[32..126]	{}
+007b (  52)		LOADI1	R1(C)[0..255]	<-	R0(P)+8	{}
+007c (  52)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+007d (  53)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+007e (  53)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+007f (  53)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0080 (  53)		STOREI1		<-	R2(P)+32, R3(CF)[0..225]	{}
+0081 (  54)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0082 (  54)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0083 (  54)		STOREI1		<-	R2(P)+33, R3(CF)[0..226]	{}
+0084 (  55)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0085 (  55)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0086 (  55)		STOREI1		<-	R2(P)+34, R3(CF)[0..226]	{}
+0087 (  56)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0088 (  56)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0089 (  56)		STOREI1		<-	R2(P)+35, R1(CF)[32..126]	{}
+008a (  52)		LOADI1	R0(C)[0..255]	<-	R0(PF)+9	{}
+008b (  52)		BINOP8	R0(C)[0..15]	<-	R0(CF)[0..255], R4(CF)[0..255]	{}
+008c (  53)		CONV37	R0(I)[0..15]	<-	R0(CF)[0..15]	{}
+008d (  53)		LEAG	R1(P)[0..15]	<-	V(66 'quad')+0 , R0(I)[0..15]	{}
+008e (  53)		LOADI1	R1(C)[0..225]	<-	R1(PF)+0 {V(66 'quad')} [0..15]	{}
+008f (  53)		STOREI1		<-	R2(P)+36, R1(CF)[0..225]	{}
+0090 (  54)		LEAG	R1(P)[16..31]	<-	V(66 'quad')+16 , R0(I)[0..15]	{}
+0091 (  54)		LOADI1	R1(C)[0..226]	<-	R1(PF)+0 {V(66 'quad')} [16..31]	{}
+0092 (  54)		STOREI1		<-	R2(P)+37, R1(CF)[0..226]	{}
+0093 (  55)		LEAG	R1(P)[32..47]	<-	V(66 'quad')+32 , R0(I)[0..15]	{}
+0094 (  55)		LOADI1	R1(C)[0..226]	<-	R1(PF)+0 {V(66 'quad')} [32..47]	{}
+0095 (  55)		STOREI1		<-	R2(P)+38, R1(CF)[0..226]	{}
+0096 (  56)		LEAG	R0(P)[48..63]	<-	V(66 'quad')+48 , R0(IF)[0..15]	{}
+0097 (  56)		LOADI1	R0(C)[32..126]	<-	R0(PF)+0 {V(66 'quad')} [48..63]	{}
+0098 (  56)		STOREI1		<-	R2(PF)+39, R0(CF)[32..126]	{}
+0099 (  59)		RET		<-		{}
+--------------------------------------------------------------------
+expandrow1: /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c:63
+$00 R0(P), $00 R1(I), $00 R2(P), $00 R3(P), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 (  66)		LOADZ2	R0(P)	<-	V(2 '')+0 	{S}
+0001 (  66)		LOADI1	R1(C)[0..255]	<-	R0(P)+0	{}
+0002 (  66)		LOADZ1	R4(C)[0..255]	<-	V(4 '')+0 	{S}
+0003 (  66)		BINOP8	R1(C)[0..15]	<-	R4(C)[0..255], R1(CF)[0..255]	{}
+0004 (  67)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0005 (  67)		LEAG	R2(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0006 (  67)		LOADI1	R3(C)[0..226]	<-	R2(PF)+0 {V(66 'quad')} [16..31]	{}
+0007 (  67)		LOADZ2	R2(P)	<-	V(0 '')+0 	{S}
+0008 (  67)		STOREI1		<-	R2(P)+0, R3(CF)[0..226]	{}
+0009 (  68)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+000a (  68)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+000b (  68)		STOREI1		<-	R2(P)+1, R3(CF)[0..226]	{}
+000c (  69)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+000d (  69)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+000e (  69)		STOREI1		<-	R2(P)+2, R1(CF)[32..126]	{}
+000f (  72)		LOADI1	R1(C)[0..255]	<-	R0(P)+1	{}
+0010 (  72)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0011 (  73)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0012 (  73)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0013 (  73)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0014 (  73)		STOREI1		<-	R2(P)+3, R3(CF)[0..225]	{}
+0015 (  74)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0016 (  74)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0017 (  74)		STOREI1		<-	R2(P)+4, R3(CF)[0..226]	{}
+0018 (  75)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0019 (  75)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+001a (  75)		STOREI1		<-	R2(P)+5, R3(CF)[0..226]	{}
+001b (  76)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+001c (  76)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+001d (  76)		STOREI1		<-	R2(P)+6, R1(CF)[32..126]	{}
+001e (  72)		LOADI1	R1(C)[0..255]	<-	R0(P)+2	{}
+001f (  72)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0020 (  73)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0021 (  73)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0022 (  73)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0023 (  73)		STOREI1		<-	R2(P)+7, R3(CF)[0..225]	{}
+0024 (  74)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0025 (  74)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0026 (  74)		STOREI1		<-	R2(P)+8, R3(CF)[0..226]	{}
+0027 (  75)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0028 (  75)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0029 (  75)		STOREI1		<-	R2(P)+9, R3(CF)[0..226]	{}
+002a (  76)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+002b (  76)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+002c (  76)		STOREI1		<-	R2(P)+10, R1(CF)[32..126]	{}
+002d (  72)		LOADI1	R1(C)[0..255]	<-	R0(P)+3	{}
+002e (  72)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+002f (  73)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0030 (  73)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0031 (  73)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0032 (  73)		STOREI1		<-	R2(P)+11, R3(CF)[0..225]	{}
+0033 (  74)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0034 (  74)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0035 (  74)		STOREI1		<-	R2(P)+12, R3(CF)[0..226]	{}
+0036 (  75)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0037 (  75)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0038 (  75)		STOREI1		<-	R2(P)+13, R3(CF)[0..226]	{}
+0039 (  76)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+003a (  76)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+003b (  76)		STOREI1		<-	R2(P)+14, R1(CF)[32..126]	{}
+003c (  72)		LOADI1	R1(C)[0..255]	<-	R0(P)+4	{}
+003d (  72)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+003e (  73)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+003f (  73)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0040 (  73)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0041 (  73)		STOREI1		<-	R2(P)+15, R3(CF)[0..225]	{}
+0042 (  74)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0043 (  74)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0044 (  74)		STOREI1		<-	R2(P)+16, R3(CF)[0..226]	{}
+0045 (  75)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0046 (  75)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0047 (  75)		STOREI1		<-	R2(P)+17, R3(CF)[0..226]	{}
+0048 (  76)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0049 (  76)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+004a (  76)		STOREI1		<-	R2(P)+18, R1(CF)[32..126]	{}
+004b (  72)		LOADI1	R1(C)[0..255]	<-	R0(P)+5	{}
+004c (  72)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+004d (  73)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+004e (  73)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+004f (  73)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0050 (  73)		STOREI1		<-	R2(P)+19, R3(CF)[0..225]	{}
+0051 (  74)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0052 (  74)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0053 (  74)		STOREI1		<-	R2(P)+20, R3(CF)[0..226]	{}
+0054 (  75)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0055 (  75)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0056 (  75)		STOREI1		<-	R2(P)+21, R3(CF)[0..226]	{}
+0057 (  76)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0058 (  76)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0059 (  76)		STOREI1		<-	R2(P)+22, R1(CF)[32..126]	{}
+005a (  72)		LOADI1	R1(C)[0..255]	<-	R0(P)+6	{}
+005b (  72)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+005c (  73)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+005d (  73)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+005e (  73)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+005f (  73)		STOREI1		<-	R2(P)+23, R3(CF)[0..225]	{}
+0060 (  74)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0061 (  74)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0062 (  74)		STOREI1		<-	R2(P)+24, R3(CF)[0..226]	{}
+0063 (  75)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0064 (  75)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0065 (  75)		STOREI1		<-	R2(P)+25, R3(CF)[0..226]	{}
+0066 (  76)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0067 (  76)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0068 (  76)		STOREI1		<-	R2(P)+26, R1(CF)[32..126]	{}
+0069 (  72)		LOADI1	R1(C)[0..255]	<-	R0(P)+7	{}
+006a (  72)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+006b (  73)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+006c (  73)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+006d (  73)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+006e (  73)		STOREI1		<-	R2(P)+27, R3(CF)[0..225]	{}
+006f (  74)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0070 (  74)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0071 (  74)		STOREI1		<-	R2(P)+28, R3(CF)[0..226]	{}
+0072 (  75)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0073 (  75)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0074 (  75)		STOREI1		<-	R2(P)+29, R3(CF)[0..226]	{}
+0075 (  76)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0076 (  76)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0077 (  76)		STOREI1		<-	R2(P)+30, R1(CF)[32..126]	{}
+0078 (  72)		LOADI1	R1(C)[0..255]	<-	R0(P)+8	{}
+0079 (  72)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+007a (  73)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+007b (  73)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+007c (  73)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+007d (  73)		STOREI1		<-	R2(P)+31, R3(CF)[0..225]	{}
+007e (  74)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+007f (  74)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0080 (  74)		STOREI1		<-	R2(P)+32, R3(CF)[0..226]	{}
+0081 (  75)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0082 (  75)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0083 (  75)		STOREI1		<-	R2(P)+33, R3(CF)[0..226]	{}
+0084 (  76)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0085 (  76)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0086 (  76)		STOREI1		<-	R2(P)+34, R1(CF)[32..126]	{}
+0087 (  72)		LOADI1	R1(C)[0..255]	<-	R0(P)+9	{}
+0088 (  72)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0089 (  73)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+008a (  73)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+008b (  73)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+008c (  73)		STOREI1		<-	R2(P)+35, R3(CF)[0..225]	{}
+008d (  74)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+008e (  74)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+008f (  74)		STOREI1		<-	R2(P)+36, R3(CF)[0..226]	{}
+0090 (  75)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0091 (  75)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0092 (  75)		STOREI1		<-	R2(P)+37, R3(CF)[0..226]	{}
+0093 (  76)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0094 (  76)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0095 (  76)		STOREI1		<-	R2(P)+38, R1(CF)[32..126]	{}
+0096 (  79)		LOADI1	R0(C)[0..255]	<-	R0(PF)+10	{}
+0097 (  79)		BINOP8	R0(C)[0..63]	<-	R0(CF)[0..255], R4(CF)[0..255]	{}
+0098 (  80)		CONV37	R0(I)[0..63]	<-	R0(CF)[0..63]	{}
+0099 (  80)		LEAG	R0(P)[0..63]	<-	V(66 'quad')+0 , R0(IF)[0..16]	{}
+009a (  80)		LOADI1	R0(C)[0..226]	<-	R0(PF)+0 {V(66 'quad')} [0..63]	{}
+009b (  80)		STOREI1		<-	R2(PF)+39, R0(CF)[0..226]	{}
+009c (  81)		RET		<-		{}
+--------------------------------------------------------------------
+expandrow2: /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c:85
+$00 R0(P), $00 R1(I), $00 R2(P), $00 R3(P), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 (  88)		LOADZ2	R0(P)	<-	V(2 '')+0 	{S}
+0001 (  88)		LOADI1	R1(C)[0..255]	<-	R0(P)+0	{}
+0002 (  88)		LOADZ1	R4(C)[0..255]	<-	V(4 '')+0 	{S}
+0003 (  88)		BINOP8	R1(C)[0..15]	<-	R4(C)[0..255], R1(CF)[0..255]	{}
+0004 (  89)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0005 (  89)		LEAG	R2(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0006 (  89)		LOADI1	R3(C)[0..226]	<-	R2(PF)+0 {V(66 'quad')} [32..47]	{}
+0007 (  89)		LOADZ2	R2(P)	<-	V(0 '')+0 	{S}
+0008 (  89)		STOREI1		<-	R2(P)+0, R3(CF)[0..226]	{}
+0009 (  90)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+000a (  90)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+000b (  90)		STOREI1		<-	R2(P)+1, R1(CF)[32..126]	{}
+000c (  93)		LOADI1	R1(C)[0..255]	<-	R0(P)+1	{}
+000d (  93)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+000e (  94)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+000f (  94)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0010 (  94)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0011 (  94)		STOREI1		<-	R2(P)+2, R3(CF)[0..225]	{}
+0012 (  95)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0013 (  95)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0014 (  95)		STOREI1		<-	R2(P)+3, R3(CF)[0..226]	{}
+0015 (  96)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0016 (  96)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0017 (  96)		STOREI1		<-	R2(P)+4, R3(CF)[0..226]	{}
+0018 (  97)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0019 (  97)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+001a (  97)		STOREI1		<-	R2(P)+5, R1(CF)[32..126]	{}
+001b (  93)		LOADI1	R1(C)[0..255]	<-	R0(P)+2	{}
+001c (  93)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+001d (  94)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+001e (  94)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+001f (  94)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0020 (  94)		STOREI1		<-	R2(P)+6, R3(CF)[0..225]	{}
+0021 (  95)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0022 (  95)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0023 (  95)		STOREI1		<-	R2(P)+7, R3(CF)[0..226]	{}
+0024 (  96)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0025 (  96)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0026 (  96)		STOREI1		<-	R2(P)+8, R3(CF)[0..226]	{}
+0027 (  97)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0028 (  97)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0029 (  97)		STOREI1		<-	R2(P)+9, R1(CF)[32..126]	{}
+002a (  93)		LOADI1	R1(C)[0..255]	<-	R0(P)+3	{}
+002b (  93)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+002c (  94)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+002d (  94)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+002e (  94)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+002f (  94)		STOREI1		<-	R2(P)+10, R3(CF)[0..225]	{}
+0030 (  95)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0031 (  95)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0032 (  95)		STOREI1		<-	R2(P)+11, R3(CF)[0..226]	{}
+0033 (  96)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0034 (  96)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0035 (  96)		STOREI1		<-	R2(P)+12, R3(CF)[0..226]	{}
+0036 (  97)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0037 (  97)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0038 (  97)		STOREI1		<-	R2(P)+13, R1(CF)[32..126]	{}
+0039 (  93)		LOADI1	R1(C)[0..255]	<-	R0(P)+4	{}
+003a (  93)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+003b (  94)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+003c (  94)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+003d (  94)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+003e (  94)		STOREI1		<-	R2(P)+14, R3(CF)[0..225]	{}
+003f (  95)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+0040 (  95)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0041 (  95)		STOREI1		<-	R2(P)+15, R3(CF)[0..226]	{}
+0042 (  96)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0043 (  96)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0044 (  96)		STOREI1		<-	R2(P)+16, R3(CF)[0..226]	{}
+0045 (  97)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0046 (  97)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0047 (  97)		STOREI1		<-	R2(P)+17, R1(CF)[32..126]	{}
+0048 (  93)		LOADI1	R1(C)[0..255]	<-	R0(P)+5	{}
+0049 (  93)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+004a (  94)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+004b (  94)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+004c (  94)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+004d (  94)		STOREI1		<-	R2(P)+18, R3(CF)[0..225]	{}
+004e (  95)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+004f (  95)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0050 (  95)		STOREI1		<-	R2(P)+19, R3(CF)[0..226]	{}
+0051 (  96)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0052 (  96)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0053 (  96)		STOREI1		<-	R2(P)+20, R3(CF)[0..226]	{}
+0054 (  97)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0055 (  97)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0056 (  97)		STOREI1		<-	R2(P)+21, R1(CF)[32..126]	{}
+0057 (  93)		LOADI1	R1(C)[0..255]	<-	R0(P)+6	{}
+0058 (  93)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0059 (  94)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+005a (  94)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+005b (  94)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+005c (  94)		STOREI1		<-	R2(P)+22, R3(CF)[0..225]	{}
+005d (  95)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+005e (  95)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+005f (  95)		STOREI1		<-	R2(P)+23, R3(CF)[0..226]	{}
+0060 (  96)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0061 (  96)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0062 (  96)		STOREI1		<-	R2(P)+24, R3(CF)[0..226]	{}
+0063 (  97)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0064 (  97)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0065 (  97)		STOREI1		<-	R2(P)+25, R1(CF)[32..126]	{}
+0066 (  93)		LOADI1	R1(C)[0..255]	<-	R0(P)+7	{}
+0067 (  93)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0068 (  94)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0069 (  94)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+006a (  94)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+006b (  94)		STOREI1		<-	R2(P)+26, R3(CF)[0..225]	{}
+006c (  95)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+006d (  95)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+006e (  95)		STOREI1		<-	R2(P)+27, R3(CF)[0..226]	{}
+006f (  96)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+0070 (  96)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0071 (  96)		STOREI1		<-	R2(P)+28, R3(CF)[0..226]	{}
+0072 (  97)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0073 (  97)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0074 (  97)		STOREI1		<-	R2(P)+29, R1(CF)[32..126]	{}
+0075 (  93)		LOADI1	R1(C)[0..255]	<-	R0(P)+8	{}
+0076 (  93)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0077 (  94)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0078 (  94)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0079 (  94)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+007a (  94)		STOREI1		<-	R2(P)+30, R3(CF)[0..225]	{}
+007b (  95)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+007c (  95)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+007d (  95)		STOREI1		<-	R2(P)+31, R3(CF)[0..226]	{}
+007e (  96)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+007f (  96)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0080 (  96)		STOREI1		<-	R2(P)+32, R3(CF)[0..226]	{}
+0081 (  97)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0082 (  97)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0083 (  97)		STOREI1		<-	R2(P)+33, R1(CF)[32..126]	{}
+0084 (  93)		LOADI1	R1(C)[0..255]	<-	R0(P)+9	{}
+0085 (  93)		BINOP8	R1(C)[0..15]	<-	R1(CF)[0..255], R4(C)[0..255]	{}
+0086 (  94)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0087 (  94)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R1(I)[0..15]	{}
+0088 (  94)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0089 (  94)		STOREI1		<-	R2(P)+34, R3(CF)[0..225]	{}
+008a (  95)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R1(I)[0..15]	{}
+008b (  95)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+008c (  95)		STOREI1		<-	R2(P)+35, R3(CF)[0..226]	{}
+008d (  96)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R1(I)[0..15]	{}
+008e (  96)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+008f (  96)		STOREI1		<-	R2(P)+36, R3(CF)[0..226]	{}
+0090 (  97)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0091 (  97)		LOADI1	R1(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0092 (  97)		STOREI1		<-	R2(P)+37, R1(CF)[32..126]	{}
+0093 ( 100)		LOADI1	R0(C)[0..255]	<-	R0(PF)+10	{}
+0094 ( 100)		BINOP8	R0(C)[0..47]	<-	R0(CF)[0..255], R4(CF)[0..255]	{}
+0095 ( 101)		CONV37	R0(I)[0..47]	<-	R0(CF)[0..47]	{}
+0096 ( 101)		LEAG	R1(P)[0..47]	<-	V(66 'quad')+0 , R0(I)[0..16]	{}
+0097 ( 101)		LOADI1	R1(C)[0..226]	<-	R1(PF)+0 {V(66 'quad')} [0..47]	{}
+0098 ( 101)		STOREI1		<-	R2(P)+38, R1(CF)[0..226]	{}
+0099 ( 102)		LEAG	R0(P)[16..63]	<-	V(66 'quad')+16 , R0(IF)[0..16]	{}
+009a ( 102)		LOADI1	R0(C)[0..226]	<-	R0(PF)+0 {V(66 'quad')} [16..63]	{}
+009b ( 102)		STOREI1		<-	R2(PF)+39, R0(CF)[0..226]	{}
+009c ( 103)		RET		<-		{}
+--------------------------------------------------------------------
+expandrow3: /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c:107
+$00 R0(P), $00 R1(I), $00 R2(I), $00 R3(P), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/grid2d.c
+0000 ( 110)		LOADZ2	R0(P)	<-	V(2 '')+0 	{S}
+0001 ( 110)		LOADI1	R1(C)[0..255]	<-	R0(P)+0	{}
+0002 ( 110)		LOADZ1	R4(C)[0..255]	<-	V(4 '')+0 	{S}
+0003 ( 110)		BINOP8	R1(C)[0..15]	<-	R4(C)[0..255], R1(CF)[0..255]	{}
+0004 ( 111)		CONV37	R1(I)[0..15]	<-	R1(CF)[0..15]	{}
+0005 ( 111)		LEAG	R1(P)[48..63]	<-	V(66 'quad')+48 , R1(IF)[0..15]	{}
+0006 ( 111)		LOADI1	R2(C)[32..126]	<-	R1(PF)+0 {V(66 'quad')} [48..63]	{}
+0007 ( 111)		LOADZ2	R1(P)	<-	V(0 '')+0 	{S}
+0008 ( 111)		STOREI1		<-	R1(P)+0, R2(CF)[32..126]	{}
+0009 ( 114)		LOADI1	R2(C)[0..255]	<-	R0(P)+1	{}
+000a ( 114)		BINOP8	R2(C)[0..15]	<-	R2(CF)[0..255], R4(C)[0..255]	{}
+000b ( 115)		CONV37	R2(I)[0..15]	<-	R2(CF)[0..15]	{}
+000c ( 115)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R2(I)[0..15]	{}
+000d ( 115)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+000e ( 115)		STOREI1		<-	R1(P)+1, R3(CF)[0..225]	{}
+000f ( 116)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R2(I)[0..15]	{}
+0010 ( 116)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0011 ( 116)		STOREI1		<-	R1(P)+2, R3(CF)[0..226]	{}
+0012 ( 117)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R2(I)[0..15]	{}
+0013 ( 117)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0014 ( 117)		STOREI1		<-	R1(P)+3, R3(CF)[0..226]	{}
+0015 ( 118)		LEAG	R2(P)[48..63]	<-	V(66 'quad')+48 , R2(IF)[0..15]	{}
+0016 ( 118)		LOADI1	R2(C)[32..126]	<-	R2(PF)+0 {V(66 'quad')} [48..63]	{}
+0017 ( 118)		STOREI1		<-	R1(P)+4, R2(CF)[32..126]	{}
+0018 ( 114)		LOADI1	R2(C)[0..255]	<-	R0(P)+2	{}
+0019 ( 114)		BINOP8	R2(C)[0..15]	<-	R2(CF)[0..255], R4(C)[0..255]	{}
+001a ( 115)		CONV37	R2(I)[0..15]	<-	R2(CF)[0..15]	{}
+001b ( 115)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R2(I)[0..15]	{}
+001c ( 115)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+001d ( 115)		STOREI1		<-	R1(P)+5, R3(CF)[0..225]	{}
+001e ( 116)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R2(I)[0..15]	{}
+001f ( 116)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0020 ( 116)		STOREI1		<-	R1(P)+6, R3(CF)[0..226]	{}
+0021 ( 117)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R2(I)[0..15]	{}
+0022 ( 117)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0023 ( 117)		STOREI1		<-	R1(P)+7, R3(CF)[0..226]	{}
+0024 ( 118)		LEAG	R2(P)[48..63]	<-	V(66 'quad')+48 , R2(IF)[0..15]	{}
+0025 ( 118)		LOADI1	R2(C)[32..126]	<-	R2(PF)+0 {V(66 'quad')} [48..63]	{}
+0026 ( 118)		STOREI1		<-	R1(P)+8, R2(CF)[32..126]	{}
+0027 ( 114)		LOADI1	R2(C)[0..255]	<-	R0(P)+3	{}
+0028 ( 114)		BINOP8	R2(C)[0..15]	<-	R2(CF)[0..255], R4(C)[0..255]	{}
+0029 ( 115)		CONV37	R2(I)[0..15]	<-	R2(CF)[0..15]	{}
+002a ( 115)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R2(I)[0..15]	{}
+002b ( 115)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+002c ( 115)		STOREI1		<-	R1(P)+9, R3(CF)[0..225]	{}
+002d ( 116)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R2(I)[0..15]	{}
+002e ( 116)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+002f ( 116)		STOREI1		<-	R1(P)+10, R3(CF)[0..226]	{}
+0030 ( 117)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R2(I)[0..15]	{}
+0031 ( 117)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0032 ( 117)		STOREI1		<-	R1(P)+11, R3(CF)[0..226]	{}
+0033 ( 118)		LEAG	R2(P)[48..63]	<-	V(66 'quad')+48 , R2(IF)[0..15]	{}
+0034 ( 118)		LOADI1	R2(C)[32..126]	<-	R2(PF)+0 {V(66 'quad')} [48..63]	{}
+0035 ( 118)		STOREI1		<-	R1(P)+12, R2(CF)[32..126]	{}
+0036 ( 114)		LOADI1	R2(C)[0..255]	<-	R0(P)+4	{}
+0037 ( 114)		BINOP8	R2(C)[0..15]	<-	R2(CF)[0..255], R4(C)[0..255]	{}
+0038 ( 115)		CONV37	R2(I)[0..15]	<-	R2(CF)[0..15]	{}
+0039 ( 115)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R2(I)[0..15]	{}
+003a ( 115)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+003b ( 115)		STOREI1		<-	R1(P)+13, R3(CF)[0..225]	{}
+003c ( 116)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R2(I)[0..15]	{}
+003d ( 116)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+003e ( 116)		STOREI1		<-	R1(P)+14, R3(CF)[0..226]	{}
+003f ( 117)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R2(I)[0..15]	{}
+0040 ( 117)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0041 ( 117)		STOREI1		<-	R1(P)+15, R3(CF)[0..226]	{}
+0042 ( 118)		LEAG	R2(P)[48..63]	<-	V(66 'quad')+48 , R2(IF)[0..15]	{}
+0043 ( 118)		LOADI1	R2(C)[32..126]	<-	R2(PF)+0 {V(66 'quad')} [48..63]	{}
+0044 ( 118)		STOREI1		<-	R1(P)+16, R2(CF)[32..126]	{}
+0045 ( 114)		LOADI1	R2(C)[0..255]	<-	R0(P)+5	{}
+0046 ( 114)		BINOP8	R2(C)[0..15]	<-	R2(CF)[0..255], R4(C)[0..255]	{}
+0047 ( 115)		CONV37	R2(I)[0..15]	<-	R2(CF)[0..15]	{}
+0048 ( 115)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R2(I)[0..15]	{}
+0049 ( 115)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+004a ( 115)		STOREI1		<-	R1(P)+17, R3(CF)[0..225]	{}
+004b ( 116)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R2(I)[0..15]	{}
+004c ( 116)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+004d ( 116)		STOREI1		<-	R1(P)+18, R3(CF)[0..226]	{}
+004e ( 117)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R2(I)[0..15]	{}
+004f ( 117)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+0050 ( 117)		STOREI1		<-	R1(P)+19, R3(CF)[0..226]	{}
+0051 ( 118)		LEAG	R2(P)[48..63]	<-	V(66 'quad')+48 , R2(IF)[0..15]	{}
+0052 ( 118)		LOADI1	R2(C)[32..126]	<-	R2(PF)+0 {V(66 'quad')} [48..63]	{}
+0053 ( 118)		STOREI1		<-	R1(P)+20, R2(CF)[32..126]	{}
+0054 ( 114)		LOADI1	R2(C)[0..255]	<-	R0(P)+6	{}
+0055 ( 114)		BINOP8	R2(C)[0..15]	<-	R2(CF)[0..255], R4(C)[0..255]	{}
+0056 ( 115)		CONV37	R2(I)[0..15]	<-	R2(CF)[0..15]	{}
+0057 ( 115)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R2(I)[0..15]	{}
+0058 ( 115)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0059 ( 115)		STOREI1		<-	R1(P)+21, R3(CF)[0..225]	{}
+005a ( 116)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R2(I)[0..15]	{}
+005b ( 116)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+005c ( 116)		STOREI1		<-	R1(P)+22, R3(CF)[0..226]	{}
+005d ( 117)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R2(I)[0..15]	{}
+005e ( 117)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+005f ( 117)		STOREI1		<-	R1(P)+23, R3(CF)[0..226]	{}
+0060 ( 118)		LEAG	R2(P)[48..63]	<-	V(66 'quad')+48 , R2(IF)[0..15]	{}
+0061 ( 118)		LOADI1	R2(C)[32..126]	<-	R2(PF)+0 {V(66 'quad')} [48..63]	{}
+0062 ( 118)		STOREI1		<-	R1(P)+24, R2(CF)[32..126]	{}
+0063 ( 114)		LOADI1	R2(C)[0..255]	<-	R0(P)+7	{}
+0064 ( 114)		BINOP8	R2(C)[0..15]	<-	R2(CF)[0..255], R4(C)[0..255]	{}
+0065 ( 115)		CONV37	R2(I)[0..15]	<-	R2(CF)[0..15]	{}
+0066 ( 115)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R2(I)[0..15]	{}
+0067 ( 115)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0068 ( 115)		STOREI1		<-	R1(P)+25, R3(CF)[0..225]	{}
+0069 ( 116)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R2(I)[0..15]	{}
+006a ( 116)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+006b ( 116)		STOREI1		<-	R1(P)+26, R3(CF)[0..226]	{}
+006c ( 117)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R2(I)[0..15]	{}
+006d ( 117)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+006e ( 117)		STOREI1		<-	R1(P)+27, R3(CF)[0..226]	{}
+006f ( 118)		LEAG	R2(P)[48..63]	<-	V(66 'quad')+48 , R2(IF)[0..15]	{}
+0070 ( 118)		LOADI1	R2(C)[32..126]	<-	R2(PF)+0 {V(66 'quad')} [48..63]	{}
+0071 ( 118)		STOREI1		<-	R1(P)+28, R2(CF)[32..126]	{}
+0072 ( 114)		LOADI1	R2(C)[0..255]	<-	R0(P)+8	{}
+0073 ( 114)		BINOP8	R2(C)[0..15]	<-	R2(CF)[0..255], R4(C)[0..255]	{}
+0074 ( 115)		CONV37	R2(I)[0..15]	<-	R2(CF)[0..15]	{}
+0075 ( 115)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R2(I)[0..15]	{}
+0076 ( 115)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0077 ( 115)		STOREI1		<-	R1(P)+29, R3(CF)[0..225]	{}
+0078 ( 116)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R2(I)[0..15]	{}
+0079 ( 116)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+007a ( 116)		STOREI1		<-	R1(P)+30, R3(CF)[0..226]	{}
+007b ( 117)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R2(I)[0..15]	{}
+007c ( 117)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+007d ( 117)		STOREI1		<-	R1(P)+31, R3(CF)[0..226]	{}
+007e ( 118)		LEAG	R2(P)[48..63]	<-	V(66 'quad')+48 , R2(IF)[0..15]	{}
+007f ( 118)		LOADI1	R2(C)[32..126]	<-	R2(PF)+0 {V(66 'quad')} [48..63]	{}
+0080 ( 118)		STOREI1		<-	R1(P)+32, R2(CF)[32..126]	{}
+0081 ( 114)		LOADI1	R2(C)[0..255]	<-	R0(P)+9	{}
+0082 ( 114)		BINOP8	R2(C)[0..15]	<-	R2(CF)[0..255], R4(C)[0..255]	{}
+0083 ( 115)		CONV37	R2(I)[0..15]	<-	R2(CF)[0..15]	{}
+0084 ( 115)		LEAG	R3(P)[0..15]	<-	V(66 'quad')+0 , R2(I)[0..15]	{}
+0085 ( 115)		LOADI1	R3(C)[0..225]	<-	R3(PF)+0 {V(66 'quad')} [0..15]	{}
+0086 ( 115)		STOREI1		<-	R1(P)+33, R3(CF)[0..225]	{}
+0087 ( 116)		LEAG	R3(P)[16..31]	<-	V(66 'quad')+16 , R2(I)[0..15]	{}
+0088 ( 116)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [16..31]	{}
+0089 ( 116)		STOREI1		<-	R1(P)+34, R3(CF)[0..226]	{}
+008a ( 117)		LEAG	R3(P)[32..47]	<-	V(66 'quad')+32 , R2(I)[0..15]	{}
+008b ( 117)		LOADI1	R3(C)[0..226]	<-	R3(PF)+0 {V(66 'quad')} [32..47]	{}
+008c ( 117)		STOREI1		<-	R1(P)+35, R3(CF)[0..226]	{}
+008d ( 118)		LEAG	R2(P)[48..63]	<-	V(66 'quad')+48 , R2(IF)[0..15]	{}
+008e ( 118)		LOADI1	R2(C)[32..126]	<-	R2(PF)+0 {V(66 'quad')} [48..63]	{}
+008f ( 118)		STOREI1		<-	R1(P)+36, R2(CF)[32..126]	{}
+0090 ( 121)		LOADI1	R0(C)[0..255]	<-	R0(PF)+10	{}
+0091 ( 121)		BINOP8	R0(C)[0..31]	<-	R0(CF)[0..255], R4(CF)[0..255]	{}
+0092 ( 122)		CONV37	R0(I)[0..31]	<-	R0(CF)[0..31]	{}
+0093 ( 122)		LEAG	R2(P)[0..31]	<-	V(66 'quad')+0 , R0(I)[0..16]	{}
+0094 ( 122)		LOADI1	R2(C)[0..226]	<-	R2(PF)+0 {V(66 'quad')} [0..31]	{}
+0095 ( 122)		STOREI1		<-	R1(P)+37, R2(CF)[0..226]	{}
+0096 ( 123)		LEAG	R2(P)[16..47]	<-	V(66 'quad')+16 , R0(I)[0..16]	{}
+0097 ( 123)		LOADI1	R2(C)[0..226]	<-	R2(PF)+0 {V(66 'quad')} [16..47]	{}
+0098 ( 123)		STOREI1		<-	R1(P)+38, R2(CF)[0..226]	{}
+0099 ( 124)		LEAG	R0(P)[32..63]	<-	V(66 'quad')+32 , R0(IF)[0..16]	{}
+009a ( 124)		LOADI1	R0(C)[0..226]	<-	R0(PF)+0 {V(66 'quad')} [32..63]	{}
+009b ( 124)		STOREI1		<-	R1(PF)+39, R0(CF)[0..226]	{}
+009c ( 125)		RET		<-		{}

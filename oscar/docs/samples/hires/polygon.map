@@ -1,0 +1,169 @@
+sections
+0880 - 32dc : DATA, code
+32dc - 3380 : DATA, data
+3380 - 34e0 : BSS, bss
+34e0 - 9000 : HEAP, heap
+9000 - 9f40 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9ff0 - a000 : SSTACK, sstack
+9ff0 - 9ff0 : SSTACK, mmap_trampoline@stack
+9ff0 - 9ff0 : SSTACK, memset@stack
+9ff0 - 9ff0 : SSTACK, vic_setmode@stack
+9ff0 - 9ff0 : SSTACK, bm_init@stack
+9ff0 - 9ff0 : SSTACK, init@stack
+9ff0 - 9ff0 : SSTACK, builddop_src@stack
+9ff0 - 9ff0 : SSTACK, builddop_op@stack
+9ff0 - 9ff0 : SSTACK, builddop@stack
+9fea - 9ff0 : SSTACK, bmu_bitblit@stack
+9ff0 - 9ff0 : SSTACK, sin@stack
+9ff0 - 9ff0 : SSTACK, cos@stack
+9ff0 - 9ff0 : SSTACK, bm_scan_fill@stack
+9fde - 9ff0 : SSTACK, bm_polygon_nc_fill@stack
+9ff0 - 9ff0 : SSTACK, lmuldiv16s@stack
+9ff0 - 9ff0 : SSTACK, bmu_line@stack
+9fe2 - 9ff0 : SSTACK, bm_line@stack
+9ff0 - 9ff0 : SSTACK, convch@stack
+9ff0 - 9ff0 : SSTACK, getch@stack
+9ff0 - 9ff0 : SSTACK, done@stack
+9f40 - 9fde : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 3380, 2c60, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0ece : main, NATIVE_CODE:code
+0ece - 0f3a : init, NATIVE_CODE:code
+0f3a - 0f4f : mmap_trampoline, NATIVE_CODE:code
+0f4f - 0f66 : NMITrampoline, NATIVE_CODE:code
+0f66 - 0f6d : DoneTrampoline, NATIVE_CODE:code
+0f6d - 0f84 : IRQTrampoline, NATIVE_CODE:code
+0f84 - 0fa8 : memset, NATIVE_CODE:code
+0fa8 - 0ffa : vic_setmode, NATIVE_CODE:code
+0ffa - 102c : bm_init, NATIVE_CODE:code
+102c - 13de : bmu_bitblit, NATIVE_CODE:code
+13de - 16d0 : builddop, NATIVE_CODE:code
+16d0 - 1810 : builddop_src, NATIVE_CODE:code
+1810 - 1911 : builddop_op, NATIVE_CODE:code
+1911 - 1919 : *, DATA:code
+1919 - 1ab0 : sin, NATIVE_CODE:code
+1ab0 - 1fd8 : bm_polygon_nc_fill, NATIVE_CODE:code
+1fd8 - 217b : bm_scan_fill, NATIVE_CODE:code
+217b - 25f6 : bm_line, NATIVE_CODE:code
+25f6 - 26b5 : lmuldiv16s, NATIVE_CODE:code
+26b5 - 2bcb : bmu_line, NATIVE_CODE:code
+2bcb - 2be5 : done, NATIVE_CODE:code
+2be5 - 2bf1 : getch, NATIVE_CODE:code
+2bf1 - 2c23 : convch, NATIVE_CODE:code
+2c23 - 2c5b : mul16by8, NATIVE_CODE:code
+2c5b - 2c91 : mul32by8, NATIVE_CODE:code
+2c91 - 2cd6 : freg, NATIVE_CODE:code
+2cd6 - 2dc3 : faddsub, NATIVE_CODE:code
+2dc3 - 2e5d : crt_fmul, NATIVE_CODE:code
+2e5d - 2e8b : crt_fmul8, NATIVE_CODE:code
+2e8b - 2f39 : crt_fdiv, NATIVE_CODE:code
+2f39 - 2fbe : divmod, NATIVE_CODE:code
+2fbe - 30b8 : fround, NATIVE_CODE:code
+30b8 - 3104 : f32_to_i16, NATIVE_CODE:code
+3104 - 3122 : sint16_to_float, NATIVE_CODE:code
+3122 - 314b : uint16_to_float, NATIVE_CODE:code
+314b - 31b3 : mul32, NATIVE_CODE:code
+31b3 - 31d1 : divs32, NATIVE_CODE:code
+31d1 - 31eb : negaccu32, NATIVE_CODE:code
+31eb - 3205 : negtmp32, NATIVE_CODE:code
+3205 - 32dc : divmod32, NATIVE_CODE:code
+32dc - 32dd : spentry, DATA:data
+32dd - 32e5 : lmask, DATA:data
+32e5 - 32ed : rmask, DATA:data
+32ed - 32f1 : blitops_op, DATA:data
+32f1 - 32f2 : giocharmap, DATA:data
+32f2 - 32fa : ubitmask, DATA:data
+3300 - 3348 : NineShadesOfGrey, DATA:data
+3348 - 3380 : bitshift, DATA:data
+3380 - 3380 : BSSStart, START:bss
+3380 - 3388 : Screen, DATA:bss
+3400 - 34e0 : BLIT_CODE, DATA:bss
+34e0 - 34e0 : BSSEnd, END:bss
+9f40 - 9f5c : main@stack, BSS:main@stack
+9f40 - 9f40 : StackEnd, END:stack
+9f5c - 9f70 : rpy, BSS:main@stack
+9f70 - 9f84 : rpx, BSS:main@stack
+9f84 - 9fac : py, BSS:main@stack
+9fac - 9fd4 : px, BSS:main@stack
+9fd6 - 9fde : cr, BSS:main@stack
+9fde - 9ff0 : bm_polygon_nc_fill@stack, BSS:bm_polygon_nc_fill@stack
+9fe2 - 9ff0 : bm_line@stack, BSS:bm_line@stack
+9fea - 9ff0 : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+9ff0 - a000 : sstack, STACK:sstack
+
+objects by size
+0880 (064e) : main, NATIVE_CODE:code
+1ab0 (0528) : bm_polygon_nc_fill, NATIVE_CODE:code
+26b5 (0516) : bmu_line, NATIVE_CODE:code
+217b (047b) : bm_line, NATIVE_CODE:code
+102c (03b2) : bmu_bitblit, NATIVE_CODE:code
+13de (02f2) : builddop, NATIVE_CODE:code
+1fd8 (01a3) : bm_scan_fill, NATIVE_CODE:code
+1919 (0197) : sin, NATIVE_CODE:code
+16d0 (0140) : builddop_src, NATIVE_CODE:code
+1810 (0101) : builddop_op, NATIVE_CODE:code
+2fbe (00fa) : fround, NATIVE_CODE:code
+2cd6 (00ed) : faddsub, NATIVE_CODE:code
+3400 (00e0) : BLIT_CODE, DATA:bss
+3205 (00d7) : divmod32, NATIVE_CODE:code
+25f6 (00bf) : lmuldiv16s, NATIVE_CODE:code
+2e8b (00ae) : crt_fdiv, NATIVE_CODE:code
+2dc3 (009a) : crt_fmul, NATIVE_CODE:code
+2f39 (0085) : divmod, NATIVE_CODE:code
+0ece (006c) : init, NATIVE_CODE:code
+314b (0068) : mul32, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0fa8 (0052) : vic_setmode, NATIVE_CODE:code
+30b8 (004c) : f32_to_i16, NATIVE_CODE:code
+3300 (0048) : NineShadesOfGrey, DATA:data
+2c91 (0045) : freg, NATIVE_CODE:code
+2c23 (0038) : mul16by8, NATIVE_CODE:code
+3348 (0038) : bitshift, DATA:data
+2c5b (0036) : mul32by8, NATIVE_CODE:code
+0ffa (0032) : bm_init, NATIVE_CODE:code
+2bf1 (0032) : convch, NATIVE_CODE:code
+2e5d (002e) : crt_fmul8, NATIVE_CODE:code
+3122 (0029) : uint16_to_float, NATIVE_CODE:code
+9f84 (0028) : py, BSS:main@stack
+9fac (0028) : px, BSS:main@stack
+0f84 (0024) : memset, NATIVE_CODE:code
+3104 (001e) : sint16_to_float, NATIVE_CODE:code
+31b3 (001e) : divs32, NATIVE_CODE:code
+9f40 (001c) : main@stack, BSS:main@stack
+2bcb (001a) : done, NATIVE_CODE:code
+31d1 (001a) : negaccu32, NATIVE_CODE:code
+31eb (001a) : negtmp32, NATIVE_CODE:code
+0f4f (0017) : NMITrampoline, NATIVE_CODE:code
+0f6d (0017) : IRQTrampoline, NATIVE_CODE:code
+0f3a (0015) : mmap_trampoline, NATIVE_CODE:code
+9f5c (0014) : rpy, BSS:main@stack
+9f70 (0014) : rpx, BSS:main@stack
+9fde (0012) : bm_polygon_nc_fill@stack, BSS:bm_polygon_nc_fill@stack
+9ff0 (0010) : sstack, STACK:sstack
+9fe2 (000e) : bm_line@stack, BSS:bm_line@stack
+2be5 (000c) : getch, NATIVE_CODE:code
+32dd (0008) : lmask, DATA:data
+32e5 (0008) : rmask, DATA:data
+32f2 (0008) : ubitmask, DATA:data
+3380 (0008) : Screen, DATA:bss
+9fd6 (0008) : cr, BSS:main@stack
+0f66 (0007) : DoneTrampoline, NATIVE_CODE:code
+9fea (0006) : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+32ed (0004) : blitops_op, DATA:data
+32dc (0001) : spentry, DATA:data
+32f1 (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+3380 (0000) : BSSStart, START:bss
+34e0 (0000) : BSSEnd, END:bss
+9f40 (0000) : StackEnd, END:stack

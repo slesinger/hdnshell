@@ -1,0 +1,497 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c:136
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(P), $00 R4(I), $00 R5(I), $00 R6(I), $00 R7(I), $00 R8(I), $00 R9(I), $00 R10(I), $01 R11(I), $02 R12(I), $00 R13(P), $03 R14(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 601)		CALLN		<-	V(1 'rirq_init_kernal')+0 	{}
+0001 ( 142)		CONST	R1(C)[0..0]	<-	CI:0	{}
+0002 ( 143)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 ( 143)		CONV37	R0(I)[0..7]	<-	R1(C)[0..7]	{}
+0001 ( 143)		LEAA	R0(P)[2040..2047]	<-	V(-1 '')+2040 , R0(IF)[0..7]	{}
+0002 ( 143)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [2040..2047], CC:128	{}
+0003 ( 142)		BINOP1	R1(C)[1..8]	<-	R1(CF)[0..7], CI:1	{}
+0004 ( 142)		RELOP28	R0(B)[0..1]	<-	R1(C)[1..8], CC:8	{}
+0005 ( 142)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 ( 146)		STOREA1		<-	V(-1 '')+53269 , CC:255	{V}
+0001 ( 147)		STOREA1		<-	V(-1 '')+53276 , CC:255	{V}
+0002 ( 148)		STOREA1		<-	V(-1 '')+53277 , CC:0	{V}
+0003 ( 149)		STOREA1		<-	V(-1 '')+53271 , CC:0	{V}
+0004 ( 150)		STOREA1		<-	V(-1 '')+53285 , CC:0	{V}
+0005 ( 151)		STOREA1		<-	V(-1 '')+53286 , CC:1	{V}
+0006 ( 159)		CONST	R0(P)[0..0]	<-	CG1(55:0 'poffset' A)	{IS}
+0007 ( 449)		CAST	R0(I)	<-	R0(PF)+0 {V(55 'poffset' A)} [0..0]	{IS}
+0008 ( 449)		BINOP9	R4(I)[0..255]	<-	R0(I), CI:255	{IS}
+0009 ( 450)		BINOP17	R5(I)[0..255]	<-	R0(IF), CI:8	{IS}
+000a ( 161)		CONST	R0(P)[0..0]	<-	CG1(58:0 'yoffset' A)	{IS}
+000b ( 449)		CAST	R0(I)	<-	R0(PF)+0 {V(58 'yoffset' A)} [0..0]	{IS}
+000c ( 449)		BINOP9	R6(I)[0..255]	<-	R0(I), CI:255	{IS}
+000d ( 450)		BINOP17	R7(I)[0..255]	<-	R0(IF), CI:8	{IS}
+000e ( 163)		CONST	R0(P)[0..0]	<-	CP0(5:0 'setspr')	{IS}
+000f ( 459)		CAST	R0(I)	<-	R0(PF)+0 {V(5 'setspr')} [0..0]	{IS}
+0010 ( 459)		BINOP9	R8(I)[0..255]	<-	R0(I), CI:255	{IS}
+0011 ( 460)		BINOP17	R9(I)[0..255]	<-	R0(IF), CI:8	{IS}
+0012 ( 154)		CONST	R14(C)[0..0]	<-	CI:0	{}
+0013 ( 167)		CONST	R10(I)[36..36]	<-	CI:36	{}
+0014 ( 161)		CONST	R11(I)[52..52]	<-	CI:52	{}
+0015 ( 159)		CONST	R12(I)[0..0]	<-	CI:0	{}
+0016 ( 157)		CONST	R13(P)[0..0]	<-	CG256(54:0 'spmux' A)	{}
+0017 ( 157)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 ( 157)		STOREC2		<-	V(0 '')+0 , R13(P)+0 {V(54 'spmux' A)} [0..]	{}
+0001 ( 157)		STOREC1		<-	V(2 '')+0 , CC:3	{}
+0002 ( 157)		CALLN		<-	V(4 'rirq_build')+0 	{}
+0003 ( 452)		STOREI1		<-	R13(P)+2 {V(54 'spmux' A)} [0..], R12(C)[0..77]	{}
+0004 ( 452)		STOREI1		<-	R13(P)+4 {V(54 'spmux' A)} [0..], R11(C)[52..227]	{}
+0005 ( 449)		STOREI1		<-	R13(P)+11 {V(54 'spmux' A)} [0..], R4(C)[0..255]	{}
+0006 ( 450)		STOREI1		<-	R13(P)+12 {V(54 'spmux' A)} [0..], R5(C)[0..255]	{}
+0007 ( 449)		STOREI1		<-	R13(P)+14 {V(54 'spmux' A)} [0..], R6(C)[0..255]	{}
+0008 ( 450)		STOREI1		<-	R13(P)+15 {V(54 'spmux' A)} [0..], R7(C)[0..255]	{}
+0009 ( 458)		STOREI1		<-	R13(P)+18 {V(54 'spmux' A)} [0..], CC:32	{}
+000a ( 459)		STOREI1		<-	R13(P)+19 {V(54 'spmux' A)} [0..], R8(C)[0..255]	{}
+000b ( 460)		STOREI1		<-	R13(P)+20 {V(54 'spmux' A)} [0..], R9(C)[0..255]	{}
+000c ( 449)		LEAI	R0(P)+0 {V(54 'spmux' A)} [1..]	<-	R13(P)+0 {V(54 'spmux' A)} [0..], CI:1	{}
+000d ( 406)		CAST	R1(I)	<-	R0(P)+0 {V(54 'spmux' A)} [1..]	{}
+000e ( 406)		BINOP9	R1(I)[0..255]	<-	R1(IF), CI:255	{}
+000f ( 157)		CONV37	R2(I)[0..7]	<-	R14(C)[0..7]	{}
+0010 ( 406)		LEAG	R3(P)[0..7]	<-	V(10 'rasterIRQLow' A)+0 , R2(I)[0..7]	{}
+0011 ( 406)		STOREI1		<-	R3(PF)+0 {V(10 'rasterIRQLow' A)} [0..7], R1(CF)[0..255]	{}
+0012 ( 407)		CAST	R0(I)	<-	R0(PF)+0 {V(54 'spmux' A)} [1..]	{}
+0013 ( 407)		BINOP17	R0(I)[0..255]	<-	R0(IF), CI:8	{}
+0014 ( 407)		LEAG	R1(P)[0..7]	<-	V(11 'rasterIRQHigh' A)+0 , R2(I)[0..7]	{}
+0015 ( 407)		STOREI1		<-	R1(PF)+0 {V(11 'rasterIRQHigh' A)} [0..7], R0(CF)[0..255]	{}
+0016 ( 409)		LEAG	R0(P)[0..7]	<-	V(6 'rasterIRQRows' A)+0 , R2(IF)[0..7]	{}
+0017 ( 409)		STOREI1		<-	R0(PF)+0 {V(6 'rasterIRQRows' A)} [0..7], R10(C)[36..211]	{}
+0018 ( 159)		BINOP1	R12(I)[11..88]	<-	R12(IF)[0..77], CI:11	{}
+0019 ( 161)		BINOP1	R11(I)[77..252]	<-	CI:25, R11(IF)[52..227]	{}
+001a ( 167)		BINOP1	R10(I)[61..236]	<-	CI:25, R10(IF)[36..211]	{}
+001b ( 157)		LEAI	R13(P)+0 {V(54 'spmux' A)} [32..]	<-	R13(PF)+0 {V(54 'spmux' A)} [0..], CI:32	{}
+001c ( 154)		BINOP1	R14(C)[1..8]	<-	R14(CF)[0..7], CI:1	{}
+001d ( 154)		RELOP28	R0(B)[0..1]	<-	R14(C)[1..8], CC:8	{}
+001e ( 154)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 ( 171)		STOREC1		<-	V(0 '')+0 , CB:0	{}
+0001 ( 171)		CALLN		<-	V(7 'rirq_sort')+0 	{}
+0002 ( 172)		CALLN		<-	V(8 'rirq_start')+0 	{}
+0003 ( 178)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 ( 178)		LOADG1	R0(C)[0..255]	<-	V(59 'pphase')+0 	{}
+0001 ( 178)		BINOP1	R0(C)	<-	R0(CF)[0..255], CC:5	{}
+0002 ( 178)		STOREG1		<-	V(59 'pphase')+0 , R0(CF)	{}
+0003 (  76)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  76)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  76)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  76)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  76)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  76)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  78)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  78)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  78)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  78)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 5
+		==> 8
+L8: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  78)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  78)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  78)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  78)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 5
+		==> 8
+--------------------------------------------------------------------
+rirq_init_kernal: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:161
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 496)		CALLN		<-	V(2 'rirq_init_tables')+0 	{}
+0001 ( 500)		JSR		<-	V(-1 '')+0 	{V}
+0002 ( 505)		STOREA1		<-	V(-1 '')+53274 , CC:1	{V}
+0003 ( 503)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'rirq_isr_kernal_io')	{S}
+0004 ( 503)		STOREA2		<-	V(-1 '')+788 , R0(PF)+0 {V(-1 'rirq_isr_kernal_io')} [0..0]	{}
+0005 ( 506)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0006 ( 506)		BINOP9	R0(C)[0..127]	<-	R0(CF)[0..255], CC:127	{}
+0007 ( 506)		STOREA1		<-	V(-1 '')+53265 , R0(CF)[0..127]	{V}
+0008 ( 507)		STOREA1		<-	V(-1 '')+53266 , CC:255	{V}
+0009 ( 509)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_init_tables: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c:482
+$00 R0(I), $00 R1(P), $00 R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 484)		CONST	R2(C)[0..0]	<-	CI:0	{}
+0001 ( 486)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 486)		CONV37	R0(I)[0..15]	<-	R2(C)[0..15]	{}
+0001 ( 486)		LEAG	R1(P)[0..15]	<-	V(6 'rasterIRQRows' A)+0 , R0(I)[0..15]	{}
+0002 ( 486)		STOREI1		<-	R1(PF)+0 {V(6 'rasterIRQRows' A)} [0..15], CC:255	{}
+0003 ( 487)		LEAG	R0(P)[1..16]	<-	V(7 'rasterIRQIndex' A)+1 , R0(IF)[0..15]	{}
+0004 ( 487)		STOREI1		<-	R0(PF)+0 {V(7 'rasterIRQIndex' A)} [1..16], R2(C)[0..15]	{}
+0005 ( 484)		BINOP1	R2(C)[1..16]	<-	R2(CF)[0..15], CI:1	{}
+0006 ( 484)		RELOP28	R0(B)[0..1]	<-	R2(C)[1..16], CC:16	{}
+0007 ( 484)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 491)		STOREG1		<-	V(8 'rasterIRQNext' A)+16 , CC:255	{}
+0001 ( 490)		STOREG1		<-	V(6 'rasterIRQRows' A)+16 , CC:0	{}
+0002 ( 489)		STOREG1		<-	V(7 'rasterIRQIndex' A)+0 , CC:16	{}
+0003 ( 492)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_init_io: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:177
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 566)		CALLN		<-	V(2 'rirq_init_tables')+0 	{}
+0001 ( 570)		JSR		<-	V(-1 '')+0 	{V}
+0002 ( 575)		STOREA1		<-	V(-1 '')+53274 , CC:1	{V}
+0003 ( 573)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'rirq_isr_ram_io')	{S}
+0004 ( 573)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'rirq_isr_ram_io')} [0..0]	{}
+0005 ( 576)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0006 ( 576)		BINOP9	R0(C)[0..127]	<-	R0(CF)[0..255], CC:127	{}
+0007 ( 576)		STOREA1		<-	V(-1 '')+53265 , R0(CF)[0..127]	{V}
+0008 ( 577)		STOREA1		<-	V(-1 '')+53266 , CC:255	{V}
+0009 ( 579)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_build: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:120
+$00 R0(P), $00 R1(I), $00 R2(P), $00 R3(P), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 365)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 (  31)		STOREI1		<-	R0(P)+1, CC:160	{}
+0002 (  32)		STOREI1		<-	R0(P)+2, CC:0	{}
+0003 (  31)		STOREI1		<-	R0(P)+3, CC:162	{}
+0004 (  32)		STOREI1		<-	R0(P)+4, CC:0	{}
+0005 (  52)		STOREI1		<-	R0(P)+5, CC:205	{}
+0006 (  53)		STOREI1		<-	R0(P)+6, CC:18	{}
+0007 (  54)		STOREI1		<-	R0(P)+7, CC:208	{}
+0008 (  24)		STOREI1		<-	R0(P)+8, CC:176	{}
+0009 (  25)		STOREI1		<-	R0(P)+9, CC:-5	{}
+000a (  52)		STOREI1		<-	R0(P)+10, CC:140	{}
+000b (  53)		STOREI1		<-	R0(P)+11, CC:0	{}
+000c (  54)		STOREI1		<-	R0(P)+12, CC:0	{}
+000d ( 363)		LOADZ1	R2(C)[0..255]	<-	V(2 '')+0 	{S}
+000e ( 365)		STOREI1		<-	R0(P)+0, R2(C)[0..25]	{}
+000f ( 373)		BRANCH		<-	R2(C)[0..25]	{}
+		==> 1
+		==> 8
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 377)		RELOP19	R1(B)[0..1]	<-	R2(C)[0..25], CC:1	{S}
+0001 ( 377)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/asm6502.c
+0000 (   5)		STOREI1		<-	R0(PF)+13, CC:96	{}
+0001 ( 377)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 393)		RET		<-		{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/asm6502.c
+0000 (  52)		STOREI1		<-	R0(P)+13, CC:142	{}
+0001 (  53)		STOREI1		<-	R0(P)+14, CC:0	{}
+0002 (  54)		STOREI1		<-	R0(P)+15, CC:0	{}
+0003 ( 385)		CONST	R1(C)[15..15]	<-	CI:15	{}
+0004 ( 386)		RELOP28	R3(B)[0..1]	<-	CC:2, R2(C)[0..25]	{S}
+0005 ( 386)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 7
+		==> 6
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 386)		BINOP2	R4(C)[1..23]	<-	R2(CF)[3..25], CC:2	{}
+0001 ( 388)		LEAI	R2(P)+0	<-	R0(P)+0, CI:1	{IS}
+0002 ( 388)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 388)		CONV37	R1(I)[15..125]	<-	R1(CF)[15..125]	{}
+0001 ( 388)		LEAI	R3(P)+0	<-	R2(P)+0, R1(I)[15..125]	{}
+0002 (  31)		STOREI1		<-	R3(P)+0, CC:169	{}
+0003 (  32)		STOREI1		<-	R3(P)+1, CC:0	{}
+0004 (  52)		STOREI1		<-	R3(P)+2, CC:141	{}
+0005 (  53)		STOREI1		<-	R3(P)+3, CC:0	{}
+0006 (  54)		STOREI1		<-	R3(PF)+4, CC:0	{}
+0007 ( 389)		BINOP1	R1(I)[20..130]	<-	R1(IF)[15..125], CI:5	{}
+0008 ( 386)		BINOP2	R4(C)[0..22]	<-	R4(CF)[1..23], CI:1	{}
+0009 ( 386)		RELOP27	R3(B)[0..1]	<-	R4(C)[0..22], CC:0	{}
+000a ( 386)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 5
+		==> 6
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 391)		CONV37	R1(I)[15..130]	<-	R1(CF)[15..130]	{}
+0001 ( 391)		LEAI	R0(P)+0	<-	R0(PF)+0, R1(IF)[15..130]	{S}
+0002 ( 377)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/asm6502.c
+0000 (   5)		STOREI1		<-	R0(PF)+1, CC:96	{}
+0001 ( 377)		JUMP		<-		{}
+		==> 2
+--------------------------------------------------------------------
+setspr: /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c:53
+$00 R0(I), $00 R1(I), $02 R2(I), $04 R3(I), $05 R4(I), $06 R5(I), $07 R6(I), $08 R7(I), $09 R8(I), $0a R9(I), $0b R10(I), $0c R11(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 (  60)		LOADG1	R11(C)[0..255]	<-	V(58 'yoffset' A)+0 	{}
+0001 (  60)		STOREA1		<-	V(-1 '')+53249 , R11(C)[0..255]	{V}
+0002 (  60)		STOREA1		<-	V(-1 '')+53251 , R11(C)[0..255]	{V}
+0003 (  60)		STOREA1		<-	V(-1 '')+53253 , R11(C)[0..255]	{V}
+0004 (  60)		STOREA1		<-	V(-1 '')+53255 , R11(C)[0..255]	{V}
+0005 (  60)		STOREA1		<-	V(-1 '')+53257 , R11(C)[0..255]	{V}
+0006 (  60)		STOREA1		<-	V(-1 '')+53259 , R11(C)[0..255]	{V}
+0007 (  60)		STOREA1		<-	V(-1 '')+53261 , R11(C)[0..255]	{V}
+0008 (  60)		STOREA1		<-	V(-1 '')+53263 , R11(C)[0..255]	{V}
+0009 (  62)		LOADG1	R0(C)[0..255]	<-	V(59 'pphase')+0 	{}
+000a (  62)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+000b (  62)		LOADG1	R1(C)[0..255]	<-	V(55 'poffset' A)+0 	{}
+000c (  62)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+000d (  62)		BINOP1	R0(I)[0..510]	<-	R1(IF)[0..255], R0(IF)[0..255]	{}
+000e (  63)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..510]	{}
+000f (  63)		LEAG	R1(P)[0..255]	<-	V(60 'costab')+0 , R0(I)[0..255]	{}
+0010 (  63)		LOADI1	R1(C)[-30..30]	<-	R1(PF)+0 {V(60 'costab')} [0..255]	{}
+0011 (  63)		CONV40	R1(I)[-30..30]	<-	R1(CF)[-30..30]	{}
+0012 (  64)		BINOP18	R2(I)[-15..15]	<-	R1(I)[-30..30], CI:1	{}
+0013 (  64)		BINOP2	R3(I)[157..187]	<-	CI:172, R2(I)[-15..15]	{}
+0015 (  65)		BINOP1	R4(I)[157..187]	<-	R2(IF)[-15..15], CI:172	{}
+0017 (  78)		BINOP2	R5(I)[127..217]	<-	R3(I)[157..187], R1(I)[-30..30]	{}
+0019 (  79)		BINOP1	R6(I)[127..217]	<-	R4(I)[157..187], R1(I)[-30..30]	{}
+001b (  78)		BINOP2	R7(I)[97..247]	<-	R5(I)[127..217], R1(I)[-30..30]	{}
+001d (  79)		BINOP1	R8(I)[97..247]	<-	R6(I)[127..217], R1(I)[-30..30]	{}
+001f (  78)		BINOP2	R9(I)[67..277]	<-	R7(I)[97..247], R1(I)[-30..30]	{}
+0021 (  79)		BINOP1	R10(I)[67..277]	<-	R8(I)[97..247], R1(IF)[-30..30]	{}
+0023 ( 103)		CONV37	R1(I)[0..255]	<-	R11(CF)[0..255]	{}
+0024 ( 103)		BINOP2	R1(I)[-3..252]	<-	R1(IF)[0..255], CI:3	{}
+0025 ( 103)		STOREC2		<-	V(0 '')+0 , R1(IF)[-3..252]	{}
+0026 (  89)		BINOP9	R1(I)[0..256]	<-	R10(I)[67..277], CI:256	{}
+0027 (  89)		BINOP9	R2(I)[0..256]	<-	R9(I)[67..277], CI:256	{}
+0028 (  84)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0029 (  84)		RELOP20	R11(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+002a (  84)		BRANCH		<-	R11(B)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 (  89)		BINOP17	R2(I)[0..128]	<-	R2(IF)[0..256], CI:1	{}
+0001 (  89)		BINOP17	R2(I)[0..64]	<-	R2(IF)[0..128], CI:1	{}
+0002 (  89)		BINOP17	R2(I)[0..32]	<-	R2(IF)[0..64], CI:1	{}
+0003 (  89)		BINOP17	R2(I)[0..16]	<-	R2(IF)[0..32], CI:1	{}
+0004 (  89)		BINOP17	R2(I)[0..8]	<-	R2(IF)[0..16], CI:1	{}
+0005 (  89)		BINOP17	R2(I)[0..4]	<-	R2(IF)[0..8], CI:1	{}
+0006 (  89)		BINOP17	R2(I)[0..2]	<-	R2(IF)[0..4], CI:1	{}
+0007 (  89)		BINOP8	R0(I)[0..511]	<-	R2(IF)[0..2], R1(IF)[0..256]	{}
+0008 (  90)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 ( 103)		CALLN		<-	V(6 'vic_waitLine')+0 	{E}
+0001 (  96)		BINOP17	R0(I)[0..255]	<-	R0(IF)[0..511], CI:1	{}
+0002 ( 130)		STOREA1		<-	V(-1 '')+53264 , R0(CF)[0..255]	{}
+0003 ( 106)		BRANCH		<-	R11(BF)[0..1]	{}
+		==> 4
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 ( 112)		STOREA1		<-	V(-1 '')+53248 , R9(CF)[67..277]	{V}
+0001 ( 113)		STOREA1		<-	V(-1 '')+53287 , CC:8	{V}
+0002 ( 112)		STOREA1		<-	V(-1 '')+53250 , R7(CF)[97..247]	{V}
+0003 ( 113)		STOREA1		<-	V(-1 '')+53288 , CC:9	{V}
+0004 ( 112)		STOREA1		<-	V(-1 '')+53252 , R5(CF)[127..217]	{V}
+0005 ( 113)		STOREA1		<-	V(-1 '')+53289 , CC:10	{V}
+0006 ( 112)		STOREA1		<-	V(-1 '')+53254 , R3(CF)[157..187]	{V}
+0007 ( 113)		STOREA1		<-	V(-1 '')+53290 , CC:11	{V}
+0008 ( 112)		STOREA1		<-	V(-1 '')+53256 , R4(CF)[157..187]	{V}
+0009 ( 113)		STOREA1		<-	V(-1 '')+53291 , CC:12	{V}
+000a ( 112)		STOREA1		<-	V(-1 '')+53258 , R6(CF)[127..217]	{V}
+000b ( 113)		STOREA1		<-	V(-1 '')+53292 , CC:13	{V}
+000c ( 112)		STOREA1		<-	V(-1 '')+53260 , R8(CF)[97..247]	{V}
+000d ( 113)		STOREA1		<-	V(-1 '')+53293 , CC:14	{V}
+000e ( 112)		STOREA1		<-	V(-1 '')+53262 , R10(CF)[67..277]	{V}
+000f ( 113)		STOREA1		<-	V(-1 '')+53294 , CC:15	{V}
+0010 ( 131)		RET		<-		{}
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 ( 125)		STOREA1		<-	V(-1 '')+53248 , R10(CF)[67..277]	{V}
+0001 ( 126)		STOREA1		<-	V(-1 '')+53287 , CC:15	{V}
+0002 ( 125)		STOREA1		<-	V(-1 '')+53250 , R8(CF)[97..247]	{V}
+0003 ( 126)		STOREA1		<-	V(-1 '')+53288 , CC:14	{V}
+0004 ( 125)		STOREA1		<-	V(-1 '')+53252 , R6(CF)[127..217]	{V}
+0005 ( 126)		STOREA1		<-	V(-1 '')+53289 , CC:13	{V}
+0006 ( 125)		STOREA1		<-	V(-1 '')+53254 , R4(CF)[157..187]	{V}
+0007 ( 126)		STOREA1		<-	V(-1 '')+53290 , CC:12	{V}
+0008 ( 125)		STOREA1		<-	V(-1 '')+53256 , R3(CF)[157..187]	{V}
+0009 ( 126)		STOREA1		<-	V(-1 '')+53291 , CC:11	{V}
+000a ( 125)		STOREA1		<-	V(-1 '')+53258 , R5(CF)[127..217]	{V}
+000b ( 126)		STOREA1		<-	V(-1 '')+53292 , CC:10	{V}
+000c ( 125)		STOREA1		<-	V(-1 '')+53260 , R7(CF)[97..247]	{V}
+000d ( 126)		STOREA1		<-	V(-1 '')+53293 , CC:9	{V}
+000e ( 125)		STOREA1		<-	V(-1 '')+53262 , R9(CF)[67..277]	{V}
+000f ( 126)		STOREA1		<-	V(-1 '')+53294 , CC:8	{V}
+0010 ( 131)		RET		<-		{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/sprites/sprmux64.c
+0000 (  96)		BINOP17	R1(I)[0..128]	<-	R1(IF)[0..256], CI:1	{}
+0001 (  96)		BINOP17	R1(I)[0..64]	<-	R1(IF)[0..128], CI:1	{}
+0002 (  96)		BINOP17	R1(I)[0..32]	<-	R1(IF)[0..64], CI:1	{}
+0003 (  96)		BINOP17	R1(I)[0..16]	<-	R1(IF)[0..32], CI:1	{}
+0004 (  96)		BINOP17	R1(I)[0..8]	<-	R1(IF)[0..16], CI:1	{}
+0005 (  96)		BINOP17	R1(I)[0..4]	<-	R1(IF)[0..8], CI:1	{}
+0006 (  96)		BINOP17	R1(I)[0..2]	<-	R1(IF)[0..4], CI:1	{}
+0007 (  96)		BINOP8	R0(I)[0..511]	<-	R1(IF)[0..2], R2(IF)[0..256]	{}
+0008 (  97)		JUMP		<-		{}
+		==> 3
+--------------------------------------------------------------------
+vic_waitLine: /home/honza/projects/c64/projects/oscar64/include/c64/vic.h:119
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  93)		LOADZ2	R0(I)[-32768..32767]	<-	V(0 '')+0 	{S}
+0001 (  93)		BINOP18	R1(I)[-16384..16383]	<-	R0(I)[-32768..32767], CI:1	{S}
+0002 (  93)		CONV37	R1(I)[0..255]	<-	R1(CF)[-16384..16383]	{S}
+0003 (  93)		BINOP9	R1(I)[0..128]	<-	R1(IF)[0..255], CI:128	{S}
+0004 (  98)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  98)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  98)		LOADA1	R2(C)[0..255]	<-	V(-1 '')+53266 	{V}
+0001 (  98)		RELOP20	R2(B)[0..1]	<-	R2(CF)[0..255], R0(C)[-32768..32767]	{}
+0002 (  98)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 ( 100)		CONV37	R2(I)[0..128]	<-	R1(C)[0..128]	{S}
+0001 ( 100)		LOADA1	R3(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0002 ( 100)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+0003 ( 100)		BINOP9	R3(I)[0..128]	<-	R3(IF)[0..255], CI:128	{}
+0004 ( 100)		RELOP20	R2(B)[0..1]	<-	R3(IF)[0..128], R2(IF)[0..128]	{}
+0005 ( 100)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 ( 101)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_sort: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:192
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(C), $00 R4(C), $00 R5(C), $00 R6(B), $00 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 628)		LOADG1	R0(C)[0..16]	<-	V(7 'rasterIRQIndex' A)+1 	{}
+0001 ( 626)		STOREG1		<-	V(9 'nextIRQ' A)+0 , CC:255	{V}
+0002 ( 628)		CONV37	R0(I)[0..16]	<-	R0(CF)[0..16]	{}
+0003 ( 628)		LEAG	R0(P)[0..16]	<-	V(6 'rasterIRQRows' A)+0 , R0(IF)[0..16]	{}
+0004 ( 628)		LOADI1	R3(C)[0..255]	<-	R0(PF)+0 {V(6 'rasterIRQRows' A)} [0..16]	{}
+0005 ( 629)		CONST	R4(C)[2..2]	<-	CI:2	{}
+0006 ( 631)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 631)		CONV37	R0(I)[1..16]	<-	R4(C)[1..16]	{}
+0001 ( 631)		LEAG	R1(P)[1..16]	<-	V(7 'rasterIRQIndex' A)+0 , R0(I)[1..16]	{}
+0002 ( 631)		LOADI1	R5(C)[0..16]	<-	R1(P)+0 {V(7 'rasterIRQIndex' A)} [1..16]	{}
+0003 ( 632)		CONV37	R2(I)[0..16]	<-	R5(C)[0..16]	{}
+0004 ( 632)		LEAG	R2(P)[0..16]	<-	V(6 'rasterIRQRows' A)+0 , R2(IF)[0..16]	{}
+0005 ( 632)		LOADI1	R2(C)[0..255]	<-	R2(PF)+0 {V(6 'rasterIRQRows' A)} [0..16]	{}
+0006 ( 633)		RELOP28	R6(B)[0..1]	<-	R2(C)[0..255], R3(C)[0..255]	{}
+0007 ( 633)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 4
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 635)		LEAG	R0(P)[0..15]	<-	V(7 'rasterIRQIndex' A)+-1 , R0(IF)[1..16]	{}
+0001 ( 635)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(7 'rasterIRQIndex' A)} [0..15]	{}
+0002 ( 635)		STOREI1		<-	R1(PF)+0 {V(7 'rasterIRQIndex' A)} [1..16], R0(CF)[0..255]	{}
+0003 ( 636)		MOVE	R6(C)[1..16]	<-	R4(C)[1..16]	{}
+0004 ( 637)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 637)		CONV37	R0(I)[2..16]	<-	R6(C)[2..16]	{}
+0001 ( 637)		LEAG	R0(P)[0..14]	<-	V(7 'rasterIRQIndex' A)+-2 , R0(IF)[2..16]	{}
+0002 ( 637)		LOADI1	R7(C)[0..16]	<-	R0(P)+0 {V(7 'rasterIRQIndex' A)} [0..14]	{}
+0003 ( 637)		CONV37	R1(I)[0..16]	<-	R7(C)[0..16]	{}
+0004 ( 637)		LEAG	R1(P)[0..16]	<-	V(6 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+0005 ( 637)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(6 'rasterIRQRows' A)} [0..16]	{}
+0006 ( 637)		RELOP28	R1(B)[0..1]	<-	R2(C)[0..254], R1(CF)[0..255]	{}
+0007 ( 637)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 639)		STOREI1		<-	R0(PF)+1 {V(7 'rasterIRQIndex' A)} [0..14], R7(CF)[0..16]	{}
+0001 ( 640)		BINOP1	R6(C)[1..15]	<-	R6(CF)[2..16], CI:-1	{}
+0002 ( 637)		JUMP		<-		{}
+		==> 6
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 642)		STOREI1		<-	R0(PF)+1 {V(7 'rasterIRQIndex' A)} [0..14], R5(CF)[0..16]	{}
+0001 ( 629)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 629)		BINOP1	R4(C)[1..17]	<-	R4(CF)[0..16], CI:1	{}
+0001 ( 629)		RELOP28	R0(B)[0..1]	<-	R4(C)[1..17], CC:17	{}
+0002 ( 629)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 666)		CONST	R2(C)[3..3]	<-	CI:3	{}
+0001 ( 670)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 670)		CONV37	R0(I)[0..3]	<-	R2(C)[0..3]	{}
+0001 ( 670)		LEAG	R1(P)[1..4]	<-	V(7 'rasterIRQIndex' A)+1 , R0(I)[0..3]	{}
+0002 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(7 'rasterIRQIndex' A)} [1..4]	{}
+0003 ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+0004 ( 670)		LEAG	R1(P)[0..16]	<-	V(6 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+0005 ( 670)		LOADI1	R3(C)[0..255]	<-	R1(PF)+0 {V(6 'rasterIRQRows' A)} [0..16]	{}
+0006 ( 670)		LEAG	R1(P)[0..3]	<-	V(8 'rasterIRQNext' A)+0 , R0(I)[0..3]	{}
+0007 ( 670)		STOREI1		<-	R1(PF)+0 {V(8 'rasterIRQNext' A)} [0..3], R3(CF)[0..255]	{}
+0008 ( 670)		LEAG	R1(P)[5..8]	<-	V(7 'rasterIRQIndex' A)+5 , R0(I)[0..3]	{}
+0009 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(7 'rasterIRQIndex' A)} [5..8]	{}
+000a ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+000b ( 670)		LEAG	R1(P)[0..16]	<-	V(6 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+000c ( 670)		LOADI1	R3(C)[0..255]	<-	R1(PF)+0 {V(6 'rasterIRQRows' A)} [0..16]	{}
+000d ( 670)		LEAG	R1(P)[4..7]	<-	V(8 'rasterIRQNext' A)+4 , R0(I)[0..3]	{}
+000e ( 670)		STOREI1		<-	R1(PF)+0 {V(8 'rasterIRQNext' A)} [4..7], R3(CF)[0..255]	{}
+000f ( 670)		LEAG	R1(P)[9..12]	<-	V(7 'rasterIRQIndex' A)+9 , R0(I)[0..3]	{}
+0010 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(7 'rasterIRQIndex' A)} [9..12]	{}
+0011 ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+0012 ( 670)		LEAG	R1(P)[0..16]	<-	V(6 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+0013 ( 670)		LOADI1	R3(C)[0..255]	<-	R1(PF)+0 {V(6 'rasterIRQRows' A)} [0..16]	{}
+0014 ( 670)		LEAG	R1(P)[8..11]	<-	V(8 'rasterIRQNext' A)+8 , R0(I)[0..3]	{}
+0015 ( 670)		STOREI1		<-	R1(PF)+0 {V(8 'rasterIRQNext' A)} [8..11], R3(CF)[0..255]	{}
+0016 ( 670)		LEAG	R1(P)[13..16]	<-	V(7 'rasterIRQIndex' A)+13 , R0(I)[0..3]	{}
+0017 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(7 'rasterIRQIndex' A)} [13..16]	{}
+0018 ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+0019 ( 670)		LEAG	R1(P)[0..16]	<-	V(6 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+001a ( 670)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(6 'rasterIRQRows' A)} [0..16]	{}
+001b ( 670)		LEAG	R0(P)[12..15]	<-	V(8 'rasterIRQNext' A)+12 , R0(IF)[0..3]	{}
+001c ( 670)		STOREI1		<-	R0(PF)+0 {V(8 'rasterIRQNext' A)} [12..15], R1(CF)[0..255]	{}
+001d ( 666)		BINOP1	R2(C)[-1..2]	<-	R2(CF)[0..3], CI:-1	{}
+001e ( 666)		RELOP21	R0(B)[0..1]	<-	R2(C)[-1..2], CC:0	{}
+001f ( 666)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 10
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 674)		LOADG1	R0(C)[0..255]	<-	V(12 'rirq_count' A)+0 	{V}
+0002 ( 675)		LOADZ1	R0(B)[0..1]	<-	V(0 '')+0 	{S}
+0003 ( 675)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 12
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 676)		STOREG1		<-	V(9 'nextIRQ' A)+0 , CC:15	{V}
+0001 ( 675)		JUMP		<-		{}
+		==> 13
+L13: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 686)		RET		<-		{}
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 679)		LOADG1	R0(C)[0..255]	<-	V(8 'rasterIRQNext' A)+0 	{}
+0001 ( 680)		RELOP20	R1(B)[0..1]	<-	R0(C)[0..255], CC:255	{}
+0002 ( 680)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 14
+		==> 13
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 682)		BINOP2	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:1	{}
+0001 ( 682)		STOREA1		<-	V(-1 '')+53266 , R0(CF)[-1..254]	{V}
+0002 ( 683)		STOREG1		<-	V(9 'nextIRQ' A)+0 , CC:0	{V}
+0003 ( 680)		JUMP		<-		{}
+		==> 13
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 645)		MOVE	R3(C)[0..255]	<-	R2(CF)[0..255]	{}
+0001 ( 629)		JUMP		<-		{}
+		==> 1
+--------------------------------------------------------------------
+rirq_start: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:184
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 692)		JSR		<-	V(-1 '')+0 	{V}
+0001 ( 702)		RET		<-		{}

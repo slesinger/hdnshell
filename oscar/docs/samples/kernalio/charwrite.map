@@ -1,0 +1,59 @@
+sections
+0880 - 0957 : DATA, code
+0957 - 0958 : DATA, data
+0958 - 0968 : BSS, bss
+0968 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, krnio_setnam@stack
+a000 - a000 : SSTACK, krnio_open@stack
+a000 - a000 : SSTACK, krnio_chkout@stack
+a000 - a000 : SSTACK, krnio_chrout@stack
+a000 - a000 : SSTACK, krnio_clrchn@stack
+a000 - a000 : SSTACK, krnio_putch@stack
+a000 - a000 : SSTACK, krnio_close@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0958, 00e8, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 08ba : main, NATIVE_CODE:code
+08ba - 08d0 : krnio_setnam, NATIVE_CODE:code
+08d0 - 08dd : *, DATA:code
+08dd - 090b : krnio_open, NATIVE_CODE:code
+090b - 0926 : krnio_putch, NATIVE_CODE:code
+0926 - 093b : krnio_chkout, NATIVE_CODE:code
+093b - 094b : krnio_chrout, NATIVE_CODE:code
+094b - 094f : krnio_clrchn, NATIVE_CODE:code
+094f - 0957 : krnio_close, NATIVE_CODE:code
+0957 - 0958 : spentry, DATA:data
+0958 - 0968 : krnio_pstatus, DATA:bss
+0958 - 0958 : BSSStart, START:bss
+0968 - 0968 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0801 (0052) : startup, NATIVE_CODE:startup
+0880 (003a) : main, NATIVE_CODE:code
+08dd (002e) : krnio_open, NATIVE_CODE:code
+090b (001b) : krnio_putch, NATIVE_CODE:code
+08ba (0016) : krnio_setnam, NATIVE_CODE:code
+0926 (0015) : krnio_chkout, NATIVE_CODE:code
+093b (0010) : krnio_chrout, NATIVE_CODE:code
+0958 (0010) : krnio_pstatus, DATA:bss
+094f (0008) : krnio_close, NATIVE_CODE:code
+094b (0004) : krnio_clrchn, NATIVE_CODE:code
+0957 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0958 (0000) : BSSStart, START:bss
+0968 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

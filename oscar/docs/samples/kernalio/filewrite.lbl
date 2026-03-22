@@ -1,0 +1,17 @@
+al 00f7 .ZeroStart
+al 00f7 .ZeroEnd
+al 0801 .startup
+al 0880 .main
+al 08be .krnio_setnam
+al 08e5 .krnio_open
+al 0913 .krnio_write
+al 0961 .krnio_chkout
+al 0976 .krnio_chrout
+al 0986 .krnio_clrchn
+al 098a .krnio_close
+al 0992 .spentry
+al 0993 .score
+al 09af .krnio_pstatus
+al 09af .BSSStart
+al 09bf .BSSEnd
+al a000 .StackEnd

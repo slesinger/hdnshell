@@ -1,0 +1,147 @@
+sections
+0a00 - 12a3 : DATA, code
+12a3 - 1500 : DATA, data
+2c00 - 2c88 : BSS, bss
+2c88 - 9000 : HEAP, heap
+9000 - 9fd5 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+2000 - 2c00 : DATA, spriteset
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, rirq_init_tables@stack
+a000 - a000 : SSTACK, rirq_init_kernal@stack
+a000 - a000 : SSTACK, rirq_init_io@stack
+a000 - a000 : SSTACK, spr_init@stack
+a000 - a000 : SSTACK, rirq_build@stack
+a000 - a000 : SSTACK, rirq_alloc@stack
+a000 - a000 : SSTACK, spr_set@stack
+a000 - a000 : SSTACK, rirq_sort@stack
+a000 - a000 : SSTACK, rirq_start@stack
+a000 - a000 : SSTACK, rirq_wait@stack
+a000 - a000 : SSTACK, readline@stack
+a000 - a000 : SSTACK, expandline@stack
+9fd5 - a000 : SSTACK, main@stack
+
+regions
+0a00 - 2000 : 1500, 0b00, lower
+2000 - 2c00 : 2c00, 0c00, spriteset
+2c00 - 9000 : 0000, 0088, main
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0a00 - 0ce1 : main, NATIVE_CODE:code
+0ce1 - 0d02 : rirq_init_kernal, NATIVE_CODE:code
+0d02 - 0d20 : rirq_init_tables, NATIVE_CODE:code
+0d20 - 0d7d : rirq_isr_kernal_io, NATIVE_CODE:code
+0d7d - 0db3 : rirq_alloc, NATIVE_CODE:code
+0db3 - 0e57 : rirq_build, NATIVE_CODE:code
+0e57 - 0ee1 : spr_set, NATIVE_CODE:code
+0ee1 - 0f70 : rirq_sort, NATIVE_CODE:code
+0f70 - 0f82 : rirq_start, NATIVE_CODE:code
+0f82 - 0f8e : rirq_wait, NATIVE_CODE:code
+0f8e - 0fe8 : readline, NATIVE_CODE:code
+0fe8 - 0ff9 : *, DATA:code
+0ff9 - 1005 : *, DATA:code
+1005 - 1015 : *, DATA:code
+1015 - 1026 : *, DATA:code
+1026 - 1036 : *, DATA:code
+1036 - 1049 : *, DATA:code
+1049 - 1059 : *, DATA:code
+1059 - 105a : *, DATA:code
+105a - 106c : *, DATA:code
+106c - 107d : *, DATA:code
+107d - 1090 : *, DATA:code
+1090 - 10a3 : *, DATA:code
+10a3 - 10b4 : *, DATA:code
+10b4 - 10c1 : *, DATA:code
+10c1 - 10c8 : *, DATA:code
+10c8 - 10c9 : *, DATA:code
+10c9 - 10d8 : *, DATA:code
+10d8 - 10eb : *, DATA:code
+10eb - 10fb : *, DATA:code
+10fb - 1108 : *, DATA:code
+1108 - 1111 : *, DATA:code
+1111 - 1120 : *, DATA:code
+1120 - 1130 : *, DATA:code
+1130 - 1131 : *, DATA:code
+1131 - 1132 : *, DATA:code
+1132 - 1133 : *, DATA:code
+1133 - 1134 : *, DATA:code
+1134 - 11d0 : expandline, NATIVE_CODE:code
+11d0 - 129e : crt_malloc, NATIVE_CODE:code
+129e - 12a3 : __multab48L, DATA:code
+12a3 - 12a4 : spentry, DATA:data
+12a4 - 12be : irqai, DATA:data
+12be - 12d8 : irqdi, DATA:data
+1300 - 1336 : scrolltext, DATA:data
+1336 - 136e : bitshift, DATA:data
+1400 - 1500 : charset, DATA:data
+2000 - 2c00 : spriteset, DATA:spriteset
+2c00 - 2c00 : BSSStart, START:bss
+2c00 - 2c11 : rasterIRQRows, DATA:bss
+2c11 - 2c22 : rasterIRQIndex, DATA:bss
+2c22 - 2c33 : rasterIRQNext, DATA:bss
+2c33 - 2c34 : nextIRQ, DATA:bss
+2c34 - 2c44 : rasterIRQLow, DATA:bss
+2c44 - 2c54 : rasterIRQHigh, DATA:bss
+2c54 - 2c55 : rirq_count, DATA:bss
+2c55 - 2c57 : vspriteScreen, DATA:bss
+2c57 - 2c63 : spmux, DATA:bss
+2c63 - 2c83 : final, DATA:bss
+2c83 - 2c84 : rirq_pcount, DATA:bss
+2c84 - 2c88 : HeapNode, DATA:bss
+2c88 - 2c88 : BSSEnd, END:bss
+2c88 - 2c88 : HeapStart, START:heap
+9000 - 9000 : HeapEnd, END:heap
+9fd5 - 9fd5 : StackEnd, END:stack
+9fd5 - 9fe0 : main@stack, BSS:main@stack
+9fe0 - a000 : line, BSS:main@stack
+
+objects by size
+2000 (0c00) : spriteset, DATA:spriteset
+0a00 (02e1) : main, NATIVE_CODE:code
+1400 (0100) : charset, DATA:data
+11d0 (00ce) : crt_malloc, NATIVE_CODE:code
+0db3 (00a4) : rirq_build, NATIVE_CODE:code
+1134 (009c) : expandline, NATIVE_CODE:code
+0ee1 (008f) : rirq_sort, NATIVE_CODE:code
+0e57 (008a) : spr_set, NATIVE_CODE:code
+0d20 (005d) : rirq_isr_kernal_io, NATIVE_CODE:code
+0f8e (005a) : readline, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+1336 (0038) : bitshift, DATA:data
+0d7d (0036) : rirq_alloc, NATIVE_CODE:code
+1300 (0036) : scrolltext, DATA:data
+0ce1 (0021) : rirq_init_kernal, NATIVE_CODE:code
+2c63 (0020) : final, DATA:bss
+9fe0 (0020) : line, BSS:main@stack
+0d02 (001e) : rirq_init_tables, NATIVE_CODE:code
+12a4 (001a) : irqai, DATA:data
+12be (001a) : irqdi, DATA:data
+0f70 (0012) : rirq_start, NATIVE_CODE:code
+2c00 (0011) : rasterIRQRows, DATA:bss
+2c11 (0011) : rasterIRQIndex, DATA:bss
+2c22 (0011) : rasterIRQNext, DATA:bss
+2c34 (0010) : rasterIRQLow, DATA:bss
+2c44 (0010) : rasterIRQHigh, DATA:bss
+0f82 (000c) : rirq_wait, NATIVE_CODE:code
+2c57 (000c) : spmux, DATA:bss
+9fd5 (000b) : main@stack, BSS:main@stack
+129e (0005) : __multab48L, DATA:code
+2c84 (0004) : HeapNode, DATA:bss
+2c55 (0002) : vspriteScreen, DATA:bss
+12a3 (0001) : spentry, DATA:data
+2c33 (0001) : nextIRQ, DATA:bss
+2c54 (0001) : rirq_count, DATA:bss
+2c83 (0001) : rirq_pcount, DATA:bss
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+2c00 (0000) : BSSStart, START:bss
+2c88 (0000) : BSSEnd, END:bss
+2c88 (0000) : HeapStart, START:heap
+9000 (0000) : HeapEnd, END:heap
+9fd5 (0000) : StackEnd, END:stack

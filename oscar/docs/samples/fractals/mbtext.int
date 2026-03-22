@@ -1,0 +1,62 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/fractals/mbtext.c:6
+$00 R0(F), $04 R1(F), $08 R2(F), $0c R3(F), $10 R4(F), $14 R5(F), $18 R6(F), $1c R7(I), $1d R8(I), $1e R9(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbtext.c
+0000 (   8)		FILLA1024		<-	V(-1 '')+1024 , CC:160	{}
+0001 (  12)		CONST	R7(I)[0..0]	<-	CI:0	{}
+0002 (  17)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbtext.c
+0000 (  17)		CONV30	R0(F)	<-	R7(I)[0..24]	{}
+0001 (  17)		BINOP3	R0(F)	<-	R0(FF), CF:0.080000 (3da3d70a)	{}
+0002 (  17)		BINOP2	R0(F)	<-	R0(FF), CF:1.000000 (3f800000)	{}
+0003 (  14)		CONST	R8(I)[0..0]	<-	CI:0	{}
+0004 (  16)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbtext.c
+0000 (  16)		CONV30	R1(F)	<-	R8(I)[0..39]	{}
+0001 (  16)		BINOP3	R1(F)	<-	R1(FF), CF:0.087500 (3db33333)	{}
+0002 (  16)		BINOP2	R1(F)	<-	R1(FF), CF:2.500000 (40200000)	{}
+0003 (  19)		CONST	R2(F)	<-	CF:0.000000	{}
+0004 (  19)		CONST	R3(F)	<-	CF:0.000000	{}
+0005 (  21)		CONST	R9(I)[0..0]	<-	CI:0	{}
+0006 (  23)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbtext.c
+0000 (  23)		BINOP3	R4(F)	<-	R2(F), R2(F)	{}
+0001 (  23)		BINOP3	R5(F)	<-	R3(F), R3(F)	{}
+0002 (  23)		BINOP1	R6(F)	<-	R5(F), R4(F)	{}
+0003 (  23)		RELOP23	R6(B)[0..1]	<-	R6(FF), CF:4.000000 (40800000)	{}
+0004 (  23)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbtext.c
+0000 (  31)		BINOP3	R1(I)[0..960]	<-	R7(I)[0..24], CI:40	{}
+0001 (  31)		LEAA	R1(P)[55296..56256]	<-	V(-1 '')+55296 , R1(IF)[0..960]	{}
+0002 (  29)		BINOP1	R9(I)[-1..14]	<-	R9(IF)[0..15], CI:-1	{}
+0003 (  31)		LEAI	R1(P)+0 {V(-1 'ABS')} [55296..56295]	<-	R1(PF)+0 {V(-1 'ABS')} [55296..56256], R8(I)[0..39]	{}
+0004 (  31)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55296..56295], R9(CF)[-1..14]	{}
+0005 (  14)		BINOP1	R8(I)[1..40]	<-	R8(IF)[0..39], CI:1	{}
+0006 (  14)		RELOP28	R1(B)[0..1]	<-	R8(I)[1..40], CI:40	{}
+0007 (  14)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 4
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbtext.c
+0000 (  12)		BINOP1	R7(I)[1..25]	<-	R7(IF)[0..24], CI:1	{}
+0001 (  12)		RELOP28	R0(B)[0..1]	<-	R7(I)[1..25], CI:25	{}
+0002 (  12)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbtext.c
+0000 (  35)		RETV		<-	CI:0	{}
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbtext.c
+0000 (  26)		BINOP1	R6(F)	<-	R2(FF), R2(FF)	{}
+0001 (  25)		BINOP2	R2(F)	<-	R4(FF), R5(FF)	{}
+0002 (  25)		BINOP1	R2(F)	<-	R2(FF), R1(F)	{}
+0003 (  26)		BINOP3	R3(F)	<-	R6(FF), R3(FF)	{}
+0004 (  26)		BINOP1	R3(F)	<-	R3(FF), R0(F)	{}
+0005 (  21)		BINOP1	R9(I)[1..15]	<-	R9(IF)[0..14], CI:1	{}
+0006 (  21)		RELOP26	R4(B)[0..1]	<-	R9(I)[1..15], CI:14	{}
+0007 (  21)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 5
+		==> 6

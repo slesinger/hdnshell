@@ -1,0 +1,15 @@
+al 00f7 .ZeroEnd
+al 00f7 .ZeroStart
+al 0801 .startup
+al 0880 .main
+al 0a82 .freg
+al 0ac7 .faddsub
+al 0bb4 .crt_fmul
+al 0c4e .crt_fmul8
+al 0c7c .sint16_to_float
+al 0c9a .uint16_to_float
+al 0cc3 .spentry
+al 0cc4 .BSSStart
+al 0cc4 .BSSEnd
+al 9fee .StackEnd
+al 9fee .main?40stack

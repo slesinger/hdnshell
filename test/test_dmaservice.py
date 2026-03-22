@@ -37,7 +37,7 @@ def dma_run(filename: str):
     with open(filename, 'rb') as f:
         data = f.read()
         payload = data
-        send(0x02, len(payload), payload)
+        send(0x01, len(payload), payload)
 
 
 def keyboard_input(data: bytes):
@@ -89,6 +89,6 @@ def send(cmd: int, length: int = 0, payload: bytes = b'', read: bool = False):
 # reset_c64()
 # dma_write(0x0400, b'\x31\x38\x39\x00')
 # keyboard_input(b'HELLO WORLD!\n')
-power_off()
-# dma_run('test_net.prg')
+# power_off()
+dma_run('test1.prg')
 # identify()

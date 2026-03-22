@@ -1,0 +1,188 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/fractals/mbfixed.c:25
+$00 R0(L), $02 R1(L), $04 R2(L), $08 R3(I), $0a R4(I), $0c R5(I), $0d R6(I), $0e R7(I), $10 R8(I), $12 R9(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  71)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'NMITrampoline')	{S}
+0001 (  71)		STOREA2		<-	V(-1 '')+65530 , R0(PF)+0 {V(-1 'NMITrampoline')} [0..0]	{}
+0002 (  72)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'IRQTrampoline')	{S}
+0003 (  72)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'IRQTrampoline')} [0..0]	{}
+0004 (  80)		STOREA1		<-	V(-1 '')+1 , CC:53	{VM}
+0005 (  39)		STOREC2		<-	V(2 '')+0 , CI:0	{}
+0006 (  39)		STOREC2		<-	V(4 '')+0 , CI:8000	{}
+0007 (  45)		STOREA1		<-	V(-1 '')+53265 , CC:59	{V}
+0008 (  46)		STOREA1		<-	V(-1 '')+53270 , CC:24	{V}
+0009 (  52)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56576 	{V}
+000a (  52)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+000b (  52)		BINOP9	R0(I)[0..252]	<-	R0(IF)[0..255], CI:252	{}
+000c (  52)		STOREA1		<-	V(-1 '')+56576 , R0(CF)[0..252]	{V}
+000d (  53)		STOREA1		<-	V(-1 '')+53272 , CC:40	{V}
+000e (  37)		STOREA1		<-	V(-1 '')+53281 , CC:0	{V}
+000f (  34)		CONST	R0(P)[57344..57344]	<-	CA0(-1:57344 '')	{S}
+0010 (  39)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(-1 'ABS')} [57344..57344]	{}
+0011 (  39)		CALLN		<-	V(1 'memset')+0 	{}
+0012 (  40)		FILLA1000		<-	V(-1 '')+51200 , CC:39	{}
+0013 (  41)		FILLA1000		<-	V(-1 '')+55296 , CC:3	{}
+0014 (  46)		CONST	R5(I)[0..0]	<-	CI:0	{}
+0015 (  48)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbfixed.c
+0000 (  48)		CONST	R6(I)[0..0]	<-	CI:0	{}
+0001 ( 106)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/fixmath.c
+0000 ( 106)		STOREC2		<-	V(0 '')+0 , R6(I)[0..159]	{}
+0001 ( 106)		STOREC2		<-	V(2 '')+0 , CI:22937	{}
+0002 ( 106)		CALLN	R1(L)	<-	V(2 'lmul16s')+0 	{}
+0003 ( 106)		STOREC2		<-	V(0 '')+0 , R5(I)[0..99]	{}
+0004 ( 106)		STOREC2		<-	V(2 '')+0 , CI:25165	{}
+0005 ( 106)		CALLN	R0(L)	<-	V(2 'lmul16s')+0 	{}
+0006 ( 106)		BINOP18	R0(L)[-8388608..8388607]	<-	R0(LF), CL:8	{}
+0007 (  56)		BINOP2	R3(I)	<-	R0(IF)[-8388608..8388607], CI:4915	{}
+0008 ( 106)		BINOP18	R0(L)[-8388608..8388607]	<-	R1(LF), CL:8	{}
+0009 (  55)		BINOP2	R4(I)	<-	R0(IF)[-8388608..8388607], CI:10240	{}
+000a (  59)		CONST	R7(I)[0..0]	<-	CI:0	{}
+000b (  59)		CONST	R8(I)[0..0]	<-	CI:0	{}
+000c (  61)		CONST	R9(I)[0..0]	<-	CI:0	{}
+000d (  63)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbfixed.c
+0000 (  63)		MOVE	R0(I)	<-	R7(I)	{}
+0001 ( 111)		RELOP24	R1(B)[0..1]	<-	R7(I), CI:0	{}
+0002 ( 111)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/fixmath.c
+0000 ( 111)		UNOP11	R0(I)[1..32768]	<-	R7(I)[-32768..-1]	{}
+0001 ( 111)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/fixmath.c
+0000 ( 112)		STOREC2		<-	V(0 '')+0 , R0(I)[0..32768]	{}
+0001 ( 112)		STOREC2		<-	V(2 '')+0 , R0(IF)[0..32768]	{}
+0002 ( 112)		CALLN	R2(L)	<-	V(3 'lmul16u')+0 	{}
+0003 (  63)		MOVE	R0(I)	<-	R8(I)	{}
+0004 ( 111)		RELOP24	R1(B)[0..1]	<-	R8(I), CI:0	{}
+0005 ( 111)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/fixmath.c
+0000 ( 111)		UNOP11	R0(I)[1..32768]	<-	R8(I)[-32768..-1]	{}
+0001 ( 111)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/fixmath.c
+0000 ( 112)		STOREC2		<-	V(0 '')+0 , R0(I)[0..32768]	{}
+0001 ( 112)		STOREC2		<-	V(2 '')+0 , R0(IF)[0..32768]	{}
+0002 ( 112)		CALLN	R0(L)	<-	V(3 'lmul16u')+0 	{}
+0003 (  65)		BINOP1	R1(L)	<-	R0(L), R2(L)	{}
+0004 (  65)		RELOP25	R1(B)[0..1]	<-	R1(LF), CL:67108864	{}
+0005 (  65)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 7
+		==> 12
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbfixed.c
+0000 (  75)		BINOP9	R0(I)[0..3]	<-	R5(I)[0..99], CI:3	{}
+0001 (  75)		BINOP16	R0(I)[0..6]	<-	R0(IF)[0..3], CI:1	{}
+0002 (  75)		BINOP9	R1(I)[0..96]	<-	R5(I)[0..99], CI:124	{}
+0003 (  75)		BINOP3	R1(I)[0..7680]	<-	R1(IF)[0..96], CI:80	{}
+0004 (  75)		LEAA	R1(P)[57344..65024]	<-	V(-1 '')+57344 , R1(IF)[0..7680]	{}
+0005 (  75)		LEAI	R1(P)+0 {V(-1 'ABS')} [57344..65030]	<-	R1(PF)+0 {V(-1 'ABS')} [57344..65024], R0(IF)[0..6]	{}
+0006 (  75)		BINOP9	R0(I)[0..156]	<-	R6(I)[0..159], CI:252	{}
+0007 (  75)		BINOP16	R0(I)[0..312]	<-	R0(IF)[0..156], CI:1	{}
+0008 (  75)		LEAI	R1(P)+0 {V(-1 'ABS')} [57344..65342]	<-	R1(PF)+0 {V(-1 'ABS')} [57344..65030], R0(IF)[0..312]	{}
+0009 (  84)		LOADI1	R0(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [57344..65342]	{}
+000a (  84)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+000b (  78)		BINOP9	R2(I)[0..3]	<-	R6(I)[0..159], CI:3	{}
+000c (  78)		BINOP16	R2(I)[0..6]	<-	R2(IF)[0..3], CI:1	{}
+000d (  78)		BINOP17	R2(I)	<-	CI:192, R2(IF)[0..6]	{}
+000e (  81)		BINOP9	R3(I)[0..7]	<-	R9(IF)[0..31], CI:7	{}
+000f (  81)		BINOP16	R3(I)[0..14]	<-	R3(IF)[0..7], CI:1	{}
+0010 (  81)		LEAG	R4(P)[0..14]	<-	V(6 'colors' A)+0 , R3(I)[0..14]	{}
+0011 (  81)		LOADI1	R4(C)[0..255]	<-	R4(PF)+0 {V(6 'colors' A)} [0..14]	{}
+0012 (  84)		BINOP9	R4(C)	<-	R4(CF)[0..255], R2(C)	{}
+0013 (  84)		CONV37	R4(I)[0..255]	<-	R4(CF)	{}
+0014 (  84)		BINOP8	R0(I)[0..255]	<-	R4(IF)[0..255], R0(IF)[0..255]	{}
+0015 (  84)		STOREI1		<-	R1(P)+0 {V(-1 'ABS')} [57344..65342], R0(CF)[0..255]	{}
+0016 (  85)		LOADI1	R0(C)[0..255]	<-	R1(P)+1 {V(-1 'ABS')} [57344..65342]	{}
+0017 (  85)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0018 (  81)		LEAG	R3(P)[1..15]	<-	V(6 'colors' A)+1 , R3(IF)[0..14]	{}
+0019 (  81)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0 {V(6 'colors' A)} [1..15]	{}
+001a (  85)		BINOP9	R2(C)	<-	R3(CF)[0..255], R2(CF)	{}
+001b (  85)		CONV37	R2(I)[0..255]	<-	R2(CF)	{}
+001c (  85)		BINOP8	R0(I)[0..255]	<-	R2(IF)[0..255], R0(IF)[0..255]	{}
+001d (  85)		STOREI1		<-	R1(PF)+1 {V(-1 'ABS')} [57344..65342], R0(CF)[0..255]	{}
+001e (  48)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbfixed.c
+0000 (  48)		BINOP1	R6(I)[1..160]	<-	R6(IF)[0..159], CI:1	{}
+0001 (  48)		RELOP28	R0(B)[0..1]	<-	R6(I)[1..160], CI:160	{}
+0002 (  48)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbfixed.c
+0000 (  46)		BINOP1	R5(I)[1..100]	<-	R5(IF)[0..99], CI:1	{}
+0001 (  46)		RELOP28	R0(B)[0..1]	<-	R5(I)[1..100], CI:100	{}
+0002 (  46)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  80)		STOREA1		<-	V(-1 '')+1 , CC:54	{VM}
+0001 (  94)		CALLN		<-	V(5 'getch')+0 	{}
+0002 (  29)		STOREA1		<-	V(-1 '')+53265 , CC:27	{V}
+0003 (  30)		STOREA1		<-	V(-1 '')+53270 , CC:8	{V}
+0004 (  52)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56576 	{V}
+0005 (  52)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0006 (  52)		BINOP9	R0(I)[0..252]	<-	R0(IF)[0..255], CI:252	{}
+0007 (  52)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..252], CI:3	{}
+0008 (  52)		STOREA1		<-	V(-1 '')+56576 , R0(CF)[0..255]	{V}
+0009 (  53)		STOREA1		<-	V(-1 '')+53272 , CC:20	{V}
+000a (  99)		RETV		<-	CI:0	{}
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbfixed.c
+0000 (  68)		STOREC2		<-	V(0 '')+0 , R7(IF)[-32768..32767]	{}
+0001 (  68)		STOREC2		<-	V(2 '')+0 , R8(IF)[-32768..32767]	{}
+0002 (  67)		BINOP17	R1(L)[0..1048576]	<-	R2(LF), CL:12	{}
+0003 (  67)		BINOP17	R0(L)[0..1048576]	<-	R0(LF), CL:12	{}
+0004 (  67)		BINOP2	R0(I)[-32768..65535]	<-	R1(IF)[0..1048576], R0(IF)[0..1048576]	{}
+0005 (  67)		BINOP1	R7(I)	<-	R0(IF)[-32768..65535], R4(I)	{}
+0006 (  68)		CALLN	R0(I)	<-	V(4 'lmul4f12s')+0 	{}
+0007 (  68)		BINOP16	R0(I)	<-	R0(IF), CI:1	{}
+0008 (  68)		BINOP1	R8(I)	<-	R0(IF), R3(I)	{}
+0009 (  61)		BINOP1	R9(I)[1..32]	<-	R9(IF)[0..31], CI:1	{}
+000a (  61)		RELOP28	R0(B)[0..1]	<-	R9(I)[1..32], CI:32	{}
+000b (  61)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 4
+--------------------------------------------------------------------
+memset: /home/honza/projects/c64/projects/oscar64/include/string.h:28
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/string.c
+0000 ( 270)		JSR		<-	V(0 '')+0 , V(4 '')+0 , V(2 '')+0 , V(-1 '')+0 	{}
+0001 ( 291)		RET		<-		{}
+--------------------------------------------------------------------
+lmul16s: /home/honza/projects/c64/projects/oscar64/include/fixmath.h:8
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/fixmath.c
+0000 (  36)		JSR		<-	V(0 '')+0 , V(2 '')+0 , V(-1 '')+0 	{}
+0001 (  97)		RET		<-		{}
+--------------------------------------------------------------------
+lmul16u: /home/honza/projects/c64/projects/oscar64/include/fixmath.h:5
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/fixmath.c
+0000 (   7)		JSR		<-	V(2 '')+0 , V(0 '')+0 , V(-1 '')+0 	{}
+0001 (  30)		RET		<-		{}
+--------------------------------------------------------------------
+lmul4f12s: /home/honza/projects/c64/projects/oscar64/include/fixmath.h:18
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/fixmath.c
+0000 ( 119)		JSR		<-	V(2 '')+0 , V(0 '')+0 , V(-1 '')+0 	{}
+0001 ( 207)		RET		<-		{}
+--------------------------------------------------------------------
+getch: /home/honza/projects/c64/projects/oscar64/include/conio.h:83
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 320)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 320)		JSR	R0(L)	<-	V(-1 '')+0 	{}
+0001 ( 323)		BRANCH		<-	R0(CF)	{}
+		==> 2
+		==> 1
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 325)		RET		<-		{}

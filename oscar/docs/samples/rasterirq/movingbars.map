@@ -1,0 +1,107 @@
+sections
+0880 - 1291 : DATA, code
+1291 - 129a : DATA, data
+129a - 1500 : BSS, bss
+1500 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, rirq_init_tables@stack
+a000 - a000 : SSTACK, rirq_init_kernal@stack
+a000 - a000 : SSTACK, rirq_init_io@stack
+a000 - a000 : SSTACK, rirq_build@stack
+a000 - a000 : SSTACK, rirq_sort@stack
+a000 - a000 : SSTACK, rirq_start@stack
+a000 - a000 : SSTACK, sin@stack
+a000 - a000 : SSTACK, rirq_wait@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 129a, 0c80, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0ad8 : main, NATIVE_CODE:code
+0ad8 - 0af9 : rirq_init_kernal, NATIVE_CODE:code
+0af9 - 0b17 : rirq_init_tables, NATIVE_CODE:code
+0b17 - 0b74 : rirq_isr_kernal_io, NATIVE_CODE:code
+0b74 - 0c18 : rirq_build, NATIVE_CODE:code
+0c18 - 0ca7 : rirq_sort, NATIVE_CODE:code
+0ca7 - 0cb9 : rirq_start, NATIVE_CODE:code
+0cb9 - 0e50 : sin, NATIVE_CODE:code
+0e50 - 0e5c : rirq_wait, NATIVE_CODE:code
+0e5c - 0ea1 : freg, NATIVE_CODE:code
+0ea1 - 0f8e : faddsub, NATIVE_CODE:code
+0f8e - 1028 : crt_fmul, NATIVE_CODE:code
+1028 - 1056 : crt_fmul8, NATIVE_CODE:code
+1056 - 1104 : crt_fdiv, NATIVE_CODE:code
+1104 - 11fe : fround, NATIVE_CODE:code
+11fe - 124a : f32_to_i16, NATIVE_CODE:code
+124a - 1268 : sint16_to_float, NATIVE_CODE:code
+1268 - 1291 : uint16_to_float, NATIVE_CODE:code
+1291 - 1292 : spentry, DATA:data
+1292 - 129a : ubitmask, DATA:data
+129a - 129a : BSSStart, START:bss
+129a - 12ab : rasterIRQRows, DATA:bss
+12ab - 12bc : rasterIRQIndex, DATA:bss
+12bc - 12cd : rasterIRQNext, DATA:bss
+12cd - 12ce : nextIRQ, DATA:bss
+12ce - 12de : rasterIRQLow, DATA:bss
+12de - 12ee : rasterIRQHigh, DATA:bss
+12ee - 12ef : rirq_count, DATA:bss
+12ef - 12f0 : rirq_pcount, DATA:bss
+1300 - 1320 : ftop, DATA:bss
+1320 - 1340 : fbottom, DATA:bss
+1340 - 1360 : btop, DATA:bss
+1360 - 1380 : bbottom, DATA:bss
+1380 - 13a0 : final, DATA:bss
+1400 - 1500 : sintab, DATA:bss
+1500 - 1500 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0880 (0258) : main, NATIVE_CODE:code
+0cb9 (0197) : sin, NATIVE_CODE:code
+1400 (0100) : sintab, DATA:bss
+1104 (00fa) : fround, NATIVE_CODE:code
+0ea1 (00ed) : faddsub, NATIVE_CODE:code
+1056 (00ae) : crt_fdiv, NATIVE_CODE:code
+0b74 (00a4) : rirq_build, NATIVE_CODE:code
+0f8e (009a) : crt_fmul, NATIVE_CODE:code
+0c18 (008f) : rirq_sort, NATIVE_CODE:code
+0b17 (005d) : rirq_isr_kernal_io, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+11fe (004c) : f32_to_i16, NATIVE_CODE:code
+0e5c (0045) : freg, NATIVE_CODE:code
+1028 (002e) : crt_fmul8, NATIVE_CODE:code
+1268 (0029) : uint16_to_float, NATIVE_CODE:code
+0ad8 (0021) : rirq_init_kernal, NATIVE_CODE:code
+1300 (0020) : ftop, DATA:bss
+1320 (0020) : fbottom, DATA:bss
+1340 (0020) : btop, DATA:bss
+1360 (0020) : bbottom, DATA:bss
+1380 (0020) : final, DATA:bss
+0af9 (001e) : rirq_init_tables, NATIVE_CODE:code
+124a (001e) : sint16_to_float, NATIVE_CODE:code
+0ca7 (0012) : rirq_start, NATIVE_CODE:code
+129a (0011) : rasterIRQRows, DATA:bss
+12ab (0011) : rasterIRQIndex, DATA:bss
+12bc (0011) : rasterIRQNext, DATA:bss
+12ce (0010) : rasterIRQLow, DATA:bss
+12de (0010) : rasterIRQHigh, DATA:bss
+0e50 (000c) : rirq_wait, NATIVE_CODE:code
+1292 (0008) : ubitmask, DATA:data
+1291 (0001) : spentry, DATA:data
+12cd (0001) : nextIRQ, DATA:bss
+12ee (0001) : rirq_count, DATA:bss
+12ef (0001) : rirq_pcount, DATA:bss
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+129a (0000) : BSSStart, START:bss
+1500 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

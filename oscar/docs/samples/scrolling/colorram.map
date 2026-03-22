@@ -1,0 +1,56 @@
+sections
+0880 - 0bc9 : DATA, code
+0bc9 - 0bcc : DATA, data
+0bcc - 0bfe : BSS, bss
+0c00 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, vic_waitLine@stack
+a000 - a000 : SSTACK, scrollLeft0@stack
+a000 - a000 : SSTACK, scrollLeft1@stack
+a000 - a000 : SSTACK, rand@stack
+a000 - a000 : SSTACK, prepcol@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0bcc, 037e, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 08f3 : main, NATIVE_CODE:code
+08f3 - 090c : vic_waitLine, NATIVE_CODE:code
+090c - 09d4 : scrollLeft0, NATIVE_CODE:code
+09d4 - 0b7b : scrollLeft1, NATIVE_CODE:code
+0b7b - 0ba2 : prepcol, NATIVE_CODE:code
+0ba2 - 0bc9 : rand, NATIVE_CODE:code
+0bc9 - 0bca : spentry, DATA:data
+0bca - 0bcc : seed, DATA:data
+0bcc - 0be5 : rbuff, DATA:bss
+0bcc - 0bcc : BSSStart, START:bss
+0be5 - 0bfe : cbuff, DATA:bss
+0bfe - 0bfe : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+09d4 (01a7) : scrollLeft1, NATIVE_CODE:code
+090c (00c8) : scrollLeft0, NATIVE_CODE:code
+0880 (0073) : main, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0b7b (0027) : prepcol, NATIVE_CODE:code
+0ba2 (0027) : rand, NATIVE_CODE:code
+08f3 (0019) : vic_waitLine, NATIVE_CODE:code
+0bcc (0019) : rbuff, DATA:bss
+0be5 (0019) : cbuff, DATA:bss
+0bca (0002) : seed, DATA:data
+0bc9 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0bcc (0000) : BSSStart, START:bss
+0bfe (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

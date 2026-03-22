@@ -1,0 +1,61 @@
+sections
+0880 - 0992 : DATA, code
+0992 - 09af : DATA, data
+09af - 09bf : BSS, bss
+09c0 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, krnio_setnam@stack
+a000 - a000 : SSTACK, krnio_open@stack
+a000 - a000 : SSTACK, krnio_chkout@stack
+a000 - a000 : SSTACK, krnio_chrout@stack
+a000 - a000 : SSTACK, krnio_clrchn@stack
+a000 - a000 : SSTACK, krnio_write@stack
+a000 - a000 : SSTACK, krnio_close@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 09af, 013f, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 08be : main, NATIVE_CODE:code
+08be - 08d4 : krnio_setnam, NATIVE_CODE:code
+08d4 - 08e5 : *, DATA:code
+08e5 - 0913 : krnio_open, NATIVE_CODE:code
+0913 - 0961 : krnio_write, NATIVE_CODE:code
+0961 - 0976 : krnio_chkout, NATIVE_CODE:code
+0976 - 0986 : krnio_chrout, NATIVE_CODE:code
+0986 - 098a : krnio_clrchn, NATIVE_CODE:code
+098a - 0992 : krnio_close, NATIVE_CODE:code
+0992 - 0993 : spentry, DATA:data
+0993 - 09af : score, DATA:data
+09af - 09bf : krnio_pstatus, DATA:bss
+09af - 09af : BSSStart, START:bss
+09bf - 09bf : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0801 (0052) : startup, NATIVE_CODE:startup
+0913 (004e) : krnio_write, NATIVE_CODE:code
+0880 (003e) : main, NATIVE_CODE:code
+08e5 (002e) : krnio_open, NATIVE_CODE:code
+0993 (001c) : score, DATA:data
+08be (0016) : krnio_setnam, NATIVE_CODE:code
+0961 (0015) : krnio_chkout, NATIVE_CODE:code
+0976 (0010) : krnio_chrout, NATIVE_CODE:code
+09af (0010) : krnio_pstatus, DATA:bss
+098a (0008) : krnio_close, NATIVE_CODE:code
+0986 (0004) : krnio_clrchn, NATIVE_CODE:code
+0992 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+09af (0000) : BSSStart, START:bss
+09bf (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

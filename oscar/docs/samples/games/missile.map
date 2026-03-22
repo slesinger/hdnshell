@@ -1,0 +1,201 @@
+sections
+0a00 - 3ac3 : DATA, code
+1dfe - 42b8 : DATA, data
+42b8 - 4710 : BSS, bss
+4710 - b800 : HEAP, heap
+b800 - c7b2 : STACK, stack
+00f7 - 00ff : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+c7eb - c800 : SSTACK, sstack
+c7eb - c7eb : SSTACK, memcpy@stack
+c7eb - c7eb : SSTACK, memset@stack
+c7eb - c7eb : SSTACK, rirq_init_kernal@stack
+c7eb - c7eb : SSTACK, rirq_init_io@stack
+c7eb - c7eb : SSTACK, rirq_start@stack
+c7eb - c7eb : SSTACK, bmu_bitblit@stack
+c7d9 - c7eb : SSTACK, bmmc_trapezoid_fill@stack
+c7cb - c7d9 : SSTACK, bmmc_quad_fill@stack
+c7be - c7cb : SSTACK, game_state@stack
+c7dc - c7eb : SSTACK, bmmc_circle@stack
+c7b2 - c7be : SSTACK, main@stack
+
+regions
+0a00 - b800 : 42b8, 3d10, main
+00f7 - 00ff : 0000, 0008, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f9 : eused, DATA:zeropage
+00f9 - 00fb : efree, DATA:zeropage
+00fb - 00fd : iused, DATA:zeropage
+00fd - 00ff : ifree, DATA:zeropage
+00ff - 00ff : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0a00 - 1d0f : main, NATIVE_CODE:code
+1d0f - 1d26 : NMITrampoline, NATIVE_CODE:code
+1d26 - 1d2d : DoneTrampoline, NATIVE_CODE:code
+1d2d - 1d44 : IRQTrampoline, NATIVE_CODE:code
+1d44 - 1d6b : memcpy, NATIVE_CODE:code
+1d6b - 1d87 : memset, NATIVE_CODE:code
+1d87 - 1dc2 : rirq_init_kernal, NATIVE_CODE:code
+1dc2 - 1dd4 : rirq_start, NATIVE_CODE:code
+1dd4 - 1de3 : *, DATA:code
+1de3 - 1de9 : *, DATA:code
+1de9 - 1def : *, DATA:code
+1def - 1df7 : *, DATA:code
+1df7 - 1dfe : divs32@proxy, NATIVE_CODE:code
+1dfe - 1dff : spentry, DATA:data
+1dff - 1e00 : CrossDelay, DATA:data
+1e00 - 1e5d : rirq_isr_kernal_io, NATIVE_CODE:code
+1e5d - 1f7f : joy_interrupt, NATIVE_CODE:code
+1f7f - 2beb : game_state, NATIVE_CODE:code
+2beb - 2ea9 : bmu_bitblit, NATIVE_CODE:code
+2ea9 - 3086 : bmmc_quad_fill, NATIVE_CODE:code
+3086 - 33e0 : bmmc_trapezoid_fill, NATIVE_CODE:code
+33e0 - 3816 : bmmc_circle, NATIVE_CODE:code
+3816 - 384e : mul16by8, NATIVE_CODE:code
+384e - 3884 : mul32by8, NATIVE_CODE:code
+3884 - 388c : divmod@proxy, NATIVE_CODE:code
+388c - 3911 : divmod, NATIVE_CODE:code
+3911 - 3979 : mul32, NATIVE_CODE:code
+3979 - 3994 : divs32, NATIVE_CODE:code
+3994 - 39ae : negaccu32, NATIVE_CODE:code
+39ae - 39c8 : negtmp32, NATIVE_CODE:code
+39e6 - 3abd : divmod32, NATIVE_CODE:code
+3abd - 3ac3 : __multab32L, DATA:code
+3ac3 - 3ec3 : MissileSprites, DATA:data
+3ec3 - 41c3 : MissileChars, DATA:data
+41c3 - 41c5 : CrossX, DATA:data
+41c5 - 41c7 : CrossY, DATA:data
+41c7 - 41c8 : CrossP, DATA:data
+41c8 - 41d0 : lmask, DATA:data
+41d0 - 41d8 : rmask, DATA:data
+41d8 - 41dc : cbytes, DATA:data
+41dc - 41e4 : andmask, DATA:data
+41e4 - 41e6 : seed, DATA:data
+41e6 - 41ee : ormask, DATA:data
+41ee - 41ff : rasterIRQRows, DATA:bss
+41ff - 4200 : nextIRQ, DATA:bss
+4200 - 4280 : MixedColors, DATA:data
+4280 - 42b8 : bitshift, DATA:data
+42b8 - 42b8 : BSSStart, START:bss
+42b8 - 42c9 : rasterIRQIndex, DATA:bss
+42c9 - 42da : rasterIRQNext, DATA:bss
+42da - 42ea : rasterIRQLow, DATA:bss
+42ea - 42fa : rasterIRQHigh, DATA:bss
+42fa - 42fb : rirq_count, DATA:bss
+42fb - 42fd : vspriteScreen, DATA:bss
+42fd - 4305 : sbm, DATA:bss
+4305 - 4325 : top, DATA:bss
+4325 - 4345 : bottom, DATA:bss
+4345 - 4347 : joyy, DATA:bss
+4347 - 4349 : joyx, DATA:bss
+4349 - 434a : rirq_pcount, DATA:bss
+434a - 434d : TheGame, DATA:bss
+434d - 4353 : cities, DATA:bss
+4353 - 4354 : ncities, DATA:bss
+4354 - 435e : cbuffer, DATA:bss
+435e - 4360 : mused, DATA:bss
+4360 - 4362 : mfree, DATA:bss
+4362 - 43d2 : explosions, DATA:bss
+43d2 - 43d3 : nmissiles, DATA:bss
+43d3 - 43d4 : icbmspeed, DATA:bss
+43d4 - 43d5 : icbmcount, DATA:bss
+4400 - 44e0 : BLIT_CODE, DATA:bss
+4500 - 45b0 : missiles, DATA:bss
+45b0 - 4710 : icbms, DATA:bss
+4710 - 4710 : BSSEnd, END:bss
+c7b2 - c7b2 : StackEnd, END:stack
+c7b2 - c7be : main@stack, BSS:main@stack
+c7be - c7cb : game_state@stack, BSS:game_state@stack
+c7cb - c7d9 : bmmc_quad_fill@stack, BSS:bmmc_quad_fill@stack
+c7d9 - c7eb : bmmc_trapezoid_fill@stack, BSS:bmmc_trapezoid_fill@stack
+c7dc - c7eb : bmmc_circle@stack, BSS:bmmc_circle@stack
+c7eb - c800 : sstack, STACK:sstack
+
+objects by size
+0a00 (130f) : main, NATIVE_CODE:code
+1f7f (0c6c) : game_state, NATIVE_CODE:code
+33e0 (0436) : bmmc_circle, NATIVE_CODE:code
+3ac3 (0400) : MissileSprites, DATA:data
+3086 (035a) : bmmc_trapezoid_fill, NATIVE_CODE:code
+3ec3 (0300) : MissileChars, DATA:data
+2beb (02be) : bmu_bitblit, NATIVE_CODE:code
+2ea9 (01dd) : bmmc_quad_fill, NATIVE_CODE:code
+45b0 (0160) : icbms, DATA:bss
+1e5d (0122) : joy_interrupt, NATIVE_CODE:code
+4400 (00e0) : BLIT_CODE, DATA:bss
+39e6 (00d7) : divmod32, NATIVE_CODE:code
+4500 (00b0) : missiles, DATA:bss
+388c (0085) : divmod, NATIVE_CODE:code
+4200 (0080) : MixedColors, DATA:data
+4362 (0070) : explosions, DATA:bss
+3911 (0068) : mul32, NATIVE_CODE:code
+1e00 (005d) : rirq_isr_kernal_io, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+1d87 (003b) : rirq_init_kernal, NATIVE_CODE:code
+3816 (0038) : mul16by8, NATIVE_CODE:code
+4280 (0038) : bitshift, DATA:data
+384e (0036) : mul32by8, NATIVE_CODE:code
+1d44 (0027) : memcpy, NATIVE_CODE:code
+4305 (0020) : top, DATA:bss
+4325 (0020) : bottom, DATA:bss
+1d6b (001c) : memset, NATIVE_CODE:code
+3979 (001b) : divs32, NATIVE_CODE:code
+3994 (001a) : negaccu32, NATIVE_CODE:code
+39ae (001a) : negtmp32, NATIVE_CODE:code
+1d0f (0017) : NMITrampoline, NATIVE_CODE:code
+1d2d (0017) : IRQTrampoline, NATIVE_CODE:code
+c7eb (0015) : sstack, STACK:sstack
+1dc2 (0012) : rirq_start, NATIVE_CODE:code
+c7d9 (0012) : bmmc_trapezoid_fill@stack, BSS:bmmc_trapezoid_fill@stack
+41ee (0011) : rasterIRQRows, DATA:bss
+42b8 (0011) : rasterIRQIndex, DATA:bss
+42c9 (0011) : rasterIRQNext, DATA:bss
+42da (0010) : rasterIRQLow, DATA:bss
+42ea (0010) : rasterIRQHigh, DATA:bss
+c7dc (000f) : bmmc_circle@stack, BSS:bmmc_circle@stack
+c7cb (000e) : bmmc_quad_fill@stack, BSS:bmmc_quad_fill@stack
+c7be (000d) : game_state@stack, BSS:game_state@stack
+c7b2 (000c) : main@stack, BSS:main@stack
+4354 (000a) : cbuffer, DATA:bss
+3884 (0008) : divmod@proxy, NATIVE_CODE:code
+41c8 (0008) : lmask, DATA:data
+41d0 (0008) : rmask, DATA:data
+41dc (0008) : andmask, DATA:data
+41e6 (0008) : ormask, DATA:data
+42fd (0008) : sbm, DATA:bss
+1d26 (0007) : DoneTrampoline, NATIVE_CODE:code
+1df7 (0007) : divs32@proxy, NATIVE_CODE:code
+3abd (0006) : __multab32L, DATA:code
+434d (0006) : cities, DATA:bss
+41d8 (0004) : cbytes, DATA:data
+434a (0003) : TheGame, DATA:bss
+00f7 (0002) : eused, DATA:zeropage
+00f9 (0002) : efree, DATA:zeropage
+00fb (0002) : iused, DATA:zeropage
+00fd (0002) : ifree, DATA:zeropage
+41c3 (0002) : CrossX, DATA:data
+41c5 (0002) : CrossY, DATA:data
+41e4 (0002) : seed, DATA:data
+42fb (0002) : vspriteScreen, DATA:bss
+4345 (0002) : joyy, DATA:bss
+4347 (0002) : joyx, DATA:bss
+435e (0002) : mused, DATA:bss
+4360 (0002) : mfree, DATA:bss
+1dfe (0001) : spentry, DATA:data
+1dff (0001) : CrossDelay, DATA:data
+41c7 (0001) : CrossP, DATA:data
+41ff (0001) : nextIRQ, DATA:bss
+42fa (0001) : rirq_count, DATA:bss
+4349 (0001) : rirq_pcount, DATA:bss
+4353 (0001) : ncities, DATA:bss
+43d2 (0001) : nmissiles, DATA:bss
+43d3 (0001) : icbmspeed, DATA:bss
+43d4 (0001) : icbmcount, DATA:bss
+00f7 (0000) : ZeroStart, START:zeropage
+00ff (0000) : ZeroEnd, END:zeropage
+42b8 (0000) : BSSStart, START:bss
+4710 (0000) : BSSEnd, END:bss
+c7b2 (0000) : StackEnd, END:stack

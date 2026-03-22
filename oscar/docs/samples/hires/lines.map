@@ -1,0 +1,96 @@
+sections
+0880 - 16cb : DATA, code
+16cb - 1738 : DATA, data
+1738 - 18e0 : BSS, bss
+18e0 - 9000 : HEAP, heap
+9000 - 9fcc : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9fef - a000 : SSTACK, sstack
+9fef - 9fef : SSTACK, mmap_trampoline@stack
+9fef - 9fef : SSTACK, memset@stack
+9fef - 9fef : SSTACK, vic_setmode@stack
+9fef - 9fef : SSTACK, bm_init@stack
+9fef - 9fef : SSTACK, init@stack
+9fef - 9fef : SSTACK, lmuldiv16s@stack
+9fef - 9fef : SSTACK, bmu_line@stack
+9fe1 - 9fef : SSTACK, bm_line@stack
+9fd4 - 9fe1 : SSTACK, draw@stack
+9fef - 9fef : SSTACK, convch@stack
+9fef - 9fef : SSTACK, getch@stack
+9fef - 9fef : SSTACK, done@stack
+9fcc - 9fd4 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 1738, 1060, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0916 : main, NATIVE_CODE:code
+0916 - 0982 : init, NATIVE_CODE:code
+0982 - 0997 : mmap_trampoline, NATIVE_CODE:code
+0997 - 09ae : NMITrampoline, NATIVE_CODE:code
+09ae - 09b5 : DoneTrampoline, NATIVE_CODE:code
+09b5 - 09cc : IRQTrampoline, NATIVE_CODE:code
+09cc - 09f0 : memset, NATIVE_CODE:code
+09f0 - 0a42 : vic_setmode, NATIVE_CODE:code
+0a42 - 0a74 : bm_init, NATIVE_CODE:code
+0a74 - 0a7c : *, DATA:code
+0a7c - 0beb : draw, NATIVE_CODE:code
+0beb - 1066 : bm_line, NATIVE_CODE:code
+1066 - 1125 : lmuldiv16s, NATIVE_CODE:code
+1125 - 163b : bmu_line, NATIVE_CODE:code
+163b - 1655 : done, NATIVE_CODE:code
+1655 - 1661 : getch, NATIVE_CODE:code
+1661 - 1693 : convch, NATIVE_CODE:code
+1693 - 16cb : mul16by8, NATIVE_CODE:code
+16cb - 16cc : spentry, DATA:data
+16cc - 16cd : giocharmap, DATA:data
+16cd - 16d5 : Screen, DATA:bss
+1700 - 1738 : bitshift, DATA:data
+1738 - 1738 : BSSStart, START:bss
+1800 - 18e0 : BLIT_CODE, DATA:bss
+18e0 - 18e0 : BSSEnd, END:bss
+9fcc - 9fcc : StackEnd, END:stack
+9fcc - 9fd4 : cr, BSS:main@stack
+9fd4 - 9fe1 : draw@stack, BSS:draw@stack
+9fe1 - 9fef : bm_line@stack, BSS:bm_line@stack
+9fef - a000 : sstack, STACK:sstack
+
+objects by size
+1125 (0516) : bmu_line, NATIVE_CODE:code
+0beb (047b) : bm_line, NATIVE_CODE:code
+0a7c (016f) : draw, NATIVE_CODE:code
+1800 (00e0) : BLIT_CODE, DATA:bss
+1066 (00bf) : lmuldiv16s, NATIVE_CODE:code
+0880 (0096) : main, NATIVE_CODE:code
+0916 (006c) : init, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+09f0 (0052) : vic_setmode, NATIVE_CODE:code
+1693 (0038) : mul16by8, NATIVE_CODE:code
+1700 (0038) : bitshift, DATA:data
+0a42 (0032) : bm_init, NATIVE_CODE:code
+1661 (0032) : convch, NATIVE_CODE:code
+09cc (0024) : memset, NATIVE_CODE:code
+163b (001a) : done, NATIVE_CODE:code
+0997 (0017) : NMITrampoline, NATIVE_CODE:code
+09b5 (0017) : IRQTrampoline, NATIVE_CODE:code
+0982 (0015) : mmap_trampoline, NATIVE_CODE:code
+9fef (0011) : sstack, STACK:sstack
+9fe1 (000e) : bm_line@stack, BSS:bm_line@stack
+9fd4 (000d) : draw@stack, BSS:draw@stack
+1655 (000c) : getch, NATIVE_CODE:code
+16cd (0008) : Screen, DATA:bss
+9fcc (0008) : cr, BSS:main@stack
+09ae (0007) : DoneTrampoline, NATIVE_CODE:code
+16cb (0001) : spentry, DATA:data
+16cc (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+1738 (0000) : BSSStart, START:bss
+18e0 (0000) : BSSEnd, END:bss
+9fcc (0000) : StackEnd, END:stack

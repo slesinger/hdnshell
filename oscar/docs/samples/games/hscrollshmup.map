@@ -1,0 +1,225 @@
+sections
+0880 - 1eda : DATA, code
+0bff - 4638 : DATA, data
+4638 - 4f7e : BSS, bss
+4f80 - 9000 : HEAP, heap
+9000 - 9ff5 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, memcpy@stack
+a000 - a000 : SSTACK, tiles_unpack@stack
+a000 - a000 : SSTACK, vic_setmode@stack
+a000 - a000 : SSTACK, rirq_init_tables@stack
+a000 - a000 : SSTACK, rirq_init_kernal@stack
+a000 - a000 : SSTACK, rirq_init_io@stack
+a000 - a000 : SSTACK, rirq_build@stack
+a000 - a000 : SSTACK, rirq_sort@stack
+a000 - a000 : SSTACK, rirq_start@stack
+a000 - a000 : SSTACK, sidfx_init@stack
+a000 - a000 : SSTACK, status_init@stack
+a000 - a000 : SSTACK, rand@stack
+a000 - a000 : SSTACK, shot_init@stack
+a000 - a000 : SSTACK, game_init@stack
+a000 - a000 : SSTACK, spr_set@stack
+a000 - a000 : SSTACK, player_init@stack
+a000 - a000 : SSTACK, score_reset@stack
+a000 - a000 : SSTACK, game_state@stack
+a000 - a000 : SSTACK, tiles_draw0@stack
+a000 - a000 : SSTACK, tiles_draw1@stack
+a000 - a000 : SSTACK, tiles_draw2@stack
+a000 - a000 : SSTACK, tiles_draw3@stack
+9ff9 - a000 : SSTACK, tiles_draw@stack
+a000 - a000 : SSTACK, joy_poll@stack
+a000 - a000 : SSTACK, shot_add@stack
+a000 - a000 : SSTACK, player_control@stack
+a000 - a000 : SSTACK, enemies_spawn@stack
+a000 - a000 : SSTACK, enemies_move@stack
+a000 - a000 : SSTACK, shots_check@stack
+a000 - a000 : SSTACK, player_check@stack
+a000 - a000 : SSTACK, enemies_reset@stack
+a000 - a000 : SSTACK, sidfx_loop@stack
+a000 - a000 : SSTACK, status_update@stack
+9ff7 - 9ff9 : SSTACK, game_loop@stack
+9ff5 - 9ff7 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 4638, 46fe, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0a94 : main, NATIVE_CODE:code
+0a94 - 0aab : NMITrampoline, NATIVE_CODE:code
+0aab - 0ab2 : DoneTrampoline, NATIVE_CODE:code
+0ab2 - 0ac9 : IRQTrampoline, NATIVE_CODE:code
+0ac9 - 0af0 : memcpy, NATIVE_CODE:code
+0af0 - 0b8d : tiles_unpack, NATIVE_CODE:code
+0b8d - 0ba5 : vic_setmode, NATIVE_CODE:code
+0ba5 - 0bc6 : rirq_init_kernal, NATIVE_CODE:code
+0bc6 - 0be4 : rirq_init_tables, NATIVE_CODE:code
+0be4 - 0bf6 : rirq_start, NATIVE_CODE:code
+0bf6 - 0bfa : __multab40L, DATA:code
+0bfa - 0bff : __multab32L, DATA:code
+0bff - 0c00 : spentry, DATA:data
+0c00 - 0c5d : rirq_isr_kernal_io, NATIVE_CODE:code
+0c5d - 0cde : rirq_build, NATIVE_CODE:code
+0cde - 0d5e : rirq_sort, NATIVE_CODE:code
+0d5e - 0d90 : sidfx_init, NATIVE_CODE:code
+0d90 - 0d9e : status_init, NATIVE_CODE:code
+0d9e - 0dc5 : rand, NATIVE_CODE:code
+0dc5 - 0e04 : shot_init, NATIVE_CODE:code
+0e04 - 0e1f : game_init, NATIVE_CODE:code
+0e1f - 0e61 : player_init, NATIVE_CODE:code
+0e61 - 0ebe : spr_set, NATIVE_CODE:code
+0ebe - 0f66 : game_state, NATIVE_CODE:code
+0f66 - 0f98 : score_reset, NATIVE_CODE:code
+0f98 - 1111 : game_loop, NATIVE_CODE:code
+1111 - 1365 : tiles_draw, NATIVE_CODE:code
+1365 - 1418 : tiles_draw0, NATIVE_CODE:code
+1418 - 14d0 : tiles_draw1, NATIVE_CODE:code
+14d0 - 1588 : tiles_draw2, NATIVE_CODE:code
+1588 - 1640 : tiles_draw3, NATIVE_CODE:code
+1640 - 17ce : player_control, NATIVE_CODE:code
+17ce - 180d : joy_poll, NATIVE_CODE:code
+180d - 18d2 : shot_add, NATIVE_CODE:code
+18d2 - 1981 : enemies_spawn, NATIVE_CODE:code
+1981 - 1a63 : enemies_move, NATIVE_CODE:code
+1a63 - 1b36 : shots_check, NATIVE_CODE:code
+1b36 - 1bbc : player_check, NATIVE_CODE:code
+1bbc - 1be5 : enemies_reset, NATIVE_CODE:code
+1be5 - 1e07 : sidfx_loop, NATIVE_CODE:code
+1e07 - 1e52 : status_update, NATIVE_CODE:code
+1e52 - 1ed7 : divmod, NATIVE_CODE:code
+1ed7 - 1eda : __multab7L, DATA:code
+1eda - 26da : charset, DATA:data
+26da - 2eda : tcharset, DATA:data
+2eda - 3eda : spriteset, DATA:data
+3eda - 42da : tileset, DATA:data
+42da - 455a : tilemap, DATA:data
+455a - 4583 : StatusText, DATA:data
+4583 - 4585 : seed, DATA:data
+4585 - 45af : SIDFXBigExplosion, DATA:data
+45af - 45bd : SIDFXFire, DATA:data
+45bd - 45cb : SIDFXExplosion, DATA:data
+45cb - 45cd : vspriteScreen, DATA:bss
+45cd - 45de : rasterIRQRows, DATA:bss
+45de - 45ef : rasterIRQIndex, DATA:bss
+45ef - 4600 : rasterIRQNext, DATA:bss
+4600 - 4638 : bitshift, DATA:data
+4638 - 4639 : nextIRQ, DATA:bss
+4638 - 4638 : BSSStart, START:bss
+4639 - 463a : rirq_count, DATA:bss
+463a - 463c : freeShot, DATA:bss
+463c - 463e : joyy, DATA:bss
+463e - 4640 : joyx, DATA:bss
+4640 - 4a40 : xtileset, DATA:bss
+4a40 - 4d10 : xtilemap, DATA:bss
+4d10 - 4d20 : rasterIRQLow, DATA:bss
+4d20 - 4d30 : rasterIRQHigh, DATA:bss
+4d30 - 4d50 : top, DATA:bss
+4d50 - 4d70 : bottom, DATA:bss
+4d70 - 4d8e : channels, DATA:bss
+4d8e - 4da6 : stars, DATA:bss
+4da6 - 4dac : game, DATA:bss
+4dac - 4db3 : player, DATA:bss
+4db3 - 4db5 : joyb, DATA:bss
+4db5 - 4ddd : enemies, DATA:bss
+4e00 - 4f00 : xcollision, DATA:bss
+4f00 - 4f7e : shots, DATA:bss
+4f7e - 4f7e : BSSEnd, END:bss
+9ff5 - 9ff7 : main@stack, BSS:main@stack
+9ff5 - 9ff5 : StackEnd, END:stack
+9ff7 - 9ff9 : game_loop@stack, BSS:game_loop@stack
+9ff9 - a000 : tiles_draw@stack, BSS:tiles_draw@stack
+
+objects by size
+2eda (1000) : spriteset, DATA:data
+1eda (0800) : charset, DATA:data
+26da (0800) : tcharset, DATA:data
+3eda (0400) : tileset, DATA:data
+4640 (0400) : xtileset, DATA:bss
+4a40 (02d0) : xtilemap, DATA:bss
+42da (0280) : tilemap, DATA:data
+1111 (0254) : tiles_draw, NATIVE_CODE:code
+1be5 (0222) : sidfx_loop, NATIVE_CODE:code
+0880 (0214) : main, NATIVE_CODE:code
+1640 (018e) : player_control, NATIVE_CODE:code
+0f98 (0179) : game_loop, NATIVE_CODE:code
+4e00 (0100) : xcollision, DATA:bss
+1981 (00e2) : enemies_move, NATIVE_CODE:code
+1a63 (00d3) : shots_check, NATIVE_CODE:code
+180d (00c5) : shot_add, NATIVE_CODE:code
+1418 (00b8) : tiles_draw1, NATIVE_CODE:code
+14d0 (00b8) : tiles_draw2, NATIVE_CODE:code
+1588 (00b8) : tiles_draw3, NATIVE_CODE:code
+1365 (00b3) : tiles_draw0, NATIVE_CODE:code
+18d2 (00af) : enemies_spawn, NATIVE_CODE:code
+0ebe (00a8) : game_state, NATIVE_CODE:code
+0af0 (009d) : tiles_unpack, NATIVE_CODE:code
+1b36 (0086) : player_check, NATIVE_CODE:code
+1e52 (0085) : divmod, NATIVE_CODE:code
+0c5d (0081) : rirq_build, NATIVE_CODE:code
+0cde (0080) : rirq_sort, NATIVE_CODE:code
+4f00 (007e) : shots, DATA:bss
+0c00 (005d) : rirq_isr_kernal_io, NATIVE_CODE:code
+0e61 (005d) : spr_set, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+1e07 (004b) : status_update, NATIVE_CODE:code
+0e1f (0042) : player_init, NATIVE_CODE:code
+0dc5 (003f) : shot_init, NATIVE_CODE:code
+17ce (003f) : joy_poll, NATIVE_CODE:code
+4600 (0038) : bitshift, DATA:data
+0d5e (0032) : sidfx_init, NATIVE_CODE:code
+0f66 (0032) : score_reset, NATIVE_CODE:code
+4585 (002a) : SIDFXBigExplosion, DATA:data
+1bbc (0029) : enemies_reset, NATIVE_CODE:code
+455a (0029) : StatusText, DATA:data
+4db5 (0028) : enemies, DATA:bss
+0ac9 (0027) : memcpy, NATIVE_CODE:code
+0d9e (0027) : rand, NATIVE_CODE:code
+0ba5 (0021) : rirq_init_kernal, NATIVE_CODE:code
+4d30 (0020) : top, DATA:bss
+4d50 (0020) : bottom, DATA:bss
+0bc6 (001e) : rirq_init_tables, NATIVE_CODE:code
+4d70 (001e) : channels, DATA:bss
+0e04 (001b) : game_init, NATIVE_CODE:code
+0b8d (0018) : vic_setmode, NATIVE_CODE:code
+4d8e (0018) : stars, DATA:bss
+0a94 (0017) : NMITrampoline, NATIVE_CODE:code
+0ab2 (0017) : IRQTrampoline, NATIVE_CODE:code
+0be4 (0012) : rirq_start, NATIVE_CODE:code
+45cd (0011) : rasterIRQRows, DATA:bss
+45de (0011) : rasterIRQIndex, DATA:bss
+45ef (0011) : rasterIRQNext, DATA:bss
+4d10 (0010) : rasterIRQLow, DATA:bss
+4d20 (0010) : rasterIRQHigh, DATA:bss
+0d90 (000e) : status_init, NATIVE_CODE:code
+45af (000e) : SIDFXFire, DATA:data
+45bd (000e) : SIDFXExplosion, DATA:data
+0aab (0007) : DoneTrampoline, NATIVE_CODE:code
+4dac (0007) : player, DATA:bss
+9ff9 (0007) : tiles_draw@stack, BSS:tiles_draw@stack
+4da6 (0006) : game, DATA:bss
+0bfa (0005) : __multab32L, DATA:code
+0bf6 (0004) : __multab40L, DATA:code
+1ed7 (0003) : __multab7L, DATA:code
+4583 (0002) : seed, DATA:data
+45cb (0002) : vspriteScreen, DATA:bss
+463a (0002) : freeShot, DATA:bss
+463c (0002) : joyy, DATA:bss
+463e (0002) : joyx, DATA:bss
+4db3 (0002) : joyb, DATA:bss
+9ff5 (0002) : main@stack, BSS:main@stack
+9ff7 (0002) : game_loop@stack, BSS:game_loop@stack
+0bff (0001) : spentry, DATA:data
+4638 (0001) : nextIRQ, DATA:bss
+4639 (0001) : rirq_count, DATA:bss
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+4638 (0000) : BSSStart, START:bss
+4f7e (0000) : BSSEnd, END:bss
+9ff5 (0000) : StackEnd, END:stack

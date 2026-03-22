@@ -1,0 +1,94 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/kernalio/charwrite.c:4
+$00 R0(P), $00 R1(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/kernalio/charwrite.c
+0000 (   7)		CONST	R0(P)[0..0]	<-	CG0(6:0 '')	{S}
+0001 (   7)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(6 '')} [0..0]	{}
+0002 (   7)		CALLN		<-	V(1 'krnio_setnam')+0 	{}
+0003 (   8)		STOREC1		<-	V(0 '')+0 , CC:2	{}
+0004 (   8)		STOREC1		<-	V(1 '')+0 , CC:9	{}
+0005 (   8)		STOREC1		<-	V(2 '')+0 , CC:2	{}
+0006 (   8)		CALLN	R0(B)	<-	V(2 'krnio_open')+0 	{}
+0007 (   8)		BRANCH		<-	R0(BF)	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/kernalio/charwrite.c
+0000 (  14)		CONST	R1(C)[0..0]	<-	CI:0	{}
+0001 (  15)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/kernalio/charwrite.c
+0000 (  15)		STOREC1		<-	V(1 '')+0 , CC:2	{}
+0001 (  15)		STOREC1		<-	V(2 '')+0 , R1(C)[0..127]	{}
+0002 (  15)		CALLN		<-	V(3 'krnio_putch')+0 	{}
+0003 (  14)		BINOP1	R1(C)[1..128]	<-	R1(CF)[0..127], CI:1	{}
+0004 (  14)		RELOP28	R0(B)[0..1]	<-	R1(C)[1..128], CC:128	{}
+0005 (  14)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/kernalio/charwrite.c
+0000 (  18)		STOREC1		<-	V(0 '')+0 , CC:2	{}
+0001 (  18)		CALLN		<-	V(7 'krnio_close')+0 	{}
+0002 (  21)		RETV		<-	CI:0	{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/kernalio/charwrite.c
+0000 (  21)		RETV		<-	CI:0	{}
+--------------------------------------------------------------------
+krnio_setnam: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:29
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 (  92)		JSR		<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 113)		RET		<-		{}
+--------------------------------------------------------------------
+krnio_open: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:35
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 140)		LOADZ1	R0(C)[0..15]	<-	V(0 '')+0 	{S}
+0001 ( 140)		CONV37	R0(I)[0..15]	<-	R0(CF)[0..15]	{S}
+0002 ( 140)		LEAG	R0(P)[0..15]	<-	V(7 'krnio_pstatus' A)+0 , R0(IF)[0..15]	{S}
+0003 ( 140)		STOREI1		<-	R0(PF)+0 {V(7 'krnio_pstatus' A)} [0..15], CC:0	{}
+0004 ( 144)		JSR	R0(L)	<-	V(2 '')+0 , V(1 '')+0 , V(0 '')+0 , V(-1 '')+0 	{V}
+0005 ( 177)		RELOP20	R0(B)[0..1]	<-	R0(CF), CC:0	{}
+0006 ( 142)		RETV		<-	R0(BF)[0..1]	{}
+--------------------------------------------------------------------
+krnio_putch: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:78
+$00 R0(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 380)		LOADZ1	R0(C)[0..255]	<-	V(1 '')+0 	{S}
+0001 ( 380)		STOREC1		<-	V(0 '')+0 , R0(CF)[0..255]	{}
+0002 ( 380)		CALLN	R0(B)	<-	V(4 'krnio_chkout')+0 	{}
+0003 ( 380)		BRANCH		<-	R0(BF)	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 382)		LOADZ1	R0(C)[0..255]	<-	V(2 '')+0 	{S}
+0001 ( 382)		STOREC1		<-	V(0 '')+0 , R0(CF)[0..255]	{}
+0002 ( 382)		CALLN		<-	V(5 'krnio_chrout')+0 	{}
+0003 ( 383)		CALLN		<-	V(6 'krnio_clrchn')+0 	{}
+0004 ( 384)		RETV		<-	CI:0	{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 387)		RETV		<-	CI:-1	{}
+--------------------------------------------------------------------
+krnio_chkout: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:51
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 275)		JSR	R0(L)	<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 286)		RELOP20	R0(B)[0..1]	<-	R0(CF), CC:0	{}
+0002 ( 272)		RETV		<-	R0(BF)[0..1]	{}
+--------------------------------------------------------------------
+krnio_chrout: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:63
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 329)		JSR	R0(L)	<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 333)		RELOP20	R0(B)[0..1]	<-	R0(CF), CC:0	{}
+0002 ( 326)		RETV		<-	R0(BF)[0..1]	{}
+--------------------------------------------------------------------
+krnio_clrchn: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:59
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 317)		JSR		<-	V(-1 '')+0 	{V}
+0001 ( 320)		RET		<-		{}
+--------------------------------------------------------------------
+krnio_close: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:39
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 187)		JSR		<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 195)		RET		<-		{}

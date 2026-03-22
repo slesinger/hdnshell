@@ -1,0 +1,330 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/kernalio/hiresread.c:13
+$00 R0(P), $00 R1(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/kernalio/hiresread.c
+0000 (  19)		STOREC1		<-	V(4 '')+0 , CC:40	{}
+0001 (  19)		STOREC1		<-	V(5 '')+0 , CC:25	{}
+0002 (  16)		CALLN		<-	V(1 'mmap_trampoline')+0 	{}
+0003 (  19)		CONST	R0(P)[0..0]	<-	CG8(6:0 'Screen' A)	{S}
+0004 (  19)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(6 'Screen' A)} [0..0]	{}
+0005 (  19)		CONST	R1(P)[57344..57344]	<-	CA0(-1:57344 '')	{S}
+0006 (  19)		STOREC2		<-	V(2 '')+0 , R1(P)+0 {V(-1 'ABS')} [57344..57344]	{}
+0007 (  19)		CALLN		<-	V(2 'bm_init')+0 	{}
+0008 (  80)		STOREA1		<-	V(-1 '')+1 , CC:48	{VM}
+0009 (  23)		STOREC2		<-	V(0 '')+0 , R1(P)+0 {V(-1 'ABS')} [57344..57344]	{}
+000a (  23)		STOREC2		<-	V(2 '')+0 , CI:0	{}
+000b (  23)		STOREC2		<-	V(4 '')+0 , CI:8000	{}
+000c (  23)		CALLN		<-	V(3 'memset')+0 	{}
+000d (  24)		FILLA1000		<-	V(-1 '')+53248 , CC:112	{}
+000e (  80)		STOREA1		<-	V(-1 '')+1 , CC:53	{VM}
+000f (  28)		STOREC1		<-	V(0 '')+0 , CC:3	{}
+0010 (  28)		STOREC2		<-	V(3 '')+0 , R1(P)+0 {V(-1 'ABS')} [57344..57344]	{}
+0011 (  24)		CONST	R0(P)[53248..53248]	<-	CA0(-1:53248 '')	{S}
+0012 (  28)		STOREC2		<-	V(1 '')+0 , R0(PF)+0 {V(-1 'ABS')} [53248..53248]	{}
+0013 (  28)		CALLN		<-	V(4 'vic_setmode')+0 	{}
+0014 (  80)		STOREA1		<-	V(-1 '')+1 , CC:55	{VM}
+0015 (  35)		CONST	R0(P)[0..0]	<-	CG0(7:0 '')	{S}
+0016 (  35)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(7 '')} [0..0]	{}
+0017 (  35)		CALLN		<-	V(5 'krnio_setnam')+0 	{}
+0018 (  36)		STOREC1		<-	V(0 '')+0 , CC:2	{}
+0019 (  36)		STOREC1		<-	V(1 '')+0 , CC:9	{}
+001a (  36)		STOREC1		<-	V(2 '')+0 , CC:2	{}
+001b (  36)		CALLN	R0(B)	<-	V(6 'krnio_open')+0 	{}
+001c (  36)		BRANCH		<-	R0(BF)	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/kernalio/hiresread.c
+0000 (  39)		STOREC1		<-	V(1 '')+0 , CC:2	{}
+0001 (  39)		STOREC2		<-	V(2 '')+0 , R1(PF)+0 {V(-1 'ABS')} [57344..57344]	{}
+0002 (  39)		STOREC2		<-	V(4 '')+0 , CI:8000	{}
+0003 (  39)		CALLN		<-	V(7 'krnio_read')+0 	{}
+0004 (  42)		STOREC1		<-	V(0 '')+0 , CC:2	{}
+0005 (  42)		CALLN		<-	V(12 'krnio_close')+0 	{}
+0006 (  36)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdio.c
+0000 (  13)		CALLN		<-	V(14 'getpch')+0 	{}
+0001 (  49)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0002 (  49)		CONST	R0(P)[1024..1024]	<-	CA0(-1:1024 '')	{S}
+0003 (  49)		STOREC2		<-	V(1 '')+0 , R0(PF)+0 {V(-1 'ABS')} [1024..1024]	{}
+0004 (  49)		CONST	R0(P)[4096..4096]	<-	CA0(-1:4096 '')	{S}
+0005 (  49)		STOREC2		<-	V(3 '')+0 , R0(PF)+0 {V(-1 'ABS')} [4096..4096]	{}
+0006 (  49)		CALLN		<-	V(4 'vic_setmode')+0 	{}
+0007 (  51)		RETV		<-	CI:0	{}
+--------------------------------------------------------------------
+mmap_trampoline: /home/honza/projects/c64/projects/oscar64/include/c64/memmap.h:25
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  71)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'NMITrampoline')	{S}
+0001 (  71)		STOREA2		<-	V(-1 '')+65530 , R0(PF)+0 {V(-1 'NMITrampoline')} [0..0]	{}
+0002 (  72)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'IRQTrampoline')	{S}
+0003 (  72)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'IRQTrampoline')} [0..0]	{}
+0004 (  73)		RET		<-		{}
+--------------------------------------------------------------------
+bm_init: /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.h:65
+$00 R0(P), $00 R1(P), $00 R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 (  10)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 (  11)		LOADZ2	R1(P)	<-	V(2 '')+0 	{S}
+0002 (  11)		STOREI2		<-	R0(P)+0, R1(PF)	{}
+0003 (  10)		CONST	R1(P)[0..0]	<-	CA0(-1:0 '')	{S}
+0004 (  10)		STOREI2		<-	R0(P)+2, R1(PF)+0 {V(-1 'ABS')} [0..0]	{}
+0005 (  12)		LOADZ1	R1(C)[0..255]	<-	V(4 '')+0 	{S}
+0006 (  12)		STOREI1		<-	R0(P)+4, R1(C)[0..255]	{}
+0007 (  13)		LOADZ1	R2(C)[0..255]	<-	V(5 '')+0 	{S}
+0008 (  13)		STOREI1		<-	R0(P)+5, R2(CF)[0..255]	{}
+0009 (  14)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{S}
+000a (  14)		BINOP16	R1(I)[0..2040]	<-	R1(IF)[0..255], CI:3	{S}
+000b (  14)		STOREI2		<-	R0(PF)+6, R1(IF)[0..2040]	{}
+000c (  15)		RET		<-		{}
+--------------------------------------------------------------------
+memset: /home/honza/projects/c64/projects/oscar64/include/string.h:28
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/string.c
+0000 ( 270)		JSR		<-	V(0 '')+0 , V(4 '')+0 , V(2 '')+0 , V(-1 '')+0 	{V}
+0001 ( 270)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0002 ( 291)		RETV		<-	R0(PF)	{}
+--------------------------------------------------------------------
+vic_setmode: /home/honza/projects/c64/projects/oscar64/include/c64/vic.h:94
+$00 R0(I), $00 R1(P), $00 R2(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		LOADZ1	R0(C)[0..4]	<-	V(0 '')+0 	{S}
+0001 (  26)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0002 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  37)		STOREA1		<-	V(-1 '')+53265 , CC:91	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  38)		STOREA1		<-	V(-1 '')+53270 , CC:8	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  52)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56576 	{V}
+0001 (  52)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  52)		BINOP9	R0(I)[0..252]	<-	R0(IF)[0..255], CI:252	{}
+0003 (  52)		LOADZ2	R1(P)	<-	V(1 '')+0 	{S}
+0004 (  52)		CAST	R1(I)	<-	R1(PF)	{S}
+0005 (  52)		BINOP17	R2(I)[0..3]	<-	R1(I), CI:14	{S}
+0006 (  52)		BINOP10	R2(I)[0..3]	<-	R2(IF)[0..3], CI:3	{S}
+0007 (  52)		BINOP8	R0(I)[0..255]	<-	R2(IF)[0..3], R0(IF)[0..252]	{}
+0008 (  52)		STOREA1		<-	V(-1 '')+56576 , R0(CF)[0..255]	{V}
+0009 (  53)		BINOP17	R1(I)[0..1023]	<-	R1(IF), CI:6	{S}
+000a (  53)		BINOP9	R1(I)[0..240]	<-	R1(IF)[0..1023], CI:240	{S}
+000b (  53)		LOADZ2	R0(P)	<-	V(3 '')+0 	{S}
+000c (  53)		CAST	R0(I)	<-	R0(PF)	{S}
+000d (  53)		BINOP17	R0(I)[0..63]	<-	R0(IF), CI:10	{S}
+000e (  53)		BINOP9	R0(I)[0..14]	<-	R0(IF)[0..63], CI:14	{S}
+000f (  53)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..14], R1(IF)[0..240]	{S}
+0010 (  53)		STOREA1		<-	V(-1 '')+53272 , R0(CF)[0..255]	{V}
+0011 (  54)		RET		<-		{}
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0001 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 4
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  33)		STOREA1		<-	V(-1 '')+53265 , CC:27	{V}
+0001 (  26)		BRANCH		<-	R0(CF)[0..1]	{}
+		==> 7
+		==> 6
+L7: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  46)		STOREA1		<-	V(-1 '')+53270 , CC:24	{V}
+0001 (  47)		JUMP		<-		{}
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  41)		STOREA1		<-	V(-1 '')+53265 , CC:59	{V}
+0001 (  26)		RELOP19	R0(B)[0..1]	<-	R0(CF)[2..4], CC:3	{S}
+0002 (  26)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+--------------------------------------------------------------------
+krnio_setnam: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:29
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 (  92)		JSR		<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 113)		RET		<-		{}
+--------------------------------------------------------------------
+krnio_open: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:35
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 140)		LOADZ1	R0(C)[0..15]	<-	V(0 '')+0 	{S}
+0001 ( 140)		CONV37	R0(I)[0..15]	<-	R0(CF)[0..15]	{S}
+0002 ( 140)		LEAG	R0(P)[0..15]	<-	V(8 'krnio_pstatus' A)+0 , R0(IF)[0..15]	{S}
+0003 ( 140)		STOREI1		<-	R0(PF)+0 {V(8 'krnio_pstatus' A)} [0..15], CC:0	{}
+0004 ( 144)		JSR	R0(L)	<-	V(2 '')+0 , V(1 '')+0 , V(0 '')+0 , V(-1 '')+0 	{V}
+0005 ( 177)		RELOP20	R0(B)[0..1]	<-	R0(CF), CC:0	{}
+0006 ( 142)		RETV		<-	R0(BF)[0..1]	{}
+--------------------------------------------------------------------
+krnio_read: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:91
+$00 R0(I), $00 R1(P), $01 R2(P), $02 R3(I), $00 R4(I), $00 R5(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 424)		LOADZ1	R1(C)[0..15]	<-	V(1 '')+0 	{S}
+0001 ( 424)		CONV37	R0(I)[0..15]	<-	R1(C)[0..15]	{S}
+0002 ( 424)		LEAG	R2(P)[0..15]	<-	V(8 'krnio_pstatus' A)+0 , R0(IF)[0..15]	{S}
+0003 ( 424)		LOADI1	R0(C)[0..128]	<-	R2(P)+0 {V(8 'krnio_pstatus' A)} [0..15]	{}
+0004 ( 424)		RELOP19	R0(B)[0..1]	<-	R0(CF)[0..128], CC:64	{}
+0005 ( 424)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 425)		RETV		<-	CI:0	{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 427)		STOREC1		<-	V(0 '')+0 , R1(CF)[0..15]	{}
+0001 ( 427)		CALLN	R0(B)	<-	V(8 'krnio_chkin')+0 	{}
+0002 ( 427)		BRANCH		<-	R0(BF)	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 429)		CONST	R3(I)[0..0]	<-	CI:0	{}
+0001 ( 431)		LOADZ2	R4(I)[-32768..32767]	<-	V(4 '')+0 	{S}
+0002 ( 431)		RELOP24	R0(B)[0..1]	<-	CI:0, R4(I)[-32768..32767]	{S}
+0003 ( 431)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 433)		CALLN	R0(C)	<-	V(9 'krnio_chrin')+0 	{}
+0001 ( 434)		CALLN	R5(C)	<-	V(10 'krnio_status')+0 	{}
+0002 ( 435)		STOREI1		<-	R2(P)+0 {V(8 'krnio_pstatus' A)} [0..15], R5(C)	{}
+0003 ( 433)		CONV37	R0(I)[0..255]	<-	R0(CF)	{}
+0004 ( 436)		BRANCH		<-	R5(C)	{}
+		==> 9
+		==> 8
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 436)		RELOP20	R1(B)[0..1]	<-	R5(C), CC:64	{}
+0001 ( 436)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 442)		CALLN		<-	V(11 'krnio_clrchn')+0 	{}
+0001 ( 443)		RETV		<-	R3(IF)[0..32767]	{}
+L8: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 438)		LOADZ2	R1(P)	<-	V(2 '')+0 	{S}
+0001 ( 438)		LEAI	R1(P)+0	<-	R1(PF)+0, R3(I)[0..32766]	{}
+0002 ( 438)		STOREI1		<-	R1(PF)+0, R0(CF)[0..255]	{}
+0003 ( 438)		BINOP1	R3(I)[1..32767]	<-	R3(IF)[0..32766], CI:1	{}
+0004 ( 439)		BRANCH		<-	R5(CF)[0..64]	{}
+		==> 7
+		==> 5
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 431)		RELOP28	R0(B)[0..1]	<-	R3(I)[1..32767], R4(I)[1..32767]	{}
+0001 ( 431)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 446)		RETV		<-	CI:-1	{}
+--------------------------------------------------------------------
+krnio_chkin: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:55
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 296)		JSR	R0(L)	<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 307)		RELOP20	R0(B)[0..1]	<-	R0(CF), CC:0	{}
+0002 ( 293)		RETV		<-	R0(BF)[0..1]	{}
+--------------------------------------------------------------------
+krnio_chrin: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:67
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 343)		JSR	R0(L)	<-	V(-1 '')+0 	{V}
+0001 ( 340)		RETV		<-	R0(CF)	{}
+--------------------------------------------------------------------
+krnio_status: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:43
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 207)		JSR	R0(L)	<-	V(-1 '')+0 	{V}
+0001 ( 201)		RETV		<-	R0(CF)	{}
+--------------------------------------------------------------------
+krnio_clrchn: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:59
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 317)		JSR		<-	V(-1 '')+0 	{V}
+0001 ( 320)		RET		<-		{}
+--------------------------------------------------------------------
+krnio_close: /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.h:39
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/kernalio.c
+0000 ( 187)		JSR		<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 195)		RET		<-		{}
+--------------------------------------------------------------------
+getchar: /home/honza/projects/c64/projects/oscar64/include/stdio.h:10
+$00 R0(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdio.c
+0000 (  13)		CALLN	R0(C)	<-	V(14 'getpch')+0 	{}
+0001 (  13)		RETV		<-	R0(CF)	{}
+--------------------------------------------------------------------
+getpch: /home/honza/projects/c64/projects/oscar64/include/conio.h:70
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 269)		JSR	R0(L)	<-	V(-1 '')+0 	{V}
+0001 ( 276)		STOREC1		<-	V(0 '')+0 , R0(CF)	{}
+0002 ( 276)		CALLN	R0(C)	<-	V(15 'convch')+0 	{E}
+0003 ( 276)		RETV		<-	R0(CF)	{}
+--------------------------------------------------------------------
+convch: /home/honza/projects/c64/projects/oscar64/include/conio.c:242
+$00 R0(I), $00 R1(B), $00 R2(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 246)		LOADG1	R0(C)[0..3]	<-	V(11 'giocharmap')+0 	{}
+0001 ( 246)		RELOP25	R1(B)[0..1]	<-	R0(C)[0..3], CC:1	{}
+0002 ( 246)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 248)		LOADZ1	R1(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 248)		RELOP19	R2(B)[0..1]	<-	R1(C)[0..255], CC:13	{}
+0002 ( 248)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 263)		RETV		<-	CC:10	{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 250)		RELOP25	R0(B)[0..1]	<-	R0(CF)[1..3], CC:2	{}
+0001 ( 250)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 2
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 252)		RELOP25	R0(B)[0..1]	<-	R1(C)[0..255], CC:65	{}
+0001 ( 252)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 2
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 252)		RELOP28	R0(B)[0..1]	<-	R1(C)[65..255], CC:219	{}
+0001 ( 252)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 2
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 254)		RELOP25	R0(B)[0..1]	<-	R1(C)[65..218], CC:193	{}
+0001 ( 254)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 248)		CONV37	R0(I)[193..218]	<-	R1(CF)[193..218]	{}
+0001 ( 255)		BINOP10	R0(I)[0..255]	<-	R0(IF)[193..218], CI:160	{}
+0002 ( 255)		STOREZ1		<-	V(0 '')+0 , R0(C)[0..255]	{}
+0003 ( 256)		RELOP28	R0(B)[0..1]	<-	R0(CF)[0..255], CC:123	{}
+0004 ( 256)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 2
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		LOADZ1	R1(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 256)		CONV37	R0(I)[0..255]	<-	R1(C)[0..255]	{}
+0002 ( 256)		RELOP25	R2(B)[0..1]	<-	R1(C)[0..255], CC:97	{}
+0003 ( 256)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 10
+		==> 12
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 257)		BINOP10	R0(I)[0..255]	<-	R0(IF)[0..255], CI:32	{}
+0001 ( 263)		RETV		<-	R0(CF)[0..255]	{}
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		RELOP28	R1(B)[0..1]	<-	R1(CF)[0..96], CC:91	{}
+0001 ( 256)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 10
+		==> 2
+L2: <= D-1: (7)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 263)		LOADZ1	R0(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 263)		RETV		<-	R0(CF)[0..255]	{}
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		RELOP28	R0(B)[0..1]	<-	R1(CF)[65..192], CC:123	{}
+0001 ( 256)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 2

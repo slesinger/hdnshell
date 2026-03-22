@@ -1,0 +1,1515 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c:355
+$00 R0(I), $00 R1(P), $01 R2(I), $03 R3(P), $05 R4(I), $06 R5(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 360)		JSR		<-	V(-1 '')+0 	{V}
+0001 ( 368)		CONST	R2(I)[0..0]	<-	CI:0	{I}
+0002 ( 368)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 368)		LEAG	R3(P)[0..240]	<-	V(7 'grid' A)+0 , R2(I)[0..240]	{I}
+0001 ( 368)		CONST	R4(I)[0..0]	<-	CI:0	{}
+0002 ( 368)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 368)		CALLN	R0(I)	<-	V(1 'rand')+0 	{}
+0001 ( 368)		BINOP9	R0(I)[0..3]	<-	R0(IF), CI:3	{}
+0002 ( 368)		LEAI	R1(P)+0 {V(7 'grid' A)} [0..255]	<-	R3(P)+0 {V(7 'grid' A)} [0..240], R4(I)[0..15]	{}
+0003 ( 368)		STOREI1		<-	R1(PF)+0 {V(7 'grid' A)} [0..255], R0(CF)[0..3]	{}
+0004 ( 368)		BINOP1	R4(I)[1..16]	<-	R4(IF)[0..15], CI:1	{}
+0005 ( 366)		RELOP20	R0(B)[0..1]	<-	R4(I)[1..16], CI:16	{}
+0006 ( 366)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 368)		BINOP1	R2(I)[16..256]	<-	R2(IF)[0..240], CI:16	{}
+0001 ( 364)		RELOP20	R0(B)[0..1]	<-	R2(I)[16..256], CI:256	{}
+0002 ( 364)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 378)		CONST	R1(I)[0..0]	<-	CI:0	{}
+0001 ( 372)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0002 ( 372)		CONST	R5(C)[0..0]	<-	CI:0	{}
+0003 ( 375)		CONST	R2(P)[1024..1024]	<-	CA0(-1:1024 '')	{}
+0004 ( 375)		CONST	R3(P)[55296..55296]	<-	CA0(-1:55296 '')	{}
+0005 ( 378)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 378)		STOREC2		<-	V(0 '')+0 , R2(P)+0 {V(-1 'ABS')} [1024..]	{}
+0001 ( 378)		STOREC2		<-	V(2 '')+0 , R3(P)+0 {V(-1 'ABS')} [55296..]	{}
+0002 ( 378)		STOREC1		<-	V(7 '')+0 , CC:0	{}
+0003 ( 378)		BINOP9	R0(I)[0..24]	<-	R1(I)[0..24], CI:28	{}
+0004 ( 378)		BINOP16	R0(I)[0..96]	<-	R0(IF)[0..24], CI:2	{}
+0005 ( 378)		LEAG	R0(P)[0..96]	<-	V(7 'grid' A)+0 , R0(IF)[0..96]	{}
+0006 ( 378)		STOREC2		<-	V(4 '')+0 , R0(PF)+0 {V(7 'grid' A)} [0..96]	{}
+0007 ( 378)		BINOP9	R0(I)[0..3]	<-	R1(I)[0..24], CI:3	{}
+0008 ( 378)		BINOP16	R0(I)[0..12]	<-	R0(IF)[0..3], CI:2	{}
+0009 ( 378)		STOREC1		<-	V(6 '')+0 , R0(CF)[0..12]	{}
+000a ( 378)		CALLN		<-	V(2 'expandrow')+0 	{}
+000b ( 379)		LEAI	R2(P)+0 {V(-1 'ABS')} [1064..]	<-	R2(PF)+0 {V(-1 'ABS')} [1024..], CI:40	{}
+000c ( 380)		LEAI	R3(P)+0 {V(-1 'ABS')} [55336..]	<-	R3(PF)+0 {V(-1 'ABS')} [55296..], CI:40	{}
+000d ( 378)		BINOP1	R1(I)[1..25]	<-	R1(IF)[0..24], CI:1	{}
+000e ( 376)		RELOP20	R0(B)[0..1]	<-	R1(I)[1..25], CI:25	{}
+000f ( 376)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 6
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 385)		STOREA1		<-	V(-1 '')+53265 , CC:20	{V}
+0001 ( 386)		STOREA1		<-	V(-1 '')+53270 , CC:4	{V}
+0002 ( 391)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (10) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 391)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0001 ( 391)		CALLN		<-	V(3 'joy_poll')+0 	{}
+0002 ( 392)		LOADG1	R0(C)[-128..127]	<-	V(10 'joyx' A)+0 	{}
+0003 ( 392)		RELOP19	R1(B)[0..1]	<-	R0(C)[-128..127], CC:1	{}
+0004 ( 392)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 395)		RELOP28	R0(B)[0..1]	<-	R4(C)[0..24], CC:24	{}
+0001 ( 395)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 10
+		==> 7
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 397)		BINOP1	R4(C)[1..24]	<-	R4(CF)[0..23], CI:1	{}
+0001 ( 398)		CONV37	R0(I)[1..24]	<-	R4(C)[1..24]	{}
+0002 ( 398)		BINOP1	R0(I)[40..63]	<-	R0(IF)[1..24], CI:39	{}
+0003 ( 398)		BINOP17	R1(I)[10..15]	<-	R0(I)[40..63], CI:2	{}
+0004 ( 398)		CONV37	R2(I)[0..39]	<-	R5(C)[0..39]	{}
+0005 ( 398)		BINOP9	R3(I)[0..36]	<-	R2(I)[0..39], CI:60	{}
+0006 ( 398)		BINOP16	R3(I)[0..144]	<-	R3(IF)[0..36], CI:2	{}
+0007 ( 398)		BINOP1	R1(I)[10..159]	<-	R3(IF)[0..144], R1(IF)[10..15]	{}
+0008 ( 398)		LEAG	R1(P)[10..159]	<-	V(7 'grid' A)+0 , R1(IF)[10..159]	{}
+0009 ( 398)		STOREC2		<-	V(4 '')+0 , R1(PF)+0 {V(7 'grid' A)} [10..159]	{}
+000a ( 398)		CONST	R1(P)[0..0]	<-	CG40(13:0 'news' A)	{S}
+000b ( 398)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(13 'news' A)} [0..0]	{}
+000c ( 398)		CONST	R1(P)[0..0]	<-	CG40(14:0 'newc' A)	{S}
+000d ( 398)		STOREC2		<-	V(2 '')+0 , R1(PF)+0 {V(14 'newc' A)} [0..0]	{}
+000e ( 398)		BINOP9	R2(I)[0..3]	<-	R2(IF)[0..39], CI:3	{}
+000f ( 398)		BINOP16	R2(I)[0..12]	<-	R2(IF)[0..3], CI:2	{}
+0010 ( 398)		STOREC1		<-	V(6 '')+0 , R2(CF)[0..12]	{}
+0011 ( 398)		BINOP9	R0(I)[0..3]	<-	R0(IF)[40..63], CI:3	{}
+0012 ( 398)		STOREC1		<-	V(7 '')+0 , R0(CF)[0..3]	{}
+0013 ( 398)		CALLN		<-	V(4 'expandcol')+0 	{}
+0014 ( 399)		CALLN		<-	V(5 'scroll_left')+0 	{}
+0015 ( 395)		JUMP		<-		{}
+		==> 7
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 402)		RELOP19	R0(B)[0..1]	<-	R0(CF)[-128..127], CC:-1	{}
+0001 ( 402)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 12
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 405)		RELOP27	R0(B)[0..1]	<-	R4(C)[0..24], CC:0	{}
+0001 ( 405)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 13
+		==> 7
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 407)		BINOP1	R4(C)[0..23]	<-	R4(CF)[1..24], CI:-1	{}
+0001 ( 408)		CONV37	R0(I)[0..23]	<-	R4(C)[0..23]	{}
+0002 ( 408)		BINOP17	R1(I)[0..5]	<-	R0(I)[0..23], CI:2	{}
+0003 ( 408)		CONV37	R2(I)[0..39]	<-	R5(C)[0..39]	{}
+0004 ( 408)		BINOP9	R3(I)[0..36]	<-	R2(I)[0..39], CI:60	{}
+0005 ( 408)		BINOP16	R3(I)[0..144]	<-	R3(IF)[0..36], CI:2	{}
+0006 ( 408)		BINOP1	R1(I)[0..149]	<-	R3(IF)[0..144], R1(IF)[0..5]	{}
+0007 ( 408)		LEAG	R1(P)[0..149]	<-	V(7 'grid' A)+0 , R1(IF)[0..149]	{}
+0008 ( 408)		STOREC2		<-	V(4 '')+0 , R1(PF)+0 {V(7 'grid' A)} [0..149]	{}
+0009 ( 408)		CONST	R1(P)[0..0]	<-	CG40(13:0 'news' A)	{S}
+000a ( 408)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(13 'news' A)} [0..0]	{}
+000b ( 408)		CONST	R1(P)[0..0]	<-	CG40(14:0 'newc' A)	{S}
+000c ( 408)		STOREC2		<-	V(2 '')+0 , R1(PF)+0 {V(14 'newc' A)} [0..0]	{}
+000d ( 408)		BINOP9	R2(I)[0..3]	<-	R2(IF)[0..39], CI:3	{}
+000e ( 408)		BINOP16	R2(I)[0..12]	<-	R2(IF)[0..3], CI:2	{}
+000f ( 408)		STOREC1		<-	V(6 '')+0 , R2(CF)[0..12]	{}
+0010 ( 408)		BINOP9	R0(I)[0..3]	<-	R0(IF)[0..23], CI:3	{}
+0011 ( 408)		STOREC1		<-	V(7 '')+0 , R0(CF)[0..3]	{}
+0012 ( 408)		CALLN		<-	V(4 'expandcol')+0 	{}
+0013 ( 409)		CALLN		<-	V(7 'scroll_right')+0 	{}
+0014 ( 405)		JUMP		<-		{}
+		==> 7
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 412)		LOADG1	R0(C)[-128..127]	<-	V(9 'joyy' A)+0 	{}
+0001 ( 412)		RELOP19	R1(B)[0..1]	<-	R0(C)[-128..127], CC:1	{}
+0002 ( 412)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 14
+		==> 15
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 415)		RELOP28	R0(B)[0..1]	<-	R5(C)[0..39], CC:39	{}
+0001 ( 415)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 16
+		==> 7
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 418)		CONV37	R0(I)[0..24]	<-	R4(C)[0..24]	{}
+0001 ( 418)		BINOP17	R1(I)[0..6]	<-	R0(I)[0..24], CI:2	{}
+0002 ( 417)		BINOP1	R5(C)[1..39]	<-	R5(CF)[0..38], CI:1	{}
+0003 ( 418)		CONV37	R2(I)[1..39]	<-	R5(C)[1..39]	{}
+0004 ( 418)		BINOP1	R2(I)[25..63]	<-	R2(IF)[1..39], CI:24	{}
+0005 ( 418)		BINOP9	R3(I)[0..60]	<-	R2(I)[25..63], CI:60	{}
+0006 ( 418)		BINOP3	R3(I)[0..240]	<-	R3(IF)[0..60], CI:4	{}
+0007 ( 418)		BINOP1	R1(I)[0..246]	<-	R3(IF)[0..240], R1(IF)[0..6]	{}
+0008 ( 418)		LEAG	R1(P)[0..246]	<-	V(7 'grid' A)+0 , R1(IF)[0..246]	{}
+0009 ( 418)		STOREC2		<-	V(4 '')+0 , R1(PF)+0 {V(7 'grid' A)} [0..246]	{}
+000a ( 418)		CONST	R1(P)[0..0]	<-	CG40(13:0 'news' A)	{S}
+000b ( 418)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(13 'news' A)} [0..0]	{}
+000c ( 418)		CONST	R1(P)[0..0]	<-	CG40(14:0 'newc' A)	{S}
+000d ( 418)		STOREC2		<-	V(2 '')+0 , R1(PF)+0 {V(14 'newc' A)} [0..0]	{}
+000e ( 418)		BINOP9	R2(I)[0..3]	<-	R2(IF)[25..63], CI:3	{}
+000f ( 418)		BINOP16	R2(I)[0..12]	<-	R2(IF)[0..3], CI:2	{}
+0010 ( 418)		STOREC1		<-	V(6 '')+0 , R2(CF)[0..12]	{}
+0011 ( 418)		BINOP9	R0(I)[0..3]	<-	R0(IF)[0..24], CI:3	{}
+0012 ( 418)		STOREC1		<-	V(7 '')+0 , R0(CF)[0..3]	{}
+0013 ( 418)		CALLN		<-	V(2 'expandrow')+0 	{}
+0014 ( 419)		CALLN		<-	V(8 'scroll_up')+0 	{}
+0015 ( 415)		JUMP		<-		{}
+		==> 7
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 422)		RELOP19	R0(B)[0..1]	<-	R0(CF)[-128..127], CC:-1	{}
+0001 ( 422)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 17
+		==> 7
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 425)		RELOP27	R0(B)[0..1]	<-	R5(C)[0..39], CC:0	{}
+0001 ( 425)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 18
+		==> 7
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 428)		CONV37	R0(I)[0..24]	<-	R4(C)[0..24]	{}
+0001 ( 428)		BINOP17	R1(I)[0..6]	<-	R0(I)[0..24], CI:2	{}
+0002 ( 427)		BINOP1	R5(C)[0..38]	<-	R5(CF)[1..39], CI:-1	{}
+0003 ( 428)		CONV37	R2(I)[0..38]	<-	R5(C)[0..38]	{}
+0004 ( 428)		BINOP9	R3(I)[0..36]	<-	R2(I)[0..38], CI:60	{}
+0005 ( 428)		BINOP16	R3(I)[0..144]	<-	R3(IF)[0..36], CI:2	{}
+0006 ( 428)		BINOP1	R1(I)[0..150]	<-	R3(IF)[0..144], R1(IF)[0..6]	{}
+0007 ( 428)		LEAG	R1(P)[0..150]	<-	V(7 'grid' A)+0 , R1(IF)[0..150]	{}
+0008 ( 428)		STOREC2		<-	V(4 '')+0 , R1(PF)+0 {V(7 'grid' A)} [0..150]	{}
+0009 ( 428)		CONST	R1(P)[0..0]	<-	CG40(13:0 'news' A)	{S}
+000a ( 428)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(13 'news' A)} [0..0]	{}
+000b ( 428)		CONST	R1(P)[0..0]	<-	CG40(14:0 'newc' A)	{S}
+000c ( 428)		STOREC2		<-	V(2 '')+0 , R1(PF)+0 {V(14 'newc' A)} [0..0]	{}
+000d ( 428)		BINOP9	R2(I)[0..3]	<-	R2(IF)[0..38], CI:3	{}
+000e ( 428)		BINOP16	R2(I)[0..12]	<-	R2(IF)[0..3], CI:2	{}
+000f ( 428)		STOREC1		<-	V(6 '')+0 , R2(CF)[0..12]	{}
+0010 ( 428)		BINOP9	R0(I)[0..3]	<-	R0(IF)[0..24], CI:3	{}
+0011 ( 428)		STOREC1		<-	V(7 '')+0 , R0(CF)[0..3]	{}
+0012 ( 428)		CALLN		<-	V(2 'expandrow')+0 	{}
+0013 ( 429)		CALLN		<-	V(9 'scroll_down')+0 	{}
+0014 ( 425)		JUMP		<-		{}
+		==> 7
+--------------------------------------------------------------------
+rand: /home/honza/projects/c64/projects/oscar64/include/stdlib.h:68
+$00 R0(I), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 ( 818)		LOADG2	R0(I)[0..65535]	<-	V(6 'seed')+0 	{}
+0001 ( 818)		BINOP16	R1(I)	<-	R0(I)[0..65535], CI:7	{}
+0002 ( 818)		BINOP10	R0(I)	<-	R1(IF), R0(IF)[0..65535]	{}
+0003 ( 819)		BINOP17	R1(I)[0..127]	<-	R0(I), CI:9	{}
+0004 ( 819)		BINOP10	R0(I)	<-	R1(IF)[0..127], R0(IF)	{}
+0005 ( 820)		BINOP16	R1(I)	<-	R0(I), CI:8	{}
+0006 ( 820)		BINOP10	R0(I)	<-	R1(IF), R0(IF)	{}
+0007 ( 820)		STOREG2		<-	V(6 'seed')+0 , R0(I)	{}
+0008 ( 821)		RETV		<-	R0(IF)	{}
+--------------------------------------------------------------------
+expandrow: /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c:48
+$00 R0(I), $00 R1(I), $00 R2(P), $00 R3(P), $00 R4(P), $00 R5(I), $00 R6(I), $00 R7(I), $00 R8(C), $00 R9(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 (  53)		LOADZ1	R0(C)[0..16]	<-	V(6 '')+0 	{IS}
+0001 (  53)		CONV37	R0(I)[0..16]	<-	R0(CF)[0..16]	{IS}
+0002 (  50)		CONST	R8(C)[0..0]	<-	CI:0	{}
+0003 (  53)		CONST	R1(I)[0..0]	<-	CI:0	{}
+0004 (  53)		LOADZ2	R2(P)	<-	V(0 '')+0 	{IS}
+0005 (  53)		LOADZ2	R3(P)	<-	V(4 '')+0 	{IS}
+0006 (  54)		LOADZ2	R4(P)	<-	V(2 '')+0 	{IS}
+0007 (  53)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 (  53)		CONV37	R5(I)[0..255]	<-	R8(C)[0..]	{}
+0001 (  53)		LEAI	R5(P)+0	<-	R3(P)+0, R5(IF)[0..255]	{}
+0002 (  53)		LOADI1	R6(C)[0..16]	<-	R5(P)+0	{}
+0003 (  53)		CONV37	R6(I)[0..16]	<-	R6(CF)[0..16]	{}
+0004 (  53)		BINOP1	R6(I)[0..16]	<-	R6(IF)[0..16], R0(I)[0..16]	{}
+0005 (  53)		LOADZ1	R9(C)[0..3]	<-	V(7 '')+0 	{}
+0006 (  53)		CONV37	R7(I)[0..3]	<-	R9(C)[0..3]	{}
+0007 (  53)		BINOP3	R7(I)[0..48]	<-	R7(IF)[0..3], CI:16	{}
+0008 (  53)		BINOP1	R6(I)[0..63]	<-	R7(IF)[0..48], R6(IF)[0..16]	{}
+0009 (  53)		LEAG	R6(P)[0..64]	<-	V(8 'quad')+0 , R6(IF)[0..63]	{}
+000a (  53)		LOADI1	R7(C)[0..226]	<-	R6(PF)+0 {V(8 'quad')} [0..64]	{}
+000b (  53)		LEAI	R6(P)+0	<-	R2(P)+0, R1(I)[0..39]	{}
+000c (  53)		STOREI1		<-	R6(PF)+0, R7(CF)[0..226]	{}
+000d (  54)		LOADI1	R6(C)[0..255]	<-	R5(PF)+0	{}
+000e (  54)		LEAI	R5(P)+0	<-	R4(P)+0, R1(I)[0..39]	{}
+000f (  54)		STOREI1		<-	R5(PF)+0, R6(CF)[0..255]	{}
+0010 (  55)		BINOP1	R9(C)[1..4]	<-	R9(CF)[0..3], CI:1	{}
+0011 (  55)		STOREZ1		<-	V(7 '')+0 , R9(C)[1..4]	{}
+0012 (  56)		RELOP19	R5(B)[0..1]	<-	R9(CF)[1..4], CC:4	{}
+0013 (  56)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 4
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 (  58)		STOREZ1		<-	V(7 '')+0 , CC:0	{}
+0001 (  59)		BINOP1	R8(C)[1..]	<-	R8(CF)[0..], CI:1	{}
+0002 (  51)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 (  53)		BINOP1	R1(I)[1..40]	<-	R1(IF)[0..39], CI:1	{}
+0001 (  51)		RELOP20	R5(B)[0..1]	<-	R1(I)[1..40], CI:40	{}
+0002 (  51)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 (  62)		RET		<-		{}
+--------------------------------------------------------------------
+joy_poll: /home/honza/projects/c64/projects/oscar64/include/c64/joystick.h:13
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (   8)		LOADZ1	R0(C)[0..1]	<-	V(0 '')+0 	{S}
+0001 (   8)		CONV37	R0(I)[0..1]	<-	R0(CF)[0..1]	{S}
+0002 (   8)		LEAA	R1(P)[56320..56321]	<-	V(-1 '')+56320 , R0(I)[0..1]	{S}
+0003 (   8)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(-1 'ABS')} [56320..56321]	{V}
+0004 (  10)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0005 (  24)		BINOP9	R2(I)[0..16]	<-	R1(I)[0..255], CI:16	{}
+0006 (  24)		RELOP19	R3(B)[0..1]	<-	R2(IF)[0..16], CI:0	{}
+0007 (  24)		LEAG	R2(P)[0..1]	<-	V(11 'joyb' A)+0 , R0(I)[0..1]	{S}
+0008 (  24)		STOREI1		<-	R2(PF)+0 {V(11 'joyb' A)} [0..1], R3(BF)[0..1]	{}
+0009 (  15)		LEAG	R2(P)[0..1]	<-	V(9 'joyy' A)+0 , R0(I)[0..1]	{S}
+000a (  10)		BINOP9	R3(I)[0..1]	<-	R1(I)[0..255], CI:1	{}
+000b (  10)		BRANCH		<-	R3(IF)[0..1]	{}
+		==> 2
+		==> 1
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  12)		BINOP9	R3(I)[0..2]	<-	R1(I)[0..255], CI:2	{}
+0001 (  12)		BRANCH		<-	R3(IF)[0..2]	{}
+		==> 4
+		==> 3
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  15)		STOREI1		<-	R2(PF)+0 {V(9 'joyy' A)} [0..1], CC:0	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  22)		LEAG	R0(P)[0..1]	<-	V(10 'joyx' A)+0 , R0(IF)[0..1]	{S}
+0001 (  17)		BINOP9	R2(I)[0..4]	<-	R1(I)[0..255], CI:4	{}
+0002 (  17)		BRANCH		<-	R2(IF)[0..4]	{}
+		==> 6
+		==> 5
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  19)		BINOP9	R1(I)[0..8]	<-	R1(IF)[0..255], CI:8	{}
+0001 (  19)		BRANCH		<-	R1(IF)[0..8]	{}
+		==> 9
+		==> 8
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  22)		STOREI1		<-	R0(PF)+0 {V(10 'joyx' A)} [0..1], CC:0	{}
+0001 (  19)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  25)		RET		<-		{}
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  20)		STOREI1		<-	R0(PF)+0 {V(10 'joyx' A)} [0..1], CC:1	{}
+0001 (  19)		JUMP		<-		{}
+		==> 7
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  18)		STOREI1		<-	R0(PF)+0 {V(10 'joyx' A)} [0..1], CC:-1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 7
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  13)		STOREI1		<-	R2(PF)+0 {V(9 'joyy' A)} [0..1], CC:1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  11)		STOREI1		<-	R2(PF)+0 {V(9 'joyy' A)} [0..1], CC:-1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+--------------------------------------------------------------------
+expandcol: /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c:65
+$00 R0(I), $00 R1(I), $00 R2(P), $00 R3(P), $00 R4(I), $00 R5(P), $00 R6(I), $00 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 (  69)		LOADZ1	R0(C)[0..255]	<-	V(7 '')+0 	{IS}
+0001 (  69)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{IS}
+0002 (  69)		BINOP3	R0(I)[0..4080]	<-	R0(IF)[0..255], CI:16	{IS}
+0003 (  69)		CONST	R1(I)[0..0]	<-	CI:0	{}
+0004 (  69)		LOADZ2	R2(P)	<-	V(0 '')+0 	{IS}
+0005 (  70)		LOADZ2	R3(P)	<-	V(2 '')+0 	{IS}
+0006 (  69)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 (  69)		LOADZ1	R7(C)[0..16]	<-	V(6 '')+0 	{}
+0001 (  69)		CONV37	R4(I)[0..16]	<-	R7(C)[0..16]	{}
+0002 (  69)		LOADZ2	R5(P)	<-	V(4 '')+0 	{}
+0003 (  69)		LOADI1	R6(C)[0..16]	<-	R5(P)+0	{}
+0004 (  69)		CONV37	R6(I)[0..16]	<-	R6(CF)[0..16]	{}
+0005 (  69)		BINOP1	R4(I)[0..16]	<-	R6(IF)[0..16], R4(IF)[0..16]	{}
+0006 (  69)		BINOP1	R4(I)[0..63]	<-	R4(IF)[0..16], R0(I)[0..63]	{}
+0007 (  69)		LEAG	R4(P)[0..79]	<-	V(8 'quad')+0 , R4(IF)[0..63]	{}
+0008 (  69)		LOADI1	R6(C)[0..226]	<-	R4(PF)+0 {V(8 'quad')} [0..79]	{}
+0009 (  69)		LEAI	R4(P)+0	<-	R2(P)+0, R1(I)[0..24]	{}
+000a (  69)		STOREI1		<-	R4(PF)+0, R6(CF)[0..226]	{}
+000b (  70)		LOADI1	R6(C)[0..255]	<-	R5(P)+0	{}
+000c (  70)		LEAI	R4(P)+0	<-	R3(P)+0, R1(I)[0..24]	{}
+000d (  70)		STOREI1		<-	R4(PF)+0, R6(CF)[0..255]	{}
+000e (  71)		BINOP1	R7(C)[4..20]	<-	R7(CF)[0..16], CC:4	{}
+000f (  71)		STOREZ1		<-	V(6 '')+0 , R7(C)[4..20]	{}
+0010 (  72)		RELOP19	R4(B)[0..1]	<-	R7(CF)[4..20], CC:16	{}
+0011 (  72)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 4
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 (  75)		STOREZ1		<-	V(6 '')+0 , CC:0	{}
+0001 (  74)		LEAI	R5(P)+0	<-	R5(PF)+0, CI:16	{}
+0002 (  74)		STOREZ2		<-	V(4 '')+0 , R5(PF)	{}
+0003 (  67)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 (  69)		BINOP1	R1(I)[1..25]	<-	R1(IF)[0..24], CI:1	{}
+0001 (  67)		RELOP20	R4(B)[0..1]	<-	R1(I)[1..25], CI:25	{}
+0002 (  67)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 (  78)		RET		<-		{}
+--------------------------------------------------------------------
+scroll_left: /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c:94
+$00 R0(I), $00 R1(P), $00 R2(P), $00 R3(P), $00 R4(C), $00 R5(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 101)		STOREA1		<-	V(-1 '')+53270 , CC:2	{V}
+0001 (  70)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 109)		STOREC2		<-	V(0 '')+0 , CI:146	{}
+0001 ( 106)		STOREA1		<-	V(-1 '')+53270 , CC:0	{V}
+0002 ( 109)		CALLN		<-	V(6 'vic_waitLine')+0 	{E}
+0003 ( 113)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0004 ( 117)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 117)		CONV37	R0(I)[0..38]	<-	R4(C)[0..38]	{}
+0001 ( 117)		LEAA	R1(P)[1025..1063]	<-	V(-1 '')+1025 , R0(I)[0..38]	{}
+0002 ( 117)		LOADI1	R3(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1025..1063]	{}
+0003 ( 117)		LEAA	R2(P)[1024..1062]	<-	V(-1 '')+1024 , R0(I)[0..38]	{}
+0004 ( 117)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1024..1062], R3(CF)[0..255]	{}
+0005 ( 118)		LEAI	R3(P)+0 {V(-1 'ABS')} [55297..55335]	<-	R1(P)+0 {V(-1 'ABS')} [1025..1063], CI:54272	{}
+0006 ( 118)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0 {V(-1 'ABS')} [55297..55335]	{}
+0007 ( 118)		LEAI	R2(P)+0 {V(-1 'ABS')} [55296..55334]	<-	R2(PF)+0 {V(-1 'ABS')} [1024..1062], CI:54272	{}
+0008 ( 118)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55296..55334], R3(CF)[0..255]	{}
+0009 ( 117)		LOADI1	R2(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1025..1063]	{}
+000a ( 117)		STOREI1		<-	R1(P)+39 {V(-1 'ABS')} [1025..1063], R2(CF)[0..255]	{}
+000b ( 118)		LEAA	R2(P)[55337..55375]	<-	V(-1 '')+55337 , R0(I)[0..38]	{}
+000c ( 118)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55337..55375]	{}
+000d ( 118)		LEAA	R3(P)[55336..55374]	<-	V(-1 '')+55336 , R0(I)[0..38]	{}
+000e ( 118)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55336..55374], R5(CF)[0..255]	{}
+000f ( 117)		LOADI1	R3(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1025..1063]	{}
+0010 ( 117)		STOREI1		<-	R1(P)+79 {V(-1 'ABS')} [1025..1063], R3(CF)[0..255]	{}
+0011 ( 118)		LOADI1	R3(C)[0..255]	<-	R2(P)+40 {V(-1 'ABS')} [55337..55375]	{}
+0012 ( 118)		STOREI1		<-	R2(P)+39 {V(-1 'ABS')} [55337..55375], R3(CF)[0..255]	{}
+0013 ( 117)		LOADI1	R3(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1025..1063]	{}
+0014 ( 117)		STOREI1		<-	R1(P)+119 {V(-1 'ABS')} [1025..1063], R3(CF)[0..255]	{}
+0015 ( 118)		LOADI1	R3(C)[0..255]	<-	R2(P)+80 {V(-1 'ABS')} [55337..55375]	{}
+0016 ( 118)		STOREI1		<-	R2(P)+79 {V(-1 'ABS')} [55337..55375], R3(CF)[0..255]	{}
+0017 ( 117)		LOADI1	R3(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1025..1063]	{}
+0018 ( 117)		STOREI1		<-	R1(P)+159 {V(-1 'ABS')} [1025..1063], R3(CF)[0..255]	{}
+0019 ( 118)		LOADI1	R3(C)[0..255]	<-	R2(P)+120 {V(-1 'ABS')} [55337..55375]	{}
+001a ( 118)		STOREI1		<-	R2(P)+119 {V(-1 'ABS')} [55337..55375], R3(CF)[0..255]	{}
+001b ( 117)		LOADI1	R3(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1025..1063]	{}
+001c ( 117)		STOREI1		<-	R1(P)+199 {V(-1 'ABS')} [1025..1063], R3(CF)[0..255]	{}
+001d ( 118)		LOADI1	R3(C)[0..255]	<-	R2(P)+160 {V(-1 'ABS')} [55337..55375]	{}
+001e ( 118)		STOREI1		<-	R2(P)+159 {V(-1 'ABS')} [55337..55375], R3(CF)[0..255]	{}
+001f ( 117)		LOADI1	R3(C)[0..255]	<-	R1(P)+240 {V(-1 'ABS')} [1025..1063]	{}
+0020 ( 117)		STOREI1		<-	R1(PF)+239 {V(-1 'ABS')} [1025..1063], R3(CF)[0..255]	{}
+0021 ( 118)		LOADI1	R1(C)[0..255]	<-	R2(P)+200 {V(-1 'ABS')} [55337..55375]	{}
+0022 ( 118)		STOREI1		<-	R2(PF)+199 {V(-1 'ABS')} [55337..55375], R1(CF)[0..255]	{}
+0023 ( 117)		LEAA	R1(P)[1305..1343]	<-	V(-1 '')+1305 , R0(I)[0..38]	{}
+0024 ( 117)		LOADI1	R3(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1305..1343]	{}
+0025 ( 117)		LEAA	R2(P)[1304..1342]	<-	V(-1 '')+1304 , R0(I)[0..38]	{}
+0026 ( 117)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1304..1342], R3(CF)[0..255]	{}
+0027 ( 118)		LEAI	R3(P)+0 {V(-1 'ABS')} [55577..55615]	<-	R1(P)+0 {V(-1 'ABS')} [1305..1343], CI:54272	{}
+0028 ( 118)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0 {V(-1 'ABS')} [55577..55615]	{}
+0029 ( 118)		LEAI	R2(P)+0 {V(-1 'ABS')} [55576..55614]	<-	R2(PF)+0 {V(-1 'ABS')} [1304..1342], CI:54272	{}
+002a ( 118)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55576..55614], R3(CF)[0..255]	{}
+002b ( 117)		LOADI1	R2(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1305..1343]	{}
+002c ( 117)		STOREI1		<-	R1(P)+39 {V(-1 'ABS')} [1305..1343], R2(CF)[0..255]	{}
+002d ( 118)		LEAA	R2(P)[55617..55655]	<-	V(-1 '')+55617 , R0(I)[0..38]	{}
+002e ( 118)		LOADI1	R3(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55617..55655]	{}
+002f ( 118)		LEAA	R0(P)[55616..55654]	<-	V(-1 '')+55616 , R0(IF)[0..38]	{}
+0030 ( 118)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [55616..55654], R3(CF)[0..255]	{}
+0031 ( 117)		LOADI1	R0(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1305..1343]	{}
+0032 ( 117)		STOREI1		<-	R1(P)+79 {V(-1 'ABS')} [1305..1343], R0(CF)[0..255]	{}
+0033 ( 118)		LOADI1	R0(C)[0..255]	<-	R2(P)+40 {V(-1 'ABS')} [55617..55655]	{}
+0034 ( 118)		STOREI1		<-	R2(P)+39 {V(-1 'ABS')} [55617..55655], R0(CF)[0..255]	{}
+0035 ( 117)		LOADI1	R0(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1305..1343]	{}
+0036 ( 117)		STOREI1		<-	R1(P)+119 {V(-1 'ABS')} [1305..1343], R0(CF)[0..255]	{}
+0037 ( 118)		LOADI1	R0(C)[0..255]	<-	R2(P)+80 {V(-1 'ABS')} [55617..55655]	{}
+0038 ( 118)		STOREI1		<-	R2(P)+79 {V(-1 'ABS')} [55617..55655], R0(CF)[0..255]	{}
+0039 ( 117)		LOADI1	R0(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1305..1343]	{}
+003a ( 117)		STOREI1		<-	R1(PF)+159 {V(-1 'ABS')} [1305..1343], R0(CF)[0..255]	{}
+003b ( 118)		LOADI1	R0(C)[0..255]	<-	R2(P)+120 {V(-1 'ABS')} [55617..55655]	{}
+003c ( 118)		STOREI1		<-	R2(PF)+119 {V(-1 'ABS')} [55617..55655], R0(CF)[0..255]	{}
+003d ( 113)		BINOP1	R4(C)[1..39]	<-	R4(CF)[0..38], CI:1	{}
+003e ( 113)		RELOP28	R0(B)[0..1]	<-	R4(C)[1..39], CC:39	{}
+003f ( 113)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 8
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+0 	{}
+0001 ( 126)		STOREA1		<-	V(-1 '')+1063 , R0(CF)[0..255]	{}
+0002 ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+1 	{}
+0003 ( 126)		STOREA1		<-	V(-1 '')+1103 , R0(CF)[0..255]	{}
+0004 ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+2 	{}
+0005 ( 126)		STOREA1		<-	V(-1 '')+1143 , R0(CF)[0..255]	{}
+0006 ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+3 	{}
+0007 ( 126)		STOREA1		<-	V(-1 '')+1183 , R0(CF)[0..255]	{}
+0008 ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+4 	{}
+0009 ( 126)		STOREA1		<-	V(-1 '')+1223 , R0(CF)[0..255]	{}
+000a ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+5 	{}
+000b ( 126)		STOREA1		<-	V(-1 '')+1263 , R0(CF)[0..255]	{}
+000c ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+6 	{}
+000d ( 126)		STOREA1		<-	V(-1 '')+1303 , R0(CF)[0..255]	{}
+000e ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+7 	{}
+000f ( 126)		STOREA1		<-	V(-1 '')+1343 , R0(CF)[0..255]	{}
+0010 ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+8 	{}
+0011 ( 126)		STOREA1		<-	V(-1 '')+1383 , R0(CF)[0..255]	{}
+0012 ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+9 	{}
+0013 ( 126)		STOREA1		<-	V(-1 '')+1423 , R0(CF)[0..255]	{}
+0014 ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+10 	{}
+0015 ( 126)		STOREA1		<-	V(-1 '')+1463 , R0(CF)[0..255]	{}
+0016 ( 126)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+11 	{}
+0017 ( 126)		STOREA1		<-	V(-1 '')+1503 , R0(CF)[0..255]	{}
+0018 ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+0 	{}
+0019 ( 127)		STOREA1		<-	V(-1 '')+55335 , R0(CF)[0..255]	{}
+001a ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+1 	{}
+001b ( 127)		STOREA1		<-	V(-1 '')+55375 , R0(CF)[0..255]	{}
+001c ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+2 	{}
+001d ( 127)		STOREA1		<-	V(-1 '')+55415 , R0(CF)[0..255]	{}
+001e ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+3 	{}
+001f ( 127)		STOREA1		<-	V(-1 '')+55455 , R0(CF)[0..255]	{}
+0020 ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+4 	{}
+0021 ( 127)		STOREA1		<-	V(-1 '')+55495 , R0(CF)[0..255]	{}
+0022 ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+5 	{}
+0023 ( 127)		STOREA1		<-	V(-1 '')+55535 , R0(CF)[0..255]	{}
+0024 ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+6 	{}
+0025 ( 127)		STOREA1		<-	V(-1 '')+55575 , R0(CF)[0..255]	{}
+0026 ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+7 	{}
+0027 ( 127)		STOREA1		<-	V(-1 '')+55615 , R0(CF)[0..255]	{}
+0028 ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+8 	{}
+0029 ( 127)		STOREA1		<-	V(-1 '')+55655 , R0(CF)[0..255]	{}
+002a ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+9 	{}
+002b ( 127)		STOREA1		<-	V(-1 '')+55695 , R0(CF)[0..255]	{}
+002c ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+10 	{}
+002d ( 127)		STOREA1		<-	V(-1 '')+55735 , R0(CF)[0..255]	{}
+002e ( 127)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+11 	{}
+002f ( 127)		STOREA1		<-	V(-1 '')+55775 , R0(CF)[0..255]	{}
+0030 (  64)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 9
+		==> 10
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 135)		STOREA1		<-	V(-1 '')+53270 , CC:6	{V}
+0001 ( 138)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0002 ( 142)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 142)		CONV37	R0(I)[0..38]	<-	R4(C)[0..38]	{}
+0001 ( 142)		LEAA	R1(P)[1505..1543]	<-	V(-1 '')+1505 , R0(I)[0..38]	{}
+0002 ( 142)		LOADI1	R3(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1505..1543]	{}
+0003 ( 142)		LEAA	R2(P)[1504..1542]	<-	V(-1 '')+1504 , R0(I)[0..38]	{}
+0004 ( 142)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1504..1542], R3(CF)[0..255]	{}
+0005 ( 143)		LEAI	R3(P)+0 {V(-1 'ABS')} [55777..55815]	<-	R1(P)+0 {V(-1 'ABS')} [1505..1543], CI:54272	{}
+0006 ( 143)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0 {V(-1 'ABS')} [55777..55815]	{}
+0007 ( 143)		LEAI	R2(P)+0 {V(-1 'ABS')} [55776..55814]	<-	R2(PF)+0 {V(-1 'ABS')} [1504..1542], CI:54272	{}
+0008 ( 143)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55776..55814], R3(CF)[0..255]	{}
+0009 ( 142)		LOADI1	R2(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1505..1543]	{}
+000a ( 142)		STOREI1		<-	R1(P)+39 {V(-1 'ABS')} [1505..1543], R2(CF)[0..255]	{}
+000b ( 143)		LEAA	R2(P)[55817..55855]	<-	V(-1 '')+55817 , R0(I)[0..38]	{}
+000c ( 143)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55817..55855]	{}
+000d ( 143)		LEAA	R3(P)[55816..55854]	<-	V(-1 '')+55816 , R0(I)[0..38]	{}
+000e ( 143)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55816..55854], R5(CF)[0..255]	{}
+000f ( 142)		LOADI1	R3(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1505..1543]	{}
+0010 ( 142)		STOREI1		<-	R1(P)+79 {V(-1 'ABS')} [1505..1543], R3(CF)[0..255]	{}
+0011 ( 143)		LOADI1	R3(C)[0..255]	<-	R2(P)+40 {V(-1 'ABS')} [55817..55855]	{}
+0012 ( 143)		STOREI1		<-	R2(P)+39 {V(-1 'ABS')} [55817..55855], R3(CF)[0..255]	{}
+0013 ( 142)		LOADI1	R3(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1505..1543]	{}
+0014 ( 142)		STOREI1		<-	R1(P)+119 {V(-1 'ABS')} [1505..1543], R3(CF)[0..255]	{}
+0015 ( 143)		LOADI1	R3(C)[0..255]	<-	R2(P)+80 {V(-1 'ABS')} [55817..55855]	{}
+0016 ( 143)		STOREI1		<-	R2(P)+79 {V(-1 'ABS')} [55817..55855], R3(CF)[0..255]	{}
+0017 ( 142)		LOADI1	R3(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1505..1543]	{}
+0018 ( 142)		STOREI1		<-	R1(P)+159 {V(-1 'ABS')} [1505..1543], R3(CF)[0..255]	{}
+0019 ( 143)		LOADI1	R3(C)[0..255]	<-	R2(P)+120 {V(-1 'ABS')} [55817..55855]	{}
+001a ( 143)		STOREI1		<-	R2(P)+119 {V(-1 'ABS')} [55817..55855], R3(CF)[0..255]	{}
+001b ( 142)		LOADI1	R3(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1505..1543]	{}
+001c ( 142)		STOREI1		<-	R1(P)+199 {V(-1 'ABS')} [1505..1543], R3(CF)[0..255]	{}
+001d ( 143)		LOADI1	R3(C)[0..255]	<-	R2(P)+160 {V(-1 'ABS')} [55817..55855]	{}
+001e ( 143)		STOREI1		<-	R2(P)+159 {V(-1 'ABS')} [55817..55855], R3(CF)[0..255]	{}
+001f ( 142)		LOADI1	R3(C)[0..255]	<-	R1(P)+240 {V(-1 'ABS')} [1505..1543]	{}
+0020 ( 142)		STOREI1		<-	R1(PF)+239 {V(-1 'ABS')} [1505..1543], R3(CF)[0..255]	{}
+0021 ( 143)		LOADI1	R1(C)[0..255]	<-	R2(P)+200 {V(-1 'ABS')} [55817..55855]	{}
+0022 ( 143)		STOREI1		<-	R2(PF)+199 {V(-1 'ABS')} [55817..55855], R1(CF)[0..255]	{}
+0023 ( 142)		LEAA	R1(P)[1785..1823]	<-	V(-1 '')+1785 , R0(I)[0..38]	{}
+0024 ( 142)		LOADI1	R3(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1785..1823]	{}
+0025 ( 142)		LEAA	R2(P)[1784..1822]	<-	V(-1 '')+1784 , R0(I)[0..38]	{}
+0026 ( 142)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1784..1822], R3(CF)[0..255]	{}
+0027 ( 143)		LEAI	R3(P)+0 {V(-1 'ABS')} [56057..56095]	<-	R1(P)+0 {V(-1 'ABS')} [1785..1823], CI:54272	{}
+0028 ( 143)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0 {V(-1 'ABS')} [56057..56095]	{}
+0029 ( 143)		LEAI	R2(P)+0 {V(-1 'ABS')} [56056..56094]	<-	R2(PF)+0 {V(-1 'ABS')} [1784..1822], CI:54272	{}
+002a ( 143)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [56056..56094], R3(CF)[0..255]	{}
+002b ( 142)		LOADI1	R2(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1785..1823]	{}
+002c ( 142)		STOREI1		<-	R1(P)+39 {V(-1 'ABS')} [1785..1823], R2(CF)[0..255]	{}
+002d ( 143)		LEAA	R2(P)[56097..56135]	<-	V(-1 '')+56097 , R0(I)[0..38]	{}
+002e ( 143)		LOADI1	R3(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [56097..56135]	{}
+002f ( 143)		LEAA	R0(P)[56096..56134]	<-	V(-1 '')+56096 , R0(IF)[0..38]	{}
+0030 ( 143)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [56096..56134], R3(CF)[0..255]	{}
+0031 ( 142)		LOADI1	R0(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1785..1823]	{}
+0032 ( 142)		STOREI1		<-	R1(P)+79 {V(-1 'ABS')} [1785..1823], R0(CF)[0..255]	{}
+0033 ( 143)		LOADI1	R0(C)[0..255]	<-	R2(P)+40 {V(-1 'ABS')} [56097..56135]	{}
+0034 ( 143)		STOREI1		<-	R2(P)+39 {V(-1 'ABS')} [56097..56135], R0(CF)[0..255]	{}
+0035 ( 142)		LOADI1	R0(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1785..1823]	{}
+0036 ( 142)		STOREI1		<-	R1(P)+119 {V(-1 'ABS')} [1785..1823], R0(CF)[0..255]	{}
+0037 ( 143)		LOADI1	R0(C)[0..255]	<-	R2(P)+80 {V(-1 'ABS')} [56097..56135]	{}
+0038 ( 143)		STOREI1		<-	R2(P)+79 {V(-1 'ABS')} [56097..56135], R0(CF)[0..255]	{}
+0039 ( 142)		LOADI1	R0(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1785..1823]	{}
+003a ( 142)		STOREI1		<-	R1(P)+159 {V(-1 'ABS')} [1785..1823], R0(CF)[0..255]	{}
+003b ( 143)		LOADI1	R0(C)[0..255]	<-	R2(P)+120 {V(-1 'ABS')} [56097..56135]	{}
+003c ( 143)		STOREI1		<-	R2(P)+119 {V(-1 'ABS')} [56097..56135], R0(CF)[0..255]	{}
+003d ( 142)		LOADI1	R0(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1785..1823]	{}
+003e ( 142)		STOREI1		<-	R1(PF)+199 {V(-1 'ABS')} [1785..1823], R0(CF)[0..255]	{}
+003f ( 143)		LOADI1	R0(C)[0..255]	<-	R2(P)+160 {V(-1 'ABS')} [56097..56135]	{}
+0040 ( 143)		STOREI1		<-	R2(PF)+159 {V(-1 'ABS')} [56097..56135], R0(CF)[0..255]	{}
+0041 ( 138)		BINOP1	R4(C)[1..39]	<-	R4(CF)[0..38], CI:1	{}
+0042 ( 138)		RELOP28	R0(B)[0..1]	<-	R4(C)[1..39], CC:39	{}
+0043 ( 138)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 12
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+12 	{}
+0001 ( 151)		STOREA1		<-	V(-1 '')+1543 , R0(CF)[0..255]	{}
+0002 ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+13 	{}
+0003 ( 151)		STOREA1		<-	V(-1 '')+1583 , R0(CF)[0..255]	{}
+0004 ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+14 	{}
+0005 ( 151)		STOREA1		<-	V(-1 '')+1623 , R0(CF)[0..255]	{}
+0006 ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+15 	{}
+0007 ( 151)		STOREA1		<-	V(-1 '')+1663 , R0(CF)[0..255]	{}
+0008 ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+16 	{}
+0009 ( 151)		STOREA1		<-	V(-1 '')+1703 , R0(CF)[0..255]	{}
+000a ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+17 	{}
+000b ( 151)		STOREA1		<-	V(-1 '')+1743 , R0(CF)[0..255]	{}
+000c ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+18 	{}
+000d ( 151)		STOREA1		<-	V(-1 '')+1783 , R0(CF)[0..255]	{}
+000e ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+19 	{}
+000f ( 151)		STOREA1		<-	V(-1 '')+1823 , R0(CF)[0..255]	{}
+0010 ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+20 	{}
+0011 ( 151)		STOREA1		<-	V(-1 '')+1863 , R0(CF)[0..255]	{}
+0012 ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+21 	{}
+0013 ( 151)		STOREA1		<-	V(-1 '')+1903 , R0(CF)[0..255]	{}
+0014 ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+22 	{}
+0015 ( 151)		STOREA1		<-	V(-1 '')+1943 , R0(CF)[0..255]	{}
+0016 ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+23 	{}
+0017 ( 151)		STOREA1		<-	V(-1 '')+1983 , R0(CF)[0..255]	{}
+0018 ( 151)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+24 	{}
+0019 ( 151)		STOREA1		<-	V(-1 '')+2023 , R0(CF)[0..255]	{}
+001a ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+12 	{}
+001b ( 152)		STOREA1		<-	V(-1 '')+55815 , R0(CF)[0..255]	{}
+001c ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+13 	{}
+001d ( 152)		STOREA1		<-	V(-1 '')+55855 , R0(CF)[0..255]	{}
+001e ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+14 	{}
+001f ( 152)		STOREA1		<-	V(-1 '')+55895 , R0(CF)[0..255]	{}
+0020 ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+15 	{}
+0021 ( 152)		STOREA1		<-	V(-1 '')+55935 , R0(CF)[0..255]	{}
+0022 ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+16 	{}
+0023 ( 152)		STOREA1		<-	V(-1 '')+55975 , R0(CF)[0..255]	{}
+0024 ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+17 	{}
+0025 ( 152)		STOREA1		<-	V(-1 '')+56015 , R0(CF)[0..255]	{}
+0026 ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+18 	{}
+0027 ( 152)		STOREA1		<-	V(-1 '')+56055 , R0(CF)[0..255]	{}
+0028 ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+19 	{}
+0029 ( 152)		STOREA1		<-	V(-1 '')+56095 , R0(CF)[0..255]	{}
+002a ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+20 	{}
+002b ( 152)		STOREA1		<-	V(-1 '')+56135 , R0(CF)[0..255]	{}
+002c ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+21 	{}
+002d ( 152)		STOREA1		<-	V(-1 '')+56175 , R0(CF)[0..255]	{}
+002e ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+22 	{}
+002f ( 152)		STOREA1		<-	V(-1 '')+56215 , R0(CF)[0..255]	{}
+0030 ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+23 	{}
+0031 ( 152)		STOREA1		<-	V(-1 '')+56255 , R0(CF)[0..255]	{}
+0032 ( 152)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+24 	{}
+0033 ( 152)		STOREA1		<-	V(-1 '')+56295 , R0(CF)[0..255]	{}
+0034 (  64)		JUMP		<-		{}
+		==> 14
+L14: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 13
+		==> 14
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 160)		STOREA1		<-	V(-1 '')+53270 , CC:4	{V}
+0001 ( 162)		RET		<-		{}
+--------------------------------------------------------------------
+vic_waitLine: /home/honza/projects/c64/projects/oscar64/include/c64/vic.h:119
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  93)		LOADZ2	R0(I)[-32768..32767]	<-	V(0 '')+0 	{S}
+0001 (  93)		BINOP18	R1(I)[-16384..16383]	<-	R0(I)[-32768..32767], CI:1	{S}
+0002 (  93)		CONV37	R1(I)[0..255]	<-	R1(CF)[-16384..16383]	{S}
+0003 (  93)		BINOP9	R1(I)[0..128]	<-	R1(IF)[0..255], CI:128	{S}
+0004 (  98)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  98)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  98)		LOADA1	R2(C)[0..255]	<-	V(-1 '')+53266 	{V}
+0001 (  98)		RELOP20	R2(B)[0..1]	<-	R2(CF)[0..255], R0(C)[-32768..32767]	{}
+0002 (  98)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 ( 100)		CONV37	R2(I)[0..128]	<-	R1(C)[0..128]	{S}
+0001 ( 100)		LOADA1	R3(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0002 ( 100)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+0003 ( 100)		BINOP9	R3(I)[0..128]	<-	R3(IF)[0..255], CI:128	{}
+0004 ( 100)		RELOP20	R2(B)[0..1]	<-	R3(IF)[0..128], R2(IF)[0..128]	{}
+0005 ( 100)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 ( 101)		RET		<-		{}
+--------------------------------------------------------------------
+scroll_right: /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c:166
+$00 R0(I), $00 R1(P), $00 R2(P), $00 R3(C), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 172)		STOREC2		<-	V(0 '')+0 , CI:146	{}
+0001 ( 171)		STOREA1		<-	V(-1 '')+53270 , CC:6	{V}
+0002 ( 172)		CALLN		<-	V(6 'vic_waitLine')+0 	{E}
+0003 ( 174)		CONST	R3(C)[39..39]	<-	CI:39	{}
+0004 ( 178)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 178)		CONV37	R0(I)[1..39]	<-	R3(C)[1..39]	{}
+0001 ( 178)		LEAA	R1(P)[1024..1062]	<-	V(-1 '')+1023 , R0(I)[1..39]	{}
+0002 ( 178)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1024..1062]	{}
+0003 ( 178)		STOREI1		<-	R1(P)+1 {V(-1 'ABS')} [1024..1062], R2(CF)[0..255]	{}
+0004 ( 179)		LEAI	R2(P)+0 {V(-1 'ABS')} [55296..55334]	<-	R1(P)+0 {V(-1 'ABS')} [1024..1062], CI:54272	{}
+0005 ( 179)		LOADI1	R4(C)[0..255]	<-	R2(PF)+0 {V(-1 'ABS')} [55296..55334]	{}
+0006 ( 179)		LEAA	R2(P)[55297..55335]	<-	V(-1 '')+55296 , R0(I)[1..39]	{}
+0007 ( 179)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [55297..55335], R4(CF)[0..255]	{}
+0008 ( 178)		LOADI1	R4(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1024..1062]	{}
+0009 ( 178)		STOREI1		<-	R1(P)+41 {V(-1 'ABS')} [1024..1062], R4(CF)[0..255]	{}
+000a ( 179)		LOADI1	R4(C)[0..255]	<-	R2(P)+39 {V(-1 'ABS')} [55297..55335]	{}
+000b ( 179)		STOREI1		<-	R2(P)+40 {V(-1 'ABS')} [55297..55335], R4(CF)[0..255]	{}
+000c ( 178)		LOADI1	R4(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1024..1062]	{}
+000d ( 178)		STOREI1		<-	R1(P)+81 {V(-1 'ABS')} [1024..1062], R4(CF)[0..255]	{}
+000e ( 179)		LOADI1	R4(C)[0..255]	<-	R2(P)+79 {V(-1 'ABS')} [55297..55335]	{}
+000f ( 179)		STOREI1		<-	R2(P)+80 {V(-1 'ABS')} [55297..55335], R4(CF)[0..255]	{}
+0010 ( 178)		LOADI1	R4(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1024..1062]	{}
+0011 ( 178)		STOREI1		<-	R1(P)+121 {V(-1 'ABS')} [1024..1062], R4(CF)[0..255]	{}
+0012 ( 179)		LOADI1	R4(C)[0..255]	<-	R2(P)+119 {V(-1 'ABS')} [55297..55335]	{}
+0013 ( 179)		STOREI1		<-	R2(P)+120 {V(-1 'ABS')} [55297..55335], R4(CF)[0..255]	{}
+0014 ( 178)		LOADI1	R4(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1024..1062]	{}
+0015 ( 178)		STOREI1		<-	R1(P)+161 {V(-1 'ABS')} [1024..1062], R4(CF)[0..255]	{}
+0016 ( 179)		LOADI1	R4(C)[0..255]	<-	R2(P)+159 {V(-1 'ABS')} [55297..55335]	{}
+0017 ( 179)		STOREI1		<-	R2(P)+160 {V(-1 'ABS')} [55297..55335], R4(CF)[0..255]	{}
+0018 ( 178)		LOADI1	R4(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1024..1062]	{}
+0019 ( 178)		STOREI1		<-	R1(P)+201 {V(-1 'ABS')} [1024..1062], R4(CF)[0..255]	{}
+001a ( 179)		LOADI1	R4(C)[0..255]	<-	R2(P)+199 {V(-1 'ABS')} [55297..55335]	{}
+001b ( 179)		STOREI1		<-	R2(P)+200 {V(-1 'ABS')} [55297..55335], R4(CF)[0..255]	{}
+001c ( 178)		LOADI1	R4(C)[0..255]	<-	R1(P)+240 {V(-1 'ABS')} [1024..1062]	{}
+001d ( 178)		STOREI1		<-	R1(PF)+241 {V(-1 'ABS')} [1024..1062], R4(CF)[0..255]	{}
+001e ( 179)		LOADI1	R1(C)[0..255]	<-	R2(P)+239 {V(-1 'ABS')} [55297..55335]	{}
+001f ( 179)		STOREI1		<-	R2(PF)+240 {V(-1 'ABS')} [55297..55335], R1(CF)[0..255]	{}
+0020 ( 178)		LEAA	R1(P)[1304..1342]	<-	V(-1 '')+1303 , R0(I)[1..39]	{}
+0021 ( 178)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1304..1342]	{}
+0022 ( 178)		STOREI1		<-	R1(P)+1 {V(-1 'ABS')} [1304..1342], R2(CF)[0..255]	{}
+0023 ( 179)		LEAI	R2(P)+0 {V(-1 'ABS')} [55576..55614]	<-	R1(P)+0 {V(-1 'ABS')} [1304..1342], CI:54272	{}
+0024 ( 179)		LOADI1	R2(C)[0..255]	<-	R2(PF)+0 {V(-1 'ABS')} [55576..55614]	{}
+0025 ( 179)		LEAA	R0(P)[55577..55615]	<-	V(-1 '')+55576 , R0(IF)[1..39]	{}
+0026 ( 179)		STOREI1		<-	R0(P)+0 {V(-1 'ABS')} [55577..55615], R2(CF)[0..255]	{}
+0027 ( 178)		LOADI1	R2(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1304..1342]	{}
+0028 ( 178)		STOREI1		<-	R1(P)+41 {V(-1 'ABS')} [1304..1342], R2(CF)[0..255]	{}
+0029 ( 179)		LOADI1	R2(C)[0..255]	<-	R0(P)+39 {V(-1 'ABS')} [55577..55615]	{}
+002a ( 179)		STOREI1		<-	R0(P)+40 {V(-1 'ABS')} [55577..55615], R2(CF)[0..255]	{}
+002b ( 178)		LOADI1	R2(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1304..1342]	{}
+002c ( 178)		STOREI1		<-	R1(P)+81 {V(-1 'ABS')} [1304..1342], R2(CF)[0..255]	{}
+002d ( 179)		LOADI1	R2(C)[0..255]	<-	R0(P)+79 {V(-1 'ABS')} [55577..55615]	{}
+002e ( 179)		STOREI1		<-	R0(P)+80 {V(-1 'ABS')} [55577..55615], R2(CF)[0..255]	{}
+002f ( 178)		LOADI1	R2(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1304..1342]	{}
+0030 ( 178)		STOREI1		<-	R1(P)+121 {V(-1 'ABS')} [1304..1342], R2(CF)[0..255]	{}
+0031 ( 179)		LOADI1	R2(C)[0..255]	<-	R0(P)+119 {V(-1 'ABS')} [55577..55615]	{}
+0032 ( 179)		STOREI1		<-	R0(P)+120 {V(-1 'ABS')} [55577..55615], R2(CF)[0..255]	{}
+0033 ( 178)		LOADI1	R2(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1304..1342]	{}
+0034 ( 178)		STOREI1		<-	R1(PF)+161 {V(-1 'ABS')} [1304..1342], R2(CF)[0..255]	{}
+0035 ( 179)		LOADI1	R1(C)[0..255]	<-	R0(P)+159 {V(-1 'ABS')} [55577..55615]	{}
+0036 ( 179)		STOREI1		<-	R0(PF)+160 {V(-1 'ABS')} [55577..55615], R1(CF)[0..255]	{}
+0037 ( 174)		BINOP1	R3(C)[0..38]	<-	R3(CF)[1..39], CI:-1	{}
+0038 ( 174)		RELOP27	R0(B)[0..1]	<-	R3(C)[0..38], CC:0	{}
+0039 ( 174)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 5
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+0 	{}
+0001 ( 186)		STOREA1		<-	V(-1 '')+1024 , R0(CF)[0..255]	{}
+0002 ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+1 	{}
+0003 ( 186)		STOREA1		<-	V(-1 '')+1064 , R0(CF)[0..255]	{}
+0004 ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+2 	{}
+0005 ( 186)		STOREA1		<-	V(-1 '')+1104 , R0(CF)[0..255]	{}
+0006 ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+3 	{}
+0007 ( 186)		STOREA1		<-	V(-1 '')+1144 , R0(CF)[0..255]	{}
+0008 ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+4 	{}
+0009 ( 186)		STOREA1		<-	V(-1 '')+1184 , R0(CF)[0..255]	{}
+000a ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+5 	{}
+000b ( 186)		STOREA1		<-	V(-1 '')+1224 , R0(CF)[0..255]	{}
+000c ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+6 	{}
+000d ( 186)		STOREA1		<-	V(-1 '')+1264 , R0(CF)[0..255]	{}
+000e ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+7 	{}
+000f ( 186)		STOREA1		<-	V(-1 '')+1304 , R0(CF)[0..255]	{}
+0010 ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+8 	{}
+0011 ( 186)		STOREA1		<-	V(-1 '')+1344 , R0(CF)[0..255]	{}
+0012 ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+9 	{}
+0013 ( 186)		STOREA1		<-	V(-1 '')+1384 , R0(CF)[0..255]	{}
+0014 ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+10 	{}
+0015 ( 186)		STOREA1		<-	V(-1 '')+1424 , R0(CF)[0..255]	{}
+0016 ( 186)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+11 	{}
+0017 ( 186)		STOREA1		<-	V(-1 '')+1464 , R0(CF)[0..255]	{}
+0018 ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+0 	{}
+0019 ( 187)		STOREA1		<-	V(-1 '')+55296 , R0(CF)[0..255]	{}
+001a ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+1 	{}
+001b ( 187)		STOREA1		<-	V(-1 '')+55336 , R0(CF)[0..255]	{}
+001c ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+2 	{}
+001d ( 187)		STOREA1		<-	V(-1 '')+55376 , R0(CF)[0..255]	{}
+001e ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+3 	{}
+001f ( 187)		STOREA1		<-	V(-1 '')+55416 , R0(CF)[0..255]	{}
+0020 ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+4 	{}
+0021 ( 187)		STOREA1		<-	V(-1 '')+55456 , R0(CF)[0..255]	{}
+0022 ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+5 	{}
+0023 ( 187)		STOREA1		<-	V(-1 '')+55496 , R0(CF)[0..255]	{}
+0024 ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+6 	{}
+0025 ( 187)		STOREA1		<-	V(-1 '')+55536 , R0(CF)[0..255]	{}
+0026 ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+7 	{}
+0027 ( 187)		STOREA1		<-	V(-1 '')+55576 , R0(CF)[0..255]	{}
+0028 ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+8 	{}
+0029 ( 187)		STOREA1		<-	V(-1 '')+55616 , R0(CF)[0..255]	{}
+002a ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+9 	{}
+002b ( 187)		STOREA1		<-	V(-1 '')+55656 , R0(CF)[0..255]	{}
+002c ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+10 	{}
+002d ( 187)		STOREA1		<-	V(-1 '')+55696 , R0(CF)[0..255]	{}
+002e ( 187)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+11 	{}
+002f ( 187)		STOREA1		<-	V(-1 '')+55736 , R0(CF)[0..255]	{}
+0030 (  64)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 192)		STOREA1		<-	V(-1 '')+53270 , CC:0	{V}
+0001 ( 194)		CONST	R3(C)[39..39]	<-	CI:39	{}
+0002 ( 198)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 198)		CONV37	R0(I)[1..39]	<-	R3(C)[1..39]	{}
+0001 ( 198)		LEAA	R1(P)[1504..1542]	<-	V(-1 '')+1503 , R0(I)[1..39]	{}
+0002 ( 198)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1504..1542]	{}
+0003 ( 198)		STOREI1		<-	R1(P)+1 {V(-1 'ABS')} [1504..1542], R2(CF)[0..255]	{}
+0004 ( 199)		LEAI	R2(P)+0 {V(-1 'ABS')} [55776..55814]	<-	R1(P)+0 {V(-1 'ABS')} [1504..1542], CI:54272	{}
+0005 ( 199)		LOADI1	R4(C)[0..255]	<-	R2(PF)+0 {V(-1 'ABS')} [55776..55814]	{}
+0006 ( 199)		LEAA	R2(P)[55777..55815]	<-	V(-1 '')+55776 , R0(I)[1..39]	{}
+0007 ( 199)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [55777..55815], R4(CF)[0..255]	{}
+0008 ( 198)		LOADI1	R4(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1504..1542]	{}
+0009 ( 198)		STOREI1		<-	R1(P)+41 {V(-1 'ABS')} [1504..1542], R4(CF)[0..255]	{}
+000a ( 199)		LOADI1	R4(C)[0..255]	<-	R2(P)+39 {V(-1 'ABS')} [55777..55815]	{}
+000b ( 199)		STOREI1		<-	R2(P)+40 {V(-1 'ABS')} [55777..55815], R4(CF)[0..255]	{}
+000c ( 198)		LOADI1	R4(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1504..1542]	{}
+000d ( 198)		STOREI1		<-	R1(P)+81 {V(-1 'ABS')} [1504..1542], R4(CF)[0..255]	{}
+000e ( 199)		LOADI1	R4(C)[0..255]	<-	R2(P)+79 {V(-1 'ABS')} [55777..55815]	{}
+000f ( 199)		STOREI1		<-	R2(P)+80 {V(-1 'ABS')} [55777..55815], R4(CF)[0..255]	{}
+0010 ( 198)		LOADI1	R4(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1504..1542]	{}
+0011 ( 198)		STOREI1		<-	R1(P)+121 {V(-1 'ABS')} [1504..1542], R4(CF)[0..255]	{}
+0012 ( 199)		LOADI1	R4(C)[0..255]	<-	R2(P)+119 {V(-1 'ABS')} [55777..55815]	{}
+0013 ( 199)		STOREI1		<-	R2(P)+120 {V(-1 'ABS')} [55777..55815], R4(CF)[0..255]	{}
+0014 ( 198)		LOADI1	R4(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1504..1542]	{}
+0015 ( 198)		STOREI1		<-	R1(P)+161 {V(-1 'ABS')} [1504..1542], R4(CF)[0..255]	{}
+0016 ( 199)		LOADI1	R4(C)[0..255]	<-	R2(P)+159 {V(-1 'ABS')} [55777..55815]	{}
+0017 ( 199)		STOREI1		<-	R2(P)+160 {V(-1 'ABS')} [55777..55815], R4(CF)[0..255]	{}
+0018 ( 198)		LOADI1	R4(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1504..1542]	{}
+0019 ( 198)		STOREI1		<-	R1(P)+201 {V(-1 'ABS')} [1504..1542], R4(CF)[0..255]	{}
+001a ( 199)		LOADI1	R4(C)[0..255]	<-	R2(P)+199 {V(-1 'ABS')} [55777..55815]	{}
+001b ( 199)		STOREI1		<-	R2(P)+200 {V(-1 'ABS')} [55777..55815], R4(CF)[0..255]	{}
+001c ( 198)		LOADI1	R4(C)[0..255]	<-	R1(P)+240 {V(-1 'ABS')} [1504..1542]	{}
+001d ( 198)		STOREI1		<-	R1(PF)+241 {V(-1 'ABS')} [1504..1542], R4(CF)[0..255]	{}
+001e ( 199)		LOADI1	R1(C)[0..255]	<-	R2(P)+239 {V(-1 'ABS')} [55777..55815]	{}
+001f ( 199)		STOREI1		<-	R2(PF)+240 {V(-1 'ABS')} [55777..55815], R1(CF)[0..255]	{}
+0020 ( 198)		LEAA	R1(P)[1784..1822]	<-	V(-1 '')+1783 , R0(I)[1..39]	{}
+0021 ( 198)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1784..1822]	{}
+0022 ( 198)		STOREI1		<-	R1(P)+1 {V(-1 'ABS')} [1784..1822], R2(CF)[0..255]	{}
+0023 ( 199)		LEAI	R2(P)+0 {V(-1 'ABS')} [56056..56094]	<-	R1(P)+0 {V(-1 'ABS')} [1784..1822], CI:54272	{}
+0024 ( 199)		LOADI1	R2(C)[0..255]	<-	R2(PF)+0 {V(-1 'ABS')} [56056..56094]	{}
+0025 ( 199)		LEAA	R0(P)[56057..56095]	<-	V(-1 '')+56056 , R0(IF)[1..39]	{}
+0026 ( 199)		STOREI1		<-	R0(P)+0 {V(-1 'ABS')} [56057..56095], R2(CF)[0..255]	{}
+0027 ( 198)		LOADI1	R2(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1784..1822]	{}
+0028 ( 198)		STOREI1		<-	R1(P)+41 {V(-1 'ABS')} [1784..1822], R2(CF)[0..255]	{}
+0029 ( 199)		LOADI1	R2(C)[0..255]	<-	R0(P)+39 {V(-1 'ABS')} [56057..56095]	{}
+002a ( 199)		STOREI1		<-	R0(P)+40 {V(-1 'ABS')} [56057..56095], R2(CF)[0..255]	{}
+002b ( 198)		LOADI1	R2(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1784..1822]	{}
+002c ( 198)		STOREI1		<-	R1(P)+81 {V(-1 'ABS')} [1784..1822], R2(CF)[0..255]	{}
+002d ( 199)		LOADI1	R2(C)[0..255]	<-	R0(P)+79 {V(-1 'ABS')} [56057..56095]	{}
+002e ( 199)		STOREI1		<-	R0(P)+80 {V(-1 'ABS')} [56057..56095], R2(CF)[0..255]	{}
+002f ( 198)		LOADI1	R2(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1784..1822]	{}
+0030 ( 198)		STOREI1		<-	R1(P)+121 {V(-1 'ABS')} [1784..1822], R2(CF)[0..255]	{}
+0031 ( 199)		LOADI1	R2(C)[0..255]	<-	R0(P)+119 {V(-1 'ABS')} [56057..56095]	{}
+0032 ( 199)		STOREI1		<-	R0(P)+120 {V(-1 'ABS')} [56057..56095], R2(CF)[0..255]	{}
+0033 ( 198)		LOADI1	R2(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1784..1822]	{}
+0034 ( 198)		STOREI1		<-	R1(P)+161 {V(-1 'ABS')} [1784..1822], R2(CF)[0..255]	{}
+0035 ( 199)		LOADI1	R2(C)[0..255]	<-	R0(P)+159 {V(-1 'ABS')} [56057..56095]	{}
+0036 ( 199)		STOREI1		<-	R0(P)+160 {V(-1 'ABS')} [56057..56095], R2(CF)[0..255]	{}
+0037 ( 198)		LOADI1	R2(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1784..1822]	{}
+0038 ( 198)		STOREI1		<-	R1(PF)+201 {V(-1 'ABS')} [1784..1822], R2(CF)[0..255]	{}
+0039 ( 199)		LOADI1	R1(C)[0..255]	<-	R0(P)+199 {V(-1 'ABS')} [56057..56095]	{}
+003a ( 199)		STOREI1		<-	R0(PF)+200 {V(-1 'ABS')} [56057..56095], R1(CF)[0..255]	{}
+003b ( 194)		BINOP1	R3(C)[0..38]	<-	R3(CF)[1..39], CI:-1	{}
+003c ( 194)		RELOP27	R0(B)[0..1]	<-	R3(C)[0..38], CC:0	{}
+003d ( 194)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 9
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+12 	{}
+0001 ( 206)		STOREA1		<-	V(-1 '')+1504 , R0(CF)[0..255]	{}
+0002 ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+13 	{}
+0003 ( 206)		STOREA1		<-	V(-1 '')+1544 , R0(CF)[0..255]	{}
+0004 ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+14 	{}
+0005 ( 206)		STOREA1		<-	V(-1 '')+1584 , R0(CF)[0..255]	{}
+0006 ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+15 	{}
+0007 ( 206)		STOREA1		<-	V(-1 '')+1624 , R0(CF)[0..255]	{}
+0008 ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+16 	{}
+0009 ( 206)		STOREA1		<-	V(-1 '')+1664 , R0(CF)[0..255]	{}
+000a ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+17 	{}
+000b ( 206)		STOREA1		<-	V(-1 '')+1704 , R0(CF)[0..255]	{}
+000c ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+18 	{}
+000d ( 206)		STOREA1		<-	V(-1 '')+1744 , R0(CF)[0..255]	{}
+000e ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+19 	{}
+000f ( 206)		STOREA1		<-	V(-1 '')+1784 , R0(CF)[0..255]	{}
+0010 ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+20 	{}
+0011 ( 206)		STOREA1		<-	V(-1 '')+1824 , R0(CF)[0..255]	{}
+0012 ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+21 	{}
+0013 ( 206)		STOREA1		<-	V(-1 '')+1864 , R0(CF)[0..255]	{}
+0014 ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+22 	{}
+0015 ( 206)		STOREA1		<-	V(-1 '')+1904 , R0(CF)[0..255]	{}
+0016 ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+23 	{}
+0017 ( 206)		STOREA1		<-	V(-1 '')+1944 , R0(CF)[0..255]	{}
+0018 ( 206)		LOADG1	R0(C)[0..255]	<-	V(13 'news' A)+24 	{}
+0019 ( 206)		STOREA1		<-	V(-1 '')+1984 , R0(CF)[0..255]	{}
+001a ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+12 	{}
+001b ( 207)		STOREA1		<-	V(-1 '')+55776 , R0(CF)[0..255]	{}
+001c ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+13 	{}
+001d ( 207)		STOREA1		<-	V(-1 '')+55816 , R0(CF)[0..255]	{}
+001e ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+14 	{}
+001f ( 207)		STOREA1		<-	V(-1 '')+55856 , R0(CF)[0..255]	{}
+0020 ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+15 	{}
+0021 ( 207)		STOREA1		<-	V(-1 '')+55896 , R0(CF)[0..255]	{}
+0022 ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+16 	{}
+0023 ( 207)		STOREA1		<-	V(-1 '')+55936 , R0(CF)[0..255]	{}
+0024 ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+17 	{}
+0025 ( 207)		STOREA1		<-	V(-1 '')+55976 , R0(CF)[0..255]	{}
+0026 ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+18 	{}
+0027 ( 207)		STOREA1		<-	V(-1 '')+56016 , R0(CF)[0..255]	{}
+0028 ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+19 	{}
+0029 ( 207)		STOREA1		<-	V(-1 '')+56056 , R0(CF)[0..255]	{}
+002a ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+20 	{}
+002b ( 207)		STOREA1		<-	V(-1 '')+56096 , R0(CF)[0..255]	{}
+002c ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+21 	{}
+002d ( 207)		STOREA1		<-	V(-1 '')+56136 , R0(CF)[0..255]	{}
+002e ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+22 	{}
+002f ( 207)		STOREA1		<-	V(-1 '')+56176 , R0(CF)[0..255]	{}
+0030 ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+23 	{}
+0031 ( 207)		STOREA1		<-	V(-1 '')+56216 , R0(CF)[0..255]	{}
+0032 ( 207)		LOADG1	R0(C)[0..255]	<-	V(14 'newc' A)+24 	{}
+0033 ( 207)		STOREA1		<-	V(-1 '')+56256 , R0(CF)[0..255]	{}
+0034 (  64)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 212)		STOREA1		<-	V(-1 '')+53270 , CC:2	{V}
+0001 (  70)		JUMP		<-		{}
+		==> 12
+L12: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 12
+		==> 14
+L14: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 13
+		==> 14
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 216)		STOREA1		<-	V(-1 '')+53270 , CC:4	{V}
+0001 ( 217)		RET		<-		{}
+--------------------------------------------------------------------
+scroll_up: /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c:221
+$00 R0(I), $00 R1(P), $00 R2(P), $00 R3(P), $00 R4(P), $00 R5(C), $00 R6(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 226)		STOREA1		<-	V(-1 '')+53265 , CC:18	{V}
+0001 (  70)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 231)		STOREC2		<-	V(0 '')+0 , CI:146	{}
+0001 ( 230)		STOREA1		<-	V(-1 '')+53265 , CC:16	{V}
+0002 ( 231)		CALLN		<-	V(6 'vic_waitLine')+0 	{E}
+0003 ( 233)		CONST	R5(C)[0..0]	<-	CI:0	{}
+0004 ( 237)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 237)		CONV37	R0(I)[0..39]	<-	R5(C)[0..39]	{}
+0001 ( 237)		LEAA	R1(P)[1064..1103]	<-	V(-1 '')+1064 , R0(I)[0..39]	{}
+0002 ( 237)		LOADI1	R3(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1064..1103]	{}
+0003 ( 237)		LEAA	R2(P)[1024..1063]	<-	V(-1 '')+1024 , R0(I)[0..39]	{}
+0004 ( 237)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1024..1063], R3(CF)[0..255]	{}
+0005 ( 238)		LEAI	R3(P)+0 {V(-1 'ABS')} [55336..55375]	<-	R1(P)+0 {V(-1 'ABS')} [1064..1103], CI:54272	{}
+0006 ( 238)		LOADI1	R4(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [55336..55375]	{}
+0007 ( 238)		LEAI	R2(P)+0 {V(-1 'ABS')} [55296..55335]	<-	R2(PF)+0 {V(-1 'ABS')} [1024..1063], CI:54272	{}
+0008 ( 238)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55296..55335], R4(CF)[0..255]	{}
+0009 ( 237)		LEAA	R2(P)[1104..1143]	<-	V(-1 '')+1104 , R0(I)[0..39]	{}
+000a ( 237)		LOADI1	R4(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1104..1143]	{}
+000b ( 237)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1064..1103], R4(CF)[0..255]	{}
+000c ( 238)		LEAI	R1(P)+0 {V(-1 'ABS')} [55376..55415]	<-	R2(P)+0 {V(-1 'ABS')} [1104..1143], CI:54272	{}
+000d ( 238)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55376..55415]	{}
+000e ( 238)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55336..55375], R4(CF)[0..255]	{}
+000f ( 237)		LEAA	R3(P)[1144..1183]	<-	V(-1 '')+1144 , R0(I)[0..39]	{}
+0010 ( 237)		LOADI1	R4(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1144..1183]	{}
+0011 ( 237)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1104..1143], R4(CF)[0..255]	{}
+0012 ( 238)		LEAI	R2(P)+0 {V(-1 'ABS')} [55416..55455]	<-	R3(P)+0 {V(-1 'ABS')} [1144..1183], CI:54272	{}
+0013 ( 238)		LOADI1	R4(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55416..55455]	{}
+0014 ( 238)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55376..55415], R4(CF)[0..255]	{}
+0015 ( 237)		LEAA	R1(P)[1184..1223]	<-	V(-1 '')+1184 , R0(I)[0..39]	{}
+0016 ( 237)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1184..1223]	{}
+0017 ( 237)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1144..1183], R4(CF)[0..255]	{}
+0018 ( 238)		LEAI	R3(P)+0 {V(-1 'ABS')} [55456..55495]	<-	R1(P)+0 {V(-1 'ABS')} [1184..1223], CI:54272	{}
+0019 ( 238)		LOADI1	R4(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [55456..55495]	{}
+001a ( 238)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55416..55455], R4(CF)[0..255]	{}
+001b ( 237)		LEAA	R2(P)[1224..1263]	<-	V(-1 '')+1224 , R0(I)[0..39]	{}
+001c ( 237)		LOADI1	R4(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1224..1263]	{}
+001d ( 237)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1184..1223], R4(CF)[0..255]	{}
+001e ( 238)		LEAI	R1(P)+0 {V(-1 'ABS')} [55496..55535]	<-	R2(P)+0 {V(-1 'ABS')} [1224..1263], CI:54272	{}
+001f ( 238)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55496..55535]	{}
+0020 ( 238)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55456..55495], R4(CF)[0..255]	{}
+0021 ( 237)		LEAA	R3(P)[1264..1303]	<-	V(-1 '')+1264 , R0(I)[0..39]	{}
+0022 ( 237)		LOADI1	R4(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1264..1303]	{}
+0023 ( 237)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1224..1263], R4(CF)[0..255]	{}
+0024 ( 238)		LEAI	R2(P)+0 {V(-1 'ABS')} [55536..55575]	<-	R3(P)+0 {V(-1 'ABS')} [1264..1303], CI:54272	{}
+0025 ( 238)		LOADI1	R4(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55536..55575]	{}
+0026 ( 238)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55496..55535], R4(CF)[0..255]	{}
+0027 ( 237)		LEAA	R1(P)[1304..1343]	<-	V(-1 '')+1304 , R0(I)[0..39]	{}
+0028 ( 237)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1304..1343]	{}
+0029 ( 237)		STOREI1		<-	R3(P)+0 {V(-1 'ABS')} [1264..1303], R4(CF)[0..255]	{}
+002a ( 238)		LEAI	R4(P)+0 {V(-1 'ABS')} [55576..55615]	<-	R1(P)+0 {V(-1 'ABS')} [1304..1343], CI:54272	{}
+002b ( 238)		LOADI1	R6(C)[0..255]	<-	R4(P)+0 {V(-1 'ABS')} [55576..55615]	{}
+002c ( 238)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55536..55575], R6(CF)[0..255]	{}
+002d ( 237)		LEAA	R2(P)[1344..1383]	<-	V(-1 '')+1344 , R0(I)[0..39]	{}
+002e ( 237)		LOADI1	R6(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1344..1383]	{}
+002f ( 237)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1304..1343], R6(CF)[0..255]	{}
+0030 ( 238)		LEAI	R1(P)+0 {V(-1 'ABS')} [55616..55655]	<-	R2(P)+0 {V(-1 'ABS')} [1344..1383], CI:54272	{}
+0031 ( 238)		LOADI1	R6(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55616..55655]	{}
+0032 ( 238)		STOREI1		<-	R4(PF)+0 {V(-1 'ABS')} [55576..55615], R6(CF)[0..255]	{}
+0033 ( 237)		LEAA	R4(P)[1384..1423]	<-	V(-1 '')+1384 , R0(I)[0..39]	{}
+0034 ( 237)		LOADI1	R6(C)[0..255]	<-	R4(P)+0 {V(-1 'ABS')} [1384..1423]	{}
+0035 ( 237)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1344..1383], R6(CF)[0..255]	{}
+0036 ( 238)		LEAI	R2(P)+0 {V(-1 'ABS')} [55656..55695]	<-	R4(P)+0 {V(-1 'ABS')} [1384..1423], CI:54272	{}
+0037 ( 238)		LOADI1	R6(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55656..55695]	{}
+0038 ( 238)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55616..55655], R6(CF)[0..255]	{}
+0039 ( 237)		LEAA	R1(P)[1424..1463]	<-	V(-1 '')+1424 , R0(I)[0..39]	{}
+003a ( 237)		LOADI1	R6(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1424..1463]	{}
+003b ( 237)		STOREI1		<-	R4(PF)+0 {V(-1 'ABS')} [1384..1423], R6(CF)[0..255]	{}
+003c ( 238)		LEAI	R4(P)+0 {V(-1 'ABS')} [55696..55735]	<-	R1(P)+0 {V(-1 'ABS')} [1424..1463], CI:54272	{}
+003d ( 238)		LOADI1	R6(C)[0..255]	<-	R4(P)+0 {V(-1 'ABS')} [55696..55735]	{}
+003e ( 238)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55656..55695], R6(CF)[0..255]	{}
+003f ( 237)		LEAA	R2(P)[1464..1503]	<-	V(-1 '')+1464 , R0(I)[0..39]	{}
+0040 ( 237)		LOADI1	R6(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1464..1503]	{}
+0041 ( 237)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1424..1463], R6(CF)[0..255]	{}
+0042 ( 238)		LEAI	R1(P)+0 {V(-1 'ABS')} [55736..55775]	<-	R2(P)+0 {V(-1 'ABS')} [1464..1503], CI:54272	{}
+0043 ( 238)		LOADI1	R6(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55736..55775]	{}
+0044 ( 238)		STOREI1		<-	R4(PF)+0 {V(-1 'ABS')} [55696..55735], R6(CF)[0..255]	{}
+0045 ( 237)		LOADI1	R3(C)[0..255]	<-	R3(PF)+240 {V(-1 'ABS')} [1264..1303]	{}
+0046 ( 237)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1464..1503], R3(CF)[0..255]	{}
+0047 ( 238)		LEAA	R0(P)[55776..55815]	<-	V(-1 '')+55776 , R0(IF)[0..39]	{}
+0048 ( 238)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(-1 'ABS')} [55776..55815]	{}
+0049 ( 238)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55736..55775], R0(CF)[0..255]	{}
+004a ( 233)		BINOP1	R5(C)[1..40]	<-	R5(CF)[0..39], CI:1	{}
+004b ( 233)		RELOP28	R0(B)[0..1]	<-	R5(C)[1..40], CC:40	{}
+004c ( 233)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 9
+L9: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 244)		STOREA1		<-	V(-1 '')+53265 , CC:22	{V}
+0001 ( 246)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0002 ( 250)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 250)		CONV37	R0(I)[0..39]	<-	R4(C)[0..39]	{}
+0001 ( 250)		LEAA	R1(P)[1544..1583]	<-	V(-1 '')+1544 , R0(I)[0..39]	{}
+0002 ( 250)		LOADI1	R3(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1544..1583]	{}
+0003 ( 250)		LEAA	R2(P)[1504..1543]	<-	V(-1 '')+1504 , R0(I)[0..39]	{}
+0004 ( 250)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1504..1543], R3(CF)[0..255]	{}
+0005 ( 251)		LEAI	R3(P)+0 {V(-1 'ABS')} [55816..55855]	<-	R1(P)+0 {V(-1 'ABS')} [1544..1583], CI:54272	{}
+0006 ( 251)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [55816..55855]	{}
+0007 ( 251)		LEAI	R2(P)+0 {V(-1 'ABS')} [55776..55815]	<-	R2(PF)+0 {V(-1 'ABS')} [1504..1543], CI:54272	{}
+0008 ( 251)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55776..55815], R5(CF)[0..255]	{}
+0009 ( 250)		LEAA	R2(P)[1584..1623]	<-	V(-1 '')+1584 , R0(I)[0..39]	{}
+000a ( 250)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1584..1623]	{}
+000b ( 250)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1544..1583], R5(CF)[0..255]	{}
+000c ( 251)		LEAI	R1(P)+0 {V(-1 'ABS')} [55856..55895]	<-	R2(P)+0 {V(-1 'ABS')} [1584..1623], CI:54272	{}
+000d ( 251)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55856..55895]	{}
+000e ( 251)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55816..55855], R5(CF)[0..255]	{}
+000f ( 250)		LEAA	R3(P)[1624..1663]	<-	V(-1 '')+1624 , R0(I)[0..39]	{}
+0010 ( 250)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1624..1663]	{}
+0011 ( 250)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1584..1623], R5(CF)[0..255]	{}
+0012 ( 251)		LEAI	R2(P)+0 {V(-1 'ABS')} [55896..55935]	<-	R3(P)+0 {V(-1 'ABS')} [1624..1663], CI:54272	{}
+0013 ( 251)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55896..55935]	{}
+0014 ( 251)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55856..55895], R5(CF)[0..255]	{}
+0015 ( 250)		LEAA	R1(P)[1664..1703]	<-	V(-1 '')+1664 , R0(I)[0..39]	{}
+0016 ( 250)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1664..1703]	{}
+0017 ( 250)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1624..1663], R5(CF)[0..255]	{}
+0018 ( 251)		LEAI	R3(P)+0 {V(-1 'ABS')} [55936..55975]	<-	R1(P)+0 {V(-1 'ABS')} [1664..1703], CI:54272	{}
+0019 ( 251)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [55936..55975]	{}
+001a ( 251)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55896..55935], R5(CF)[0..255]	{}
+001b ( 250)		LEAA	R2(P)[1704..1743]	<-	V(-1 '')+1704 , R0(I)[0..39]	{}
+001c ( 250)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1704..1743]	{}
+001d ( 250)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1664..1703], R5(CF)[0..255]	{}
+001e ( 251)		LEAI	R1(P)+0 {V(-1 'ABS')} [55976..56015]	<-	R2(P)+0 {V(-1 'ABS')} [1704..1743], CI:54272	{}
+001f ( 251)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55976..56015]	{}
+0020 ( 251)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55936..55975], R5(CF)[0..255]	{}
+0021 ( 250)		LEAA	R3(P)[1744..1783]	<-	V(-1 '')+1744 , R0(I)[0..39]	{}
+0022 ( 250)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1744..1783]	{}
+0023 ( 250)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1704..1743], R5(CF)[0..255]	{}
+0024 ( 251)		LEAI	R2(P)+0 {V(-1 'ABS')} [56016..56055]	<-	R3(P)+0 {V(-1 'ABS')} [1744..1783], CI:54272	{}
+0025 ( 251)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [56016..56055]	{}
+0026 ( 251)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55976..56015], R5(CF)[0..255]	{}
+0027 ( 250)		LEAA	R1(P)[1784..1823]	<-	V(-1 '')+1784 , R0(I)[0..39]	{}
+0028 ( 250)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1784..1823]	{}
+0029 ( 250)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1744..1783], R5(CF)[0..255]	{}
+002a ( 251)		LEAI	R3(P)+0 {V(-1 'ABS')} [56056..56095]	<-	R1(P)+0 {V(-1 'ABS')} [1784..1823], CI:54272	{}
+002b ( 251)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [56056..56095]	{}
+002c ( 251)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [56016..56055], R5(CF)[0..255]	{}
+002d ( 250)		LEAA	R2(P)[1824..1863]	<-	V(-1 '')+1824 , R0(I)[0..39]	{}
+002e ( 250)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1824..1863]	{}
+002f ( 250)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1784..1823], R5(CF)[0..255]	{}
+0030 ( 251)		LEAI	R1(P)+0 {V(-1 'ABS')} [56096..56135]	<-	R2(P)+0 {V(-1 'ABS')} [1824..1863], CI:54272	{}
+0031 ( 251)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [56096..56135]	{}
+0032 ( 251)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [56056..56095], R5(CF)[0..255]	{}
+0033 ( 250)		LEAA	R3(P)[1864..1903]	<-	V(-1 '')+1864 , R0(I)[0..39]	{}
+0034 ( 250)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1864..1903]	{}
+0035 ( 250)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1824..1863], R5(CF)[0..255]	{}
+0036 ( 251)		LEAI	R2(P)+0 {V(-1 'ABS')} [56136..56175]	<-	R3(P)+0 {V(-1 'ABS')} [1864..1903], CI:54272	{}
+0037 ( 251)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [56136..56175]	{}
+0038 ( 251)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [56096..56135], R5(CF)[0..255]	{}
+0039 ( 250)		LEAA	R1(P)[1904..1943]	<-	V(-1 '')+1904 , R0(I)[0..39]	{}
+003a ( 250)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1904..1943]	{}
+003b ( 250)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1864..1903], R5(CF)[0..255]	{}
+003c ( 251)		LEAI	R3(P)+0 {V(-1 'ABS')} [56176..56215]	<-	R1(P)+0 {V(-1 'ABS')} [1904..1943], CI:54272	{}
+003d ( 251)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [56176..56215]	{}
+003e ( 251)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [56136..56175], R5(CF)[0..255]	{}
+003f ( 250)		LEAA	R2(P)[1944..1983]	<-	V(-1 '')+1944 , R0(I)[0..39]	{}
+0040 ( 250)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1944..1983]	{}
+0041 ( 250)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1904..1943], R5(CF)[0..255]	{}
+0042 ( 251)		LEAI	R1(P)+0 {V(-1 'ABS')} [56216..56255]	<-	R2(P)+0 {V(-1 'ABS')} [1944..1983], CI:54272	{}
+0043 ( 251)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [56216..56255]	{}
+0044 ( 251)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [56176..56215], R5(CF)[0..255]	{}
+0045 ( 250)		LEAA	R3(P)[1984..2023]	<-	V(-1 '')+1984 , R0(I)[0..39]	{}
+0046 ( 250)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1984..2023]	{}
+0047 ( 250)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1944..1983], R5(CF)[0..255]	{}
+0048 ( 251)		LEAI	R2(P)+0 {V(-1 'ABS')} [56256..56295]	<-	R3(P)+0 {V(-1 'ABS')} [1984..2023], CI:54272	{}
+0049 ( 251)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [56256..56295]	{}
+004a ( 251)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [56216..56255], R5(CF)[0..255]	{}
+004b ( 255)		LEAG	R1(P)[0..39]	<-	V(13 'news' A)+0 , R0(I)[0..39]	{}
+004c ( 255)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(13 'news' A)} [0..39]	{}
+004d ( 255)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1984..2023], R1(CF)[0..255]	{}
+004e ( 256)		LEAG	R0(P)[0..39]	<-	V(14 'newc' A)+0 , R0(IF)[0..39]	{}
+004f ( 256)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(14 'newc' A)} [0..39]	{}
+0050 ( 256)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [56256..56295], R0(CF)[0..255]	{}
+0051 ( 246)		BINOP1	R4(C)[1..40]	<-	R4(CF)[0..39], CI:1	{}
+0052 ( 246)		RELOP28	R0(B)[0..1]	<-	R4(C)[1..40], CC:40	{}
+0053 ( 246)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 10
+		==> 12
+L12: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 11
+		==> 12
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 260)		STOREA1		<-	V(-1 '')+53265 , CC:20	{V}
+0001 ( 261)		RET		<-		{}
+--------------------------------------------------------------------
+scroll_down: /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c:273
+$00 R0(I), $00 R1(P), $00 R2(P), $00 R3(P), $00 R4(C), $00 R5(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 280)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0001 ( 282)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 282)		CONV37	R0(I)[0..39]	<-	R3(C)[0..39]	{}
+0001 ( 282)		LEAA	R1(P)[1504..1543]	<-	V(-1 '')+1504 , R0(I)[0..39]	{}
+0002 ( 282)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1504..1543]	{}
+0003 ( 282)		LEAG	R2(P)[0..39]	<-	V(15 'tmp0' A)+0 , R0(I)[0..39]	{}
+0004 ( 282)		STOREI1		<-	R2(PF)+0 {V(15 'tmp0' A)} [0..39], R4(CF)[0..255]	{}
+0005 ( 283)		LEAI	R1(P)+0 {V(-1 'ABS')} [55776..55815]	<-	R1(PF)+0 {V(-1 'ABS')} [1504..1543], CI:54272	{}
+0006 ( 283)		LOADI1	R2(C)[0..255]	<-	R1(PF)+0 {V(-1 'ABS')} [55776..55815]	{}
+0007 ( 283)		LEAG	R1(P)[0..39]	<-	V(16 'tmp1' A)+0 , R0(I)[0..39]	{}
+0008 ( 283)		STOREI1		<-	R1(PF)+0 {V(16 'tmp1' A)} [0..39], R2(CF)[0..255]	{}
+0009 ( 284)		LEAA	R1(P)[1824..1863]	<-	V(-1 '')+1824 , R0(I)[0..39]	{}
+000a ( 284)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1824..1863]	{}
+000b ( 284)		LEAG	R2(P)[0..39]	<-	V(17 'tmp2' A)+0 , R0(I)[0..39]	{}
+000c ( 284)		STOREI1		<-	R2(PF)+0 {V(17 'tmp2' A)} [0..39], R4(CF)[0..255]	{}
+000d ( 285)		LEAI	R1(P)+0 {V(-1 'ABS')} [56096..56135]	<-	R1(PF)+0 {V(-1 'ABS')} [1824..1863], CI:54272	{}
+000e ( 285)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(-1 'ABS')} [56096..56135]	{}
+000f ( 285)		LEAG	R0(P)[0..39]	<-	V(18 'tmp3' A)+0 , R0(IF)[0..39]	{}
+0010 ( 285)		STOREI1		<-	R0(PF)+0 {V(18 'tmp3' A)} [0..39], R1(CF)[0..255]	{}
+0011 ( 280)		BINOP1	R3(C)[1..40]	<-	R3(CF)[0..39], CI:1	{}
+0012 ( 280)		RELOP28	R0(B)[0..1]	<-	R3(C)[1..40], CC:40	{}
+0013 ( 280)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 5
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 292)		STOREC2		<-	V(0 '')+0 , CI:154	{}
+0001 ( 289)		STOREA1		<-	V(-1 '')+53265 , CC:22	{V}
+0002 ( 292)		CALLN		<-	V(6 'vic_waitLine')+0 	{E}
+0003 ( 295)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0004 ( 299)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 299)		CONV37	R0(I)[0..39]	<-	R4(C)[0..39]	{}
+0001 ( 299)		LEAA	R1(P)[1464..1503]	<-	V(-1 '')+1464 , R0(I)[0..39]	{}
+0002 ( 299)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1464..1503]	{}
+0003 ( 299)		STOREI1		<-	R1(P)+40 {V(-1 'ABS')} [1464..1503], R2(CF)[0..255]	{}
+0004 ( 300)		LEAI	R2(P)+0 {V(-1 'ABS')} [55736..55775]	<-	R1(P)+0 {V(-1 'ABS')} [1464..1503], CI:54272	{}
+0005 ( 300)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55736..55775]	{}
+0006 ( 300)		LEAA	R3(P)[55776..55815]	<-	V(-1 '')+55776 , R0(I)[0..39]	{}
+0007 ( 300)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55776..55815], R5(CF)[0..255]	{}
+0008 ( 299)		LEAA	R3(P)[1424..1463]	<-	V(-1 '')+1424 , R0(I)[0..39]	{}
+0009 ( 299)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1424..1463]	{}
+000a ( 299)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1464..1503], R5(CF)[0..255]	{}
+000b ( 300)		LEAI	R1(P)+0 {V(-1 'ABS')} [55696..55735]	<-	R3(P)+0 {V(-1 'ABS')} [1424..1463], CI:54272	{}
+000c ( 300)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55696..55735]	{}
+000d ( 300)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55736..55775], R5(CF)[0..255]	{}
+000e ( 299)		LEAA	R2(P)[1384..1423]	<-	V(-1 '')+1384 , R0(I)[0..39]	{}
+000f ( 299)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1384..1423]	{}
+0010 ( 299)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1424..1463], R5(CF)[0..255]	{}
+0011 ( 300)		LEAI	R3(P)+0 {V(-1 'ABS')} [55656..55695]	<-	R2(P)+0 {V(-1 'ABS')} [1384..1423], CI:54272	{}
+0012 ( 300)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [55656..55695]	{}
+0013 ( 300)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55696..55735], R5(CF)[0..255]	{}
+0014 ( 299)		LEAA	R1(P)[1344..1383]	<-	V(-1 '')+1344 , R0(I)[0..39]	{}
+0015 ( 299)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1344..1383]	{}
+0016 ( 299)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1384..1423], R5(CF)[0..255]	{}
+0017 ( 300)		LEAI	R2(P)+0 {V(-1 'ABS')} [55616..55655]	<-	R1(P)+0 {V(-1 'ABS')} [1344..1383], CI:54272	{}
+0018 ( 300)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55616..55655]	{}
+0019 ( 300)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55656..55695], R5(CF)[0..255]	{}
+001a ( 299)		LEAA	R3(P)[1304..1343]	<-	V(-1 '')+1304 , R0(I)[0..39]	{}
+001b ( 299)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1304..1343]	{}
+001c ( 299)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1344..1383], R5(CF)[0..255]	{}
+001d ( 300)		LEAI	R1(P)+0 {V(-1 'ABS')} [55576..55615]	<-	R3(P)+0 {V(-1 'ABS')} [1304..1343], CI:54272	{}
+001e ( 300)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55576..55615]	{}
+001f ( 300)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55616..55655], R5(CF)[0..255]	{}
+0020 ( 299)		LEAA	R2(P)[1264..1303]	<-	V(-1 '')+1264 , R0(I)[0..39]	{}
+0021 ( 299)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1264..1303]	{}
+0022 ( 299)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1304..1343], R5(CF)[0..255]	{}
+0023 ( 300)		LEAI	R3(P)+0 {V(-1 'ABS')} [55536..55575]	<-	R2(P)+0 {V(-1 'ABS')} [1264..1303], CI:54272	{}
+0024 ( 300)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [55536..55575]	{}
+0025 ( 300)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55576..55615], R5(CF)[0..255]	{}
+0026 ( 299)		LEAA	R1(P)[1224..1263]	<-	V(-1 '')+1224 , R0(I)[0..39]	{}
+0027 ( 299)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1224..1263]	{}
+0028 ( 299)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1264..1303], R5(CF)[0..255]	{}
+0029 ( 300)		LEAI	R2(P)+0 {V(-1 'ABS')} [55496..55535]	<-	R1(P)+0 {V(-1 'ABS')} [1224..1263], CI:54272	{}
+002a ( 300)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55496..55535]	{}
+002b ( 300)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55536..55575], R5(CF)[0..255]	{}
+002c ( 299)		LEAA	R3(P)[1184..1223]	<-	V(-1 '')+1184 , R0(I)[0..39]	{}
+002d ( 299)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1184..1223]	{}
+002e ( 299)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1224..1263], R5(CF)[0..255]	{}
+002f ( 300)		LEAI	R1(P)+0 {V(-1 'ABS')} [55456..55495]	<-	R3(P)+0 {V(-1 'ABS')} [1184..1223], CI:54272	{}
+0030 ( 300)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55456..55495]	{}
+0031 ( 300)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55496..55535], R5(CF)[0..255]	{}
+0032 ( 299)		LEAA	R2(P)[1144..1183]	<-	V(-1 '')+1144 , R0(I)[0..39]	{}
+0033 ( 299)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1144..1183]	{}
+0034 ( 299)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1184..1223], R5(CF)[0..255]	{}
+0035 ( 300)		LEAI	R3(P)+0 {V(-1 'ABS')} [55416..55455]	<-	R2(P)+0 {V(-1 'ABS')} [1144..1183], CI:54272	{}
+0036 ( 300)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [55416..55455]	{}
+0037 ( 300)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55456..55495], R5(CF)[0..255]	{}
+0038 ( 299)		LEAA	R1(P)[1104..1143]	<-	V(-1 '')+1104 , R0(I)[0..39]	{}
+0039 ( 299)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1104..1143]	{}
+003a ( 299)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1144..1183], R5(CF)[0..255]	{}
+003b ( 300)		LEAI	R2(P)+0 {V(-1 'ABS')} [55376..55415]	<-	R1(P)+0 {V(-1 'ABS')} [1104..1143], CI:54272	{}
+003c ( 300)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55376..55415]	{}
+003d ( 300)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55416..55455], R5(CF)[0..255]	{}
+003e ( 299)		LEAA	R3(P)[1064..1103]	<-	V(-1 '')+1064 , R0(I)[0..39]	{}
+003f ( 299)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1064..1103]	{}
+0040 ( 299)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1104..1143], R5(CF)[0..255]	{}
+0041 ( 300)		LEAI	R1(P)+0 {V(-1 'ABS')} [55336..55375]	<-	R3(P)+0 {V(-1 'ABS')} [1064..1103], CI:54272	{}
+0042 ( 300)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55336..55375]	{}
+0043 ( 300)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55376..55415], R5(CF)[0..255]	{}
+0044 ( 299)		LEAA	R2(P)[1024..1063]	<-	V(-1 '')+1024 , R0(I)[0..39]	{}
+0045 ( 299)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1024..1063]	{}
+0046 ( 299)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1064..1103], R5(CF)[0..255]	{}
+0047 ( 300)		LEAI	R3(P)+0 {V(-1 'ABS')} [55296..55335]	<-	R2(P)+0 {V(-1 'ABS')} [1024..1063], CI:54272	{}
+0048 ( 300)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [55296..55335]	{}
+0049 ( 300)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55336..55375], R5(CF)[0..255]	{}
+004a ( 304)		LEAG	R1(P)[0..39]	<-	V(13 'news' A)+0 , R0(I)[0..39]	{}
+004b ( 304)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(13 'news' A)} [0..39]	{}
+004c ( 304)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1024..1063], R1(CF)[0..255]	{}
+004d ( 305)		LEAG	R0(P)[0..39]	<-	V(14 'newc' A)+0 , R0(IF)[0..39]	{}
+004e ( 305)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(14 'newc' A)} [0..39]	{}
+004f ( 305)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55296..55335], R0(CF)[0..255]	{}
+0050 ( 295)		BINOP1	R4(C)[1..40]	<-	R4(CF)[0..39], CI:1	{}
+0051 ( 295)		RELOP28	R0(B)[0..1]	<-	R4(C)[1..40], CC:40	{}
+0052 ( 295)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 310)		STOREA1		<-	V(-1 '')+53265 , CC:16	{V}
+0001 ( 313)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0002 ( 318)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 318)		CONV37	R0(I)[0..39]	<-	R4(C)[0..39]	{}
+0001 ( 318)		LEAA	R1(P)[1784..1823]	<-	V(-1 '')+1784 , R0(I)[0..39]	{}
+0002 ( 318)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1784..1823]	{}
+0003 ( 318)		STOREI1		<-	R1(P)+40 {V(-1 'ABS')} [1784..1823], R2(CF)[0..255]	{}
+0004 ( 319)		LEAI	R2(P)+0 {V(-1 'ABS')} [56056..56095]	<-	R1(P)+0 {V(-1 'ABS')} [1784..1823], CI:54272	{}
+0005 ( 319)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [56056..56095]	{}
+0006 ( 319)		LEAA	R3(P)[56096..56135]	<-	V(-1 '')+56096 , R0(I)[0..39]	{}
+0007 ( 319)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [56096..56135], R5(CF)[0..255]	{}
+0008 ( 318)		LEAA	R3(P)[1744..1783]	<-	V(-1 '')+1744 , R0(I)[0..39]	{}
+0009 ( 318)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1744..1783]	{}
+000a ( 318)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1784..1823], R5(CF)[0..255]	{}
+000b ( 319)		LEAI	R1(P)+0 {V(-1 'ABS')} [56016..56055]	<-	R3(P)+0 {V(-1 'ABS')} [1744..1783], CI:54272	{}
+000c ( 319)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [56016..56055]	{}
+000d ( 319)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [56056..56095], R5(CF)[0..255]	{}
+000e ( 318)		LEAA	R2(P)[1704..1743]	<-	V(-1 '')+1704 , R0(I)[0..39]	{}
+000f ( 318)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1704..1743]	{}
+0010 ( 318)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1744..1783], R5(CF)[0..255]	{}
+0011 ( 319)		LEAI	R3(P)+0 {V(-1 'ABS')} [55976..56015]	<-	R2(P)+0 {V(-1 'ABS')} [1704..1743], CI:54272	{}
+0012 ( 319)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [55976..56015]	{}
+0013 ( 319)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [56016..56055], R5(CF)[0..255]	{}
+0014 ( 318)		LEAA	R1(P)[1664..1703]	<-	V(-1 '')+1664 , R0(I)[0..39]	{}
+0015 ( 318)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1664..1703]	{}
+0016 ( 318)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1704..1743], R5(CF)[0..255]	{}
+0017 ( 319)		LEAI	R2(P)+0 {V(-1 'ABS')} [55936..55975]	<-	R1(P)+0 {V(-1 'ABS')} [1664..1703], CI:54272	{}
+0018 ( 319)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55936..55975]	{}
+0019 ( 319)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55976..56015], R5(CF)[0..255]	{}
+001a ( 318)		LEAA	R3(P)[1624..1663]	<-	V(-1 '')+1624 , R0(I)[0..39]	{}
+001b ( 318)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1624..1663]	{}
+001c ( 318)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1664..1703], R5(CF)[0..255]	{}
+001d ( 319)		LEAI	R1(P)+0 {V(-1 'ABS')} [55896..55935]	<-	R3(P)+0 {V(-1 'ABS')} [1624..1663], CI:54272	{}
+001e ( 319)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [55896..55935]	{}
+001f ( 319)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55936..55975], R5(CF)[0..255]	{}
+0020 ( 318)		LEAA	R2(P)[1584..1623]	<-	V(-1 '')+1584 , R0(I)[0..39]	{}
+0021 ( 318)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1584..1623]	{}
+0022 ( 318)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1624..1663], R5(CF)[0..255]	{}
+0023 ( 319)		LEAI	R3(P)+0 {V(-1 'ABS')} [55856..55895]	<-	R2(P)+0 {V(-1 'ABS')} [1584..1623], CI:54272	{}
+0024 ( 319)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [55856..55895]	{}
+0025 ( 319)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55896..55935], R5(CF)[0..255]	{}
+0026 ( 318)		LEAA	R1(P)[1544..1583]	<-	V(-1 '')+1544 , R0(I)[0..39]	{}
+0027 ( 318)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1544..1583]	{}
+0028 ( 318)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1584..1623], R5(CF)[0..255]	{}
+0029 ( 319)		LEAI	R2(P)+0 {V(-1 'ABS')} [55816..55855]	<-	R1(P)+0 {V(-1 'ABS')} [1544..1583], CI:54272	{}
+002a ( 319)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [55816..55855]	{}
+002b ( 319)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [55856..55895], R5(CF)[0..255]	{}
+002c ( 323)		LEAG	R3(P)[0..39]	<-	V(15 'tmp0' A)+0 , R0(I)[0..39]	{}
+002d ( 323)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0 {V(15 'tmp0' A)} [0..39]	{}
+002e ( 323)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1544..1583], R3(CF)[0..255]	{}
+002f ( 324)		LEAG	R0(P)[0..39]	<-	V(16 'tmp1' A)+0 , R0(IF)[0..39]	{}
+0030 ( 324)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(16 'tmp1' A)} [0..39]	{}
+0031 ( 324)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55816..55855], R0(CF)[0..255]	{}
+0032 ( 313)		BINOP1	R4(C)[1..40]	<-	R4(CF)[0..39], CI:1	{}
+0033 ( 313)		RELOP28	R0(B)[0..1]	<-	R4(C)[1..40], CC:40	{}
+0034 ( 313)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 9
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 328)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0001 ( 332)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 332)		CONV37	R0(I)[0..39]	<-	R4(C)[0..39]	{}
+0001 ( 332)		LEAA	R1(P)[1944..1983]	<-	V(-1 '')+1944 , R0(I)[0..39]	{}
+0002 ( 332)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1944..1983]	{}
+0003 ( 332)		STOREI1		<-	R1(P)+40 {V(-1 'ABS')} [1944..1983], R2(CF)[0..255]	{}
+0004 ( 333)		LEAI	R2(P)+0 {V(-1 'ABS')} [56216..56255]	<-	R1(P)+0 {V(-1 'ABS')} [1944..1983], CI:54272	{}
+0005 ( 333)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [56216..56255]	{}
+0006 ( 333)		LEAA	R3(P)[56256..56295]	<-	V(-1 '')+56256 , R0(I)[0..39]	{}
+0007 ( 333)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [56256..56295], R5(CF)[0..255]	{}
+0008 ( 332)		LEAA	R3(P)[1904..1943]	<-	V(-1 '')+1904 , R0(I)[0..39]	{}
+0009 ( 332)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [1904..1943]	{}
+000a ( 332)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [1944..1983], R5(CF)[0..255]	{}
+000b ( 333)		LEAI	R1(P)+0 {V(-1 'ABS')} [56176..56215]	<-	R3(P)+0 {V(-1 'ABS')} [1904..1943], CI:54272	{}
+000c ( 333)		LOADI1	R5(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [56176..56215]	{}
+000d ( 333)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [56216..56255], R5(CF)[0..255]	{}
+000e ( 332)		LEAA	R2(P)[1864..1903]	<-	V(-1 '')+1864 , R0(I)[0..39]	{}
+000f ( 332)		LOADI1	R5(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1864..1903]	{}
+0010 ( 332)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [1904..1943], R5(CF)[0..255]	{}
+0011 ( 333)		LEAI	R3(P)+0 {V(-1 'ABS')} [56136..56175]	<-	R2(P)+0 {V(-1 'ABS')} [1864..1903], CI:54272	{}
+0012 ( 333)		LOADI1	R5(C)[0..255]	<-	R3(P)+0 {V(-1 'ABS')} [56136..56175]	{}
+0013 ( 333)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [56176..56215], R5(CF)[0..255]	{}
+0014 ( 337)		LEAG	R1(P)[0..39]	<-	V(17 'tmp2' A)+0 , R0(I)[0..39]	{}
+0015 ( 337)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(17 'tmp2' A)} [0..39]	{}
+0016 ( 337)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1864..1903], R1(CF)[0..255]	{}
+0017 ( 338)		LEAG	R0(P)[0..39]	<-	V(18 'tmp3' A)+0 , R0(IF)[0..39]	{}
+0018 ( 338)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(18 'tmp3' A)} [0..39]	{}
+0019 ( 338)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [56136..56175], R0(CF)[0..255]	{}
+001a ( 328)		BINOP1	R4(C)[1..40]	<-	R4(CF)[0..39], CI:1	{}
+001b ( 328)		RELOP28	R0(B)[0..1]	<-	R4(C)[1..40], CC:40	{}
+001c ( 328)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 10
+		==> 12
+L12: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 11
+		==> 12
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 343)		STOREA1		<-	V(-1 '')+53265 , CC:18	{V}
+0001 (  70)		JUMP		<-		{}
+		==> 13
+L13: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 13
+		==> 15
+L15: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 14
+		==> 15
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/cgrid8way.c
+0000 ( 348)		STOREA1		<-	V(-1 '')+53265 , CC:20	{V}
+0001 ( 349)		RET		<-		{}

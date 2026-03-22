@@ -1,0 +1,149 @@
+sections
+0880 - 1d8c : DATA, code
+1d8c - 1de9 : DATA, data
+1de9 - 1fc8 : BSS, bss
+1fc8 - 9000 : HEAP, heap
+9000 - 9fb4 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9fdb - a000 : SSTACK, sstack
+9fdb - 9fdb : SSTACK, mmap_trampoline@stack
+9fdb - 9fdb : SSTACK, bm_init@stack
+9fdb - 9fdb : SSTACK, bm_alloc@stack
+9fdb - 9fdb : SSTACK, memset@stack
+9fdb - 9fdb : SSTACK, vic_setmode@stack
+9fdb - 9fdb : SSTACK, bm_fill@stack
+9fdb - 9fdb : SSTACK, bm_usqrt@stack
+9fdb - 9fdb : SSTACK, bm_scan_fill@stack
+9fd2 - 9fdb : SSTACK, bm_circle_fill@stack
+9fdb - 9fdb : SSTACK, builddop_src@stack
+9fdb - 9fdb : SSTACK, builddop_op@stack
+9fdb - 9fdb : SSTACK, builddop@stack
+9fd5 - 9fdb : SSTACK, bmu_bitblit@stack
+9fd5 - 9fd5 : SSTACK, bm_bitblit@stack
+9fdb - 9fdb : SSTACK, krnio_setnam@stack
+9fdb - 9fdb : SSTACK, krnio_open@stack
+9fdb - 9fdb : SSTACK, krnio_chkout@stack
+9fdb - 9fdb : SSTACK, krnio_chrout@stack
+9fdb - 9fdb : SSTACK, krnio_clrchn@stack
+9fdb - 9fdb : SSTACK, krnio_write@stack
+9fdb - 9fdb : SSTACK, krnio_close@stack
+9fb4 - 9fd2 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 1de9, 1748, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0b32 : main, NATIVE_CODE:code
+0b32 - 0b47 : mmap_trampoline, NATIVE_CODE:code
+0b47 - 0b5e : NMITrampoline, NATIVE_CODE:code
+0b5e - 0b65 : DoneTrampoline, NATIVE_CODE:code
+0b65 - 0b7c : IRQTrampoline, NATIVE_CODE:code
+0b7c - 0bae : bm_init, NATIVE_CODE:code
+0bae - 0c27 : bm_alloc, NATIVE_CODE:code
+0c27 - 0c4b : memset, NATIVE_CODE:code
+0c4b - 0c9d : vic_setmode, NATIVE_CODE:code
+0c9d - 0ca5 : *, DATA:code
+0ca5 - 0cd9 : bm_fill, NATIVE_CODE:code
+0cd9 - 0e80 : bm_circle_fill, NATIVE_CODE:code
+0e80 - 0f5f : bm_usqrt, NATIVE_CODE:code
+0f5f - 1102 : bm_scan_fill, NATIVE_CODE:code
+1102 - 110a : *, DATA:code
+110a - 128b : bm_bitblit, NATIVE_CODE:code
+128b - 163d : bmu_bitblit, NATIVE_CODE:code
+163d - 192f : builddop, NATIVE_CODE:code
+192f - 1a6f : builddop_src, NATIVE_CODE:code
+1a6f - 1b70 : builddop_op, NATIVE_CODE:code
+1b70 - 1b86 : krnio_setnam, NATIVE_CODE:code
+1b86 - 1b97 : *, DATA:code
+1b97 - 1bc5 : krnio_open, NATIVE_CODE:code
+1bc5 - 1c13 : krnio_write, NATIVE_CODE:code
+1c13 - 1c28 : krnio_chkout, NATIVE_CODE:code
+1c28 - 1c38 : krnio_chrout, NATIVE_CODE:code
+1c38 - 1c3c : krnio_clrchn, NATIVE_CODE:code
+1c3c - 1c44 : krnio_close, NATIVE_CODE:code
+1c44 - 1c7c : mul16by8, NATIVE_CODE:code
+1c7c - 1cbe : mul16, NATIVE_CODE:code
+1cbe - 1d8c : crt_malloc, NATIVE_CODE:code
+1d8c - 1d8d : spentry, DATA:data
+1d8d - 1d95 : lmask, DATA:data
+1d95 - 1d9d : rmask, DATA:data
+1d9d - 1de5 : NineShadesOfGrey, DATA:data
+1de5 - 1de9 : blitops_op, DATA:data
+1de9 - 1de9 : BSSStart, START:bss
+1de9 - 1df1 : Screen, DATA:bss
+1df1 - 1df9 : Brush, DATA:bss
+1df9 - 1dfd : HeapNode, DATA:bss
+1e00 - 1ee0 : BLIT_CODE, DATA:bss
+1ee0 - 1ef0 : krnio_pstatus, DATA:bss
+1f00 - 1fc8 : Buffer, DATA:bss
+1fc8 - 1fc8 : HeapStart, START:heap
+1fc8 - 1fc8 : BSSEnd, END:bss
+9000 - 9000 : HeapEnd, END:heap
+9fb4 - 9fb4 : StackEnd, END:stack
+9fb4 - 9fc2 : main@stack, BSS:main@stack
+9fc2 - 9fca : crr, BSS:main@stack
+9fca - 9fd2 : crb, BSS:main@stack
+9fd2 - 9fdb : bm_circle_fill@stack, BSS:bm_circle_fill@stack
+9fd5 - 9fdb : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+9fdb - a000 : sstack, STACK:sstack
+
+objects by size
+128b (03b2) : bmu_bitblit, NATIVE_CODE:code
+163d (02f2) : builddop, NATIVE_CODE:code
+0880 (02b2) : main, NATIVE_CODE:code
+0cd9 (01a7) : bm_circle_fill, NATIVE_CODE:code
+0f5f (01a3) : bm_scan_fill, NATIVE_CODE:code
+110a (0181) : bm_bitblit, NATIVE_CODE:code
+192f (0140) : builddop_src, NATIVE_CODE:code
+1a6f (0101) : builddop_op, NATIVE_CODE:code
+1e00 (00e0) : BLIT_CODE, DATA:bss
+0e80 (00df) : bm_usqrt, NATIVE_CODE:code
+1cbe (00ce) : crt_malloc, NATIVE_CODE:code
+1f00 (00c8) : Buffer, DATA:bss
+0bae (0079) : bm_alloc, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0c4b (0052) : vic_setmode, NATIVE_CODE:code
+1bc5 (004e) : krnio_write, NATIVE_CODE:code
+1d9d (0048) : NineShadesOfGrey, DATA:data
+1c7c (0042) : mul16, NATIVE_CODE:code
+1c44 (0038) : mul16by8, NATIVE_CODE:code
+0ca5 (0034) : bm_fill, NATIVE_CODE:code
+0b7c (0032) : bm_init, NATIVE_CODE:code
+1b97 (002e) : krnio_open, NATIVE_CODE:code
+9fdb (0025) : sstack, STACK:sstack
+0c27 (0024) : memset, NATIVE_CODE:code
+0b47 (0017) : NMITrampoline, NATIVE_CODE:code
+0b65 (0017) : IRQTrampoline, NATIVE_CODE:code
+1b70 (0016) : krnio_setnam, NATIVE_CODE:code
+0b32 (0015) : mmap_trampoline, NATIVE_CODE:code
+1c13 (0015) : krnio_chkout, NATIVE_CODE:code
+1c28 (0010) : krnio_chrout, NATIVE_CODE:code
+1ee0 (0010) : krnio_pstatus, DATA:bss
+9fb4 (000e) : main@stack, BSS:main@stack
+9fd2 (0009) : bm_circle_fill@stack, BSS:bm_circle_fill@stack
+1c3c (0008) : krnio_close, NATIVE_CODE:code
+1d8d (0008) : lmask, DATA:data
+1d95 (0008) : rmask, DATA:data
+1de9 (0008) : Screen, DATA:bss
+1df1 (0008) : Brush, DATA:bss
+9fc2 (0008) : crr, BSS:main@stack
+9fca (0008) : crb, BSS:main@stack
+0b5e (0007) : DoneTrampoline, NATIVE_CODE:code
+9fd5 (0006) : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+1c38 (0004) : krnio_clrchn, NATIVE_CODE:code
+1de5 (0004) : blitops_op, DATA:data
+1df9 (0004) : HeapNode, DATA:bss
+1d8c (0001) : spentry, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+1de9 (0000) : BSSStart, START:bss
+1fc8 (0000) : HeapStart, START:heap
+1fc8 (0000) : BSSEnd, END:bss
+9000 (0000) : HeapEnd, END:heap
+9fb4 (0000) : StackEnd, END:stack

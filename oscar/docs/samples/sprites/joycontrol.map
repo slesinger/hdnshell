@@ -1,0 +1,58 @@
+sections
+0880 - 0a32 : DATA, code
+0a32 - 0aeb : DATA, data
+0aeb - 0af7 : BSS, bss
+0af8 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, spr_init@stack
+a000 - a000 : SSTACK, spr_set@stack
+a000 - a000 : SSTACK, joy_poll@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0aeb, 0277, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0968 : main, NATIVE_CODE:code
+0968 - 09f2 : spr_set, NATIVE_CODE:code
+09f2 - 0a32 : joy_poll, NATIVE_CODE:code
+0a32 - 0a33 : spentry, DATA:data
+0a33 - 0ab3 : spdata, DATA:data
+0ab3 - 0aeb : bitshift, DATA:data
+0aeb - 0aed : vspriteScreen, DATA:bss
+0aeb - 0aeb : BSSStart, START:bss
+0aed - 0aef : spx, DATA:bss
+0aef - 0af1 : spy, DATA:bss
+0af1 - 0af3 : joyy, DATA:bss
+0af3 - 0af5 : joyx, DATA:bss
+0af5 - 0af7 : joyb, DATA:bss
+0af7 - 0af7 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0880 (00e8) : main, NATIVE_CODE:code
+0968 (008a) : spr_set, NATIVE_CODE:code
+0a33 (0080) : spdata, DATA:data
+0801 (0052) : startup, NATIVE_CODE:startup
+09f2 (0040) : joy_poll, NATIVE_CODE:code
+0ab3 (0038) : bitshift, DATA:data
+0aeb (0002) : vspriteScreen, DATA:bss
+0aed (0002) : spx, DATA:bss
+0aef (0002) : spy, DATA:bss
+0af1 (0002) : joyy, DATA:bss
+0af3 (0002) : joyx, DATA:bss
+0af5 (0002) : joyb, DATA:bss
+0a32 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+0aeb (0000) : BSSStart, START:bss
+0af7 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

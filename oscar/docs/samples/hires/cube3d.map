@@ -1,0 +1,145 @@
+sections
+0880 - 23c6 : DATA, code
+23c6 - 2438 : DATA, data
+2438 - 25e0 : BSS, bss
+25e0 - 9000 : HEAP, heap
+9000 - 9fc3 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9ff2 - a000 : SSTACK, sstack
+9ff2 - 9ff2 : SSTACK, mmap_trampoline@stack
+9ff2 - 9ff2 : SSTACK, memset@stack
+9ff2 - 9ff2 : SSTACK, vic_setmode@stack
+9ff2 - 9ff2 : SSTACK, bm_init@stack
+9ff2 - 9ff2 : SSTACK, init@stack
+9ff2 - 9ff2 : SSTACK, sin@stack
+9ff2 - 9ff2 : SSTACK, cos@stack
+9ff2 - 9ff2 : SSTACK, f12mat3_set_rotate_x@stack
+9ff2 - 9ff2 : SSTACK, f12mat3_set_rotate_y@stack
+9ff2 - 9ff2 : SSTACK, lmul4f12s@stack
+9ff2 - 9ff2 : SSTACK, f12mat3_mmul@stack
+9fec - 9ff2 : SSTACK, f12vec3_mmul@stack
+9ff2 - 9ff2 : SSTACK, lmuldiv16s@stack
+9ff2 - 9ff2 : SSTACK, bmu_line@stack
+9fe4 - 9ff2 : SSTACK, bm_line@stack
+9fdc - 9fe4 : SSTACK, xor2Cube@stack
+9fe2 - 9fe4 : SSTACK, xorCube@stack
+9ff2 - 9ff2 : SSTACK, done@stack
+9fc3 - 9fdc : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 2438, 1d60, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0a36 : main, NATIVE_CODE:code
+0a36 - 0aa2 : init, NATIVE_CODE:code
+0aa2 - 0ab7 : mmap_trampoline, NATIVE_CODE:code
+0ab7 - 0ace : NMITrampoline, NATIVE_CODE:code
+0ace - 0ad5 : DoneTrampoline, NATIVE_CODE:code
+0ad5 - 0aec : IRQTrampoline, NATIVE_CODE:code
+0aec - 0b10 : memset, NATIVE_CODE:code
+0b10 - 0b62 : vic_setmode, NATIVE_CODE:code
+0b62 - 0b94 : bm_init, NATIVE_CODE:code
+0b94 - 0cb1 : f12mat3_set_rotate_x, NATIVE_CODE:code
+0cb1 - 0e48 : sin, NATIVE_CODE:code
+0e48 - 0f67 : f12mat3_set_rotate_y, NATIVE_CODE:code
+0f67 - 10e5 : f12mat3_mmul, NATIVE_CODE:code
+10e5 - 1157 : lmul4f12s, NATIVE_CODE:code
+1157 - 11f0 : f12vec3_mmul, NATIVE_CODE:code
+11f0 - 12af : lmuldiv16s, NATIVE_CODE:code
+12af - 1514 : xor2Cube, NATIVE_CODE:code
+1514 - 198f : bm_line, NATIVE_CODE:code
+198f - 1ea5 : bmu_line, NATIVE_CODE:code
+1ea5 - 1ff0 : xorCube, NATIVE_CODE:code
+1ff0 - 2007 : done, NATIVE_CODE:code
+2007 - 203f : mul16by8, NATIVE_CODE:code
+203f - 2084 : freg, NATIVE_CODE:code
+2084 - 2171 : faddsub, NATIVE_CODE:code
+2171 - 220b : crt_fmul, NATIVE_CODE:code
+220b - 2239 : crt_fmul8, NATIVE_CODE:code
+2239 - 2333 : fround, NATIVE_CODE:code
+2333 - 237f : f32_to_i16, NATIVE_CODE:code
+237f - 239d : sint16_to_float, NATIVE_CODE:code
+239d - 23c6 : uint16_to_float, NATIVE_CODE:code
+23c6 - 23c7 : spentry, DATA:data
+23c7 - 23cf : cr, DATA:data
+23cf - 23d7 : ubitmask, DATA:data
+23d7 - 23df : Screen, DATA:bss
+23df - 23f1 : rmat, DATA:bss
+2400 - 2438 : bitshift, DATA:data
+2438 - 2468 : corners, DATA:bss
+2438 - 2438 : BSSStart, START:bss
+2468 - 247a : tmat, DATA:bss
+247a - 249a : tcorners, DATA:bss
+249a - 24ba : pcorners, DATA:bss
+2500 - 25e0 : BLIT_CODE, DATA:bss
+25e0 - 25e0 : BSSEnd, END:bss
+9fc3 - 9fc3 : StackEnd, END:stack
+9fc3 - 9fd6 : main@stack, BSS:main@stack
+9fd6 - 9fdc : vd, BSS:main@stack
+9fdc - 9fe4 : xor2Cube@stack, BSS:xor2Cube@stack
+9fe2 - 9fe4 : xorCube@stack, BSS:xorCube@stack
+9fe4 - 9ff2 : bm_line@stack, BSS:bm_line@stack
+9fec - 9ff2 : vt, BSS:f12vec3_mmul@stack
+9ff2 - a000 : sstack, STACK:sstack
+
+objects by size
+198f (0516) : bmu_line, NATIVE_CODE:code
+1514 (047b) : bm_line, NATIVE_CODE:code
+12af (0265) : xor2Cube, NATIVE_CODE:code
+0880 (01b6) : main, NATIVE_CODE:code
+0cb1 (0197) : sin, NATIVE_CODE:code
+0f67 (017e) : f12mat3_mmul, NATIVE_CODE:code
+1ea5 (014b) : xorCube, NATIVE_CODE:code
+0e48 (011f) : f12mat3_set_rotate_y, NATIVE_CODE:code
+0b94 (011d) : f12mat3_set_rotate_x, NATIVE_CODE:code
+2239 (00fa) : fround, NATIVE_CODE:code
+2084 (00ed) : faddsub, NATIVE_CODE:code
+2500 (00e0) : BLIT_CODE, DATA:bss
+11f0 (00bf) : lmuldiv16s, NATIVE_CODE:code
+2171 (009a) : crt_fmul, NATIVE_CODE:code
+1157 (0099) : f12vec3_mmul, NATIVE_CODE:code
+10e5 (0072) : lmul4f12s, NATIVE_CODE:code
+0a36 (006c) : init, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0b10 (0052) : vic_setmode, NATIVE_CODE:code
+2333 (004c) : f32_to_i16, NATIVE_CODE:code
+203f (0045) : freg, NATIVE_CODE:code
+2007 (0038) : mul16by8, NATIVE_CODE:code
+2400 (0038) : bitshift, DATA:data
+0b62 (0032) : bm_init, NATIVE_CODE:code
+2438 (0030) : corners, DATA:bss
+220b (002e) : crt_fmul8, NATIVE_CODE:code
+239d (0029) : uint16_to_float, NATIVE_CODE:code
+0aec (0024) : memset, NATIVE_CODE:code
+247a (0020) : tcorners, DATA:bss
+249a (0020) : pcorners, DATA:bss
+237f (001e) : sint16_to_float, NATIVE_CODE:code
+0ab7 (0017) : NMITrampoline, NATIVE_CODE:code
+0ad5 (0017) : IRQTrampoline, NATIVE_CODE:code
+1ff0 (0017) : done, NATIVE_CODE:code
+0aa2 (0015) : mmap_trampoline, NATIVE_CODE:code
+9fc3 (0013) : main@stack, BSS:main@stack
+23df (0012) : rmat, DATA:bss
+2468 (0012) : tmat, DATA:bss
+9fe4 (000e) : bm_line@stack, BSS:bm_line@stack
+9ff2 (000e) : sstack, STACK:sstack
+23c7 (0008) : cr, DATA:data
+23cf (0008) : ubitmask, DATA:data
+23d7 (0008) : Screen, DATA:bss
+9fdc (0008) : xor2Cube@stack, BSS:xor2Cube@stack
+0ace (0007) : DoneTrampoline, NATIVE_CODE:code
+9fd6 (0006) : vd, BSS:main@stack
+9fec (0006) : vt, BSS:f12vec3_mmul@stack
+9fe2 (0002) : xorCube@stack, BSS:xorCube@stack
+23c6 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+2438 (0000) : BSSStart, START:bss
+25e0 (0000) : BSSEnd, END:bss
+9fc3 (0000) : StackEnd, END:stack

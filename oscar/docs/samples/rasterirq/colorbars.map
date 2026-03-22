@@ -1,0 +1,69 @@
+sections
+0880 - 0ad0 : DATA, code
+0ad0 - 0ad1 : DATA, data
+0ad1 - 0d11 : BSS, bss
+0d18 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, rirq_init_tables@stack
+a000 - a000 : SSTACK, rirq_init_kernal@stack
+a000 - a000 : SSTACK, rirq_init_io@stack
+a000 - a000 : SSTACK, rirq_build@stack
+a000 - a000 : SSTACK, rirq_sort@stack
+a000 - a000 : SSTACK, rirq_start@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0ad1, 0491, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 08f5 : main, NATIVE_CODE:code
+08f5 - 0916 : rirq_init_kernal, NATIVE_CODE:code
+0916 - 0934 : rirq_init_tables, NATIVE_CODE:code
+0934 - 0991 : rirq_isr_kernal_io, NATIVE_CODE:code
+0991 - 0a35 : rirq_build, NATIVE_CODE:code
+0a35 - 0abe : rirq_sort, NATIVE_CODE:code
+0abe - 0ad0 : rirq_start, NATIVE_CODE:code
+0ad0 - 0ad1 : spentry, DATA:data
+0ad1 - 0ae2 : rasterIRQRows, DATA:bss
+0ad1 - 0ad1 : BSSStart, START:bss
+0ae2 - 0af3 : rasterIRQIndex, DATA:bss
+0af3 - 0af4 : nextIRQ, DATA:bss
+0af4 - 0af5 : rirq_count, DATA:bss
+0b00 - 0b11 : rasterIRQNext, DATA:bss
+0b11 - 0b21 : rasterIRQLow, DATA:bss
+0b21 - 0b31 : rasterIRQHigh, DATA:bss
+0b31 - 0d11 : bars, DATA:bss
+0d11 - 0d11 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0b31 (01e0) : bars, DATA:bss
+0991 (00a4) : rirq_build, NATIVE_CODE:code
+0a35 (0089) : rirq_sort, NATIVE_CODE:code
+0880 (0075) : main, NATIVE_CODE:code
+0934 (005d) : rirq_isr_kernal_io, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+08f5 (0021) : rirq_init_kernal, NATIVE_CODE:code
+0916 (001e) : rirq_init_tables, NATIVE_CODE:code
+0abe (0012) : rirq_start, NATIVE_CODE:code
+0ad1 (0011) : rasterIRQRows, DATA:bss
+0ae2 (0011) : rasterIRQIndex, DATA:bss
+0b00 (0011) : rasterIRQNext, DATA:bss
+0b11 (0010) : rasterIRQLow, DATA:bss
+0b21 (0010) : rasterIRQHigh, DATA:bss
+0ad0 (0001) : spentry, DATA:data
+0af3 (0001) : nextIRQ, DATA:bss
+0af4 (0001) : rirq_count, DATA:bss
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0ad1 (0000) : BSSStart, START:bss
+0d11 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

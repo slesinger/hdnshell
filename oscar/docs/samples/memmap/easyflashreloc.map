@@ -1,0 +1,154 @@
+sections
+0900 - 0bbe : DATA, code
+0bbe - 0bf8 : DATA, data
+0bf8 - 0c0c : BSS, bss
+0c10 - 7000 : HEAP, heap
+7000 - 7fff : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+8004 - 8039 : DATA, bcode1
+8000 - 8004 : DATA, bdata1
+8004 - 803a : DATA, bcode2
+8000 - 8004 : DATA, bdata2
+8004 - 8039 : DATA, bcode3
+8000 - 8004 : DATA, bdata3
+8004 - 803a : DATA, bcode4
+8000 - 8004 : DATA, bdata4
+8004 - 8039 : DATA, bcode5
+8000 - 8004 : DATA, bdata5
+8004 - 8039 : DATA, bcode6
+8000 - 8004 : DATA, bdata6
+0800 - 08d6 : DATA, startup
+7fff - 8000 : SSTACK, sstack
+7fff - 7fff : SSTACK, cia_init@stack
+7fff - 7fff : SSTACK, vic_setmode@stack
+7fff - 7fff : SSTACK, cwin_init@stack
+7fff - 7fff : SSTACK, cwin_fill@stack
+7fff - 7fff : SSTACK, cwin_clear@stack
+7fff - 7fff : SSTACK, memcpy@stack
+7fff - 7fff : SSTACK, callbank@stack
+7fff - 7fff : SSTACK, cwin_putat_string@stack
+7fff - 7fff : SSTACK, cwin_put_string@stack
+7fff - 7fff : SSTACK, print1@stack
+7fff - 7fff : SSTACK, cwin_cursor_newline@stack
+7fff - 7fff : SSTACK, done1@stack
+7fff - 7fff : SSTACK, print2@stack
+7fff - 7fff : SSTACK, done2@stack
+7fff - 7fff : SSTACK, print3@stack
+7fff - 7fff : SSTACK, done3@stack
+7fff - 7fff : SSTACK, print4@stack
+7fff - 7fff : SSTACK, done4@stack
+7fff - 7fff : SSTACK, print5@stack
+7fff - 7fff : SSTACK, done5@stack
+7fff - 7fff : SSTACK, print6@stack
+7fff - 7fff : SSTACK, done6@stack
+7fff - 7fff : SSTACK, main@stack
+
+regions
+0900 - 7000 : 0bf8, 030c, main
+8000 - 9000 : 8039, 0039, bank1
+8000 - 9000 : 803a, 003a, bank2
+8000 - 9000 : 8039, 0039, bank3
+8000 - 9000 : 803a, 003a, bank4
+8000 - 9000 : 8039, 0039, bank5
+8000 - 9000 : 8039, 0039, bank6
+00f7 - 00ff : 0000, 0000, zeropage
+0800 - 0900 : 08d6, 00d6, startup
+
+objects
+--:00f7 - 00f7 : ZeroStart, START:zeropage
+--:00f7 - 00f7 : ZeroEnd, END:zeropage
+--:0800 - 08d6 : startup, NATIVE_CODE:startup
+--:0900 - 0900 : CodeStart, START:code
+--:0900 - 0979 : main, NATIVE_CODE:code
+--:0979 - 09b0 : cia_init, NATIVE_CODE:code
+--:09b0 - 0a02 : vic_setmode, NATIVE_CODE:code
+--:0a02 - 0a51 : cwin_init, NATIVE_CODE:code
+--:0a51 - 0aa4 : cwin_fill, NATIVE_CODE:code
+--:0aa4 - 0adb : callbank, NATIVE_CODE:code
+--:0adb - 0b0a : memcpy, NATIVE_CODE:code
+--:0b0a - 0b4a : cwin_put_string, NATIVE_CODE:code
+--:0b4a - 0b98 : cwin_putat_string, NATIVE_CODE:code
+--:0b98 - 0bbb : cwin_cursor_newline, NATIVE_CODE:code
+--:0bbb - 0bbe : bcexec, NATIVE_CODE:code
+--:0bbe - 0bf0 : mul40, DATA:data
+--:0bf0 - 0bf8 : p2smap, DATA:data
+--:0bf8 - 0bf8 : BSSStart, START:bss
+--:0c00 - 0c0c : cw, DATA:bss
+--:0c0c - 0c0c : BSSEnd, END:bss
+--:7fff - 8000 : sstack, STACK:sstack
+--:7fff - 7fff : StackEnd, END:stack
+01:8000 - 8004 : entry1, DATA:bdata1
+01:8004 - 801b : print1, NATIVE_CODE:bcode1
+01:801b - 802e : *, DATA:bcode1
+01:802e - 8039 : done1, NATIVE_CODE:bcode1
+02:8000 - 8004 : entry2, DATA:bdata2
+02:8004 - 801b : print2, NATIVE_CODE:bcode2
+02:801b - 802f : *, DATA:bcode2
+02:802f - 803a : done2, NATIVE_CODE:bcode2
+03:8000 - 8004 : entry3, DATA:bdata3
+03:8004 - 801b : print3, NATIVE_CODE:bcode3
+03:801b - 802e : *, DATA:bcode3
+03:802e - 8039 : done3, NATIVE_CODE:bcode3
+04:8000 - 8004 : entry4, DATA:bdata4
+04:8004 - 801b : print4, NATIVE_CODE:bcode4
+04:801b - 802f : *, DATA:bcode4
+04:802f - 803a : done4, NATIVE_CODE:bcode4
+05:8000 - 8004 : entry5, DATA:bdata5
+05:8004 - 801b : print5, NATIVE_CODE:bcode5
+05:801b - 802e : *, DATA:bcode5
+05:802e - 8039 : done5, NATIVE_CODE:bcode5
+06:8000 - 8004 : entry6, DATA:bdata6
+06:8004 - 801b : print6, NATIVE_CODE:bcode6
+06:801b - 802e : *, DATA:bcode6
+06:802e - 8039 : done6, NATIVE_CODE:bcode6
+
+banks
+00 : 8000 .. 84d5 (04d5)
+01 : 8000 .. 8039 (0039)
+02 : 8000 .. 803a (003a)
+03 : 8000 .. 8039 (0039)
+04 : 8000 .. 803a (003a)
+05 : 8000 .. 8039 (0039)
+06 : 8000 .. 8039 (0039)
+
+objects by size
+--:0800 (00d6) : startup, NATIVE_CODE:startup
+--:0900 (0079) : main, NATIVE_CODE:code
+--:0a51 (0053) : cwin_fill, NATIVE_CODE:code
+--:09b0 (0052) : vic_setmode, NATIVE_CODE:code
+--:0a02 (004f) : cwin_init, NATIVE_CODE:code
+--:0b4a (004e) : cwin_putat_string, NATIVE_CODE:code
+--:0b0a (0040) : cwin_put_string, NATIVE_CODE:code
+--:0979 (0037) : cia_init, NATIVE_CODE:code
+--:0aa4 (0037) : callbank, NATIVE_CODE:code
+--:0bbe (0032) : mul40, DATA:data
+--:0adb (002f) : memcpy, NATIVE_CODE:code
+--:0b98 (0023) : cwin_cursor_newline, NATIVE_CODE:code
+01:8004 (0017) : print1, NATIVE_CODE:bcode1
+02:8004 (0017) : print2, NATIVE_CODE:bcode2
+03:8004 (0017) : print3, NATIVE_CODE:bcode3
+04:8004 (0017) : print4, NATIVE_CODE:bcode4
+05:8004 (0017) : print5, NATIVE_CODE:bcode5
+06:8004 (0017) : print6, NATIVE_CODE:bcode6
+--:0c00 (000c) : cw, DATA:bss
+01:802e (000b) : done1, NATIVE_CODE:bcode1
+02:802f (000b) : done2, NATIVE_CODE:bcode2
+03:802e (000b) : done3, NATIVE_CODE:bcode3
+04:802f (000b) : done4, NATIVE_CODE:bcode4
+05:802e (000b) : done5, NATIVE_CODE:bcode5
+06:802e (000b) : done6, NATIVE_CODE:bcode6
+--:0bf0 (0008) : p2smap, DATA:data
+01:8000 (0004) : entry1, DATA:bdata1
+02:8000 (0004) : entry2, DATA:bdata2
+03:8000 (0004) : entry3, DATA:bdata3
+04:8000 (0004) : entry4, DATA:bdata4
+05:8000 (0004) : entry5, DATA:bdata5
+06:8000 (0004) : entry6, DATA:bdata6
+--:0bbb (0003) : bcexec, NATIVE_CODE:code
+--:7fff (0001) : sstack, STACK:sstack
+--:00f7 (0000) : ZeroStart, START:zeropage
+--:00f7 (0000) : ZeroEnd, END:zeropage
+--:0900 (0000) : CodeStart, START:code
+--:0bf8 (0000) : BSSStart, START:bss
+--:0c0c (0000) : BSSEnd, END:bss
+--:7fff (0000) : StackEnd, END:stack

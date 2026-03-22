@@ -1,0 +1,172 @@
+sections
+0880 - 1f80 : DATA, code
+1f80 - 2090 : DATA, data
+2090 - 21e0 : BSS, bss
+21e0 - c000 : HEAP, heap
+c000 - cfe3 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+cff0 - d000 : SSTACK, sstack
+cff0 - cff0 : SSTACK, mmap_trampoline@stack
+cff0 - cff0 : SSTACK, cia_init@stack
+cff0 - cff0 : SSTACK, memset@stack
+cff0 - cff0 : SSTACK, oscar_expand_lzo@stack
+cff0 - cff0 : SSTACK, vic_setmode@stack
+cff0 - cff0 : SSTACK, mouse_arm@stack
+cff0 - cff0 : SSTACK, mouse_poll@stack
+cff0 - cff0 : SSTACK, mouse_init@stack
+cff0 - cff0 : SSTACK, bm_init@stack
+cff0 - cff0 : SSTACK, init@stack
+cff0 - cff0 : SSTACK, joy_poll@stack
+cff0 - cff0 : SSTACK, mouse_move@stack
+cff0 - cff0 : SSTACK, bm_usqrt@stack
+cff0 - cff0 : SSTACK, bm_scan_fill@stack
+cfe8 - cff0 : SSTACK, bmmc_circle_fill@stack
+cff0 - cff0 : SSTACK, keyb_poll@stack
+cff0 - cff0 : SSTACK, builddop_src@stack
+cff0 - cff0 : SSTACK, builddop_op@stack
+cff0 - cff0 : SSTACK, builddop@stack
+cfea - cff0 : SSTACK, bmu_bitblit@stack
+cfe5 - cff0 : SSTACK, bmmc_flood_fill@stack
+cfe3 - cfe5 : SSTACK, main@stack
+
+regions
+0880 - c000 : 2090, 1960, main
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0a1e : main, NATIVE_CODE:code
+0a1e - 0af9 : init, NATIVE_CODE:code
+0af9 - 0b0e : mmap_trampoline, NATIVE_CODE:code
+0b0e - 0b25 : NMITrampoline, NATIVE_CODE:code
+0b25 - 0b2c : DoneTrampoline, NATIVE_CODE:code
+0b2c - 0b43 : IRQTrampoline, NATIVE_CODE:code
+0b43 - 0b7d : cia_init, NATIVE_CODE:code
+0b7d - 0ba1 : memset, NATIVE_CODE:code
+0ba1 - 0c11 : oscar_expand_lzo, NATIVE_CODE:code
+0c11 - 0c63 : vic_setmode, NATIVE_CODE:code
+0c63 - 0c6b : mouse_init, NATIVE_CODE:code
+0c6b - 0c7f : mouse_arm, NATIVE_CODE:code
+0c7f - 0ce1 : mouse_poll, NATIVE_CODE:code
+0ce1 - 0d13 : bm_init, NATIVE_CODE:code
+0d13 - 0dfe : mouse_move, NATIVE_CODE:code
+0dfe - 0e3e : joy_poll, NATIVE_CODE:code
+0e3e - 1019 : bmmc_circle_fill, NATIVE_CODE:code
+1019 - 10f8 : bm_usqrt, NATIVE_CODE:code
+10f8 - 129b : bm_scan_fill, NATIVE_CODE:code
+129b - 134c : keyb_poll, NATIVE_CODE:code
+134c - 16fe : bmu_bitblit, NATIVE_CODE:code
+16fe - 19f0 : builddop, NATIVE_CODE:code
+19f0 - 1b30 : builddop_src, NATIVE_CODE:code
+1b30 - 1c31 : builddop_op, NATIVE_CODE:code
+1c31 - 1f02 : bmmc_flood_fill, NATIVE_CODE:code
+1f02 - 1f3a : mul16by8, NATIVE_CODE:code
+1f3a - 1f7c : mul16, NATIVE_CODE:code
+1f7c - 1f80 : __multab32L, DATA:code
+1f80 - 1f81 : spentry, DATA:data
+1f81 - 1fdd : MouseSpriteData, DATA:data
+1fdd - 1fe5 : lmask, DATA:data
+1fe5 - 1fed : rmask, DATA:data
+1fed - 1ff5 : scr, DATA:data
+1ff5 - 1ff9 : blitops_op, DATA:data
+1ff9 - 1ffd : cbytes, DATA:data
+1ffd - 1ffe : ciaa_pra_def, DATA:bss
+1ffe - 1fff : mouse_port, DATA:bss
+1fff - 2000 : mouse_rb, DATA:bss
+2000 - 2080 : MixedColors, DATA:data
+2080 - 2088 : ormask, DATA:data
+2088 - 2090 : andmask, DATA:data
+2090 - 2090 : BSSStart, START:bss
+2090 - 2091 : mouse_lb, DATA:bss
+2091 - 2092 : mouse_px, DATA:bss
+2092 - 2093 : mouse_dx, DATA:bss
+2093 - 2094 : mouse_py, DATA:bss
+2094 - 2095 : mouse_dy, DATA:bss
+2095 - 209d : sbm, DATA:bss
+209d - 209f : joyy, DATA:bss
+209f - 20a1 : joyx, DATA:bss
+20a1 - 20a3 : joyb, DATA:bss
+20a3 - 20a5 : mouse_x, DATA:bss
+20a5 - 20a7 : mouse_y, DATA:bss
+20a7 - 20a8 : keyb_key, DATA:bss
+20a8 - 20b0 : keyb_matrix, DATA:bss
+2100 - 21e0 : BLIT_CODE, DATA:bss
+21e0 - 21e0 : BSSEnd, END:bss
+cfe3 - cfe3 : StackEnd, END:stack
+cfe3 - cfe5 : main@stack, BSS:main@stack
+cfe5 - cff0 : bmmc_flood_fill@stack, BSS:bmmc_flood_fill@stack
+cfe8 - cff0 : bmmc_circle_fill@stack, BSS:bmmc_circle_fill@stack
+cfea - cff0 : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+cff0 - d000 : sstack, STACK:sstack
+
+objects by size
+134c (03b2) : bmu_bitblit, NATIVE_CODE:code
+16fe (02f2) : builddop, NATIVE_CODE:code
+1c31 (02d1) : bmmc_flood_fill, NATIVE_CODE:code
+0e3e (01db) : bmmc_circle_fill, NATIVE_CODE:code
+10f8 (01a3) : bm_scan_fill, NATIVE_CODE:code
+0880 (019e) : main, NATIVE_CODE:code
+19f0 (0140) : builddop_src, NATIVE_CODE:code
+1b30 (0101) : builddop_op, NATIVE_CODE:code
+0d13 (00eb) : mouse_move, NATIVE_CODE:code
+2100 (00e0) : BLIT_CODE, DATA:bss
+1019 (00df) : bm_usqrt, NATIVE_CODE:code
+0a1e (00db) : init, NATIVE_CODE:code
+129b (00b1) : keyb_poll, NATIVE_CODE:code
+2000 (0080) : MixedColors, DATA:data
+0ba1 (0070) : oscar_expand_lzo, NATIVE_CODE:code
+0c7f (0062) : mouse_poll, NATIVE_CODE:code
+1f81 (005c) : MouseSpriteData, DATA:data
+0801 (0052) : startup, NATIVE_CODE:startup
+0c11 (0052) : vic_setmode, NATIVE_CODE:code
+1f3a (0042) : mul16, NATIVE_CODE:code
+0dfe (0040) : joy_poll, NATIVE_CODE:code
+0b43 (003a) : cia_init, NATIVE_CODE:code
+1f02 (0038) : mul16by8, NATIVE_CODE:code
+0ce1 (0032) : bm_init, NATIVE_CODE:code
+0b7d (0024) : memset, NATIVE_CODE:code
+0b0e (0017) : NMITrampoline, NATIVE_CODE:code
+0b2c (0017) : IRQTrampoline, NATIVE_CODE:code
+0af9 (0015) : mmap_trampoline, NATIVE_CODE:code
+0c6b (0014) : mouse_arm, NATIVE_CODE:code
+cff0 (0010) : sstack, STACK:sstack
+cfe5 (000b) : bmmc_flood_fill@stack, BSS:bmmc_flood_fill@stack
+0c63 (0008) : mouse_init, NATIVE_CODE:code
+1fdd (0008) : lmask, DATA:data
+1fe5 (0008) : rmask, DATA:data
+1fed (0008) : scr, DATA:data
+2080 (0008) : ormask, DATA:data
+2088 (0008) : andmask, DATA:data
+2095 (0008) : sbm, DATA:bss
+20a8 (0008) : keyb_matrix, DATA:bss
+cfe8 (0008) : bmmc_circle_fill@stack, BSS:bmmc_circle_fill@stack
+0b25 (0007) : DoneTrampoline, NATIVE_CODE:code
+cfea (0006) : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+1f7c (0004) : __multab32L, DATA:code
+1ff5 (0004) : blitops_op, DATA:data
+1ff9 (0004) : cbytes, DATA:data
+209d (0002) : joyy, DATA:bss
+209f (0002) : joyx, DATA:bss
+20a1 (0002) : joyb, DATA:bss
+20a3 (0002) : mouse_x, DATA:bss
+20a5 (0002) : mouse_y, DATA:bss
+cfe3 (0002) : main@stack, BSS:main@stack
+1f80 (0001) : spentry, DATA:data
+1ffd (0001) : ciaa_pra_def, DATA:bss
+1ffe (0001) : mouse_port, DATA:bss
+1fff (0001) : mouse_rb, DATA:bss
+2090 (0001) : mouse_lb, DATA:bss
+2091 (0001) : mouse_px, DATA:bss
+2092 (0001) : mouse_dx, DATA:bss
+2093 (0001) : mouse_py, DATA:bss
+2094 (0001) : mouse_dy, DATA:bss
+20a7 (0001) : keyb_key, DATA:bss
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+2090 (0000) : BSSStart, START:bss
+21e0 (0000) : BSSEnd, END:bss
+cfe3 (0000) : StackEnd, END:stack

@@ -1,0 +1,248 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/fractals/mbhires.c:10
+$00 R0(F), $04 R1(F), $08 R2(F), $0c R3(F), $10 R4(F), $14 R5(F), $18 R6(F), $1c R7(I), $1d R8(I), $1f R9(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbhires.c
+0000 (  13)		CALLN		<-	V(1 'mmap_trampoline')+0 	{}
+0001 (  80)		STOREA1		<-	V(-1 '')+1 , CC:53	{VM}
+0002 (  19)		STOREC1		<-	V(0 '')+0 , CC:3	{}
+0003 (  19)		CONST	R0(P)[51200..51200]	<-	CA0(-1:51200 '')	{S}
+0004 (  19)		STOREC2		<-	V(1 '')+0 , R0(PF)+0 {V(-1 'ABS')} [51200..51200]	{}
+0005 (  19)		CONST	R0(P)[57344..57344]	<-	CA0(-1:57344 '')	{S}
+0006 (  19)		STOREC2		<-	V(3 '')+0 , R0(P)+0 {V(-1 'ABS')} [57344..57344]	{}
+0007 (  19)		CALLN		<-	V(2 'vic_setmode')+0 	{}
+0008 (  22)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(-1 'ABS')} [57344..57344]	{}
+0009 (  22)		STOREC2		<-	V(2 '')+0 , CI:0	{}
+000a (  22)		STOREC2		<-	V(4 '')+0 , CI:8000	{}
+000b (  22)		CALLN		<-	V(3 'memset')+0 	{}
+000c (  23)		FILLA1000		<-	V(-1 '')+51200 , CC:16	{}
+000d (  28)		CONST	R7(I)[0..0]	<-	CI:0	{}
+000e (  35)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbhires.c
+0000 (  35)		CONV30	R0(F)	<-	R7(I)[0..199]	{}
+0001 (  35)		BINOP3	R0(F)	<-	R0(FF), CF:0.010000 (3c23d70a)	{}
+0002 (  35)		BINOP2	R0(F)	<-	R0(FF), CF:1.000000 (3f800000)	{}
+0003 (  30)		CONST	R8(I)[0..0]	<-	CI:0	{}
+0004 (  34)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbhires.c
+0000 (  34)		CONV30	R1(F)	<-	R8(I)[0..319]	{}
+0001 (  34)		BINOP3	R1(F)	<-	R1(FF), CF:0.010937 (3c333333)	{}
+0002 (  34)		BINOP2	R1(F)	<-	R1(FF), CF:2.500000 (40200000)	{}
+0003 (  38)		CONST	R2(F)	<-	CF:0.000000	{}
+0004 (  38)		CONST	R3(F)	<-	CF:0.000000	{}
+0005 (  40)		CONST	R9(I)[0..0]	<-	CI:32	{}
+0006 (  42)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbhires.c
+0000 (  42)		BINOP3	R4(F)	<-	R2(F), R2(F)	{}
+0001 (  42)		BINOP3	R5(F)	<-	R3(F), R3(F)	{}
+0002 (  42)		BINOP1	R6(F)	<-	R5(F), R4(F)	{}
+0003 (  42)		RELOP23	R6(B)[0..1]	<-	R6(FF), CF:4.000000 (40800000)	{}
+0004 (  42)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbhires.c
+0000 (  51)		BINOP9	R1(I)[0..7]	<-	R8(I)[0..319], CI:7	{}
+0001 (  51)		BINOP17	R1(I)	<-	CI:128, R1(IF)[0..7]	{}
+0002 (  51)		BINOP9	R2(I)[0..192]	<-	R7(I)[0..199], CI:248	{}
+0003 (  51)		BINOP3	R2(I)[0..7680]	<-	R2(IF)[0..192], CI:40	{}
+0004 (  51)		BINOP9	R3(I)[0..7]	<-	R7(I)[0..199], CI:7	{}
+0005 (  51)		BINOP1	R2(I)[0..7687]	<-	R3(IF)[0..7], R2(IF)[0..7680]	{}
+0006 (  51)		BINOP9	R3(I)[0..312]	<-	R8(I)[0..319], CI:504	{}
+0007 (  51)		BINOP1	R2(I)[0..7999]	<-	R3(IF)[0..312], R2(IF)[0..7687]	{}
+0008 (  51)		LEAA	R2(P)[57344..65343]	<-	V(-1 '')+57344 , R2(IF)[0..7999]	{}
+0009 (  51)		LOADI1	R3(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [57344..65343]	{}
+000a (  51)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+000b (  51)		BINOP8	R1(I)	<-	R3(IF)[0..255], R1(IF)	{}
+000c (  51)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [57344..65343], R1(CF)	{}
+000d (  30)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbhires.c
+0000 (  30)		BINOP1	R8(I)[1..320]	<-	R8(IF)[0..319], CI:1	{}
+0001 (  30)		RELOP28	R1(B)[0..1]	<-	R8(I)[1..320], CI:320	{}
+0002 (  30)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbhires.c
+0000 (  28)		BINOP1	R7(I)[1..200]	<-	R7(IF)[0..199], CI:1	{}
+0001 (  28)		RELOP28	R0(B)[0..1]	<-	R7(I)[1..200], CI:200	{}
+0002 (  28)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  80)		STOREA1		<-	V(-1 '')+1 , CC:54	{VM}
+0001 (  59)		CALLN		<-	V(4 'getch')+0 	{}
+0002 (  62)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0003 (  62)		CONST	R0(P)[1024..1024]	<-	CA0(-1:1024 '')	{S}
+0004 (  62)		STOREC2		<-	V(1 '')+0 , R0(PF)+0 {V(-1 'ABS')} [1024..1024]	{}
+0005 (  62)		CONST	R0(P)[4096..4096]	<-	CA0(-1:4096 '')	{S}
+0006 (  62)		STOREC2		<-	V(3 '')+0 , R0(PF)+0 {V(-1 'ABS')} [4096..4096]	{}
+0007 (  62)		CALLN		<-	V(2 'vic_setmode')+0 	{}
+0008 (  64)		RETV		<-	CI:0	{}
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/fractals/mbhires.c
+0000 (  45)		BINOP1	R6(F)	<-	R2(FF), R2(FF)	{}
+0001 (  44)		BINOP2	R2(F)	<-	R4(FF), R5(FF)	{}
+0002 (  44)		BINOP1	R2(F)	<-	R2(FF), R1(F)	{}
+0003 (  45)		BINOP3	R3(F)	<-	R6(FF), R3(FF)	{}
+0004 (  45)		BINOP1	R3(F)	<-	R3(FF), R0(F)	{}
+0005 (  40)		BINOP1	R9(I)[0..31]	<-	R9(IF)[1..32], CI:-1	{}
+0006 (  40)		RELOP20	R4(B)[0..1]	<-	R9(I)[0..31], CI:0	{}
+0007 (  40)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 6
+		==> 4
+--------------------------------------------------------------------
+mmap_trampoline: /home/honza/projects/c64/projects/oscar64/include/c64/memmap.h:25
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  71)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'NMITrampoline')	{S}
+0001 (  71)		STOREA2		<-	V(-1 '')+65530 , R0(PF)+0 {V(-1 'NMITrampoline')} [0..0]	{}
+0002 (  72)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'IRQTrampoline')	{S}
+0003 (  72)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'IRQTrampoline')} [0..0]	{}
+0004 (  73)		RET		<-		{}
+--------------------------------------------------------------------
+vic_setmode: /home/honza/projects/c64/projects/oscar64/include/c64/vic.h:94
+$00 R0(I), $00 R1(P), $00 R2(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		LOADZ1	R0(C)[0..4]	<-	V(0 '')+0 	{S}
+0001 (  26)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0002 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  37)		STOREA1		<-	V(-1 '')+53265 , CC:91	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  38)		STOREA1		<-	V(-1 '')+53270 , CC:8	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  52)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56576 	{V}
+0001 (  52)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  52)		BINOP9	R0(I)[0..252]	<-	R0(IF)[0..255], CI:252	{}
+0003 (  52)		LOADZ2	R1(P)	<-	V(1 '')+0 	{S}
+0004 (  52)		CAST	R1(I)	<-	R1(PF)	{S}
+0005 (  52)		BINOP17	R2(I)[0..3]	<-	R1(I), CI:14	{S}
+0006 (  52)		BINOP10	R2(I)[0..3]	<-	R2(IF)[0..3], CI:3	{S}
+0007 (  52)		BINOP8	R0(I)[0..255]	<-	R2(IF)[0..3], R0(IF)[0..252]	{}
+0008 (  52)		STOREA1		<-	V(-1 '')+56576 , R0(CF)[0..255]	{V}
+0009 (  53)		BINOP17	R1(I)[0..1023]	<-	R1(IF), CI:6	{S}
+000a (  53)		BINOP9	R1(I)[0..240]	<-	R1(IF)[0..1023], CI:240	{S}
+000b (  53)		LOADZ2	R0(P)	<-	V(3 '')+0 	{S}
+000c (  53)		CAST	R0(I)	<-	R0(PF)	{S}
+000d (  53)		BINOP17	R0(I)[0..63]	<-	R0(IF), CI:10	{S}
+000e (  53)		BINOP9	R0(I)[0..14]	<-	R0(IF)[0..63], CI:14	{S}
+000f (  53)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..14], R1(IF)[0..240]	{S}
+0010 (  53)		STOREA1		<-	V(-1 '')+53272 , R0(CF)[0..255]	{V}
+0011 (  54)		RET		<-		{}
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0001 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 4
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  33)		STOREA1		<-	V(-1 '')+53265 , CC:27	{V}
+0001 (  26)		BRANCH		<-	R0(CF)[0..1]	{}
+		==> 7
+		==> 6
+L7: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  46)		STOREA1		<-	V(-1 '')+53270 , CC:24	{V}
+0001 (  47)		JUMP		<-		{}
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  41)		STOREA1		<-	V(-1 '')+53265 , CC:59	{V}
+0001 (  26)		RELOP19	R0(B)[0..1]	<-	R0(CF)[2..4], CC:3	{S}
+0002 (  26)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+--------------------------------------------------------------------
+memset: /home/honza/projects/c64/projects/oscar64/include/string.h:28
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/string.c
+0000 ( 270)		JSR		<-	V(0 '')+0 , V(4 '')+0 , V(2 '')+0 , V(-1 '')+0 	{V}
+0001 ( 270)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0002 ( 291)		RETV		<-	R0(PF)	{}
+--------------------------------------------------------------------
+getch: /home/honza/projects/c64/projects/oscar64/include/conio.h:83
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 320)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 320)		JSR	R0(L)	<-	V(-1 '')+0 	{V}
+0001 ( 323)		BRANCH		<-	R0(C)	{}
+		==> 2
+		==> 1
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 325)		STOREC1		<-	V(0 '')+0 , R0(CF)	{}
+0001 ( 325)		CALLN	R0(C)	<-	V(5 'convch')+0 	{E}
+0002 ( 325)		RETV		<-	R0(CF)	{}
+--------------------------------------------------------------------
+convch: /home/honza/projects/c64/projects/oscar64/include/conio.c:242
+$00 R0(I), $00 R1(B), $00 R2(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 246)		LOADG1	R0(C)[0..3]	<-	V(6 'giocharmap')+0 	{}
+0001 ( 246)		RELOP25	R1(B)[0..1]	<-	R0(C)[0..3], CC:1	{}
+0002 ( 246)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 248)		LOADZ1	R1(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 248)		RELOP19	R2(B)[0..1]	<-	R1(C)[0..255], CC:13	{}
+0002 ( 248)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 263)		RETV		<-	CC:10	{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 250)		RELOP25	R0(B)[0..1]	<-	R0(CF)[1..3], CC:2	{}
+0001 ( 250)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 2
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 252)		RELOP25	R0(B)[0..1]	<-	R1(C)[0..255], CC:65	{}
+0001 ( 252)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 2
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 252)		RELOP28	R0(B)[0..1]	<-	R1(C)[65..255], CC:219	{}
+0001 ( 252)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 2
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 254)		RELOP25	R0(B)[0..1]	<-	R1(C)[65..218], CC:193	{}
+0001 ( 254)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 248)		CONV37	R0(I)[193..218]	<-	R1(CF)[193..218]	{}
+0001 ( 255)		BINOP10	R0(I)[0..255]	<-	R0(IF)[193..218], CI:160	{}
+0002 ( 255)		STOREZ1		<-	V(0 '')+0 , R0(C)[0..255]	{}
+0003 ( 256)		RELOP28	R0(B)[0..1]	<-	R0(CF)[0..255], CC:123	{}
+0004 ( 256)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 2
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		LOADZ1	R1(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 256)		CONV37	R0(I)[0..255]	<-	R1(C)[0..255]	{}
+0002 ( 256)		RELOP25	R2(B)[0..1]	<-	R1(C)[0..255], CC:97	{}
+0003 ( 256)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 10
+		==> 12
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 257)		BINOP10	R0(I)[0..255]	<-	R0(IF)[0..255], CI:32	{}
+0001 ( 263)		RETV		<-	R0(CF)[0..255]	{}
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		RELOP28	R1(B)[0..1]	<-	R1(CF)[0..96], CC:91	{}
+0001 ( 256)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 10
+		==> 2
+L2: <= D-1: (7)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 263)		LOADZ1	R0(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 263)		RETV		<-	R0(CF)[0..255]	{}
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		RELOP28	R0(B)[0..1]	<-	R1(CF)[65..192], CC:123	{}
+0001 ( 256)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 2

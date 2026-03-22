@@ -1,0 +1,653 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c:178
+$00 R0(I), $05 R1(I), $07 R2(I), $09 R3(I), $0b R4(I), $0d R5(I), $02 R6(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 185)		STOREA1		<-	V(-1 '')+53281 , CC:0	{V}
+0001 ( 186)		STOREA1		<-	V(-1 '')+53280 , CC:0	{V}
+0002 ( 182)		FILLA1000		<-	V(-1 '')+1024 , CC:32	{}
+0003 ( 183)		FILLA1000		<-	V(-1 '')+55296 , CC:7	{}
+0004 ( 190)		CALLN		<-	V(1 'buildTunnel')+0 	{}
+0005 ( 194)		CONST	R1(C)[0..0]	<-	CI:0	{}
+0006 ( 196)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 196)		STOREC1		<-	V(0 '')+0 , R1(C)[0..39]	{}
+0001 ( 196)		CALLN		<-	V(3 'prepcol')+0 	{}
+0002 ( 197)		STOREC1		<-	V(0 '')+0 , R1(C)[0..39]	{}
+0003 ( 197)		CALLN		<-	V(4 'expand')+0 	{E}
+0004 ( 194)		BINOP1	R1(C)[1..40]	<-	R1(CF)[0..39], CI:1	{}
+0005 ( 194)		RELOP28	R0(B)[0..1]	<-	R1(C)[1..40], CC:40	{}
+0006 ( 194)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 201)		CONST	R1(I)[0..0]	<-	CI:0	{}
+0001 ( 201)		CONST	R2(I)[0..0]	<-	CI:0	{}
+0002 ( 201)		CONST	R3(I)[1..1]	<-	CI:1	{}
+0003 ( 202)		CONST	R4(I)[0..0]	<-	CI:0	{}
+0004 ( 207)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (4) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 207)		CALLN	R0(I)	<-	V(2 'rand')+0 	{}
+0001 ( 208)		BINOP9	R0(I)[0..127]	<-	R0(IF), CI:127	{}
+0002 ( 208)		RELOP19	R0(B)[0..1]	<-	R0(IF)[0..127], CI:0	{}
+0003 ( 208)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 209)		UNOP11	R3(I)[-1..1]	<-	R3(IF)[-1..1]	{}
+0001 ( 208)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 212)		BINOP1	R2(I)[-33..33]	<-	R2(IF)[-32..32], R3(I)[-1..1]	{}
+0001 ( 213)		RELOP23	R0(B)[0..1]	<-	R2(I)[-33..33], CI:32	{}
+0002 ( 213)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 214)		CONST	R2(I)[32..32]	<-	CI:32	{}
+0001 ( 213)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 220)		MOVE	R5(I)[-1024..1023]	<-	R4(I)[-1024..1023]	{}
+0001 ( 220)		MOVE	R0(I)[-1024..1023]	<-	R4(IF)[-1024..1023]	{}
+0002 ( 219)		BINOP1	R1(I)	<-	R1(IF), R2(I)[-32..32]	{}
+0003 ( 221)		BINOP18	R4(I)[-1024..1023]	<-	R1(I), CI:5	{}
+0004 ( 225)		RELOP24	R6(B)[0..1]	<-	R0(I)[-1024..1023], R4(I)[-1024..1023]	{}
+0005 ( 225)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 226)		BINOP1	R0(I)[-985..1062]	<-	R4(I)[-1024..1023], CI:39	{}
+0001 ( 226)		STOREC1		<-	V(0 '')+0 , R0(CF)[-985..1062]	{}
+0002 ( 225)		JUMP		<-		{}
+		==> 19
+L19: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 228)		CALLN		<-	V(3 'prepcol')+0 	{}
+0001 ( 227)		JUMP		<-		{}
+		==> 13
+L13: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 13
+		==> 15
+L15: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  64)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  64)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  64)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  64)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 14
+		==> 15
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 235)		BINOP18	R0(I)[-8192..8191]	<-	R1(I), CI:2	{}
+0001 ( 235)		BINOP2	R0(I)[-8184..8199]	<-	CI:7, R0(IF)[-8192..8191]	{}
+0002 ( 235)		BINOP9	R0(I)[0..7]	<-	R0(IF)[-8184..8199], CI:7	{}
+0003 ( 235)		STOREA1		<-	V(-1 '')+53270 , R0(CF)[0..7]	{V}
+0004 ( 238)		RELOP24	R0(B)[0..1]	<-	R5(I)[-1024..1023], R4(I)[-1024..1023]	{}
+0005 ( 238)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 16
+		==> 17
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 239)		CALLN		<-	V(5 'scrollLeft')+0 	{E}
+0001 ( 238)		JUMP		<-		{}
+		==> 3
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 240)		RELOP20	R0(B)[0..1]	<-	R5(IF)[-1024..1023], R4(I)[-1024..1023]	{}
+0001 ( 240)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 18
+		==> 3
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 241)		CALLN		<-	V(6 'scrollRight')+0 	{E}
+0001 ( 240)		JUMP		<-		{}
+		==> 3
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 227)		RELOP20	R0(B)[0..1]	<-	R0(IF)[-1024..1023], R4(I)[-1024..1023]	{}
+0001 ( 227)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 12
+		==> 13
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 228)		STOREC1		<-	V(0 '')+0 , R4(C)[-1024..1022]	{}
+0001 ( 227)		JUMP		<-		{}
+		==> 19
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 215)		RELOP24	R0(B)[0..1]	<-	R2(I)[-33..32], CI:-32	{}
+0001 ( 215)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 8
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 216)		CONST	R2(I)[-32..-32]	<-	CI:-32	{}
+0001 ( 215)		JUMP		<-		{}
+		==> 8
+--------------------------------------------------------------------
+buildTunnel: /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c:140
+$00 R0(I), $00 R1(I), $00 R2(I), $01 R3(I), $02 R4(I), $03 R5(I), $04 R6(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 142)		CONST	R2(C)[1..1]	<-	CI:1	{}
+0001 ( 142)		CONST	R3(C)[24..24]	<-	CI:24	{}
+0002 ( 142)		CONST	R4(C)[1..1]	<-	CI:1	{}
+0003 ( 142)		CONST	R5(C)[-1..-1]	<-	CI:-1	{}
+0004 ( 144)		CONST	R6(I)[0..0]	<-	CI:0	{}
+0005 ( 146)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 146)		CALLN	R0(I)	<-	V(2 'rand')+0 	{}
+0001 ( 148)		BINOP9	R1(I)[0..224]	<-	R0(I), CI:224	{}
+0002 ( 148)		BRANCH		<-	R1(IF)[0..224]	{}
+		==> 12
+		==> 4
+L12: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 150)		BINOP9	R0(I)	<-	R0(IF), CI:57344	{}
+0001 ( 150)		BRANCH		<-	R0(IF)	{}
+		==> 6
+		==> 5
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 154)		CONV40	R0(I)[-128..25]	<-	R3(CF)[-128..25]	{}
+0001 ( 154)		CONV40	R1(I)[-128..127]	<-	R5(C)[-127..128]	{}
+0002 ( 154)		BINOP1	R3(I)[-256..152]	<-	R1(IF)[-128..127], R0(IF)[-128..25]	{}
+0003 ( 153)		CONV37	R0(I)[0..127]	<-	R2(CF)[0..127]	{}
+0004 ( 153)		CONV40	R1(I)[-128..127]	<-	R4(C)[-127..128]	{}
+0005 ( 153)		BINOP1	R2(I)[-128..254]	<-	R1(IF)[-128..127], R0(IF)[0..127]	{}
+0006 ( 155)		RELOP24	R0(B)[0..1]	<-	R2(C)[-128..254], CC:0	{}
+0007 ( 155)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 157)		CONST	R2(C)[0..0]	<-	CI:0	{}
+0001 ( 158)		CONST	R4(C)[1..1]	<-	CI:1	{}
+0002 ( 160)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 160)		RELOP23	R0(B)[0..1]	<-	R3(C)[-256..152], CC:25	{}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 10
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 162)		CONST	R3(C)[25..25]	<-	CI:25	{}
+0001 ( 163)		CONST	R5(C)[-1..-1]	<-	CI:-1	{}
+0002 ( 160)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 166)		LEAG	R0(P)[0..255]	<-	V(7 'ytop' A)+0 , R6(I)[0..255]	{}
+0001 ( 166)		STOREI1		<-	R0(PF)+0 {V(7 'ytop' A)} [0..255], R2(C)[0..127]	{}
+0002 ( 167)		LEAG	R0(P)[0..255]	<-	V(8 'ybottom' A)+0 , R6(I)[0..255]	{}
+0003 ( 167)		STOREI1		<-	R0(PF)+0 {V(8 'ybottom' A)} [0..255], R3(C)[-128..25]	{}
+0004 ( 169)		CONV40	R0(I)[-128..25]	<-	R3(C)[-128..25]	{}
+0005 ( 169)		CONV37	R1(I)[0..127]	<-	R2(C)[0..127]	{}
+0006 ( 169)		BINOP1	R1(I)[5..132]	<-	R1(IF)[0..127], CI:5	{}
+0007 ( 169)		RELOP23	R0(B)[0..1]	<-	R1(IF)[5..132], R0(IF)[-128..25]	{}
+0008 ( 169)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 1
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 171)		CONST	R4(C)[-1..-1]	<-	CI:-1	{}
+0001 ( 172)		CONST	R5(C)[1..1]	<-	CI:1	{}
+0002 ( 144)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 144)		BINOP1	R6(I)[1..256]	<-	R6(IF)[0..255], CI:1	{}
+0001 ( 144)		RELOP28	R0(B)[0..1]	<-	R6(I)[1..256], CI:256	{}
+0002 ( 144)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 176)		RET		<-		{}
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 151)		CONV40	R0(I)[-128..127]	<-	R5(CF)[-127..128]	{}
+0001 ( 151)		UNOP11	R5(I)[-127..128]	<-	R0(IF)[-128..127]	{}
+0002 ( 150)		JUMP		<-		{}
+		==> 6
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 149)		CONV40	R1(I)[-128..127]	<-	R4(CF)[-127..128]	{}
+0001 ( 149)		UNOP11	R4(I)[-127..128]	<-	R1(IF)[-128..127]	{}
+0002 ( 150)		JUMP		<-		{}
+		==> 12
+--------------------------------------------------------------------
+rand: /home/honza/projects/c64/projects/oscar64/include/stdlib.h:68
+$00 R0(I), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 ( 818)		LOADG2	R0(I)[0..65535]	<-	V(6 'seed')+0 	{}
+0001 ( 818)		BINOP16	R1(I)	<-	R0(I)[0..65535], CI:7	{}
+0002 ( 818)		BINOP10	R0(I)	<-	R1(IF), R0(IF)[0..65535]	{}
+0003 ( 819)		BINOP17	R1(I)[0..127]	<-	R0(I), CI:9	{}
+0004 ( 819)		BINOP10	R0(I)	<-	R1(IF)[0..127], R0(IF)	{}
+0005 ( 820)		BINOP16	R1(I)	<-	R0(I), CI:8	{}
+0006 ( 820)		BINOP10	R0(I)	<-	R1(IF), R0(IF)	{}
+0007 ( 820)		STOREG2		<-	V(6 'seed')+0 , R0(I)	{}
+0008 ( 821)		RETV		<-	R0(IF)	{}
+--------------------------------------------------------------------
+prepcol: /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c:105
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(P), $00 R4(I), $00 R5(C), $00 R6(C), $00 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 111)		LOADZ1	R0(C)[0..255]	<-	V(0 '')+0 	{S}
+0001 ( 111)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0002 ( 112)		LEAG	R1(P)[0..255]	<-	V(8 'ybottom' A)+0 , R0(I)[0..255]	{S}
+0003 ( 112)		LOADI1	R5(C)[0..255]	<-	R1(PF)+0 {V(8 'ybottom' A)} [0..255]	{}
+0004 ( 116)		CONV37	R1(I)[0..255]	<-	R5(C)[0..255]	{}
+0005 ( 115)		BINOP2	R2(I)[-1..254]	<-	R0(I)[0..255], CI:1	{S}
+0006 ( 115)		CONV37	R2(I)[0..255]	<-	R2(CF)[-1..254]	{S}
+0007 ( 116)		LEAG	R3(P)[0..255]	<-	V(8 'ybottom' A)+0 , R2(I)[0..255]	{S}
+0008 ( 116)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0 {V(8 'ybottom' A)} [0..255]	{}
+0009 ( 116)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+000a ( 116)		BINOP2	R3(I)[-255..255]	<-	R1(I)[0..255], R3(IF)[0..255]	{}
+000b ( 111)		LEAG	R0(P)[0..255]	<-	V(7 'ytop' A)+0 , R0(IF)[0..255]	{S}
+000c ( 111)		LOADI1	R6(C)[0..255]	<-	R0(PF)+0 {V(7 'ytop' A)} [0..255]	{}
+000d ( 115)		CONV37	R0(I)[0..255]	<-	R6(C)[0..255]	{}
+000e ( 115)		LEAG	R2(P)[0..255]	<-	V(7 'ytop' A)+0 , R2(IF)[0..255]	{S}
+000f ( 115)		LOADI1	R2(C)[0..255]	<-	R2(PF)+0 {V(7 'ytop' A)} [0..255]	{}
+0010 ( 115)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0011 ( 115)		BINOP2	R2(I)[-255..255]	<-	R0(I)[0..255], R2(IF)[0..255]	{}
+0012 ( 119)		RELOP28	R4(B)[0..1]	<-	CC:0, R6(C)[0..255]	{}
+0013 ( 119)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 15
+		==> 2
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 119)		CONST	R7(C)[0..0]	<-	CI:0	{}
+0001 ( 120)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 120)		CONV37	R4(I)[0..24]	<-	R7(C)[0..24]	{}
+0001 ( 120)		LEAG	R4(P)[0..24]	<-	V(10 'rbuff' A)+0 , R4(IF)[0..24]	{}
+0002 ( 120)		STOREI1		<-	R4(PF)+0 {V(10 'rbuff' A)} [0..24], CC:160	{}
+0003 ( 119)		BINOP1	R7(C)[1..25]	<-	R7(CF)[0..24], CI:1	{}
+0004 ( 119)		RELOP28	R4(B)[0..1]	<-	R7(C)[1..25], R6(C)[1..255]	{}
+0005 ( 119)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 121)		RELOP28	R4(B)[0..1]	<-	R6(C)[0..255], R5(C)[0..255]	{}
+0001 ( 121)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 122)		CONV37	R4(I)[0..24]	<-	R6(C)[0..24]	{}
+0001 ( 122)		LEAG	R4(P)[0..24]	<-	V(10 'rbuff' A)+0 , R4(IF)[0..24]	{}
+0002 ( 122)		STOREI1		<-	R4(PF)+0 {V(10 'rbuff' A)} [0..24], CC:32	{}
+0003 ( 121)		BINOP1	R6(C)[1..25]	<-	R6(CF)[0..24], CI:1	{}
+0004 ( 121)		JUMP		<-		{}
+		==> 2
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 123)		RELOP28	R4(B)[0..1]	<-	R5(C)[0..255], CC:25	{}
+0001 ( 123)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 124)		CONV37	R4(I)[0..24]	<-	R5(C)[0..24]	{}
+0001 ( 124)		LEAG	R4(P)[0..24]	<-	V(10 'rbuff' A)+0 , R4(IF)[0..24]	{}
+0002 ( 124)		STOREI1		<-	R4(PF)+0 {V(10 'rbuff' A)} [0..24], CC:160	{}
+0003 ( 123)		BINOP1	R5(C)[1..25]	<-	R5(CF)[0..24], CI:1	{}
+0004 ( 123)		JUMP		<-		{}
+		==> 4
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 127)		RELOP24	R4(B)[0..1]	<-	R2(C)[-255..255], CC:0	{}
+0001 ( 127)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 128)		LEAG	R0(P)[0..24]	<-	V(10 'rbuff' A)+0 , R0(IF)[0..24]	{}
+0001 ( 128)		STOREI1		<-	R0(PF)+0 {V(10 'rbuff' A)} [0..24], CC:105	{}
+0002 ( 132)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 132)		RELOP24	R0(B)[0..1]	<-	R3(C)[-255..255], CC:0	{}
+0001 ( 132)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 12
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 133)		LEAG	R0(P)[0..24]	<-	V(10 'rbuff' A)+0 , R1(IF)[0..24]	{}
+0001 ( 133)		STOREI1		<-	R0(PF)+0 {V(10 'rbuff' A)} [0..24], CC:233	{}
+0002 ( 132)		JUMP		<-		{}
+		==> 13
+L13: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 137)		RET		<-		{}
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 134)		RELOP27	R0(B)[0..1]	<-	R3(CF)[0..127], CC:0	{}
+0001 ( 134)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 14
+		==> 13
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 135)		LEAG	R0(P)[0..24]	<-	V(10 'rbuff' A)+-1 , R1(IF)[1..25]	{}
+0001 ( 135)		STOREI1		<-	R0(PF)+0 {V(10 'rbuff' A)} [0..24], CC:223	{}
+0002 ( 134)		JUMP		<-		{}
+		==> 13
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 129)		RELOP27	R2(B)[0..1]	<-	R2(CF)[0..127], CC:0	{}
+0001 ( 129)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 10
+		==> 9
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 ( 130)		LEAG	R0(P)[0..24]	<-	V(10 'rbuff' A)+-1 , R0(IF)[1..25]	{}
+0001 ( 130)		STOREI1		<-	R0(PF)+0 {V(10 'rbuff' A)} [0..24], CC:95	{}
+0002 ( 132)		JUMP		<-		{}
+		==> 9
+--------------------------------------------------------------------
+expand: /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c:17
+$00 R0(I), $00 R1(P), $00 R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  22)		LOADZ1	R0(C)[0..255]	<-	V(0 '')+0 	{S}
+0001 (  22)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0002 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+0 	{}
+0003 (  22)		LEAA	R1(P)[1024..1279]	<-	V(-1 '')+1024 , R0(I)[0..255]	{S}
+0004 (  22)		STOREI1		<-	R1(P)+0 {V(-1 'ABS')} [1024..1279], R2(CF)[0..255]	{}
+0005 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+1 	{}
+0006 (  22)		STOREI1		<-	R1(P)+40 {V(-1 'ABS')} [1024..1279], R2(CF)[0..255]	{}
+0007 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+2 	{}
+0008 (  22)		STOREI1		<-	R1(P)+80 {V(-1 'ABS')} [1024..1279], R2(CF)[0..255]	{}
+0009 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+3 	{}
+000a (  22)		STOREI1		<-	R1(P)+120 {V(-1 'ABS')} [1024..1279], R2(CF)[0..255]	{}
+000b (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+4 	{}
+000c (  22)		STOREI1		<-	R1(P)+160 {V(-1 'ABS')} [1024..1279], R2(CF)[0..255]	{}
+000d (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+5 	{}
+000e (  22)		STOREI1		<-	R1(P)+200 {V(-1 'ABS')} [1024..1279], R2(CF)[0..255]	{}
+000f (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+6 	{}
+0010 (  22)		STOREI1		<-	R1(PF)+240 {V(-1 'ABS')} [1024..1279], R2(CF)[0..255]	{}
+0011 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+7 	{}
+0012 (  22)		LEAA	R1(P)[1304..1559]	<-	V(-1 '')+1304 , R0(I)[0..255]	{S}
+0013 (  22)		STOREI1		<-	R1(P)+0 {V(-1 'ABS')} [1304..1559], R2(CF)[0..255]	{}
+0014 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+8 	{}
+0015 (  22)		STOREI1		<-	R1(P)+40 {V(-1 'ABS')} [1304..1559], R2(CF)[0..255]	{}
+0016 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+9 	{}
+0017 (  22)		STOREI1		<-	R1(P)+80 {V(-1 'ABS')} [1304..1559], R2(CF)[0..255]	{}
+0018 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+10 	{}
+0019 (  22)		STOREI1		<-	R1(P)+120 {V(-1 'ABS')} [1304..1559], R2(CF)[0..255]	{}
+001a (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+11 	{}
+001b (  22)		STOREI1		<-	R1(P)+160 {V(-1 'ABS')} [1304..1559], R2(CF)[0..255]	{}
+001c (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+12 	{}
+001d (  22)		STOREI1		<-	R1(P)+200 {V(-1 'ABS')} [1304..1559], R2(CF)[0..255]	{}
+001e (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+13 	{}
+001f (  22)		STOREI1		<-	R1(PF)+240 {V(-1 'ABS')} [1304..1559], R2(CF)[0..255]	{}
+0020 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+14 	{}
+0021 (  22)		LEAA	R1(P)[1584..1839]	<-	V(-1 '')+1584 , R0(I)[0..255]	{S}
+0022 (  22)		STOREI1		<-	R1(P)+0 {V(-1 'ABS')} [1584..1839], R2(CF)[0..255]	{}
+0023 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+15 	{}
+0024 (  22)		STOREI1		<-	R1(P)+40 {V(-1 'ABS')} [1584..1839], R2(CF)[0..255]	{}
+0025 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+16 	{}
+0026 (  22)		STOREI1		<-	R1(P)+80 {V(-1 'ABS')} [1584..1839], R2(CF)[0..255]	{}
+0027 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+17 	{}
+0028 (  22)		STOREI1		<-	R1(P)+120 {V(-1 'ABS')} [1584..1839], R2(CF)[0..255]	{}
+0029 (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+18 	{}
+002a (  22)		STOREI1		<-	R1(P)+160 {V(-1 'ABS')} [1584..1839], R2(CF)[0..255]	{}
+002b (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+19 	{}
+002c (  22)		STOREI1		<-	R1(P)+200 {V(-1 'ABS')} [1584..1839], R2(CF)[0..255]	{}
+002d (  22)		LOADG1	R2(C)[0..255]	<-	V(10 'rbuff' A)+20 	{}
+002e (  22)		STOREI1		<-	R1(PF)+240 {V(-1 'ABS')} [1584..1839], R2(CF)[0..255]	{}
+002f (  22)		LOADG1	R1(C)[0..255]	<-	V(10 'rbuff' A)+21 	{}
+0030 (  22)		LEAA	R0(P)[1864..2119]	<-	V(-1 '')+1864 , R0(IF)[0..255]	{S}
+0031 (  22)		STOREI1		<-	R0(P)+0 {V(-1 'ABS')} [1864..2119], R1(CF)[0..255]	{}
+0032 (  22)		LOADG1	R1(C)[0..255]	<-	V(10 'rbuff' A)+22 	{}
+0033 (  22)		STOREI1		<-	R0(P)+40 {V(-1 'ABS')} [1864..2119], R1(CF)[0..255]	{}
+0034 (  22)		LOADG1	R1(C)[0..255]	<-	V(10 'rbuff' A)+23 	{}
+0035 (  22)		STOREI1		<-	R0(P)+80 {V(-1 'ABS')} [1864..2119], R1(CF)[0..255]	{}
+0036 (  22)		LOADG1	R1(C)[0..255]	<-	V(10 'rbuff' A)+24 	{}
+0037 (  22)		STOREI1		<-	R0(PF)+120 {V(-1 'ABS')} [1864..2119], R1(CF)[0..255]	{}
+0038 (  25)		RET		<-		{}
+--------------------------------------------------------------------
+scrollLeft: /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c:31
+$00 R0(I), $00 R1(P), $00 R2(P), $00 R3(C), $00 R4(C), $00 R5(C), $00 R6(C), $00 R7(C), $00 R8(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  34)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0001 (  38)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  38)		CONV37	R0(I)[0..38]	<-	R3(C)[0..38]	{}
+0001 (  38)		LEAA	R1(P)[1025..1063]	<-	V(-1 '')+1025 , R0(I)[0..38]	{}
+0002 (  38)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1025..1063]	{}
+0003 (  38)		LEAA	R2(P)[1024..1062]	<-	V(-1 '')+1024 , R0(I)[0..38]	{}
+0004 (  38)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1024..1062], R4(CF)[0..255]	{}
+0005 (  38)		LOADI1	R2(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1025..1063]	{}
+0006 (  38)		LOADI1	R4(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1025..1063]	{}
+0007 (  38)		LOADI1	R5(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1025..1063]	{}
+0008 (  38)		LOADI1	R6(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1025..1063]	{}
+0009 (  38)		LOADI1	R7(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1025..1063]	{}
+000a (  38)		LOADI1	R8(C)[0..255]	<-	R1(P)+240 {V(-1 'ABS')} [1025..1063]	{}
+000b (  38)		STOREI1		<-	R1(P)+39 {V(-1 'ABS')} [1025..1063], R2(CF)[0..255]	{}
+000c (  38)		STOREI1		<-	R1(P)+79 {V(-1 'ABS')} [1025..1063], R4(CF)[0..255]	{}
+000d (  38)		STOREI1		<-	R1(P)+119 {V(-1 'ABS')} [1025..1063], R5(CF)[0..255]	{}
+000e (  38)		STOREI1		<-	R1(P)+159 {V(-1 'ABS')} [1025..1063], R6(CF)[0..255]	{}
+000f (  38)		STOREI1		<-	R1(P)+199 {V(-1 'ABS')} [1025..1063], R7(CF)[0..255]	{}
+0010 (  38)		STOREI1		<-	R1(PF)+239 {V(-1 'ABS')} [1025..1063], R8(CF)[0..255]	{}
+0011 (  38)		LEAA	R1(P)[1305..1343]	<-	V(-1 '')+1305 , R0(I)[0..38]	{}
+0012 (  38)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1305..1343]	{}
+0013 (  38)		LEAA	R0(P)[1304..1342]	<-	V(-1 '')+1304 , R0(IF)[0..38]	{}
+0014 (  38)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [1304..1342], R2(CF)[0..255]	{}
+0015 (  38)		LOADI1	R0(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1305..1343]	{}
+0016 (  38)		LOADI1	R2(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1305..1343]	{}
+0017 (  38)		LOADI1	R4(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1305..1343]	{}
+0018 (  38)		LOADI1	R5(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1305..1343]	{}
+0019 (  38)		STOREI1		<-	R1(P)+39 {V(-1 'ABS')} [1305..1343], R0(CF)[0..255]	{}
+001a (  38)		STOREI1		<-	R1(P)+79 {V(-1 'ABS')} [1305..1343], R2(CF)[0..255]	{}
+001b (  38)		STOREI1		<-	R1(P)+119 {V(-1 'ABS')} [1305..1343], R4(CF)[0..255]	{}
+001c (  38)		STOREI1		<-	R1(PF)+159 {V(-1 'ABS')} [1305..1343], R5(CF)[0..255]	{}
+001d (  34)		BINOP1	R3(C)[1..39]	<-	R3(CF)[0..38], CI:1	{}
+001e (  34)		RELOP28	R0(B)[0..1]	<-	R3(C)[1..39], CC:39	{}
+001f (  34)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+0 	{}
+0001 (  44)		STOREA1		<-	V(-1 '')+1063 , R0(CF)[0..255]	{}
+0002 (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+1 	{}
+0003 (  44)		STOREA1		<-	V(-1 '')+1103 , R0(CF)[0..255]	{}
+0004 (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+2 	{}
+0005 (  44)		STOREA1		<-	V(-1 '')+1143 , R0(CF)[0..255]	{}
+0006 (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+3 	{}
+0007 (  44)		STOREA1		<-	V(-1 '')+1183 , R0(CF)[0..255]	{}
+0008 (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+4 	{}
+0009 (  44)		STOREA1		<-	V(-1 '')+1223 , R0(CF)[0..255]	{}
+000a (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+5 	{}
+000b (  44)		STOREA1		<-	V(-1 '')+1263 , R0(CF)[0..255]	{}
+000c (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+6 	{}
+000d (  44)		STOREA1		<-	V(-1 '')+1303 , R0(CF)[0..255]	{}
+000e (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+7 	{}
+000f (  44)		STOREA1		<-	V(-1 '')+1343 , R0(CF)[0..255]	{}
+0010 (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+8 	{}
+0011 (  44)		STOREA1		<-	V(-1 '')+1383 , R0(CF)[0..255]	{}
+0012 (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+9 	{}
+0013 (  44)		STOREA1		<-	V(-1 '')+1423 , R0(CF)[0..255]	{}
+0014 (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+10 	{}
+0015 (  44)		STOREA1		<-	V(-1 '')+1463 , R0(CF)[0..255]	{}
+0016 (  44)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+11 	{}
+0017 (  44)		STOREA1		<-	V(-1 '')+1503 , R0(CF)[0..255]	{}
+0018 (  49)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0019 (  53)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  53)		CONV37	R0(I)[0..38]	<-	R3(C)[0..38]	{}
+0001 (  53)		LEAA	R1(P)[1505..1543]	<-	V(-1 '')+1505 , R0(I)[0..38]	{}
+0002 (  53)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1505..1543]	{}
+0003 (  53)		LEAA	R2(P)[1504..1542]	<-	V(-1 '')+1504 , R0(I)[0..38]	{}
+0004 (  53)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [1504..1542], R4(CF)[0..255]	{}
+0005 (  53)		LOADI1	R2(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1505..1543]	{}
+0006 (  53)		LOADI1	R4(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1505..1543]	{}
+0007 (  53)		LOADI1	R5(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1505..1543]	{}
+0008 (  53)		LOADI1	R6(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1505..1543]	{}
+0009 (  53)		LOADI1	R7(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1505..1543]	{}
+000a (  53)		LOADI1	R8(C)[0..255]	<-	R1(P)+240 {V(-1 'ABS')} [1505..1543]	{}
+000b (  53)		STOREI1		<-	R1(P)+39 {V(-1 'ABS')} [1505..1543], R2(CF)[0..255]	{}
+000c (  53)		STOREI1		<-	R1(P)+79 {V(-1 'ABS')} [1505..1543], R4(CF)[0..255]	{}
+000d (  53)		STOREI1		<-	R1(P)+119 {V(-1 'ABS')} [1505..1543], R5(CF)[0..255]	{}
+000e (  53)		STOREI1		<-	R1(P)+159 {V(-1 'ABS')} [1505..1543], R6(CF)[0..255]	{}
+000f (  53)		STOREI1		<-	R1(P)+199 {V(-1 'ABS')} [1505..1543], R7(CF)[0..255]	{}
+0010 (  53)		STOREI1		<-	R1(PF)+239 {V(-1 'ABS')} [1505..1543], R8(CF)[0..255]	{}
+0011 (  53)		LEAA	R1(P)[1785..1823]	<-	V(-1 '')+1785 , R0(I)[0..38]	{}
+0012 (  53)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1785..1823]	{}
+0013 (  53)		LEAA	R0(P)[1784..1822]	<-	V(-1 '')+1784 , R0(IF)[0..38]	{}
+0014 (  53)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [1784..1822], R2(CF)[0..255]	{}
+0015 (  53)		LOADI1	R0(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1785..1823]	{}
+0016 (  53)		LOADI1	R2(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1785..1823]	{}
+0017 (  53)		LOADI1	R4(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1785..1823]	{}
+0018 (  53)		LOADI1	R5(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1785..1823]	{}
+0019 (  53)		LOADI1	R6(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1785..1823]	{}
+001a (  53)		STOREI1		<-	R1(P)+39 {V(-1 'ABS')} [1785..1823], R0(CF)[0..255]	{}
+001b (  53)		STOREI1		<-	R1(P)+79 {V(-1 'ABS')} [1785..1823], R2(CF)[0..255]	{}
+001c (  53)		STOREI1		<-	R1(P)+119 {V(-1 'ABS')} [1785..1823], R4(CF)[0..255]	{}
+001d (  53)		STOREI1		<-	R1(P)+159 {V(-1 'ABS')} [1785..1823], R5(CF)[0..255]	{}
+001e (  53)		STOREI1		<-	R1(PF)+199 {V(-1 'ABS')} [1785..1823], R6(CF)[0..255]	{}
+001f (  49)		BINOP1	R3(C)[1..39]	<-	R3(CF)[0..38], CI:1	{}
+0020 (  49)		RELOP28	R0(B)[0..1]	<-	R3(C)[1..39], CC:39	{}
+0021 (  49)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+12 	{}
+0001 (  59)		STOREA1		<-	V(-1 '')+1543 , R0(CF)[0..255]	{}
+0002 (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+13 	{}
+0003 (  59)		STOREA1		<-	V(-1 '')+1583 , R0(CF)[0..255]	{}
+0004 (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+14 	{}
+0005 (  59)		STOREA1		<-	V(-1 '')+1623 , R0(CF)[0..255]	{}
+0006 (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+15 	{}
+0007 (  59)		STOREA1		<-	V(-1 '')+1663 , R0(CF)[0..255]	{}
+0008 (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+16 	{}
+0009 (  59)		STOREA1		<-	V(-1 '')+1703 , R0(CF)[0..255]	{}
+000a (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+17 	{}
+000b (  59)		STOREA1		<-	V(-1 '')+1743 , R0(CF)[0..255]	{}
+000c (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+18 	{}
+000d (  59)		STOREA1		<-	V(-1 '')+1783 , R0(CF)[0..255]	{}
+000e (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+19 	{}
+000f (  59)		STOREA1		<-	V(-1 '')+1823 , R0(CF)[0..255]	{}
+0010 (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+20 	{}
+0011 (  59)		STOREA1		<-	V(-1 '')+1863 , R0(CF)[0..255]	{}
+0012 (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+21 	{}
+0013 (  59)		STOREA1		<-	V(-1 '')+1903 , R0(CF)[0..255]	{}
+0014 (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+22 	{}
+0015 (  59)		STOREA1		<-	V(-1 '')+1943 , R0(CF)[0..255]	{}
+0016 (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+23 	{}
+0017 (  59)		STOREA1		<-	V(-1 '')+1983 , R0(CF)[0..255]	{}
+0018 (  59)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+24 	{}
+0019 (  59)		STOREA1		<-	V(-1 '')+2023 , R0(CF)[0..255]	{}
+001a (  62)		RET		<-		{}
+--------------------------------------------------------------------
+scrollRight: /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c:68
+$00 R0(I), $00 R1(P), $00 R2(P), $00 R3(C), $00 R4(C), $00 R5(C), $00 R6(C), $00 R7(C), $00 R8(C), $00 R9(C), $00 R10(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  70)		CONST	R3(C)[39..39]	<-	CI:39	{}
+0001 (  74)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  74)		CONV37	R0(I)[1..39]	<-	R3(C)[1..39]	{}
+0001 (  74)		LEAA	R1(P)[1064..1102]	<-	V(-1 '')+1063 , R0(I)[1..39]	{}
+0002 (  74)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1064..1102]	{}
+0003 (  74)		LOADI1	R5(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1064..1102]	{}
+0004 (  74)		LOADI1	R6(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1064..1102]	{}
+0005 (  74)		LOADI1	R7(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1064..1102]	{}
+0006 (  74)		LOADI1	R8(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1064..1102]	{}
+0007 (  74)		LOADI1	R9(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1064..1102]	{}
+0008 (  74)		LEAA	R2(P)[1024..1062]	<-	V(-1 '')+1023 , R0(I)[1..39]	{}
+0009 (  74)		LOADI1	R10(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1024..1062]	{}
+000a (  74)		STOREI1		<-	R2(PF)+1 {V(-1 'ABS')} [1024..1062], R10(CF)[0..255]	{}
+000b (  74)		STOREI1		<-	R1(P)+1 {V(-1 'ABS')} [1064..1102], R4(CF)[0..255]	{}
+000c (  74)		STOREI1		<-	R1(P)+41 {V(-1 'ABS')} [1064..1102], R5(CF)[0..255]	{}
+000d (  74)		STOREI1		<-	R1(P)+81 {V(-1 'ABS')} [1064..1102], R6(CF)[0..255]	{}
+000e (  74)		STOREI1		<-	R1(P)+121 {V(-1 'ABS')} [1064..1102], R7(CF)[0..255]	{}
+000f (  74)		STOREI1		<-	R1(P)+161 {V(-1 'ABS')} [1064..1102], R8(CF)[0..255]	{}
+0010 (  74)		STOREI1		<-	R1(P)+201 {V(-1 'ABS')} [1064..1102], R9(CF)[0..255]	{}
+0011 (  74)		LEAA	R0(P)[1344..1382]	<-	V(-1 '')+1343 , R0(IF)[1..39]	{}
+0012 (  74)		LOADI1	R2(C)[0..255]	<-	R0(P)+0 {V(-1 'ABS')} [1344..1382]	{}
+0013 (  74)		LOADI1	R4(C)[0..255]	<-	R0(P)+40 {V(-1 'ABS')} [1344..1382]	{}
+0014 (  74)		LOADI1	R5(C)[0..255]	<-	R0(P)+80 {V(-1 'ABS')} [1344..1382]	{}
+0015 (  74)		LOADI1	R6(C)[0..255]	<-	R0(P)+120 {V(-1 'ABS')} [1344..1382]	{}
+0016 (  74)		LOADI1	R7(C)[0..255]	<-	R1(P)+240 {V(-1 'ABS')} [1064..1102]	{}
+0017 (  74)		STOREI1		<-	R1(PF)+241 {V(-1 'ABS')} [1064..1102], R7(CF)[0..255]	{}
+0018 (  74)		STOREI1		<-	R0(P)+1 {V(-1 'ABS')} [1344..1382], R2(CF)[0..255]	{}
+0019 (  74)		STOREI1		<-	R0(P)+41 {V(-1 'ABS')} [1344..1382], R4(CF)[0..255]	{}
+001a (  74)		STOREI1		<-	R0(P)+81 {V(-1 'ABS')} [1344..1382], R5(CF)[0..255]	{}
+001b (  74)		STOREI1		<-	R0(PF)+121 {V(-1 'ABS')} [1344..1382], R6(CF)[0..255]	{}
+001c (  70)		BINOP1	R3(C)[0..38]	<-	R3(CF)[1..39], CI:-1	{}
+001d (  70)		RELOP27	R0(B)[0..1]	<-	R3(C)[0..38], CC:0	{}
+001e (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+0 	{}
+0001 (  80)		STOREA1		<-	V(-1 '')+1024 , R0(CF)[0..255]	{}
+0002 (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+1 	{}
+0003 (  80)		STOREA1		<-	V(-1 '')+1064 , R0(CF)[0..255]	{}
+0004 (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+2 	{}
+0005 (  80)		STOREA1		<-	V(-1 '')+1104 , R0(CF)[0..255]	{}
+0006 (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+3 	{}
+0007 (  80)		STOREA1		<-	V(-1 '')+1144 , R0(CF)[0..255]	{}
+0008 (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+4 	{}
+0009 (  80)		STOREA1		<-	V(-1 '')+1184 , R0(CF)[0..255]	{}
+000a (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+5 	{}
+000b (  80)		STOREA1		<-	V(-1 '')+1224 , R0(CF)[0..255]	{}
+000c (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+6 	{}
+000d (  80)		STOREA1		<-	V(-1 '')+1264 , R0(CF)[0..255]	{}
+000e (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+7 	{}
+000f (  80)		STOREA1		<-	V(-1 '')+1304 , R0(CF)[0..255]	{}
+0010 (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+8 	{}
+0011 (  80)		STOREA1		<-	V(-1 '')+1344 , R0(CF)[0..255]	{}
+0012 (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+9 	{}
+0013 (  80)		STOREA1		<-	V(-1 '')+1384 , R0(CF)[0..255]	{}
+0014 (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+10 	{}
+0015 (  80)		STOREA1		<-	V(-1 '')+1424 , R0(CF)[0..255]	{}
+0016 (  80)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+11 	{}
+0017 (  80)		STOREA1		<-	V(-1 '')+1464 , R0(CF)[0..255]	{}
+0018 (  84)		CONST	R3(C)[39..39]	<-	CI:39	{}
+0019 (  88)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  88)		CONV37	R0(I)[1..39]	<-	R3(C)[1..39]	{}
+0001 (  88)		LEAA	R1(P)[1544..1582]	<-	V(-1 '')+1543 , R0(I)[1..39]	{}
+0002 (  88)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [1544..1582]	{}
+0003 (  88)		LOADI1	R5(C)[0..255]	<-	R1(P)+40 {V(-1 'ABS')} [1544..1582]	{}
+0004 (  88)		LOADI1	R6(C)[0..255]	<-	R1(P)+80 {V(-1 'ABS')} [1544..1582]	{}
+0005 (  88)		LOADI1	R7(C)[0..255]	<-	R1(P)+120 {V(-1 'ABS')} [1544..1582]	{}
+0006 (  88)		LOADI1	R8(C)[0..255]	<-	R1(P)+160 {V(-1 'ABS')} [1544..1582]	{}
+0007 (  88)		LOADI1	R9(C)[0..255]	<-	R1(P)+200 {V(-1 'ABS')} [1544..1582]	{}
+0008 (  88)		LEAA	R2(P)[1504..1542]	<-	V(-1 '')+1503 , R0(I)[1..39]	{}
+0009 (  88)		LOADI1	R10(C)[0..255]	<-	R2(P)+0 {V(-1 'ABS')} [1504..1542]	{}
+000a (  88)		STOREI1		<-	R2(PF)+1 {V(-1 'ABS')} [1504..1542], R10(CF)[0..255]	{}
+000b (  88)		STOREI1		<-	R1(P)+1 {V(-1 'ABS')} [1544..1582], R4(CF)[0..255]	{}
+000c (  88)		STOREI1		<-	R1(P)+41 {V(-1 'ABS')} [1544..1582], R5(CF)[0..255]	{}
+000d (  88)		STOREI1		<-	R1(P)+81 {V(-1 'ABS')} [1544..1582], R6(CF)[0..255]	{}
+000e (  88)		STOREI1		<-	R1(P)+121 {V(-1 'ABS')} [1544..1582], R7(CF)[0..255]	{}
+000f (  88)		STOREI1		<-	R1(P)+161 {V(-1 'ABS')} [1544..1582], R8(CF)[0..255]	{}
+0010 (  88)		STOREI1		<-	R1(P)+201 {V(-1 'ABS')} [1544..1582], R9(CF)[0..255]	{}
+0011 (  88)		LEAA	R0(P)[1824..1862]	<-	V(-1 '')+1823 , R0(IF)[1..39]	{}
+0012 (  88)		LOADI1	R2(C)[0..255]	<-	R0(P)+0 {V(-1 'ABS')} [1824..1862]	{}
+0013 (  88)		LOADI1	R4(C)[0..255]	<-	R0(P)+40 {V(-1 'ABS')} [1824..1862]	{}
+0014 (  88)		LOADI1	R5(C)[0..255]	<-	R0(P)+80 {V(-1 'ABS')} [1824..1862]	{}
+0015 (  88)		LOADI1	R6(C)[0..255]	<-	R0(P)+120 {V(-1 'ABS')} [1824..1862]	{}
+0016 (  88)		LOADI1	R7(C)[0..255]	<-	R0(P)+160 {V(-1 'ABS')} [1824..1862]	{}
+0017 (  88)		LOADI1	R8(C)[0..255]	<-	R1(P)+240 {V(-1 'ABS')} [1544..1582]	{}
+0018 (  88)		STOREI1		<-	R1(PF)+241 {V(-1 'ABS')} [1544..1582], R8(CF)[0..255]	{}
+0019 (  88)		STOREI1		<-	R0(P)+1 {V(-1 'ABS')} [1824..1862], R2(CF)[0..255]	{}
+001a (  88)		STOREI1		<-	R0(P)+41 {V(-1 'ABS')} [1824..1862], R4(CF)[0..255]	{}
+001b (  88)		STOREI1		<-	R0(P)+81 {V(-1 'ABS')} [1824..1862], R5(CF)[0..255]	{}
+001c (  88)		STOREI1		<-	R0(P)+121 {V(-1 'ABS')} [1824..1862], R6(CF)[0..255]	{}
+001d (  88)		STOREI1		<-	R0(PF)+161 {V(-1 'ABS')} [1824..1862], R7(CF)[0..255]	{}
+001e (  84)		BINOP1	R3(C)[0..38]	<-	R3(CF)[1..39], CI:-1	{}
+001f (  84)		RELOP27	R0(B)[0..1]	<-	R3(C)[0..38], CC:0	{}
+0020 (  84)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/scrolling/tunnel.c
+0000 (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+12 	{}
+0001 (  94)		STOREA1		<-	V(-1 '')+1504 , R0(CF)[0..255]	{}
+0002 (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+13 	{}
+0003 (  94)		STOREA1		<-	V(-1 '')+1544 , R0(CF)[0..255]	{}
+0004 (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+14 	{}
+0005 (  94)		STOREA1		<-	V(-1 '')+1584 , R0(CF)[0..255]	{}
+0006 (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+15 	{}
+0007 (  94)		STOREA1		<-	V(-1 '')+1624 , R0(CF)[0..255]	{}
+0008 (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+16 	{}
+0009 (  94)		STOREA1		<-	V(-1 '')+1664 , R0(CF)[0..255]	{}
+000a (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+17 	{}
+000b (  94)		STOREA1		<-	V(-1 '')+1704 , R0(CF)[0..255]	{}
+000c (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+18 	{}
+000d (  94)		STOREA1		<-	V(-1 '')+1744 , R0(CF)[0..255]	{}
+000e (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+19 	{}
+000f (  94)		STOREA1		<-	V(-1 '')+1784 , R0(CF)[0..255]	{}
+0010 (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+20 	{}
+0011 (  94)		STOREA1		<-	V(-1 '')+1824 , R0(CF)[0..255]	{}
+0012 (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+21 	{}
+0013 (  94)		STOREA1		<-	V(-1 '')+1864 , R0(CF)[0..255]	{}
+0014 (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+22 	{}
+0015 (  94)		STOREA1		<-	V(-1 '')+1904 , R0(CF)[0..255]	{}
+0016 (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+23 	{}
+0017 (  94)		STOREA1		<-	V(-1 '')+1944 , R0(CF)[0..255]	{}
+0018 (  94)		LOADG1	R0(C)[0..255]	<-	V(10 'rbuff' A)+24 	{}
+0019 (  94)		STOREA1		<-	V(-1 '')+1984 , R0(CF)[0..255]	{}
+001a (  97)		RET		<-		{}

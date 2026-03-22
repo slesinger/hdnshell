@@ -1,0 +1,76 @@
+sections
+0880 - 0e5d : DATA, code
+0e5d - 0e6f : DATA, data
+0e6f - 0e6f : BSS, bss
+0e70 - 9000 : HEAP, heap
+9000 - 9fee : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, mmap_trampoline@stack
+a000 - a000 : SSTACK, vic_setmode@stack
+a000 - a000 : SSTACK, memset@stack
+a000 - a000 : SSTACK, convch@stack
+a000 - a000 : SSTACK, getch@stack
+9fee - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0e6f, 05ef, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0b17 : main, NATIVE_CODE:code
+0b17 - 0b2c : mmap_trampoline, NATIVE_CODE:code
+0b2c - 0b43 : NMITrampoline, NATIVE_CODE:code
+0b43 - 0b4a : DoneTrampoline, NATIVE_CODE:code
+0b4a - 0b61 : IRQTrampoline, NATIVE_CODE:code
+0b61 - 0bb3 : vic_setmode, NATIVE_CODE:code
+0bb3 - 0bd7 : memset, NATIVE_CODE:code
+0bd7 - 0be3 : getch, NATIVE_CODE:code
+0be3 - 0c15 : convch, NATIVE_CODE:code
+0c15 - 0c5a : freg, NATIVE_CODE:code
+0c5a - 0d47 : faddsub, NATIVE_CODE:code
+0d47 - 0de1 : crt_fmul, NATIVE_CODE:code
+0de1 - 0e0f : crt_fmul8, NATIVE_CODE:code
+0e0f - 0e2d : sint16_to_float, NATIVE_CODE:code
+0e2d - 0e56 : uint16_to_float, NATIVE_CODE:code
+0e56 - 0e5d : __shrtab192L, DATA:code
+0e5d - 0e5e : spentry, DATA:data
+0e5e - 0e6e : colors, DATA:data
+0e6e - 0e6f : giocharmap, DATA:data
+0e6f - 0e6f : BSSStart, START:bss
+0e6f - 0e6f : BSSEnd, END:bss
+9fee - a000 : main@stack, BSS:main@stack
+9fee - 9fee : StackEnd, END:stack
+
+objects by size
+0880 (0297) : main, NATIVE_CODE:code
+0c5a (00ed) : faddsub, NATIVE_CODE:code
+0d47 (009a) : crt_fmul, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0b61 (0052) : vic_setmode, NATIVE_CODE:code
+0c15 (0045) : freg, NATIVE_CODE:code
+0be3 (0032) : convch, NATIVE_CODE:code
+0de1 (002e) : crt_fmul8, NATIVE_CODE:code
+0e2d (0029) : uint16_to_float, NATIVE_CODE:code
+0bb3 (0024) : memset, NATIVE_CODE:code
+0e0f (001e) : sint16_to_float, NATIVE_CODE:code
+0b2c (0017) : NMITrampoline, NATIVE_CODE:code
+0b4a (0017) : IRQTrampoline, NATIVE_CODE:code
+0b17 (0015) : mmap_trampoline, NATIVE_CODE:code
+9fee (0012) : main@stack, BSS:main@stack
+0e5e (0010) : colors, DATA:data
+0bd7 (000c) : getch, NATIVE_CODE:code
+0b43 (0007) : DoneTrampoline, NATIVE_CODE:code
+0e56 (0007) : __shrtab192L, DATA:code
+0e5d (0001) : spentry, DATA:data
+0e6e (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0e6f (0000) : BSSStart, START:bss
+0e6f (0000) : BSSEnd, END:bss
+9fee (0000) : StackEnd, END:stack

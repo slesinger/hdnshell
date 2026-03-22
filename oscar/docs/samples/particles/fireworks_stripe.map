@@ -1,0 +1,85 @@
+sections
+0880 - 0cb8 : DATA, code
+0cb8 - 0cc3 : DATA, data
+0cc3 - 1700 : BSS, bss
+1700 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, mmap_trampoline@stack
+a000 - a000 : SSTACK, vic_setmode@stack
+a000 - a000 : SSTACK, memset@stack
+a000 - a000 : SSTACK, particle_init@stack
+a000 - a000 : SSTACK, pix_clr@stack
+a000 - a000 : SSTACK, pix_set@stack
+a000 - a000 : SSTACK, particle_move@stack
+a000 - a000 : SSTACK, particle_add@stack
+a000 - a000 : SSTACK, rand@stack
+a000 - a000 : SSTACK, rnorm@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0cc3, 0e80, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 09f9 : main, NATIVE_CODE:code
+09f9 - 0a0e : mmap_trampoline, NATIVE_CODE:code
+0a0e - 0a25 : NMITrampoline, NATIVE_CODE:code
+0a25 - 0a2c : DoneTrampoline, NATIVE_CODE:code
+0a2c - 0a43 : IRQTrampoline, NATIVE_CODE:code
+0a43 - 0a95 : vic_setmode, NATIVE_CODE:code
+0a95 - 0ab9 : memset, NATIVE_CODE:code
+0ab9 - 0aed : particle_init, NATIVE_CODE:code
+0aed - 0b9e : particle_move, NATIVE_CODE:code
+0b9e - 0bd2 : pix_clr, NATIVE_CODE:code
+0bd2 - 0c08 : pix_set, NATIVE_CODE:code
+0c08 - 0c4a : particle_add, NATIVE_CODE:code
+0c4a - 0c91 : rnorm, NATIVE_CODE:code
+0c91 - 0cb8 : rand, NATIVE_CODE:code
+0cb8 - 0cb9 : spentry, DATA:data
+0cb9 - 0cbd : clrmask, DATA:data
+0cbd - 0cc1 : setmask, DATA:data
+0cc1 - 0cc3 : seed, DATA:data
+0cc3 - 0cf5 : Hirows, DATA:bss
+0cc3 - 0cc3 : BSSStart, START:bss
+0cf5 - 0cf6 : pfirst, DATA:bss
+0cf6 - 0cf7 : pfree, DATA:bss
+0d00 - 1700 : particles, DATA:bss
+1700 - 1700 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0d00 (0a00) : particles, DATA:bss
+0880 (0179) : main, NATIVE_CODE:code
+0aed (00b1) : particle_move, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0a43 (0052) : vic_setmode, NATIVE_CODE:code
+0c4a (0047) : rnorm, NATIVE_CODE:code
+0c08 (0042) : particle_add, NATIVE_CODE:code
+0bd2 (0036) : pix_set, NATIVE_CODE:code
+0ab9 (0034) : particle_init, NATIVE_CODE:code
+0b9e (0034) : pix_clr, NATIVE_CODE:code
+0cc3 (0032) : Hirows, DATA:bss
+0c91 (0027) : rand, NATIVE_CODE:code
+0a95 (0024) : memset, NATIVE_CODE:code
+0a0e (0017) : NMITrampoline, NATIVE_CODE:code
+0a2c (0017) : IRQTrampoline, NATIVE_CODE:code
+09f9 (0015) : mmap_trampoline, NATIVE_CODE:code
+0a25 (0007) : DoneTrampoline, NATIVE_CODE:code
+0cb9 (0004) : clrmask, DATA:data
+0cbd (0004) : setmask, DATA:data
+0cc1 (0002) : seed, DATA:data
+0cb8 (0001) : spentry, DATA:data
+0cf5 (0001) : pfirst, DATA:bss
+0cf6 (0001) : pfree, DATA:bss
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+0cc3 (0000) : BSSStart, START:bss
+1700 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

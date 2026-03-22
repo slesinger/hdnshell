@@ -1,0 +1,145 @@
+sections
+0900 - 0cd3 : DATA, code
+0cd3 - 0d32 : DATA, data
+0d32 - 0d32 : BSS, bss
+0d38 - 7000 : HEAP, heap
+7000 - 8000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+8000 - 8038 : DATA, bcode1
+10000 - 10000 : DATA, bdata1
+8000 - 8039 : DATA, bcode2
+10000 - 10000 : DATA, bdata2
+8000 - 8038 : DATA, bcode3
+10000 - 10000 : DATA, bdata3
+8000 - 8039 : DATA, bcode4
+10000 - 10000 : DATA, bdata4
+8000 - 8038 : DATA, bcode5
+10000 - 10000 : DATA, bdata5
+8000 - 8038 : DATA, bcode6
+10000 - 10000 : DATA, bdata6
+0801 - 0853 : DATA, startup
+8000 - 8000 : SSTACK, sstack
+8000 - 8000 : SSTACK, vic_setmode@stack
+8000 - 8000 : SSTACK, cwin_init@stack
+8000 - 8000 : SSTACK, cwin_fill@stack
+8000 - 8000 : SSTACK, cwin_clear@stack
+8000 - 8000 : SSTACK, krnio_setnam@stack
+8000 - 8000 : SSTACK, krnio_open@stack
+8000 - 8000 : SSTACK, krnio_chkin@stack
+8000 - 8000 : SSTACK, krnio_chrin@stack
+8000 - 8000 : SSTACK, krnio_clrchn@stack
+8000 - 8000 : SSTACK, krnio_status@stack
+8000 - 8000 : SSTACK, krnio_read_lzo@stack
+8000 - 8000 : SSTACK, krnio_close@stack
+8000 - 8000 : SSTACK, load@stack
+8000 - 8000 : SSTACK, cwin_putat_string@stack
+8000 - 8000 : SSTACK, cwin_put_string@stack
+8000 - 8000 : SSTACK, cwin_cursor_newline@stack
+8000 - 8000 : SSTACK, print1@stack
+8000 - 8000 : SSTACK, print2@stack
+8000 - 8000 : SSTACK, print3@stack
+8000 - 8000 : SSTACK, print4@stack
+8000 - 8000 : SSTACK, print5@stack
+8000 - 8000 : SSTACK, print6@stack
+8000 - 8000 : SSTACK, main@stack
+
+regions
+0900 - 7000 : 0d32, 0432, main
+8000 - c000 : 8038, 0038, bank1
+8000 - c000 : 8039, 0039, bank2
+8000 - c000 : 8038, 0038, bank3
+8000 - c000 : 8039, 0039, bank4
+8000 - c000 : 8038, 0038, bank5
+8000 - c000 : 8038, 0038, bank6
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+--:00f7 - 00f7 : ZeroEnd, END:zeropage
+--:00f7 - 00f7 : ZeroStart, START:zeropage
+--:0801 - 0853 : startup, NATIVE_CODE:startup
+--:0900 - 09a0 : main, NATIVE_CODE:code
+--:09a0 - 09f2 : vic_setmode, NATIVE_CODE:code
+--:09f2 - 0a41 : cwin_init, NATIVE_CODE:code
+--:0a41 - 0a94 : cwin_fill, NATIVE_CODE:code
+--:0a94 - 0ad5 : load, NATIVE_CODE:code
+--:0ad5 - 0aeb : krnio_setnam, NATIVE_CODE:code
+--:0aeb - 0b19 : krnio_open, NATIVE_CODE:code
+--:0b19 - 0b2e : krnio_chkin, NATIVE_CODE:code
+--:0b2e - 0b36 : krnio_chrin, NATIVE_CODE:code
+--:0b36 - 0b3a : krnio_clrchn, NATIVE_CODE:code
+--:0b3a - 0bf0 : krnio_read_lzo, NATIVE_CODE:code
+--:0bf0 - 0bfc : krnio_status, NATIVE_CODE:code
+--:0bfc - 0c04 : krnio_close, NATIVE_CODE:code
+--:0c04 - 0c09 : *, DATA:code
+--:0c09 - 0c49 : cwin_put_string, NATIVE_CODE:code
+--:0c49 - 0c97 : cwin_putat_string, NATIVE_CODE:code
+--:0c97 - 0cba : cwin_cursor_newline, NATIVE_CODE:code
+--:0cba - 0cbf : *, DATA:code
+--:0cbf - 0cc4 : *, DATA:code
+--:0cc4 - 0cc9 : *, DATA:code
+--:0cc9 - 0cce : *, DATA:code
+--:0cce - 0cd3 : *, DATA:code
+--:0cd3 - 0cd4 : spentry, DATA:data
+--:0cd4 - 0cdc : p2smap, DATA:data
+--:0cdc - 0ce8 : cw, DATA:bss
+--:0ce8 - 0cf8 : krnio_pstatus, DATA:bss
+--:0d00 - 0d32 : mul40, DATA:data
+--:0d32 - 0d32 : BSSEnd, END:bss
+--:0d32 - 0d32 : BSSStart, START:bss
+--:8000 - 8000 : StackEnd, END:stack
+01:8000 - 8022 : print1, NATIVE_CODE:bcode1
+01:8022 - 8038 : *, DATA:bcode1
+02:8000 - 8022 : print2, NATIVE_CODE:bcode2
+02:8022 - 8039 : *, DATA:bcode2
+03:8000 - 8022 : print3, NATIVE_CODE:bcode3
+03:8022 - 8038 : *, DATA:bcode3
+04:8000 - 8022 : print4, NATIVE_CODE:bcode4
+04:8022 - 8039 : *, DATA:bcode4
+05:8000 - 8022 : print5, NATIVE_CODE:bcode5
+05:8022 - 8038 : *, DATA:bcode5
+06:8000 - 8022 : print6, NATIVE_CODE:bcode6
+06:8022 - 8038 : *, DATA:bcode6
+
+banks
+01 : 8000 .. 8038 (0038)
+02 : 8000 .. 8039 (0039)
+03 : 8000 .. 8038 (0038)
+04 : 8000 .. 8039 (0039)
+05 : 8000 .. 8038 (0038)
+06 : 8000 .. 8038 (0038)
+
+objects by size
+--:0b3a (00b6) : krnio_read_lzo, NATIVE_CODE:code
+--:0900 (00a0) : main, NATIVE_CODE:code
+--:0a41 (0053) : cwin_fill, NATIVE_CODE:code
+--:0801 (0052) : startup, NATIVE_CODE:startup
+--:09a0 (0052) : vic_setmode, NATIVE_CODE:code
+--:09f2 (004f) : cwin_init, NATIVE_CODE:code
+--:0c49 (004e) : cwin_putat_string, NATIVE_CODE:code
+--:0a94 (0041) : load, NATIVE_CODE:code
+--:0c09 (0040) : cwin_put_string, NATIVE_CODE:code
+--:0d00 (0032) : mul40, DATA:data
+--:0aeb (002e) : krnio_open, NATIVE_CODE:code
+--:0c97 (0023) : cwin_cursor_newline, NATIVE_CODE:code
+01:8000 (0022) : print1, NATIVE_CODE:bcode1
+02:8000 (0022) : print2, NATIVE_CODE:bcode2
+03:8000 (0022) : print3, NATIVE_CODE:bcode3
+04:8000 (0022) : print4, NATIVE_CODE:bcode4
+05:8000 (0022) : print5, NATIVE_CODE:bcode5
+06:8000 (0022) : print6, NATIVE_CODE:bcode6
+--:0ad5 (0016) : krnio_setnam, NATIVE_CODE:code
+--:0b19 (0015) : krnio_chkin, NATIVE_CODE:code
+--:0ce8 (0010) : krnio_pstatus, DATA:bss
+--:0bf0 (000c) : krnio_status, NATIVE_CODE:code
+--:0cdc (000c) : cw, DATA:bss
+--:0b2e (0008) : krnio_chrin, NATIVE_CODE:code
+--:0bfc (0008) : krnio_close, NATIVE_CODE:code
+--:0cd4 (0008) : p2smap, DATA:data
+--:0b36 (0004) : krnio_clrchn, NATIVE_CODE:code
+--:0cd3 (0001) : spentry, DATA:data
+--:00f7 (0000) : ZeroEnd, END:zeropage
+--:00f7 (0000) : ZeroStart, START:zeropage
+--:0d32 (0000) : BSSEnd, END:bss
+--:0d32 (0000) : BSSStart, START:bss
+--:8000 (0000) : StackEnd, END:stack

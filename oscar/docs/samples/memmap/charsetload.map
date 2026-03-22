@@ -1,0 +1,74 @@
+sections
+0880 - 0ac5 : DATA, code
+0ac5 - 0ac7 : DATA, data
+0ac7 - 0ad7 : BSS, bss
+0ad8 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, krnio_setnam@stack
+a000 - a000 : SSTACK, krnio_open@stack
+a000 - a000 : SSTACK, krnio_chkin@stack
+a000 - a000 : SSTACK, krnio_chrin@stack
+a000 - a000 : SSTACK, krnio_status@stack
+a000 - a000 : SSTACK, krnio_clrchn@stack
+a000 - a000 : SSTACK, krnio_read_lzo@stack
+a000 - a000 : SSTACK, krnio_close@stack
+a000 - a000 : SSTACK, vic_setmode@stack
+a000 - a000 : SSTACK, convch@stack
+a000 - a000 : SSTACK, getpch@stack
+a000 - a000 : SSTACK, getchar@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0ac7, 0257, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 08fc : main, NATIVE_CODE:code
+08fc - 0912 : krnio_setnam, NATIVE_CODE:code
+0912 - 091e : *, DATA:code
+091e - 094c : krnio_open, NATIVE_CODE:code
+094c - 0a02 : krnio_read_lzo, NATIVE_CODE:code
+0a02 - 0a17 : krnio_chkin, NATIVE_CODE:code
+0a17 - 0a1f : krnio_chrin, NATIVE_CODE:code
+0a1f - 0a2b : krnio_status, NATIVE_CODE:code
+0a2b - 0a2f : krnio_clrchn, NATIVE_CODE:code
+0a2f - 0a37 : krnio_close, NATIVE_CODE:code
+0a37 - 0a89 : vic_setmode, NATIVE_CODE:code
+0a89 - 0a93 : getpch, NATIVE_CODE:code
+0a93 - 0ac5 : convch, NATIVE_CODE:code
+0ac5 - 0ac6 : spentry, DATA:data
+0ac6 - 0ac7 : giocharmap, DATA:data
+0ac7 - 0ad7 : krnio_pstatus, DATA:bss
+0ac7 - 0ac7 : BSSStart, START:bss
+0ad7 - 0ad7 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+094c (00b6) : krnio_read_lzo, NATIVE_CODE:code
+0880 (007c) : main, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0a37 (0052) : vic_setmode, NATIVE_CODE:code
+0a93 (0032) : convch, NATIVE_CODE:code
+091e (002e) : krnio_open, NATIVE_CODE:code
+08fc (0016) : krnio_setnam, NATIVE_CODE:code
+0a02 (0015) : krnio_chkin, NATIVE_CODE:code
+0ac7 (0010) : krnio_pstatus, DATA:bss
+0a1f (000c) : krnio_status, NATIVE_CODE:code
+0a89 (000a) : getpch, NATIVE_CODE:code
+0a17 (0008) : krnio_chrin, NATIVE_CODE:code
+0a2f (0008) : krnio_close, NATIVE_CODE:code
+0a2b (0004) : krnio_clrchn, NATIVE_CODE:code
+0ac5 (0001) : spentry, DATA:data
+0ac6 (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0ac7 (0000) : BSSStart, START:bss
+0ad7 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

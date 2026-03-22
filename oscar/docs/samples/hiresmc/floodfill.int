@@ -1,0 +1,951 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/hiresmc/floodfill.c:17
+$00 R0(P), $00 R1(P), $00 R2(P), $00 R3(P), $10 R4(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/hiresmc/floodfill.c
+0000 (  21)		STOREC1		<-	V(0 '')+0 , CC:4	{}
+0001 (  19)		CALLN		<-	V(1 'mmap_trampoline')+0 	{}
+0002 (  21)		CONST	R0(P)[51200..51200]	<-	CA0(-1:51200 '')	{S}
+0003 (  21)		STOREC2		<-	V(1 '')+0 , R0(PF)+0 {V(-1 'ABS')} [51200..51200]	{}
+0004 (  21)		CONST	R0(P)[57344..57344]	<-	CA0(-1:57344 '')	{S}
+0005 (  21)		STOREC2		<-	V(3 '')+0 , R0(P)+0 {V(-1 'ABS')} [57344..57344]	{}
+0006 (  21)		CALLN		<-	V(2 'vic_setmode')+0 	{}
+0007 (  80)		STOREA1		<-	V(-1 '')+1 , CC:53	{VM}
+0008 (  30)		STOREC2		<-	V(0 '')+0 , R0(P)+0 {V(-1 'ABS')} [57344..57344]	{}
+0009 (  30)		STOREC2		<-	V(2 '')+0 , CI:0	{}
+000a (  30)		STOREC2		<-	V(4 '')+0 , CI:8000	{}
+000b (  25)		STOREA1		<-	V(-1 '')+53281 , CC:0	{V}
+000c (  26)		STOREA1		<-	V(-1 '')+53280 , CC:0	{V}
+000d (  28)		FILLA1000		<-	V(-1 '')+51200 , CC:103	{}
+000e (  29)		FILLA1000		<-	V(-1 '')+55296 , CC:2	{}
+000f (  30)		CALLN		<-	V(3 'memset')+0 	{}
+0010 (  32)		STOREC2		<-	V(2 '')+0 , R0(PF)+0 {V(-1 'ABS')} [57344..57344]	{}
+0011 (  32)		STOREC1		<-	V(4 '')+0 , CC:40	{}
+0012 (  32)		STOREC1		<-	V(5 '')+0 , CC:25	{}
+0013 (  32)		CONST	R0(P)[0..0]	<-	CG8(6:0 'sbm' A)	{S}
+0014 (  32)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(6 'sbm' A)} [0..0]	{}
+0015 (  32)		CALLN		<-	V(4 'bm_init')+0 	{}
+0016 (  34)		COPY8:GG		<-	V(63 'scr' A)+0 , V(7 '')+0 	{}
+0017 (  40)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/hiresmc/floodfill.c
+0000 (  40)		CONST	R1(P)[0..0]	<-	CG8(6:0 'sbm' A)	{IS}
+0001 (  40)		CONST	R2(P)[0..0]	<-	CG8(63:0 'scr' A)	{IS}
+0002 (  40)		CONST	R3(P)[40..40]	<-	CG8(24:40 'MixedColors' A)	{IS}
+0003 (  38)		CONST	R4(I)[20..20]	<-	CI:20	{}
+0004 (  40)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/hiresmc/floodfill.c
+0000 (  40)		STOREG2		<-	V(-1 'sstack')+0 , R1(P)+0 {V(6 'sbm' A)} [0..0]	{}
+0001 (  40)		STOREG2		<-	V(-1 'sstack')+2 , R2(P)+0 {V(63 'scr' A)} [0..0]	{}
+0002 (  40)		STOREG2		<-	V(-1 'sstack')+8 , R3(P)+0 {V(24 'MixedColors' A)} [40..40]	{}
+0003 (  40)		CALLN	R0(I)	<-	V(8 'rand')+0 	{}
+0004 (  40)		BINOP6	R0(I)[0..319]	<-	R0(IF), CI:320	{}
+0005 (  40)		STOREG2		<-	V(-1 'sstack')+4 , R0(IF)[0..319]	{}
+0006 (  40)		CALLN	R0(I)	<-	V(8 'rand')+0 	{}
+0007 (  40)		BINOP6	R0(I)[0..199]	<-	R0(IF), CI:200	{}
+0008 (  40)		STOREG2		<-	V(-1 'sstack')+6 , R0(IF)[0..199]	{}
+0009 (  40)		CALLN	R0(I)	<-	V(8 'rand')+0 	{}
+000a (  40)		BINOP6	R0(I)[0..39]	<-	R0(IF), CI:40	{}
+000b (  40)		BINOP1	R0(I)[5..44]	<-	R0(IF)[0..39], CI:5	{}
+000c (  40)		STOREC1		<-	V(11 '')+0 , R0(CF)[5..44]	{}
+000d (  40)		CALLN		<-	V(5 'bmmc_circle_fill')+0 	{}
+000e (  38)		BINOP2	R4(I)[0..19]	<-	R4(IF)[1..20], CI:1	{}
+000f (  38)		RELOP27	R0(B)[0..1]	<-	R4(I)[0..19], CI:0	{}
+0010 (  38)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/hiresmc/floodfill.c
+0000 (  44)		CONST	R1(P)[0..0]	<-	CG8(6:0 'sbm' A)	{IS}
+0001 (  44)		CONST	R2(P)[0..0]	<-	CG8(63:0 'scr' A)	{IS}
+0002 (  44)		CONST	R3(P)[0..0]	<-	CG8(24:0 'MixedColors' A)	{IS}
+0003 (  42)		CONST	R4(I)[20..20]	<-	CI:20	{}
+0004 (  44)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/hiresmc/floodfill.c
+0000 (  44)		STOREG2		<-	V(-1 'sstack')+0 , R1(P)+0 {V(6 'sbm' A)} [0..0]	{}
+0001 (  44)		STOREG2		<-	V(-1 'sstack')+2 , R2(P)+0 {V(63 'scr' A)} [0..0]	{}
+0002 (  44)		STOREG2		<-	V(-1 'sstack')+8 , R3(P)+0 {V(24 'MixedColors' A)} [0..0]	{}
+0003 (  44)		CALLN	R0(I)	<-	V(8 'rand')+0 	{}
+0004 (  44)		BINOP6	R0(I)[0..319]	<-	R0(IF), CI:320	{}
+0005 (  44)		STOREG2		<-	V(-1 'sstack')+4 , R0(IF)[0..319]	{}
+0006 (  44)		CALLN	R0(I)	<-	V(8 'rand')+0 	{}
+0007 (  44)		BINOP6	R0(I)[0..199]	<-	R0(IF), CI:200	{}
+0008 (  44)		STOREG2		<-	V(-1 'sstack')+6 , R0(IF)[0..199]	{}
+0009 (  44)		CALLN	R0(I)	<-	V(8 'rand')+0 	{}
+000a (  44)		BINOP6	R0(I)[0..39]	<-	R0(IF), CI:40	{}
+000b (  44)		BINOP1	R0(I)[5..44]	<-	R0(IF)[0..39], CI:5	{}
+000c (  44)		STOREC1		<-	V(11 '')+0 , R0(CF)[5..44]	{}
+000d (  44)		CALLN		<-	V(5 'bmmc_circle_fill')+0 	{}
+000e (  42)		BINOP2	R4(I)[0..19]	<-	R4(IF)[1..20], CI:1	{}
+000f (  42)		RELOP27	R0(B)[0..1]	<-	R4(I)[0..19], CI:0	{}
+0010 (  42)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 5
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/hiresmc/floodfill.c
+0000 (  46)		STOREC2		<-	V(0 '')+0 , R1(P)+0 {V(6 'sbm' A)} [0..0]	{}
+0001 (  46)		STOREC2		<-	V(2 '')+0 , R2(P)+0 {V(63 'scr' A)} [0..0]	{}
+0002 (  46)		STOREC2		<-	V(4 '')+0 , CI:210	{}
+0003 (  46)		STOREC2		<-	V(6 '')+0 , CI:100	{}
+0004 (  46)		STOREC1		<-	V(8 '')+0 , CC:2	{}
+0005 (  46)		CALLN		<-	V(9 'bmmc_flood_fill')+0 	{}
+0006 (  47)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(6 'sbm' A)} [0..0]	{}
+0007 (  47)		STOREC2		<-	V(2 '')+0 , R2(PF)+0 {V(63 'scr' A)} [0..0]	{}
+0008 (  47)		STOREC2		<-	V(4 '')+0 , CI:60	{}
+0009 (  47)		STOREC2		<-	V(6 '')+0 , CI:140	{}
+000a (  47)		STOREC1		<-	V(8 '')+0 , CC:3	{}
+000b (  47)		CALLN		<-	V(9 'bmmc_flood_fill')+0 	{}
+000c (  36)		JUMP		<-		{}
+		==> 1
+--------------------------------------------------------------------
+mmap_trampoline: /home/honza/projects/c64/projects/oscar64/include/c64/memmap.h:25
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  71)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'NMITrampoline')	{S}
+0001 (  71)		STOREA2		<-	V(-1 '')+65530 , R0(PF)+0 {V(-1 'NMITrampoline')} [0..0]	{}
+0002 (  72)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'IRQTrampoline')	{S}
+0003 (  72)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'IRQTrampoline')} [0..0]	{}
+0004 (  73)		RET		<-		{}
+--------------------------------------------------------------------
+vic_setmode: /home/honza/projects/c64/projects/oscar64/include/c64/vic.h:94
+$00 R0(I), $00 R1(P), $00 R2(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		LOADZ1	R0(C)[0..4]	<-	V(0 '')+0 	{S}
+0001 (  26)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0002 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  37)		STOREA1		<-	V(-1 '')+53265 , CC:91	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  38)		STOREA1		<-	V(-1 '')+53270 , CC:8	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  52)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56576 	{V}
+0001 (  52)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  52)		BINOP9	R0(I)[0..252]	<-	R0(IF)[0..255], CI:252	{}
+0003 (  52)		LOADZ2	R1(P)	<-	V(1 '')+0 	{S}
+0004 (  52)		CAST	R1(I)	<-	R1(PF)	{S}
+0005 (  52)		BINOP17	R2(I)[0..3]	<-	R1(I), CI:14	{S}
+0006 (  52)		BINOP10	R2(I)[0..3]	<-	R2(IF)[0..3], CI:3	{S}
+0007 (  52)		BINOP8	R0(I)[0..255]	<-	R2(IF)[0..3], R0(IF)[0..252]	{}
+0008 (  52)		STOREA1		<-	V(-1 '')+56576 , R0(CF)[0..255]	{V}
+0009 (  53)		BINOP17	R1(I)[0..1023]	<-	R1(IF), CI:6	{S}
+000a (  53)		BINOP9	R1(I)[0..240]	<-	R1(IF)[0..1023], CI:240	{S}
+000b (  53)		LOADZ2	R0(P)	<-	V(3 '')+0 	{S}
+000c (  53)		CAST	R0(I)	<-	R0(PF)	{S}
+000d (  53)		BINOP17	R0(I)[0..63]	<-	R0(IF), CI:10	{S}
+000e (  53)		BINOP9	R0(I)[0..14]	<-	R0(IF)[0..63], CI:14	{S}
+000f (  53)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..14], R1(IF)[0..240]	{S}
+0010 (  53)		STOREA1		<-	V(-1 '')+53272 , R0(CF)[0..255]	{V}
+0011 (  54)		RET		<-		{}
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0001 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 4
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  33)		STOREA1		<-	V(-1 '')+53265 , CC:27	{V}
+0001 (  26)		BRANCH		<-	R0(CF)[0..1]	{}
+		==> 7
+		==> 6
+L7: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  46)		STOREA1		<-	V(-1 '')+53270 , CC:24	{V}
+0001 (  47)		JUMP		<-		{}
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  41)		STOREA1		<-	V(-1 '')+53265 , CC:59	{V}
+0001 (  26)		RELOP19	R0(B)[0..1]	<-	R0(CF)[2..4], CC:3	{S}
+0002 (  26)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+--------------------------------------------------------------------
+memset: /home/honza/projects/c64/projects/oscar64/include/string.h:28
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/string.c
+0000 ( 270)		JSR		<-	V(0 '')+0 , V(4 '')+0 , V(2 '')+0 , V(-1 '')+0 	{V}
+0001 ( 270)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0002 ( 291)		RETV		<-	R0(PF)	{}
+--------------------------------------------------------------------
+bm_init: /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.h:65
+$00 R0(P), $00 R1(P), $00 R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 (  10)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 (  11)		LOADZ2	R1(P)	<-	V(2 '')+0 	{S}
+0002 (  11)		STOREI2		<-	R0(P)+0, R1(PF)	{}
+0003 (  10)		CONST	R1(P)[0..0]	<-	CA0(-1:0 '')	{S}
+0004 (  10)		STOREI2		<-	R0(P)+2, R1(PF)+0 {V(-1 'ABS')} [0..0]	{}
+0005 (  12)		LOADZ1	R1(C)[0..255]	<-	V(4 '')+0 	{S}
+0006 (  12)		STOREI1		<-	R0(P)+4, R1(C)[0..255]	{}
+0007 (  13)		LOADZ1	R2(C)[0..255]	<-	V(5 '')+0 	{S}
+0008 (  13)		STOREI1		<-	R0(P)+5, R2(CF)[0..255]	{}
+0009 (  14)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{S}
+000a (  14)		BINOP16	R1(I)[0..2040]	<-	R1(IF)[0..255], CI:3	{S}
+000b (  14)		STOREI2		<-	R0(PF)+6, R1(IF)[0..2040]	{}
+000c (  15)		RET		<-		{}
+--------------------------------------------------------------------
+bmmc_circle_fill: /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.h:32
+$00 R0(I), $02 R1(I), $00 R2(I), $04 R3(I), $06 R4(I), $08 R5(I), $0a R6(P), $0c R7(I), $0e R8(I), $10 R9(I), $12 R10(P), $14 R11(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 196)		LOADZ1	R0(C)[0..255]	<-	V(11 '')+0 	{S}
+0001 ( 196)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0002 ( 196)		LOADG2	R1(I)[-32768..32767]	<-	V(-1 'sstack')+6 	{S}
+0003 ( 196)		BINOP1	R2(I)[-32768..33022]	<-	R1(I)[-32768..32767], R0(I)[0..255]	{S}
+0004 ( 196)		BINOP1	R5(I)[-32767..33023]	<-	R2(IF)[-32768..33022], CI:1	{}
+0005 ( 197)		LOADG2	R6(P)	<-	V(-1 'sstack')+2 	{S}
+0006 ( 199)		LOADI2	R2(I)[-32768..32767]	<-	R6(P)+6	{}
+0007 ( 196)		BINOP2	R7(I)[-32768..32767]	<-	R1(I)[-32768..32767], R0(I)[0..255]	{}
+0008 ( 197)		LOADI2	R3(I)[-32768..32767]	<-	R6(P)+2	{}
+0009 ( 197)		RELOP24	R4(B)[0..1]	<-	R7(I)[-32768..32767], R3(I)[-32768..32767]	{}
+000a ( 197)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 198)		MOVE	R7(I)[-32768..32767]	<-	R3(IF)[-32768..32767]	{}
+0001 ( 199)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 199)		RELOP23	R3(B)[0..1]	<-	R5(I)[-32767..33023], R2(I)[-32768..32767]	{}
+0001 ( 199)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 200)		MOVE	R5(I)[-32768..32767]	<-	R2(IF)[-32768..32767]	{}
+0001 ( 199)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 209)		RELOP28	R2(B)[0..1]	<-	R7(C)[-32768..32767], R5(C)[-32768..32767]	{}
+0001 ( 209)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 9
+		==> 6
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 203)		BINOP9	R2(I)[0..32760]	<-	R7(I)[0..32766], CI:32760	{}
+0001 ( 203)		LOADG2	R3(P)	<-	V(-1 'sstack')+0 	{S}
+0002 ( 203)		LOADI1	R4(C)[0..255]	<-	R3(P)+4	{}
+0003 ( 203)		CONV37	R4(I)[0..255]	<-	R4(CF)[0..255]	{}
+0004 ( 203)		BINOP3	R2(I)	<-	R4(I)[0..255], R2(IF)[0..32760]	{}
+0005 ( 203)		LOADI2	R3(P)	<-	R3(PF)+0	{}
+0006 ( 203)		LEAI	R3(P)+0	<-	R3(PF)+0, R2(IF)	{}
+0007 ( 203)		BINOP9	R2(I)[0..7]	<-	R7(I)[0..32766], CI:7	{}
+0008 ( 203)		LEAI	R3(P)+0	<-	R3(PF)+0, R2(IF)[0..7]	{}
+0009 ( 207)		BINOP2	R1(I)[-32767..65534]	<-	R7(I)[0..32766], R1(IF)[-32768..32767]	{}
+000a ( 208)		BINOP16	R2(I)	<-	R1(I)[-32767..65534], CI:1	{}
+000b ( 208)		BINOP1	R8(I)	<-	R2(IF), CI:1	{}
+000c ( 206)		BINOP3	R2(I)	<-	R0(I)[0..255], R0(I)[0..255]	{S}
+000d ( 206)		BINOP1	R0(I)	<-	R2(IF), R0(IF)[0..255]	{S}
+000e ( 207)		BINOP3	R1(I)	<-	R1(IF)[-32767..65534], R1(IF)[-32767..65534]	{}
+000f ( 207)		BINOP2	R9(I)	<-	R0(IF), R1(IF)	{}
+0010 ( 204)		BINOP16	R4(I)[0..2040]	<-	R4(IF)[0..255], CI:3	{}
+0011 ( 204)		BINOP2	R4(I)[-8..2032]	<-	R4(IF)[0..2040], CI:8	{}
+0012 ( 202)		LOADG2	R10(P)	<-	V(-1 'sstack')+8 	{S}
+0013 ( 213)		LOADG2	R11(I)[-32768..32767]	<-	V(-1 'sstack')+4 	{IS}
+0014 ( 211)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 211)		STOREC2		<-	V(0 '')+0 , R9(I)	{}
+0001 ( 211)		CALLN	R0(I)	<-	V(6 'bm_usqrt')+0 	{EC}
+0002 ( 213)		LOADI2	R1(I)[-32768..32767]	<-	R6(P)+0	{}
+0003 ( 213)		LOADI2	R2(I)[-32768..32767]	<-	R6(P)+4	{}
+0004 ( 191)		STOREC2		<-	V(2 '')+0 , R2(IF)[-32768..32767]	{}
+0005 ( 191)		STOREC2		<-	V(0 '')+0 , R1(IF)[-32768..32767]	{}
+0006 ( 191)		STOREC2		<-	V(4 '')+0 , R3(P)	{}
+0007 ( 213)		CONV37	R1(I)[0..255]	<-	R7(C)[0..33022]	{}
+0008 ( 213)		BINOP9	R1(I)[0..7]	<-	R1(IF)[0..255], CI:7	{}
+0009 ( 213)		LEAI	R1(P)+0	<-	R10(P)+0, R1(IF)[0..7]	{}
+000a ( 213)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0	{}
+000b ( 191)		STOREC1		<-	V(10 '')+0 , R1(CF)[0..255]	{}
+000c ( 213)		BINOP2	R1(I)	<-	R11(I)[-32768..32767], R0(I)	{}
+000d ( 191)		BINOP9	R1(I)	<-	R1(IF), CI:-2	{}
+000e ( 191)		STOREC2		<-	V(6 '')+0 , R1(IF)	{}
+000f ( 213)		BINOP1	R0(I)	<-	R11(I)[-32768..32767], R0(IF)	{}
+0010 ( 191)		BINOP1	R0(I)	<-	R0(IF), CI:2	{}
+0011 ( 191)		BINOP9	R0(I)	<-	R0(IF), CI:-2	{}
+0012 ( 191)		STOREC2		<-	V(8 '')+0 , R0(IF)	{}
+0013 ( 191)		CALLN		<-	V(7 'bm_scan_fill')+0 	{}
+0014 ( 214)		LEAI	R3(P)+0	<-	R3(PF)+0, CI:1	{}
+0015 ( 215)		CAST	R0(I)	<-	R3(P)	{}
+0016 ( 215)		BINOP9	R0(I)[0..7]	<-	R0(IF), CI:7	{}
+0017 ( 215)		BRANCH		<-	R0(IF)[0..7]	{}
+		==> 8
+		==> 7
+L8: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 218)		BINOP2	R9(I)	<-	R9(IF), R8(I)	{}
+0001 ( 219)		BINOP1	R8(I)	<-	R8(IF), CI:2	{}
+0002 ( 209)		BINOP1	R7(C)[1..]	<-	R7(CF)[0..33022], CI:1	{}
+0003 ( 209)		RELOP28	R0(B)[0..1]	<-	R7(C)[1..], R5(C)[-32768..33023]	{}
+0004 ( 209)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 6
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 221)		RET		<-		{}
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 216)		LEAI	R3(P)+0	<-	R3(PF)+0, R4(I)[-8..2032]	{}
+0001 ( 215)		JUMP		<-		{}
+		==> 8
+--------------------------------------------------------------------
+bm_usqrt: /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.h:62
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 176)		LOADZ2	R0(I)[0..65535]	<-	V(0 '')+0 	{S}
+0001 ( 183)		RELOP25	R1(B)[0..1]	<-	R0(I)[0..65535], CI:16384	{S}
+0002 ( 183)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 17
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 186)		BINOP2	R0(I)[0..49151]	<-	R0(IF)[16384..65535], CI:16384	{}
+0001 ( 182)		CONST	R1(I)[8192..8192]	<-	CI:8192	{}
+0002 ( 181)		CONST	R2(I)[20480..20480]	<-	CI:20480	{}
+0003 ( 183)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 183)		RELOP25	R3(B)[0..1]	<-	R0(I)[0..49151], R2(I)[4096..20480]	{}
+0001 ( 183)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 186)		BINOP2	R0(I)[-20480..45055]	<-	R0(IF)[0..49151], R2(IF)[4096..20480]	{}
+0001 ( 185)		BINOP8	R1(I)[0..16383]	<-	R1(IF)[0..8192], CI:4096	{}
+0002 ( 183)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 182)		BINOP17	R2(I)[0..8191]	<-	R1(I)[0..16383], CI:1	{}
+0001 ( 181)		BINOP8	R1(I)[0..16383]	<-	R1(IF)[0..16383], CI:1024	{}
+0002 ( 183)		RELOP25	R3(B)[0..1]	<-	R0(I)[-20480..49151], R1(I)[0..16383]	{}
+0003 ( 183)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 186)		BINOP2	R0(I)[-32768..49151]	<-	R0(IF)[-20480..49151], R1(IF)[0..16383]	{}
+0001 ( 185)		BINOP8	R2(I)[0..8191]	<-	R2(IF)[0..8191], CI:1024	{}
+0002 ( 183)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 182)		BINOP17	R1(I)[0..4095]	<-	R2(I)[0..8191], CI:1	{}
+0001 ( 181)		BINOP8	R2(I)[0..8191]	<-	R2(IF)[0..8191], CI:256	{}
+0002 ( 183)		RELOP25	R3(B)[0..1]	<-	R0(I)[-32768..49151], R2(I)[0..8191]	{}
+0003 ( 183)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 186)		BINOP2	R0(I)[-32768..49151]	<-	R0(IF)[-32768..49151], R2(IF)[0..8191]	{}
+0001 ( 185)		BINOP8	R1(I)[0..4095]	<-	R1(IF)[0..4095], CI:256	{}
+0002 ( 183)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 182)		BINOP17	R2(I)[0..2047]	<-	R1(I)[0..4095], CI:1	{}
+0001 ( 181)		BINOP8	R1(I)[0..4095]	<-	R1(IF)[0..4095], CI:64	{}
+0002 ( 183)		RELOP25	R3(B)[0..1]	<-	R0(I)[-32768..49151], R1(I)[0..4095]	{}
+0003 ( 183)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 9
+		==> 10
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 186)		BINOP2	R0(I)[-32768..49151]	<-	R0(IF)[-32768..49151], R1(IF)[0..4095]	{}
+0001 ( 185)		BINOP8	R2(I)[0..2047]	<-	R2(IF)[0..2047], CI:64	{}
+0002 ( 183)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 182)		BINOP17	R1(I)[0..1023]	<-	R2(I)[0..2047], CI:1	{}
+0001 ( 181)		BINOP8	R2(I)[0..2047]	<-	R2(IF)[0..2047], CI:16	{}
+0002 ( 183)		RELOP25	R3(B)[0..1]	<-	R0(I)[-32768..49151], R2(I)[0..2047]	{}
+0003 ( 183)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 11
+		==> 12
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 186)		BINOP2	R0(I)[-32768..49151]	<-	R0(IF)[-32768..49151], R2(IF)[0..2047]	{}
+0001 ( 185)		BINOP8	R1(I)[0..1023]	<-	R1(IF)[0..1023], CI:16	{}
+0002 ( 183)		JUMP		<-		{}
+		==> 12
+L12: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 182)		BINOP17	R2(I)[0..511]	<-	R1(I)[0..1023], CI:1	{}
+0001 ( 181)		BINOP8	R1(I)[0..1023]	<-	R1(IF)[0..1023], CI:4	{}
+0002 ( 183)		RELOP25	R3(B)[0..1]	<-	R0(I)[-32768..49151], R1(I)[0..1023]	{}
+0003 ( 183)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 13
+		==> 14
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 186)		BINOP2	R0(I)[-32768..49151]	<-	R0(IF)[-32768..49151], R1(IF)[0..1023]	{}
+0001 ( 185)		BINOP8	R2(I)[0..511]	<-	R2(IF)[0..511], CI:4	{}
+0002 ( 183)		JUMP		<-		{}
+		==> 14
+L14: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 182)		BINOP17	R1(I)[0..255]	<-	R2(I)[0..511], CI:1	{}
+0001 ( 181)		BINOP8	R2(I)[0..511]	<-	R2(IF)[0..511], CI:1	{}
+0002 ( 183)		RELOP25	R0(B)[0..1]	<-	R0(IF)[-32768..49151], R2(IF)[0..511]	{}
+0003 ( 183)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 15
+		==> 16
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 185)		BINOP8	R1(I)[0..255]	<-	R1(IF)[0..255], CI:1	{}
+0001 ( 193)		RETV		<-	R1(IF)[0..255]	{}
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 193)		RETV		<-	R1(IF)[0..255]	{}
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 182)		CONST	R1(I)[0..0]	<-	CI:0	{}
+0001 ( 181)		CONST	R2(I)[4096..4096]	<-	CI:4096	{}
+0002 ( 183)		JUMP		<-		{}
+		==> 2
+--------------------------------------------------------------------
+bm_scan_fill: /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.h:77
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(I), $00 R4(I), $00 R5(C), $00 R6(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 (  91)		LOADZ2	R0(I)[-32768..32767]	<-	V(2 '')+0 	{S}
+0001 (  95)		LOADZ2	R1(I)[-32768..32767]	<-	V(8 '')+0 	{}
+0002 (  90)		LOADZ2	R2(I)[-32768..32767]	<-	V(0 '')+0 	{S}
+0003 (  93)		LOADZ2	R3(I)[-32768..32767]	<-	V(6 '')+0 	{}
+0004 (  93)		RELOP24	R3(B)[0..1]	<-	R3(IF)[-32768..32767], R2(I)[0..32767]	{}
+0005 (  93)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 (  94)		STOREZ2		<-	V(6 '')+0 , R2(IF)[0..32767]	{}
+0001 (  95)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 (  98)		LOADZ2	R2(I)[0..32767]	<-	V(6 '')+0 	{}
+0001 (  95)		RELOP23	R3(B)[0..1]	<-	R1(I)[-32768..32767], R0(I)[0..32767]	{}
+0002 (  95)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 (  96)		STOREZ2		<-	V(8 '')+0 , R0(I)[0..32766]	{}
+0001 (  98)		RELOP27	R0(B)[0..1]	<-	R0(IF)[0..32766], R2(I)[0..32767]	{}
+0002 (  98)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 100)		BINOP9	R0(I)[0..32760]	<-	R2(I)[0..32766], CI:32760	{}
+0001 ( 100)		LOADZ2	R1(P)	<-	V(4 '')+0 	{S}
+0002 ( 100)		LEAI	R1(P)+0	<-	R1(PF)+0, R0(I)[0..32760]	{}
+0003 ( 101)		LOADZ2	R3(I)[-32768..32767]	<-	V(8 '')+0 	{}
+0004 ( 102)		BINOP9	R4(I)[0..7]	<-	R3(I)[-32768..32767], CI:7	{}
+0005 ( 102)		LEAG	R4(P)[0..7]	<-	V(11 'rmask')+0 , R4(IF)[0..7]	{}
+0006 ( 102)		LOADI1	R4(C)[0..254]	<-	R4(PF)+0 {V(11 'rmask')} [0..7]	{}
+0007 ( 102)		BINOP9	R2(I)[0..7]	<-	R2(IF)[0..32766], CI:7	{}
+0008 ( 102)		LEAG	R2(P)[0..7]	<-	V(10 'lmask')+0 , R2(IF)[0..7]	{}
+0009 ( 102)		LOADI1	R5(C)[0..255]	<-	R2(PF)+0 {V(10 'lmask')} [0..7]	{}
+000a ( 106)		CONV37	R2(I)[0..255]	<-	R5(C)[0..255]	{}
+000b ( 101)		BINOP9	R3(I)[-32768..32760]	<-	R3(IF)[-32768..32767], CI:-8	{}
+000c ( 101)		BINOP2	R0(I)[-32768..32760]	<-	R3(IF)[-32768..32760], R0(IF)[0..32760]	{}
+000d ( 105)		RELOP19	R3(B)[0..1]	<-	R0(I)[-32768..32760], CI:0	{}
+000e ( 105)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 106)		CONV37	R0(I)[0..254]	<-	R4(CF)[0..254]	{}
+0001 ( 106)		BINOP9	R4(I)[0..255]	<-	R0(IF)[0..254], R2(IF)[0..255]	{}
+0002 ( 103)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0003 ( 105)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 138)		CONV37	R0(I)[0..255]	<-	R4(C)[0..255]	{}
+0001 ( 138)		UNOP15	R0(I)	<-	R0(IF)[0..255]	{}
+0002 ( 138)		CONV37	R2(I)[0..255]	<-	R3(CF)[0..]	{}
+0003 ( 138)		LEAI	R1(P)+0	<-	R1(PF)+0, R2(IF)[0..255]	{}
+0004 ( 138)		LOADI1	R2(C)[0..255]	<-	R1(P)+0	{}
+0005 ( 138)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0006 ( 138)		BINOP9	R0(I)	<-	R2(IF)[0..255], R0(IF)	{}
+0007 ( 138)		LOADZ1	R2(C)[0..255]	<-	V(10 '')+0 	{S}
+0008 ( 138)		BINOP9	R2(C)	<-	R2(CF)[0..255], R4(CF)[0..255]	{}
+0009 ( 138)		CONV37	R2(I)[0..255]	<-	R2(CF)	{}
+000a ( 138)		BINOP8	R0(I)	<-	R2(IF)[0..255], R0(IF)	{}
+000b ( 138)		STOREI1		<-	R1(PF)+0, R0(CF)	{}
+000c (  98)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 140)		RET		<-		{}
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 109)		UNOP15	R2(I)	<-	R2(IF)[0..255]	{}
+0001 ( 109)		LOADI1	R3(C)[0..255]	<-	R1(P)+0	{}
+0002 ( 109)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+0003 ( 109)		BINOP9	R2(I)	<-	R3(IF)[0..255], R2(IF)	{}
+0004 ( 109)		LOADZ1	R6(C)[0..255]	<-	V(10 '')+0 	{S}
+0005 ( 109)		BINOP9	R3(C)	<-	R6(C)[0..255], R5(CF)[0..255]	{}
+0006 ( 109)		CONV37	R3(I)[0..255]	<-	R3(CF)	{}
+0007 ( 109)		BINOP8	R2(I)	<-	R3(IF)[0..255], R2(IF)	{}
+0008 ( 109)		STOREI1		<-	R1(P)+0, R2(CF)	{}
+0009 ( 111)		RELOP25	R2(B)[0..1]	<-	R0(I)[-32768..32760], CI:256	{}
+000a ( 111)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 116)		STOREI1		<-	R1(P)+8, R6(C)[0..255]	{}
+0001 ( 116)		STOREI1		<-	R1(P)+16, R6(C)[0..255]	{}
+0002 ( 116)		STOREI1		<-	R1(P)+24, R6(C)[0..255]	{}
+0003 ( 116)		STOREI1		<-	R1(P)+32, R6(C)[0..255]	{}
+0004 ( 116)		STOREI1		<-	R1(P)+40, R6(C)[0..255]	{}
+0005 ( 116)		STOREI1		<-	R1(P)+48, R6(C)[0..255]	{}
+0006 ( 116)		STOREI1		<-	R1(P)+56, R6(C)[0..255]	{}
+0007 ( 116)		STOREI1		<-	R1(P)+64, R6(C)[0..255]	{}
+0008 ( 116)		STOREI1		<-	R1(P)+72, R6(C)[0..255]	{}
+0009 ( 116)		STOREI1		<-	R1(P)+80, R6(C)[0..255]	{}
+000a ( 116)		STOREI1		<-	R1(P)+88, R6(C)[0..255]	{}
+000b ( 116)		STOREI1		<-	R1(P)+96, R6(C)[0..255]	{}
+000c ( 116)		STOREI1		<-	R1(P)+104, R6(C)[0..255]	{}
+000d ( 116)		STOREI1		<-	R1(P)+112, R6(C)[0..255]	{}
+000e ( 116)		STOREI1		<-	R1(P)+120, R6(C)[0..255]	{}
+000f ( 116)		STOREI1		<-	R1(P)+128, R6(C)[0..255]	{}
+0010 ( 116)		STOREI1		<-	R1(P)+136, R6(C)[0..255]	{}
+0011 ( 116)		STOREI1		<-	R1(P)+144, R6(C)[0..255]	{}
+0012 ( 116)		STOREI1		<-	R1(P)+152, R6(C)[0..255]	{}
+0013 ( 116)		STOREI1		<-	R1(P)+160, R6(C)[0..255]	{}
+0014 ( 116)		STOREI1		<-	R1(P)+168, R6(C)[0..255]	{}
+0015 ( 116)		STOREI1		<-	R1(P)+176, R6(C)[0..255]	{}
+0016 ( 116)		STOREI1		<-	R1(P)+184, R6(C)[0..255]	{}
+0017 ( 116)		STOREI1		<-	R1(P)+192, R6(C)[0..255]	{}
+0018 ( 116)		STOREI1		<-	R1(P)+200, R6(C)[0..255]	{}
+0019 ( 116)		STOREI1		<-	R1(P)+208, R6(C)[0..255]	{}
+001a ( 116)		STOREI1		<-	R1(P)+216, R6(C)[0..255]	{}
+001b ( 116)		STOREI1		<-	R1(P)+224, R6(C)[0..255]	{}
+001c ( 116)		STOREI1		<-	R1(P)+232, R6(C)[0..255]	{}
+001d ( 116)		STOREI1		<-	R1(P)+240, R6(C)[0..255]	{}
+001e ( 116)		STOREI1		<-	R1(P)+248, R6(C)[0..255]	{}
+001f ( 120)		BINOP2	R0(I)[8..]	<-	R0(IF)[256..], CI:248	{}
+0020 ( 119)		LEAI	R1(P)+0	<-	R1(PF)+0, CI:256	{}
+0021 ( 117)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0022 ( 111)		JUMP		<-		{}
+		==> 14
+L14: <= D-1: (4) Head P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 132)		RELOP28	R2(B)[0..1]	<-	R3(C)[0..], R0(C)[0..]	{}
+0001 ( 132)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 13
+		==> 9
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 134)		CONV37	R2(I)[0..255]	<-	R3(C)[0..]	{}
+0001 ( 134)		LEAI	R2(P)+0	<-	R1(P)+0, R2(IF)[0..255]	{}
+0002 ( 134)		STOREI1		<-	R2(PF)+0, R6(C)[0..255]	{}
+0003 ( 135)		BINOP1	R3(C)[8..]	<-	R3(CF)[0..], CC:8	{}
+0004 ( 132)		JUMP		<-		{}
+		==> 14
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 122)		RELOP25	R2(B)[0..1]	<-	R0(I)[0..255], CI:128	{}
+0001 ( 122)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 12
+		==> 15
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 127)		STOREI1		<-	R1(P)+8, R6(C)[0..255]	{}
+0001 ( 127)		STOREI1		<-	R1(P)+16, R6(C)[0..255]	{}
+0002 ( 127)		STOREI1		<-	R1(P)+24, R6(C)[0..255]	{}
+0003 ( 127)		STOREI1		<-	R1(P)+32, R6(C)[0..255]	{}
+0004 ( 127)		STOREI1		<-	R1(P)+40, R6(C)[0..255]	{}
+0005 ( 127)		STOREI1		<-	R1(P)+48, R6(C)[0..255]	{}
+0006 ( 127)		STOREI1		<-	R1(P)+56, R6(C)[0..255]	{}
+0007 ( 127)		STOREI1		<-	R1(P)+64, R6(C)[0..255]	{}
+0008 ( 127)		STOREI1		<-	R1(P)+72, R6(C)[0..255]	{}
+0009 ( 127)		STOREI1		<-	R1(P)+80, R6(C)[0..255]	{}
+000a ( 127)		STOREI1		<-	R1(P)+88, R6(C)[0..255]	{}
+000b ( 127)		STOREI1		<-	R1(P)+96, R6(C)[0..255]	{}
+000c ( 127)		STOREI1		<-	R1(P)+104, R6(C)[0..255]	{}
+000d ( 127)		STOREI1		<-	R1(P)+112, R6(C)[0..255]	{}
+000e ( 127)		STOREI1		<-	R1(P)+120, R6(C)[0..255]	{}
+000f ( 128)		CONST	R3(C)[128..128]	<-	CI:128	{}
+0010 ( 130)		JUMP		<-		{}
+		==> 14
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 ( 110)		CONST	R3(C)[8..8]	<-	CI:8	{}
+0001 ( 122)		JUMP		<-		{}
+		==> 14
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/bitmap.c
+0000 (  98)		RELOP23	R0(B)[0..1]	<-	R1(IF)[-32768..32767], R2(I)[0..32767]	{}
+0001 (  98)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 6
+--------------------------------------------------------------------
+rand: /home/honza/projects/c64/projects/oscar64/include/stdlib.h:68
+$00 R0(I), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 ( 818)		LOADG2	R0(I)[0..65535]	<-	V(23 'seed')+0 	{}
+0001 ( 818)		BINOP16	R1(I)	<-	R0(I)[0..65535], CI:7	{}
+0002 ( 818)		BINOP10	R0(I)	<-	R1(IF), R0(IF)[0..65535]	{}
+0003 ( 819)		BINOP17	R1(I)[0..127]	<-	R0(I), CI:9	{}
+0004 ( 819)		BINOP10	R0(I)	<-	R1(IF)[0..127], R0(IF)	{}
+0005 ( 820)		BINOP16	R1(I)	<-	R0(I), CI:8	{}
+0006 ( 820)		BINOP10	R0(I)	<-	R1(IF), R0(IF)	{}
+0007 ( 820)		STOREG2		<-	V(23 'seed')+0 , R0(I)	{}
+0008 ( 821)		RETV		<-	R0(IF)	{}
+--------------------------------------------------------------------
+bmmc_flood_fill: /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.h:72
+$00 R0(I), $00 R1(I), $01 R2(I), $02 R3(I), $04 R4(I), $05 R5(I), $00 R6(P), $00 R7(I), $07 R8(I), $09 R9(P), $0b R10(C), $0c R11(C), $0d R12(C), $0e R13(C), $0f R14(C), $00 R15(C), $10 R16(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 843)		LOADZ1	R0(C)[0..3]	<-	V(8 '')+0 	{S}
+0001 ( 843)		CONV37	R0(I)[0..3]	<-	R0(CF)[0..3]	{S}
+0002 ( 843)		LEAG	R0(P)[0..3]	<-	V(25 'cbytes' A)+0 , R0(IF)[0..3]	{S}
+0003 ( 843)		LOADI1	R11(C)[0..255]	<-	R0(PF)+0 {V(25 'cbytes' A)} [0..3]	{}
+0004 ( 835)		LOADZ2	R0(I)[-32768..32767]	<-	V(4 '')+0 	{S}
+0005 ( 835)		BINOP18	R0(I)[-16384..16383]	<-	R0(IF)[-32768..32767], CI:1	{S}
+0006 ( 820)		CONV37	R1(I)[0..255]	<-	R0(C)[-16384..16383]	{S}
+0007 ( 822)		BINOP9	R2(I)[0..3]	<-	R1(I)[0..255], CI:3	{S}
+0008 ( 822)		BINOP2	R2(I)[0..3]	<-	CI:3, R2(IF)[0..3]	{S}
+0009 ( 822)		BINOP16	R2(I)[0..6]	<-	R2(IF)[0..3], CI:1	{S}
+000a ( 835)		LOADZ2	R3(I)[-32768..32767]	<-	V(6 '')+0 	{S}
+000b ( 839)		CONV37	R4(I)[0..255]	<-	R3(C)[-32768..32767]	{S}
+000c ( 839)		BINOP9	R5(I)[0..248]	<-	R4(I)[0..255], CI:248	{S}
+000d ( 839)		LOADZ2	R6(P)	<-	V(0 '')+0 	{S}
+000e ( 839)		LOADI1	R7(C)[0..255]	<-	R6(P)+4	{}
+000f ( 839)		CONV37	R7(I)[0..255]	<-	R7(CF)[0..255]	{}
+0010 ( 839)		BINOP3	R5(I)	<-	R7(IF)[0..255], R5(IF)[0..248]	{}
+0011 ( 839)		LOADI2	R7(P)	<-	R6(P)+0	{}
+0012 ( 839)		LEAI	R7(P)+0	<-	R7(PF)+0, R5(IF)	{}
+0013 ( 839)		BINOP9	R4(I)[0..7]	<-	R4(IF)[0..255], CI:7	{S}
+0014 ( 839)		LEAI	R7(P)+0	<-	R7(PF)+0, R4(IF)[0..7]	{}
+0015 ( 820)		BINOP9	R1(I)[0..252]	<-	R1(IF)[0..255], CI:252	{S}
+0016 ( 820)		BINOP16	R1(I)[0..504]	<-	R1(IF)[0..252], CI:1	{S}
+0017 ( 820)		LEAI	R7(P)+0	<-	R7(PF)+0, R1(IF)[0..504]	{}
+0018 ( 822)		LOADI1	R1(C)[0..255]	<-	R7(PF)+0	{}
+0019 ( 822)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+001a ( 822)		BINOP17	R1(I)[0..255]	<-	R1(IF)[0..255], R2(IF)[0..6]	{}
+001b ( 822)		BINOP9	R1(I)[0..3]	<-	R1(IF)[0..255], CI:3	{}
+001c ( 841)		LEAG	R1(P)[0..3]	<-	V(25 'cbytes' A)+0 , R1(IF)[0..3]	{}
+001d ( 841)		LOADI1	R10(C)[0..255]	<-	R1(PF)+0 {V(25 'cbytes' A)} [0..3]	{}
+001e ( 845)		RELOP19	R1(B)[0..1]	<-	R10(C)[0..255], R11(C)[0..255]	{}
+001f ( 845)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 846)		RET		<-		{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 837)		LOADZ2	R1(P)	<-	V(2 '')+0 	{S}
+0001 ( 837)		LOADI2	R2(I)[-32768..32767]	<-	R1(P)+0	{}
+0002 ( 837)		LOADI2	R4(I)[-32768..32767]	<-	R1(P)+4	{}
+0003 ( 848)		STOREG1		<-	V(26 'BLIT_CODE' A)+0 , R0(CF)[-16384..16383]	{}
+0004 ( 849)		STOREG1		<-	V(26 'BLIT_CODE' A)+1 , R3(CF)[-32768..32767]	{}
+0005 ( 837)		BINOP18	R4(I)[-16384..16383]	<-	R4(IF)[-32768..32767], CI:1	{}
+0006 ( 837)		BINOP18	R2(I)[-16384..16383]	<-	R2(IF)[-32768..32767], CI:1	{}
+0007 ( 849)		CONST	R12(C)[2..2]	<-	CI:2	{}
+0008 ( 853)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 853)		CONV37	R0(I)[2..224]	<-	R12(C)[2..224]	{}
+0001 ( 853)		LEAG	R0(P)[1..223]	<-	V(26 'BLIT_CODE' A)+-1 , R0(IF)[2..224]	{}
+0002 ( 853)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(26 'BLIT_CODE' A)} [1..223]	{}
+0003 ( 856)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0004 ( 856)		BINOP9	R3(I)[0..248]	<-	R0(I)[0..255], CI:248	{}
+0005 ( 856)		LOADI1	R5(C)[0..255]	<-	R6(P)+4	{}
+0006 ( 856)		CONV37	R5(I)[0..255]	<-	R5(CF)[0..255]	{}
+0007 ( 856)		BINOP3	R3(I)	<-	R5(IF)[0..255], R3(IF)[0..248]	{}
+0008 ( 856)		LOADI2	R5(P)	<-	R6(P)+0	{}
+0009 ( 856)		LEAI	R3(P)+0	<-	R5(P)+0, R3(IF)	{}
+000a ( 856)		BINOP9	R7(I)[0..7]	<-	R0(I)[0..255], CI:7	{}
+000b ( 856)		LEAI	R3(P)+0	<-	R3(PF)+0, R7(IF)[0..7]	{}
+000c ( 854)		BINOP1	R12(C)[0..222]	<-	R12(CF)[2..224], CI:-2	{}
+000d ( 854)		CONV37	R7(I)[0..222]	<-	R12(C)[0..222]	{}
+000e ( 854)		LEAG	R7(P)[0..222]	<-	V(26 'BLIT_CODE' A)+0 , R7(IF)[0..222]	{}
+000f ( 854)		LOADI1	R13(C)[0..255]	<-	R7(PF)+0 {V(26 'BLIT_CODE' A)} [0..222]	{}
+0010 ( 827)		CONV37	R7(I)[0..255]	<-	R13(C)[0..255]	{}
+0011 ( 827)		BINOP9	R8(I)[0..252]	<-	R7(I)[0..255], CI:252	{}
+0012 ( 827)		BINOP16	R8(I)[0..504]	<-	R8(IF)[0..252], CI:1	{}
+0013 ( 827)		LEAI	R8(P)+0	<-	R3(P)+0, R8(IF)[0..504]	{}
+0014 ( 829)		LOADI1	R14(C)[0..255]	<-	R8(P)+0	{}
+0015 ( 829)		BINOP10	R15(C)	<-	R14(C)[0..255], R10(C)[0..255]	{}
+0016 ( 829)		BINOP9	R7(I)[0..3]	<-	R7(IF)[0..255], CI:3	{}
+0017 ( 829)		BINOP16	R7(I)[0..6]	<-	R7(IF)[0..3], CI:1	{}
+0018 ( 829)		LEAG	R9(P)[0..6]	<-	V(27 'ormask' A)+0 , R7(I)[0..6]	{}
+0019 ( 829)		LOADI1	R9(C)[0..255]	<-	R9(PF)+0 {V(27 'ormask' A)} [0..6]	{}
+001a ( 829)		BINOP9	R15(C)	<-	R9(C)[0..255], R15(CF)	{}
+001b ( 858)		BRANCH		<-	R15(CF)	{}
+		==> 3
+		==> 5
+L3: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 851)		RELOP27	R0(B)[0..1]	<-	R12(C)[0..], CC:0	{}
+0001 ( 851)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 1
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 815)		BINOP9	R9(C)	<-	R11(C)[0..255], R9(CF)[0..255]	{}
+0001 ( 815)		LEAG	R7(P)[0..6]	<-	V(28 'andmask' A)+0 , R7(IF)[0..6]	{}
+0002 ( 815)		LOADI1	R7(C)[0..255]	<-	R7(PF)+0 {V(28 'andmask' A)} [0..6]	{}
+0003 ( 815)		BINOP9	R7(C)	<-	R7(CF)[0..255], R14(CF)[0..255]	{}
+0004 ( 815)		BINOP8	R7(C)	<-	R7(CF), R9(CF)	{}
+0005 ( 815)		STOREI1		<-	R8(PF)+0, R7(CF)	{}
+0006 ( 862)		MOVE	R14(C)[0..255]	<-	R13(C)[0..255]	{}
+0007 ( 863)		RELOP27	R7(B)[0..1]	<-	R13(C)[0..255], R2(C)[-16384..16383]	{}
+0008 ( 863)		BRANCH		<-	R7(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 863)		CONV37	R7(I)[1..255]	<-	R14(C)[1..255]	{}
+0001 ( 863)		BINOP2	R7(I)[0..254]	<-	R7(IF)[1..255], CI:1	{}
+0002 ( 827)		BINOP9	R8(I)[0..252]	<-	R7(I)[0..254], CI:252	{}
+0003 ( 827)		BINOP16	R8(I)[0..504]	<-	R8(IF)[0..252], CI:1	{}
+0004 ( 827)		LEAI	R8(P)+0	<-	R3(P)+0, R8(IF)[0..504]	{}
+0005 ( 829)		LOADI1	R8(C)[0..255]	<-	R8(PF)+0	{}
+0006 ( 829)		BINOP10	R8(C)	<-	R8(CF)[0..255], R10(C)[0..255]	{}
+0007 ( 829)		BINOP9	R7(I)[0..3]	<-	R7(IF)[0..254], CI:3	{}
+0008 ( 829)		BINOP16	R7(I)[0..6]	<-	R7(IF)[0..3], CI:1	{}
+0009 ( 829)		LEAG	R7(P)[0..6]	<-	V(27 'ormask' A)+0 , R7(IF)[0..6]	{}
+000a ( 829)		LOADI1	R7(C)[0..255]	<-	R7(PF)+0 {V(27 'ormask' A)} [0..6]	{}
+000b ( 829)		BINOP9	R7(C)	<-	R7(CF)[0..255], R8(CF)	{}
+000c ( 863)		BRANCH		<-	R7(CF)	{}
+		==> 8
+		==> 6
+L8: <= D-1: (4) Head P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 870)		CONV37	R7(I)[0..255]	<-	R4(C)[-16384..16383]	{I}
+0001 ( 870)		CONV37	R8(I)[0..255]	<-	R13(C)[0..255]	{}
+0002 ( 870)		BINOP1	R8(I)[1..256]	<-	R8(IF)[0..255], CI:1	{}
+0003 ( 870)		RELOP28	R7(B)[0..1]	<-	R8(I)[1..256], R7(IF)[0..255]	{}
+0004 ( 870)		BRANCH		<-	R7(BF)[0..1]	{}
+		==> 11
+		==> 10
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 827)		BINOP9	R7(I)[0..252]	<-	R8(I)[1..254], CI:252	{}
+0001 ( 827)		BINOP16	R7(I)[0..504]	<-	R7(IF)[0..252], CI:1	{}
+0002 ( 827)		LEAI	R7(P)+0	<-	R3(P)+0, R7(IF)[0..504]	{}
+0003 ( 829)		LOADI1	R7(C)[0..255]	<-	R7(PF)+0	{}
+0004 ( 829)		BINOP10	R9(C)	<-	R7(CF)[0..255], R10(C)[0..255]	{}
+0005 ( 829)		BINOP9	R8(I)[0..3]	<-	R8(IF)[1..254], CI:3	{}
+0006 ( 829)		BINOP16	R8(I)[0..6]	<-	R8(IF)[0..3], CI:1	{}
+0007 ( 829)		LEAG	R7(P)[0..6]	<-	V(27 'ormask' A)+0 , R8(IF)[0..6]	{}
+0008 ( 829)		LOADI1	R7(C)[0..255]	<-	R7(PF)+0 {V(27 'ormask' A)} [0..6]	{}
+0009 ( 829)		BINOP9	R7(C)	<-	R7(CF)[0..255], R9(CF)	{}
+000a ( 870)		BRANCH		<-	R7(CF)	{}
+		==> 10
+		==> 9
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 877)		LOADI2	R3(I)[-32768..32767]	<-	R1(P)+2	{}
+0001 ( 877)		RELOP23	R3(B)[0..1]	<-	R0(I)[0..255], R3(IF)[-32768..32767]	{}
+0002 ( 877)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 12
+		==> 13
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 881)		RELOP26	R3(B)[0..1]	<-	R14(C)[0..255], R13(C)[0..255]	{}
+0001 ( 881)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 25
+		==> 13
+L25: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 879)		BINOP2	R3(I)[-1..254]	<-	R0(I)[0..255], CI:1	{}
+0001 ( 879)		BINOP9	R7(I)[-1..248]	<-	R3(I)[-1..254], CI:-8	{}
+0002 ( 879)		LOADI1	R8(C)[0..255]	<-	R6(P)+4	{}
+0003 ( 879)		CONV37	R8(I)[0..255]	<-	R8(CF)[0..255]	{}
+0004 ( 879)		BINOP3	R7(I)	<-	R8(IF)[0..255], R7(IF)[-1..248]	{}
+0005 ( 879)		LEAI	R7(P)+0	<-	R5(P)+0, R7(IF)	{}
+0006 ( 879)		BINOP9	R8(I)[0..7]	<-	R3(I)[-1..254], CI:7	{}
+0007 ( 879)		LEAI	R7(P)+0	<-	R7(PF)+0, R8(IF)[0..7]	{}
+0008 ( 881)		MOVE	R15(C)[0..255]	<-	R14(C)[0..255]	{}
+0009 ( 876)		CONST	R16(B)[0..0]	<-	CI:0	{}
+000a ( 827)		JUMP		<-		{}
+		==> 15
+L15: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 827)		CONV37	R8(I)[0..255]	<-	R15(C)[0..]	{}
+0001 ( 827)		BINOP9	R9(I)[0..252]	<-	R8(I)[0..255], CI:252	{}
+0002 ( 827)		BINOP16	R9(I)[0..504]	<-	R9(IF)[0..252], CI:1	{}
+0003 ( 827)		LEAI	R9(P)+0	<-	R7(P)+0, R9(IF)[0..504]	{}
+0004 ( 829)		LOADI1	R9(C)[0..255]	<-	R9(PF)+0	{}
+0005 ( 829)		BINOP10	R9(C)	<-	R9(CF)[0..255], R10(C)[0..255]	{}
+0006 ( 829)		BINOP9	R8(I)[0..3]	<-	R8(IF)[0..255], CI:3	{}
+0007 ( 829)		BINOP16	R8(I)[0..6]	<-	R8(IF)[0..3], CI:1	{}
+0008 ( 829)		LEAG	R8(P)[0..6]	<-	V(27 'ormask' A)+0 , R8(IF)[0..6]	{}
+0009 ( 829)		LOADI1	R8(C)[0..255]	<-	R8(PF)+0 {V(27 'ormask' A)} [0..6]	{}
+000a ( 829)		BINOP9	R8(C)	<-	R8(CF)[0..255], R9(CF)	{}
+000b ( 883)		BRANCH		<-	R8(CF)	{}
+		==> 17
+		==> 16
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 893)		CONST	R16(B)[0..0]	<-	CI:0	{}
+0001 ( 881)		JUMP		<-		{}
+		==> 14
+L14: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 881)		BINOP1	R15(C)[1..]	<-	R15(CF)[0..], CI:1	{}
+0001 ( 881)		RELOP26	R8(B)[0..1]	<-	R15(C)[1..], R13(C)[0..255]	{}
+0002 ( 881)		BRANCH		<-	R8(BF)[0..1]	{}
+		==> 15
+		==> 13
+L13: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 898)		BINOP1	R0(I)[1..256]	<-	R0(IF)[0..255], CI:1	{}
+0001 ( 898)		LOADI2	R3(I)[-32768..32767]	<-	R1(P)+6	{}
+0002 ( 898)		RELOP24	R3(B)[0..1]	<-	R0(I)[1..256], R3(IF)[-32768..32767]	{}
+0003 ( 898)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 19
+		==> 3
+L19: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 902)		RELOP26	R3(B)[0..1]	<-	R14(C)[0..255], R13(C)[0..255]	{}
+0001 ( 902)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 26
+		==> 3
+L26: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 900)		BINOP9	R3(I)[0..256]	<-	R0(I)[1..256], CI:504	{}
+0001 ( 900)		LOADI1	R7(C)[0..255]	<-	R6(P)+4	{}
+0002 ( 900)		CONV37	R7(I)[0..255]	<-	R7(CF)[0..255]	{}
+0003 ( 900)		BINOP3	R3(I)	<-	R7(IF)[0..255], R3(IF)[0..256]	{}
+0004 ( 900)		LEAI	R5(P)+0	<-	R5(PF)+0, R3(IF)	{}
+0005 ( 900)		BINOP9	R3(I)[0..7]	<-	R0(I)[1..256], CI:7	{}
+0006 ( 900)		LEAI	R5(P)+0	<-	R5(PF)+0, R3(IF)[0..7]	{}
+0007 ( 897)		CONST	R8(B)[0..0]	<-	CI:0	{}
+0008 ( 827)		JUMP		<-		{}
+		==> 21
+L21: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 827)		CONV37	R3(I)[0..255]	<-	R14(C)[0..]	{}
+0001 ( 827)		BINOP9	R7(I)[0..252]	<-	R3(I)[0..255], CI:252	{}
+0002 ( 827)		BINOP16	R7(I)[0..504]	<-	R7(IF)[0..252], CI:1	{}
+0003 ( 827)		LEAI	R7(P)+0	<-	R5(P)+0, R7(IF)[0..504]	{}
+0004 ( 829)		LOADI1	R7(C)[0..255]	<-	R7(PF)+0	{}
+0005 ( 829)		BINOP10	R7(C)	<-	R7(CF)[0..255], R10(C)[0..255]	{}
+0006 ( 829)		BINOP9	R3(I)[0..3]	<-	R3(IF)[0..255], CI:3	{}
+0007 ( 829)		BINOP16	R3(I)[0..6]	<-	R3(IF)[0..3], CI:1	{}
+0008 ( 829)		LEAG	R3(P)[0..6]	<-	V(27 'ormask' A)+0 , R3(IF)[0..6]	{}
+0009 ( 829)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0 {V(27 'ormask' A)} [0..6]	{}
+000a ( 829)		BINOP9	R3(C)	<-	R3(CF)[0..255], R7(CF)	{}
+000b ( 904)		BRANCH		<-	R3(CF)	{}
+		==> 23
+		==> 22
+L23: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 914)		CONST	R8(B)[0..0]	<-	CI:0	{}
+0001 ( 902)		JUMP		<-		{}
+		==> 20
+L20: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 902)		BINOP1	R14(C)[1..]	<-	R14(CF)[0..], CI:1	{}
+0001 ( 902)		RELOP26	R3(B)[0..1]	<-	R14(C)[1..], R13(C)[0..255]	{}
+0002 ( 902)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 21
+		==> 3
+L22: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 906)		BRANCH		<-	R8(B)[0..1]	{}
+		==> 20
+		==> 24
+L24: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 908)		CONV37	R3(I)[0..222]	<-	R12(C)[0..222]	{}
+0001 ( 908)		LEAG	R7(P)[0..222]	<-	V(26 'BLIT_CODE' A)+0 , R3(I)[0..222]	{}
+0002 ( 908)		STOREI1		<-	R7(PF)+0 {V(26 'BLIT_CODE' A)} [0..222], R14(C)[0..]	{}
+0003 ( 909)		LEAG	R3(P)[1..223]	<-	V(26 'BLIT_CODE' A)+1 , R3(IF)[0..222]	{}
+0004 ( 909)		STOREI1		<-	R3(PF)+0 {V(26 'BLIT_CODE' A)} [1..223], R0(C)[1..32766]	{}
+0005 ( 909)		BINOP1	R12(C)[2..224]	<-	R12(CF)[0..222], CI:2	{}
+0006 ( 910)		CONST	R8(B)[1..1]	<-	CI:1	{}
+0007 ( 902)		JUMP		<-		{}
+		==> 20
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 885)		BRANCH		<-	R16(B)[0..1]	{}
+		==> 14
+		==> 18
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 887)		CONV37	R8(I)[0..222]	<-	R12(C)[0..222]	{}
+0001 ( 887)		LEAG	R9(P)[0..222]	<-	V(26 'BLIT_CODE' A)+0 , R8(I)[0..222]	{}
+0002 ( 887)		STOREI1		<-	R9(PF)+0 {V(26 'BLIT_CODE' A)} [0..222], R15(C)[0..]	{}
+0003 ( 888)		LEAG	R8(P)[1..223]	<-	V(26 'BLIT_CODE' A)+1 , R8(IF)[0..222]	{}
+0004 ( 888)		STOREI1		<-	R8(PF)+0 {V(26 'BLIT_CODE' A)} [1..223], R3(C)[-32768..254]	{}
+0005 ( 888)		BINOP1	R12(C)[2..224]	<-	R12(CF)[0..222], CI:2	{}
+0006 ( 889)		CONST	R16(B)[1..1]	<-	CI:1	{}
+0007 ( 881)		JUMP		<-		{}
+		==> 14
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 872)		BINOP1	R13(C)[1..255]	<-	R13(CF)[0..254], CI:1	{}
+0001 ( 813)		CONV37	R7(I)[1..255]	<-	R13(C)[1..255]	{}
+0002 ( 815)		BINOP9	R8(I)[0..3]	<-	R7(I)[1..255], CI:3	{}
+0003 ( 815)		BINOP16	R8(I)[0..6]	<-	R8(IF)[0..3], CI:1	{}
+0004 ( 815)		LEAG	R9(P)[0..6]	<-	V(27 'ormask' A)+0 , R8(I)[0..6]	{}
+0005 ( 815)		LOADI1	R9(C)[0..255]	<-	R9(PF)+0 {V(27 'ormask' A)} [0..6]	{}
+0006 ( 815)		BINOP9	R9(C)	<-	R9(CF)[0..255], R11(C)[0..255]	{}
+0007 ( 815)		LEAG	R8(P)[0..6]	<-	V(28 'andmask' A)+0 , R8(IF)[0..6]	{}
+0008 ( 815)		LOADI1	R8(C)[0..255]	<-	R8(PF)+0 {V(28 'andmask' A)} [0..6]	{}
+0009 ( 813)		BINOP9	R7(I)[0..252]	<-	R7(IF)[1..255], CI:252	{}
+000a ( 813)		BINOP16	R7(I)[0..504]	<-	R7(IF)[0..252], CI:1	{}
+000b ( 813)		LEAI	R7(P)+0	<-	R3(P)+0, R7(IF)[0..504]	{}
+000c ( 815)		LOADI1	R15(C)[0..255]	<-	R7(P)+0	{}
+000d ( 815)		BINOP9	R8(C)	<-	R15(CF)[0..255], R8(CF)[0..255]	{}
+000e ( 815)		BINOP8	R8(C)	<-	R8(CF), R9(CF)	{}
+000f ( 815)		STOREI1		<-	R7(PF)+0, R8(CF)	{}
+0010 ( 873)		JUMP		<-		{}
+		==> 8
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/gfx/mcbitmap.c
+0000 ( 865)		BINOP1	R14(C)[0..254]	<-	R14(CF)[1..255], CI:-1	{}
+0001 ( 813)		CONV37	R7(I)[0..254]	<-	R14(C)[0..254]	{}
+0002 ( 815)		BINOP9	R8(I)[0..3]	<-	R7(I)[0..254], CI:3	{}
+0003 ( 815)		BINOP16	R8(I)[0..6]	<-	R8(IF)[0..3], CI:1	{}
+0004 ( 815)		LEAG	R9(P)[0..6]	<-	V(27 'ormask' A)+0 , R8(I)[0..6]	{}
+0005 ( 815)		LOADI1	R9(C)[0..255]	<-	R9(PF)+0 {V(27 'ormask' A)} [0..6]	{}
+0006 ( 815)		BINOP9	R9(C)	<-	R9(CF)[0..255], R11(C)[0..255]	{}
+0007 ( 815)		LEAG	R8(P)[0..6]	<-	V(28 'andmask' A)+0 , R8(IF)[0..6]	{}
+0008 ( 815)		LOADI1	R8(C)[0..255]	<-	R8(PF)+0 {V(28 'andmask' A)} [0..6]	{}
+0009 ( 813)		BINOP9	R7(I)[0..252]	<-	R7(IF)[0..254], CI:252	{}
+000a ( 813)		BINOP16	R7(I)[0..504]	<-	R7(IF)[0..252], CI:1	{}
+000b ( 813)		LEAI	R7(P)+0	<-	R3(P)+0, R7(IF)[0..504]	{}
+000c ( 815)		LOADI1	R15(C)[0..255]	<-	R7(P)+0	{}
+000d ( 815)		BINOP9	R8(C)	<-	R15(CF)[0..255], R8(CF)[0..255]	{}
+000e ( 815)		BINOP8	R8(C)	<-	R8(CF), R9(CF)	{}
+000f ( 815)		STOREI1		<-	R7(PF)+0, R8(CF)	{}
+0010 ( 863)		RELOP27	R7(B)[0..1]	<-	R14(C)[0..254], R2(C)[-16384..16383]	{}
+0011 ( 863)		BRANCH		<-	R7(BF)[0..1]	{}
+		==> 7
+		==> 8
+--------------------------------------------------------------------
+getch: /home/honza/projects/c64/projects/oscar64/include/conio.h:83
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 320)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 320)		JSR	R0(L)	<-	V(-1 '')+0 	{V}
+0001 ( 323)		BRANCH		<-	R0(C)	{}
+		==> 2
+		==> 1
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 325)		STOREC1		<-	V(0 '')+0 , R0(CF)	{}
+0001 ( 325)		CALLN	R0(C)	<-	V(11 'convch')+0 	{E}
+0002 ( 325)		RETV		<-	R0(CF)	{}
+--------------------------------------------------------------------
+convch: /home/honza/projects/c64/projects/oscar64/include/conio.c:242
+$00 R0(I), $00 R1(B), $00 R2(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 246)		LOADG1	R0(C)[0..3]	<-	V(61 'giocharmap')+0 	{}
+0001 ( 246)		RELOP25	R1(B)[0..1]	<-	R0(C)[0..3], CC:1	{}
+0002 ( 246)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 248)		LOADZ1	R1(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 248)		RELOP19	R2(B)[0..1]	<-	R1(C)[0..255], CC:13	{}
+0002 ( 248)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 263)		RETV		<-	CC:10	{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 250)		RELOP25	R0(B)[0..1]	<-	R0(CF)[1..3], CC:2	{}
+0001 ( 250)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 2
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 252)		RELOP25	R0(B)[0..1]	<-	R1(C)[0..255], CC:65	{}
+0001 ( 252)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 2
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 252)		RELOP28	R0(B)[0..1]	<-	R1(C)[65..255], CC:219	{}
+0001 ( 252)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 2
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 254)		RELOP25	R0(B)[0..1]	<-	R1(C)[65..218], CC:193	{}
+0001 ( 254)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 248)		CONV37	R0(I)[193..218]	<-	R1(CF)[193..218]	{}
+0001 ( 255)		BINOP10	R0(I)[0..255]	<-	R0(IF)[193..218], CI:160	{}
+0002 ( 255)		STOREZ1		<-	V(0 '')+0 , R0(C)[0..255]	{}
+0003 ( 256)		RELOP28	R0(B)[0..1]	<-	R0(CF)[0..255], CC:123	{}
+0004 ( 256)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 2
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		LOADZ1	R1(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 256)		CONV37	R0(I)[0..255]	<-	R1(C)[0..255]	{}
+0002 ( 256)		RELOP25	R2(B)[0..1]	<-	R1(C)[0..255], CC:97	{}
+0003 ( 256)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 10
+		==> 12
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 257)		BINOP10	R0(I)[0..255]	<-	R0(IF)[0..255], CI:32	{}
+0001 ( 263)		RETV		<-	R0(CF)[0..255]	{}
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		RELOP28	R1(B)[0..1]	<-	R1(CF)[0..96], CC:91	{}
+0001 ( 256)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 10
+		==> 2
+L2: <= D-1: (7)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 263)		LOADZ1	R0(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 263)		RETV		<-	R0(CF)[0..255]	{}
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		RELOP28	R0(B)[0..1]	<-	R1(CF)[65..192], CC:123	{}
+0001 ( 256)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 2

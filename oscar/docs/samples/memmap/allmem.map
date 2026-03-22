@@ -1,0 +1,128 @@
+sections
+1000 - 2380 : DATA, code
+2380 - 239e : DATA, data
+239e - 23a2 : BSS, bss
+23a8 - fff0 : HEAP, heap
+0a00 - 0f98 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+0ff2 - 1000 : SSTACK, sstack
+0ff2 - 0ff2 : SSTACK, mmap_trampoline@stack
+0ff2 - 0ff2 : SSTACK, putpch@stack
+0ff2 - 0ff2 : SSTACK, puts@stack
+0fe2 - 0ff2 : SSTACK, nformi@stack
+0fe2 - 0ff2 : SSTACK, nforml@stack
+0ff2 - 0ff2 : SSTACK, isinf@stack
+0fe9 - 0ff2 : SSTACK, nformf@stack
+0fd0 - 0fe2 : SSTACK, sformat@stack
+0f9e - 0fd0 : SSTACK, printf@stack
+0f98 - 0f9e : SSTACK, main@stack
+
+regions
+0a00 - 0a00 : 0000, 0000, stack
+1000 - fff0 : 239e, 13a2, main
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0f98 - 0f9e : main@stack, BSS:main@stack
+0f98 - 0f98 : StackEnd, END:stack
+0f9e - 0fd0 : buff, BSS:printf@stack
+0fd0 - 0fda : sformat@stack, BSS:sformat@stack
+0fda - 0fe2 : si, BSS:sformat@stack
+0fe2 - 0ff2 : buffer, BSS:nformi@stack
+0fe2 - 0ff2 : buffer, BSS:nforml@stack
+0fe9 - 0ff2 : nformf@stack, BSS:nformf@stack
+0ff2 - 1000 : sstack, STACK:sstack
+1000 - 109c : main, NATIVE_CODE:code
+109c - 10b1 : mmap_trampoline, NATIVE_CODE:code
+10b1 - 10c8 : NMITrampoline, NATIVE_CODE:code
+10c8 - 10cf : DoneTrampoline, NATIVE_CODE:code
+10cf - 10e6 : IRQTrampoline, NATIVE_CODE:code
+10e6 - 110e : printf, NATIVE_CODE:code
+110e - 154f : sformat, NATIVE_CODE:code
+154f - 1562 : puts, NATIVE_CODE:code
+1562 - 15c5 : putpch, NATIVE_CODE:code
+15c5 - 16e0 : nformi, NATIVE_CODE:code
+16e0 - 182a : nforml, NATIVE_CODE:code
+182a - 1d8e : nformf, NATIVE_CODE:code
+1d8e - 1d9d : isinf, NATIVE_CODE:code
+1d9d - 1db4 : *, DATA:code
+1db4 - 1df9 : freg, NATIVE_CODE:code
+1df9 - 1ee6 : faddsub, NATIVE_CODE:code
+1ee6 - 1f80 : crt_fmul, NATIVE_CODE:code
+1f80 - 1fae : crt_fmul8, NATIVE_CODE:code
+1fae - 205c : crt_fdiv, NATIVE_CODE:code
+205c - 207a : divs16, NATIVE_CODE:code
+207a - 2088 : negaccu, NATIVE_CODE:code
+2088 - 2096 : negtmp, NATIVE_CODE:code
+2096 - 211b : divmod, NATIVE_CODE:code
+211b - 213a : mods16, NATIVE_CODE:code
+213a - 2148 : negtmpb, NATIVE_CODE:code
+2148 - 2194 : f32_to_i16, NATIVE_CODE:code
+2194 - 21b2 : sint16_to_float, NATIVE_CODE:code
+21b2 - 21db : uint16_to_float, NATIVE_CODE:code
+21db - 22b2 : divmod32, NATIVE_CODE:code
+22b2 - 2380 : crt_malloc, NATIVE_CODE:code
+2380 - 2381 : spentry, DATA:data
+2381 - 2382 : giocharmap, DATA:data
+2382 - 239e : fround5, DATA:data
+239e - 23a2 : HeapNode, DATA:bss
+239e - 239e : BSSStart, START:bss
+23a2 - 23a2 : BSSEnd, END:bss
+23a8 - 23a8 : HeapStart, START:heap
+fff0 - fff0 : HeapEnd, END:heap
+
+objects by size
+182a (0564) : nformf, NATIVE_CODE:code
+110e (0441) : sformat, NATIVE_CODE:code
+16e0 (014a) : nforml, NATIVE_CODE:code
+15c5 (011b) : nformi, NATIVE_CODE:code
+1df9 (00ed) : faddsub, NATIVE_CODE:code
+21db (00d7) : divmod32, NATIVE_CODE:code
+22b2 (00ce) : crt_malloc, NATIVE_CODE:code
+1fae (00ae) : crt_fdiv, NATIVE_CODE:code
+1000 (009c) : main, NATIVE_CODE:code
+1ee6 (009a) : crt_fmul, NATIVE_CODE:code
+2096 (0085) : divmod, NATIVE_CODE:code
+1562 (0063) : putpch, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+2148 (004c) : f32_to_i16, NATIVE_CODE:code
+1db4 (0045) : freg, NATIVE_CODE:code
+0f9e (0032) : buff, BSS:printf@stack
+1f80 (002e) : crt_fmul8, NATIVE_CODE:code
+21b2 (0029) : uint16_to_float, NATIVE_CODE:code
+10e6 (0028) : printf, NATIVE_CODE:code
+211b (001f) : mods16, NATIVE_CODE:code
+205c (001e) : divs16, NATIVE_CODE:code
+2194 (001e) : sint16_to_float, NATIVE_CODE:code
+2382 (001c) : fround5, DATA:data
+10b1 (0017) : NMITrampoline, NATIVE_CODE:code
+10cf (0017) : IRQTrampoline, NATIVE_CODE:code
+109c (0015) : mmap_trampoline, NATIVE_CODE:code
+154f (0013) : puts, NATIVE_CODE:code
+0fe2 (0010) : buffer, BSS:nformi@stack
+0fe2 (0010) : buffer, BSS:nforml@stack
+1d8e (000f) : isinf, NATIVE_CODE:code
+0ff2 (000e) : sstack, STACK:sstack
+207a (000e) : negaccu, NATIVE_CODE:code
+2088 (000e) : negtmp, NATIVE_CODE:code
+213a (000e) : negtmpb, NATIVE_CODE:code
+0fd0 (000a) : sformat@stack, BSS:sformat@stack
+0fe9 (0009) : nformf@stack, BSS:nformf@stack
+0fda (0008) : si, BSS:sformat@stack
+10c8 (0007) : DoneTrampoline, NATIVE_CODE:code
+0f98 (0006) : main@stack, BSS:main@stack
+239e (0004) : HeapNode, DATA:bss
+2380 (0001) : spentry, DATA:data
+2381 (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0f98 (0000) : StackEnd, END:stack
+239e (0000) : BSSStart, START:bss
+23a2 (0000) : BSSEnd, END:bss
+23a8 (0000) : HeapStart, START:heap
+fff0 (0000) : HeapEnd, END:heap

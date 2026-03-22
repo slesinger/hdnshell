@@ -1,0 +1,148 @@
+sections
+0880 - 1801 : DATA, code
+1801 - 2863 : DATA, data
+2863 - 28d6 : BSS, bss
+28d8 - 9000 : HEAP, heap
+9000 - 9fe5 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9ff5 - a000 : SSTACK, sstack
+9ff5 - 9ff5 : SSTACK, mmap_trampoline@stack
+9ff5 - 9ff5 : SSTACK, memcpy@stack
+9ff5 - 9ff5 : SSTACK, vic_setmode@stack
+9ff5 - 9ff5 : SSTACK, spr_init@stack
+9ff5 - 9ff5 : SSTACK, status_init@stack
+9ff5 - 9ff5 : SSTACK, brick_put@stack
+9ff5 - 9ff5 : SSTACK, brick_init@stack
+9ff5 - 9ff5 : SSTACK, spr_set@stack
+9ff5 - 9ff5 : SSTACK, paddle_init@stack
+9ff5 - 9ff5 : SSTACK, ball_init@stack
+9ff5 - 9ff5 : SSTACK, game_state@stack
+9ff5 - 9ff5 : SSTACK, brick_animate@stack
+9ff5 - 9ff5 : SSTACK, joy_poll@stack
+9ff5 - 9ff5 : SSTACK, paddle_control@stack
+9ff5 - 9ff5 : SSTACK, sound_trigger@stack
+9ff5 - 9ff5 : SSTACK, ball_lost@stack
+9ff5 - 9ff5 : SSTACK, score_inc@stack
+9ff5 - 9ff5 : SSTACK, brick_hit@stack
+9fe9 - 9ff5 : SSTACK, ball_loop@stack
+9fe7 - 9fe9 : SSTACK, game_loop@stack
+9ff5 - 9ff5 : SSTACK, sound_loop@stack
+9ff5 - 9ff5 : SSTACK, ball_move@stack
+9ff5 - 9ff5 : SSTACK, paddle_move@stack
+9fe5 - 9fe7 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 2863, 2056, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 094e : main, NATIVE_CODE:code
+094e - 0963 : mmap_trampoline, NATIVE_CODE:code
+0963 - 097a : NMITrampoline, NATIVE_CODE:code
+097a - 0981 : DoneTrampoline, NATIVE_CODE:code
+0981 - 0998 : IRQTrampoline, NATIVE_CODE:code
+0998 - 09c7 : memcpy, NATIVE_CODE:code
+09c7 - 0a19 : vic_setmode, NATIVE_CODE:code
+0a19 - 0b2c : game_state, NATIVE_CODE:code
+0b2c - 0b9e : brick_init, NATIVE_CODE:code
+0b9e - 0bb5 : status_init, NATIVE_CODE:code
+0bb5 - 0c6b : brick_put, NATIVE_CODE:code
+0c6b - 0caf : paddle_init, NATIVE_CODE:code
+0caf - 0d39 : spr_set, NATIVE_CODE:code
+0d39 - 0df0 : ball_init, NATIVE_CODE:code
+0df0 - 0f56 : brick_animate, NATIVE_CODE:code
+0f56 - 1008 : game_loop, NATIVE_CODE:code
+1008 - 10ce : paddle_control, NATIVE_CODE:code
+10ce - 110e : joy_poll, NATIVE_CODE:code
+110e - 14f0 : ball_loop, NATIVE_CODE:code
+14f0 - 1510 : sound_trigger, NATIVE_CODE:code
+1510 - 153e : ball_lost, NATIVE_CODE:code
+153e - 15dc : brick_hit, NATIVE_CODE:code
+15dc - 1625 : score_inc, NATIVE_CODE:code
+1625 - 16a2 : sound_loop, NATIVE_CODE:code
+16a2 - 173f : ball_move, NATIVE_CODE:code
+173f - 177c : paddle_move, NATIVE_CODE:code
+177c - 1801 : divmod, NATIVE_CODE:code
+1801 - 1802 : spentry, DATA:data
+1802 - 2002 : charset, DATA:data
+2002 - 2802 : spriteset, DATA:data
+2802 - 282b : StatusText, DATA:data
+282b - 2863 : bitshift, DATA:data
+2863 - 2863 : BSSStart, START:bss
+2863 - 2865 : vspriteScreen, DATA:bss
+2865 - 2885 : TheGame, DATA:bss
+2885 - 2887 : paddlevx, DATA:bss
+2887 - 2889 : paddlex, DATA:bss
+2889 - 288d : numFlashingBricks, DATA:bss
+288d - 28cd : flashingBricks, DATA:bss
+28cd - 28cf : joyy, DATA:bss
+28cf - 28d1 : joyx, DATA:bss
+28d1 - 28d3 : joyb, DATA:bss
+28d3 - 28d5 : sound_freq, DATA:bss
+28d5 - 28d6 : sound_index, DATA:bss
+28d6 - 28d6 : BSSEnd, END:bss
+9fe5 - 9fe7 : main@stack, BSS:main@stack
+9fe5 - 9fe5 : StackEnd, END:stack
+9fe7 - 9fe9 : game_loop@stack, BSS:game_loop@stack
+9fe9 - 9ff5 : ball_loop@stack, BSS:ball_loop@stack
+9ff5 - a000 : sstack, STACK:sstack
+
+objects by size
+1802 (0800) : charset, DATA:data
+2002 (0800) : spriteset, DATA:data
+110e (03e2) : ball_loop, NATIVE_CODE:code
+0df0 (0166) : brick_animate, NATIVE_CODE:code
+0a19 (0113) : game_state, NATIVE_CODE:code
+0880 (00ce) : main, NATIVE_CODE:code
+1008 (00c6) : paddle_control, NATIVE_CODE:code
+0d39 (00b7) : ball_init, NATIVE_CODE:code
+0bb5 (00b6) : brick_put, NATIVE_CODE:code
+0f56 (00b2) : game_loop, NATIVE_CODE:code
+153e (009e) : brick_hit, NATIVE_CODE:code
+16a2 (009d) : ball_move, NATIVE_CODE:code
+0caf (008a) : spr_set, NATIVE_CODE:code
+177c (0085) : divmod, NATIVE_CODE:code
+1625 (007d) : sound_loop, NATIVE_CODE:code
+0b2c (0072) : brick_init, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+09c7 (0052) : vic_setmode, NATIVE_CODE:code
+15dc (0049) : score_inc, NATIVE_CODE:code
+0c6b (0044) : paddle_init, NATIVE_CODE:code
+10ce (0040) : joy_poll, NATIVE_CODE:code
+288d (0040) : flashingBricks, DATA:bss
+173f (003d) : paddle_move, NATIVE_CODE:code
+282b (0038) : bitshift, DATA:data
+0998 (002f) : memcpy, NATIVE_CODE:code
+1510 (002e) : ball_lost, NATIVE_CODE:code
+2802 (0029) : StatusText, DATA:data
+14f0 (0020) : sound_trigger, NATIVE_CODE:code
+2865 (0020) : TheGame, DATA:bss
+0963 (0017) : NMITrampoline, NATIVE_CODE:code
+0981 (0017) : IRQTrampoline, NATIVE_CODE:code
+0b9e (0017) : status_init, NATIVE_CODE:code
+094e (0015) : mmap_trampoline, NATIVE_CODE:code
+9fe9 (000c) : ball_loop@stack, BSS:ball_loop@stack
+9ff5 (000b) : sstack, STACK:sstack
+097a (0007) : DoneTrampoline, NATIVE_CODE:code
+2889 (0004) : numFlashingBricks, DATA:bss
+2863 (0002) : vspriteScreen, DATA:bss
+2885 (0002) : paddlevx, DATA:bss
+2887 (0002) : paddlex, DATA:bss
+28cd (0002) : joyy, DATA:bss
+28cf (0002) : joyx, DATA:bss
+28d1 (0002) : joyb, DATA:bss
+28d3 (0002) : sound_freq, DATA:bss
+9fe5 (0002) : main@stack, BSS:main@stack
+9fe7 (0002) : game_loop@stack, BSS:game_loop@stack
+1801 (0001) : spentry, DATA:data
+28d5 (0001) : sound_index, DATA:bss
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+2863 (0000) : BSSStart, START:bss
+28d6 (0000) : BSSEnd, END:bss
+9fe5 (0000) : StackEnd, END:stack

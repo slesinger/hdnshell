@@ -1,0 +1,88 @@
+sections
+0880 - 13a3 : DATA, code
+13a3 - 1440 : DATA, data
+1440 - 1600 : BSS, bss
+1600 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, rand@stack
+a000 - a000 : SSTACK, expandrow@stack
+a000 - a000 : SSTACK, joy_poll@stack
+a000 - a000 : SSTACK, expandcol@stack
+a000 - a000 : SSTACK, vic_waitLine@stack
+a000 - a000 : SSTACK, scroll_left@stack
+a000 - a000 : SSTACK, scroll_right@stack
+a000 - a000 : SSTACK, scroll_up@stack
+a000 - a000 : SSTACK, scroll_down@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 1440, 0d80, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0a37 : main, NATIVE_CODE:code
+0a37 - 0a5e : rand, NATIVE_CODE:code
+0a5e - 0a99 : expandrow, NATIVE_CODE:code
+0a99 - 0ad9 : joy_poll, NATIVE_CODE:code
+0ad9 - 0b20 : expandcol, NATIVE_CODE:code
+0b20 - 0dc8 : scroll_left, NATIVE_CODE:code
+0dc8 - 0de1 : vic_waitLine, NATIVE_CODE:code
+0de1 - 1085 : scroll_right, NATIVE_CODE:code
+1085 - 1203 : scroll_up, NATIVE_CODE:code
+1203 - 139f : scroll_down, NATIVE_CODE:code
+139f - 13a3 : __multab16L, DATA:code
+13a3 - 13a4 : spentry, DATA:data
+13a4 - 13a6 : seed, DATA:data
+13a6 - 13a8 : joyy, DATA:bss
+13a8 - 13aa : joyx, DATA:bss
+13aa - 13ac : joyb, DATA:bss
+13ac - 13d4 : news, DATA:bss
+13d4 - 13fc : newc, DATA:bss
+1400 - 1440 : quad, DATA:data
+1440 - 1468 : tmp0, DATA:bss
+1440 - 1440 : BSSStart, START:bss
+1468 - 1490 : tmp1, DATA:bss
+1490 - 14b8 : tmp2, DATA:bss
+14b8 - 14e0 : tmp3, DATA:bss
+1500 - 1600 : grid, DATA:bss
+1600 - 1600 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0b20 (02a8) : scroll_left, NATIVE_CODE:code
+0de1 (02a4) : scroll_right, NATIVE_CODE:code
+0880 (01b7) : main, NATIVE_CODE:code
+1203 (019c) : scroll_down, NATIVE_CODE:code
+1085 (017e) : scroll_up, NATIVE_CODE:code
+1500 (0100) : grid, DATA:bss
+0801 (0052) : startup, NATIVE_CODE:startup
+0ad9 (0047) : expandcol, NATIVE_CODE:code
+0a99 (0040) : joy_poll, NATIVE_CODE:code
+1400 (0040) : quad, DATA:data
+0a5e (003b) : expandrow, NATIVE_CODE:code
+13ac (0028) : news, DATA:bss
+13d4 (0028) : newc, DATA:bss
+1440 (0028) : tmp0, DATA:bss
+1468 (0028) : tmp1, DATA:bss
+1490 (0028) : tmp2, DATA:bss
+14b8 (0028) : tmp3, DATA:bss
+0a37 (0027) : rand, NATIVE_CODE:code
+0dc8 (0019) : vic_waitLine, NATIVE_CODE:code
+139f (0004) : __multab16L, DATA:code
+13a4 (0002) : seed, DATA:data
+13a6 (0002) : joyy, DATA:bss
+13a8 (0002) : joyx, DATA:bss
+13aa (0002) : joyb, DATA:bss
+13a3 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+1440 (0000) : BSSStart, START:bss
+1600 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

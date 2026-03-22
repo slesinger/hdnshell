@@ -1,0 +1,107 @@
+sections
+0880 - 13c3 : DATA, code
+13c3 - 14f8 : DATA, data
+14f8 - 14f8 : BSS, bss
+14f8 - 9000 : HEAP, heap
+9000 - 9fd5 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9ffe - a000 : SSTACK, sstack
+9ffe - 9ffe : SSTACK, spr_init@stack
+9ffe - 9ffe : SSTACK, spr_set@stack
+9ffe - 9ffe : SSTACK, lander_init@stack
+9ffe - 9ffe : SSTACK, rand@stack
+9fd5 - 9ffe : SSTACK, screen_init@stack
+9ffe - 9ffe : SSTACK, lander_show@stack
+9fd5 - 9fd5 : SSTACK, game_state@stack
+9ffe - 9ffe : SSTACK, joy_poll@stack
+9ffe - 9ffe : SSTACK, lander_move@stack
+9ffe - 9ffe : SSTACK, lander_check@stack
+9ffe - 9ffe : SSTACK, lander_flash@stack
+9fd5 - 9fd5 : SSTACK, game_loop@stack
+9fd5 - 9fd5 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 14f8, 0c78, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 08c0 : main, NATIVE_CODE:code
+08c0 - 0987 : game_state, NATIVE_CODE:code
+0987 - 0a8d : lander_init, NATIVE_CODE:code
+0a8d - 0b17 : spr_set, NATIVE_CODE:code
+0b17 - 0d15 : screen_init, NATIVE_CODE:code
+0d15 - 0d3c : rand, NATIVE_CODE:code
+0d3c - 0e04 : lander_show, NATIVE_CODE:code
+0e04 - 0e7d : game_loop, NATIVE_CODE:code
+0e7d - 0ebd : joy_poll, NATIVE_CODE:code
+0ebd - 0fe3 : lander_move, NATIVE_CODE:code
+0fe3 - 10a6 : lander_check, NATIVE_CODE:code
+10a6 - 10b1 : lander_flash, NATIVE_CODE:code
+10b1 - 10f6 : freg, NATIVE_CODE:code
+10f6 - 11e3 : faddsub, NATIVE_CODE:code
+11e3 - 127d : crt_fmul, NATIVE_CODE:code
+127d - 12ab : crt_fmul8, NATIVE_CODE:code
+12ab - 1330 : divmod, NATIVE_CODE:code
+1330 - 137c : f32_to_i16, NATIVE_CODE:code
+137c - 139a : sint16_to_float, NATIVE_CODE:code
+139a - 13c3 : uint16_to_float, NATIVE_CODE:code
+13c3 - 13c4 : spentry, DATA:data
+13c4 - 13c6 : seed, DATA:data
+13c6 - 13ca : ExhaustColor, DATA:data
+13ca - 13cc : vspriteScreen, DATA:bss
+13cc - 13de : TheGame, DATA:bss
+13de - 13e0 : joyy, DATA:bss
+13e0 - 13e2 : joyx, DATA:bss
+13e2 - 13e4 : joyb, DATA:bss
+1400 - 14c0 : landersprites, DATA:data
+14c0 - 14f8 : bitshift, DATA:data
+14f8 - 14f8 : BSSEnd, END:bss
+14f8 - 14f8 : BSSStart, START:bss
+9fd5 - 9fd5 : StackEnd, END:stack
+9fd5 - 9ffe : height, BSS:screen_init@stack
+9ffe - a000 : sstack, STACK:sstack
+
+objects by size
+0b17 (01fe) : screen_init, NATIVE_CODE:code
+0ebd (0126) : lander_move, NATIVE_CODE:code
+0987 (0106) : lander_init, NATIVE_CODE:code
+10f6 (00ed) : faddsub, NATIVE_CODE:code
+0d3c (00c8) : lander_show, NATIVE_CODE:code
+08c0 (00c7) : game_state, NATIVE_CODE:code
+0fe3 (00c3) : lander_check, NATIVE_CODE:code
+1400 (00c0) : landersprites, DATA:data
+11e3 (009a) : crt_fmul, NATIVE_CODE:code
+0a8d (008a) : spr_set, NATIVE_CODE:code
+12ab (0085) : divmod, NATIVE_CODE:code
+0e04 (0079) : game_loop, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+1330 (004c) : f32_to_i16, NATIVE_CODE:code
+10b1 (0045) : freg, NATIVE_CODE:code
+0880 (0040) : main, NATIVE_CODE:code
+0e7d (0040) : joy_poll, NATIVE_CODE:code
+14c0 (0038) : bitshift, DATA:data
+127d (002e) : crt_fmul8, NATIVE_CODE:code
+139a (0029) : uint16_to_float, NATIVE_CODE:code
+9fd5 (0029) : height, BSS:screen_init@stack
+0d15 (0027) : rand, NATIVE_CODE:code
+137c (001e) : sint16_to_float, NATIVE_CODE:code
+13cc (0012) : TheGame, DATA:bss
+10a6 (000b) : lander_flash, NATIVE_CODE:code
+13c6 (0004) : ExhaustColor, DATA:data
+13c4 (0002) : seed, DATA:data
+13ca (0002) : vspriteScreen, DATA:bss
+13de (0002) : joyy, DATA:bss
+13e0 (0002) : joyx, DATA:bss
+13e2 (0002) : joyb, DATA:bss
+9ffe (0002) : sstack, STACK:sstack
+13c3 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+14f8 (0000) : BSSEnd, END:bss
+14f8 (0000) : BSSStart, START:bss
+9fd5 (0000) : StackEnd, END:stack

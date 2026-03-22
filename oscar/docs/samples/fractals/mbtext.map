@@ -1,0 +1,49 @@
+sections
+0880 - 0cc3 : DATA, code
+0cc3 - 0cc4 : DATA, data
+0cc4 - 0cc4 : BSS, bss
+0cc8 - 9000 : HEAP, heap
+9000 - 9fee : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+9fee - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0cc4, 0444, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0a82 : main, NATIVE_CODE:code
+0a82 - 0ac7 : freg, NATIVE_CODE:code
+0ac7 - 0bb4 : faddsub, NATIVE_CODE:code
+0bb4 - 0c4e : crt_fmul, NATIVE_CODE:code
+0c4e - 0c7c : crt_fmul8, NATIVE_CODE:code
+0c7c - 0c9a : sint16_to_float, NATIVE_CODE:code
+0c9a - 0cc3 : uint16_to_float, NATIVE_CODE:code
+0cc3 - 0cc4 : spentry, DATA:data
+0cc4 - 0cc4 : BSSStart, START:bss
+0cc4 - 0cc4 : BSSEnd, END:bss
+9fee - 9fee : StackEnd, END:stack
+9fee - a000 : main@stack, BSS:main@stack
+
+objects by size
+0880 (0202) : main, NATIVE_CODE:code
+0ac7 (00ed) : faddsub, NATIVE_CODE:code
+0bb4 (009a) : crt_fmul, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0a82 (0045) : freg, NATIVE_CODE:code
+0c4e (002e) : crt_fmul8, NATIVE_CODE:code
+0c9a (0029) : uint16_to_float, NATIVE_CODE:code
+0c7c (001e) : sint16_to_float, NATIVE_CODE:code
+9fee (0012) : main@stack, BSS:main@stack
+0cc3 (0001) : spentry, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+0cc4 (0000) : BSSStart, START:bss
+0cc4 (0000) : BSSEnd, END:bss
+9fee (0000) : StackEnd, END:stack

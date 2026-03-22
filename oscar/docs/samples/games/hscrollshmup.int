@@ -1,0 +1,2636 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:1093
+$00 R0(P), $02 R1(I), $10 R2(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/cia.c
+0001 (   7)		STOREA1		<-	V(-1 '')+56333 , CC:127	{V}
+0002 (   8)		STOREA1		<-	V(-1 '')+56589 , CC:127	{V}
+0003 (   9)		STOREA1		<-	V(-1 '')+56320 , CC:127	{V}
+0004 (  10)		STOREA1		<-	V(-1 '')+56334 , CC:8	{V}
+0005 (  11)		STOREA1		<-	V(-1 '')+56335 , CC:8	{V}
+0006 (  12)		STOREA1		<-	V(-1 '')+56590 , CC:8	{V}
+0007 (  13)		STOREA1		<-	V(-1 '')+56591 , CC:8	{V}
+0008 (  15)		STOREA1		<-	V(-1 '')+56323 , CC:0	{V}
+0009 (  16)		STOREA1		<-	V(-1 '')+56579 , CC:0	{V}
+000a (  17)		STOREA1		<-	V(-1 '')+56322 , CC:255	{V}
+000b (  19)		STOREA1		<-	V(-1 '')+56576 , CC:7	{V}
+000c (  20)		STOREA1		<-	V(-1 '')+56578 , CC:63	{V}
+000d (  71)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'NMITrampoline')	{S}
+000e (  71)		STOREA2		<-	V(-1 '')+65530 , R0(PF)+0 {V(-1 'NMITrampoline')} [0..0]	{}
+000f (  72)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'IRQTrampoline')	{S}
+0010 (  72)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'IRQTrampoline')} [0..0]	{}
+0011 (  22)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56333 	{V}
+0012 (  23)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56589 	{V}
+0013 (  80)		STOREA1		<-	V(-1 '')+1 , CC:48	{VM}
+0014 (1101)		STOREC2		<-	V(4 '')+0 , CI:2048	{}
+0015 (1101)		CONST	R0(P)[57344..57344]	<-	CA0(-1:57344 '')	{S}
+0016 (1101)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(-1 'ABS')} [57344..57344]	{}
+0017 (1101)		CONST	R0(P)[0..0]	<-	CG2048(7:0 'charset' A)	{S}
+0018 (1101)		STOREC2		<-	V(2 '')+0 , R0(PF)+0 {V(7 'charset' A)} [0..0]	{}
+0019 (1101)		CALLN		<-	V(1 'memcpy')+0 	{}
+001a (1102)		STOREC2		<-	V(4 '')+0 , CI:2048	{}
+001b (1102)		CONST	R0(P)[59392..59392]	<-	CA0(-1:59392 '')	{S}
+001c (1102)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(-1 'ABS')} [59392..59392]	{}
+001d (1102)		CONST	R0(P)[0..0]	<-	CG2048(8:0 'tcharset' A)	{S}
+001e (1102)		STOREC2		<-	V(2 '')+0 , R0(PF)+0 {V(8 'tcharset' A)} [0..0]	{}
+001f (1102)		CALLN		<-	V(1 'memcpy')+0 	{}
+0020 (1107)		STOREC2		<-	V(4 '')+0 , CI:4096	{}
+0021 (1105)		FILLA8		<-	V(-1 '')+59328 , CC:255	{}
+0022 (1107)		CONST	R0(P)[53248..53248]	<-	CA0(-1:53248 '')	{S}
+0023 (1107)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(-1 'ABS')} [53248..53248]	{}
+0024 (1107)		CONST	R0(P)[0..0]	<-	CG4096(9:0 'spriteset' A)	{S}
+0025 (1107)		STOREC2		<-	V(2 '')+0 , R0(PF)+0 {V(9 'spriteset' A)} [0..0]	{}
+0026 (1107)		CALLN		<-	V(1 'memcpy')+0 	{}
+0027 (  80)		STOREA1		<-	V(-1 '')+1 , CC:53	{VM}
+0028 (1111)		CALLN		<-	V(2 'tiles_unpack')+0 	{}
+0029 (1114)		CALLN		<-	V(3 'vic_setmode')+0 	{}
+002a (  12)		CONST	R0(P)[52216..52216]	<-	CA0(-1:52216 '')	{S}
+002b (  12)		STOREG2		<-	V(18 'vspriteScreen')+0 , R0(PF)+0 {V(-1 'ABS')} [52216..52216]	{}
+002c ( 601)		CALLN		<-	V(4 'rirq_init_kernal')+0 	{}
+002d (1122)		STOREC1		<-	V(2 '')+0 , CC:4	{}
+002e (1122)		CONST	R0(P)[0..0]	<-	CG32(56:0 'top' A)	{S}
+002f (1122)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(56 'top' A)} [0..0]	{}
+0030 (1122)		CALLN		<-	V(7 'rirq_build')+0 	{}
+0031 (1130)		STOREC1		<-	V(2 '')+0 , CC:3	{}
+0032 ( 409)		STOREG1		<-	V(19 'rasterIRQRows' A)+0 , CC:58	{}
+0033 ( 452)		STOREG1		<-	V(56 'top' A)+2 , CC:40	{}
+0034 ( 452)		STOREG1		<-	V(56 'top' A)+4 , CC:16	{}
+0035 ( 449)		STOREG1		<-	V(56 'top' A)+11 , CC:24	{}
+0036 ( 450)		STOREG1		<-	V(56 'top' A)+12 , CC:208	{}
+0037 ( 449)		STOREG1		<-	V(56 'top' A)+14 , CC:22	{}
+0038 ( 450)		STOREG1		<-	V(56 'top' A)+15 , CC:208	{}
+0039 ( 452)		STOREG1		<-	V(56 'top' A)+17 , CC:255	{}
+003a ( 449)		STOREG1		<-	V(56 'top' A)+19 , CC:194	{}
+003b ( 450)		STOREG1		<-	V(56 'top' A)+20 , CC:231	{}
+003c ( 452)		STOREG1		<-	V(56 'top' A)+22 , CC:1	{}
+003d ( 449)		STOREG1		<-	V(56 'top' A)+24 , CC:33	{}
+003e ( 450)		STOREG1		<-	V(56 'top' A)+25 , CC:208	{}
+003f ( 449)		CONST	R0(P)[1..1]	<-	CG32(56:1 'top' A)	{S}
+0040 ( 406)		CAST	R0(I)	<-	R0(PF)+0 {V(56 'top' A)} [1..1]	{S}
+0041 ( 406)		BINOP9	R1(I)[0..255]	<-	R0(I), CI:255	{S}
+0042 ( 406)		STOREG1		<-	V(23 'rasterIRQLow' A)+0 , R1(CF)[0..255]	{}
+0043 ( 407)		BINOP17	R0(I)[0..255]	<-	R0(IF), CI:8	{S}
+0044 ( 407)		STOREG1		<-	V(24 'rasterIRQHigh' A)+0 , R0(CF)[0..255]	{}
+0045 (1130)		CONST	R0(P)[0..0]	<-	CG32(59:0 'bottom' A)	{S}
+0046 (1130)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(59 'bottom' A)} [0..0]	{}
+0047 (1130)		CALLN		<-	V(7 'rirq_build')+0 	{}
+0048 ( 409)		STOREG1		<-	V(19 'rasterIRQRows' A)+1 , CC:250	{}
+0049 ( 452)		STOREG1		<-	V(59 'bottom' A)+2 , CC:42	{}
+004a ( 452)		STOREG1		<-	V(59 'bottom' A)+4 , CC:0	{}
+004b ( 449)		STOREG1		<-	V(59 'bottom' A)+11 , CC:24	{}
+004c ( 450)		STOREG1		<-	V(59 'bottom' A)+12 , CC:208	{}
+004d ( 449)		STOREG1		<-	V(59 'bottom' A)+14 , CC:22	{}
+004e ( 450)		STOREG1		<-	V(59 'bottom' A)+15 , CC:208	{}
+004f ( 452)		STOREG1		<-	V(59 'bottom' A)+17 , CC:7	{}
+0050 ( 449)		STOREG1		<-	V(59 'bottom' A)+19 , CC:33	{}
+0051 ( 450)		STOREG1		<-	V(59 'bottom' A)+20 , CC:208	{}
+0052 ( 449)		CONST	R0(P)[1..1]	<-	CG32(59:1 'bottom' A)	{S}
+0053 ( 406)		CAST	R0(I)	<-	R0(PF)+0 {V(59 'bottom' A)} [1..1]	{S}
+0054 ( 406)		BINOP9	R1(I)[0..255]	<-	R0(I), CI:255	{S}
+0055 ( 406)		STOREG1		<-	V(23 'rasterIRQLow' A)+1 , R1(CF)[0..255]	{}
+0056 ( 407)		BINOP17	R0(I)[0..255]	<-	R0(IF), CI:8	{S}
+0057 ( 407)		STOREG1		<-	V(24 'rasterIRQHigh' A)+1 , R0(CF)[0..255]	{}
+0058 (1137)		CALLN		<-	V(8 'rirq_sort')+0 	{}
+0059 (1140)		CALLN		<-	V(9 'rirq_start')+0 	{}
+005a (1143)		STOREA1		<-	V(-1 '')+53280 , CC:0	{V}
+005b (1144)		STOREA1		<-	V(-1 '')+53281 , CC:1	{V}
+005c (1145)		STOREA1		<-	V(-1 '')+53282 , CC:15	{V}
+005d (1146)		STOREA1		<-	V(-1 '')+53283 , CC:12	{V}
+005e (1148)		STOREA1		<-	V(-1 '')+53285 , CC:11	{V}
+005f (1149)		STOREA1		<-	V(-1 '')+53286 , CC:1	{V}
+0060 (1152)		FILLA1000		<-	V(-1 '')+51200 , CC:0	{}
+0061 (1153)		FILLA80		<-	V(-1 '')+55296 , CC:0	{}
+0062 (1154)		FILLA920		<-	V(-1 '')+55376 , CC:8	{}
+0063 (1157)		CALLN		<-	V(10 'sidfx_init')+0 	{}
+0064 (1160)		STOREA1		<-	V(-1 '')+54296 , CC:15	{V}
+0065 (1163)		CALLN		<-	V(11 'status_init')+0 	{E}
+0066 (1166)		CONST	R2(I)[0..0]	<-	CI:0	{}
+0067 (1167)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1167)		CALLN	R0(I)	<-	V(12 'rand')+0 	{}
+0001 (1167)		BINOP6	R0(I)[0..39]	<-	R0(IF), CI:40	{}
+0002 (1167)		BINOP9	R1(I)[0..3]	<-	R2(I)[0..23], CI:3	{}
+0003 (1167)		BINOP3	R1(I)[0..120]	<-	R1(IF)[0..3], CI:40	{}
+0004 (1167)		BINOP1	R0(I)[0..159]	<-	R1(IF)[0..120], R0(IF)[0..39]	{}
+0005 (1167)		LEAG	R1(P)[0..23]	<-	V(69 'stars' A)+0 , R2(I)[0..23]	{}
+0006 (1167)		STOREI1		<-	R1(PF)+0 {V(69 'stars' A)} [0..23], R0(CF)[0..159]	{}
+0007 (1166)		BINOP1	R2(I)[1..24]	<-	R2(IF)[0..23], CI:1	{}
+0008 (1166)		RELOP28	R0(B)[0..1]	<-	R2(I)[1..24], CI:24	{}
+0009 (1166)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1169)		CALLN		<-	V(13 'shot_init')+0 	{}
+0001 (1171)		CALLN		<-	V(14 'game_init')+0 	{}
+0002 (1172)		CALLN		<-	V(15 'player_init')+0 	{}
+0003 (1175)		STOREF1		<-	V(0 '')+0 , CC:1	{}
+0004 (1175)		CALLN		<-	V(17 'game_state')+0 	{}
+0005 (1178)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1178)		CALLN		<-	V(19 'game_loop')+0 	{}
+0001 (1176)		JUMP		<-		{I}
+		==> 3
+--------------------------------------------------------------------
+memcpy: /home/honza/projects/c64/projects/oscar64/include/string.h:30
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/string.c
+0000 ( 307)		JSR		<-	V(0 '')+0 , V(2 '')+0 , V(4 '')+0 , V(-1 '')+0 	{}
+0001 ( 334)		RET		<-		{}
+--------------------------------------------------------------------
+tiles_unpack: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:254
+$00 R0(I), $00 R1(P), $02 R2(P), $00 R3(I), $00 R4(C), $00 R5(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 264)		CONST	R0(I)[0..0]	<-	CI:0	{I}
+0001 ( 264)		CONST	R1(P)[0..0]	<-	CG1024(10:0 'tileset' A)	{I}
+0002 ( 263)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 263)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0001 ( 264)		CONST	R2(P)[0..0]	<-	CG1024(11:0 'xtileset' A)	{}
+0002 ( 264)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 264)		CONV37	R3(I)[0..15]	<-	R4(C)[0..15]	{}
+0001 ( 264)		LEAI	R3(P)+0 {V(10 'tileset' A)} [0..1023]	<-	R1(P)+0 {V(10 'tileset' A)} [0..1008], R3(IF)[0..15]	{}
+0002 ( 264)		LOADI1	R5(C)[0..255]	<-	R3(PF)+0 {V(10 'tileset' A)} [0..1023]	{}
+0003 ( 264)		LEAI	R3(P)+0 {V(11 'xtileset' A)} [0..]	<-	R2(P)+0 {V(11 'xtileset' A)} [0..], R0(I)[0..63]	{}
+0004 ( 264)		STOREI1		<-	R3(PF)+0 {V(11 'xtileset' A)} [0..], R5(CF)[0..255]	{}
+0005 ( 264)		LEAI	R2(P)+0 {V(11 'xtileset' A)} [64..]	<-	R2(PF)+0 {V(11 'xtileset' A)} [0..], CI:64	{}
+0006 ( 263)		BINOP1	R4(C)[1..16]	<-	R4(CF)[0..15], CI:1	{}
+0007 ( 263)		RELOP28	R3(B)[0..1]	<-	R4(C)[1..16], CC:16	{}
+0008 ( 263)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 4
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 264)		LEAG	R1(P)[16..1008]	<-	R1(PF)[0..1008], CI:16	{}
+0001 ( 264)		BINOP1	R0(I)[1..64]	<-	R0(IF)[0..63], CI:1	{}
+0002 ( 261)		RELOP20	R2(B)[0..1]	<-	R0(I)[1..64], CI:64	{}
+0003 ( 261)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 274)		CONST	R0(P)[0..0]	<-	CG720(13:0 'xtilemap' A)	{I}
+0001 ( 274)		CONST	R1(P)[0..0]	<-	CG640(12:0 'tilemap' A)	{I}
+0002 ( 274)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 274)		CONST	R2(I)[0..0]	<-	CI:0	{}
+0001 ( 274)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 274)		BINOP9	R3(I)[0..127]	<-	R2(I)[0..143], CI:127	{}
+0001 ( 274)		LEAI	R3(P)+0 {V(12 'tilemap' A)} [0..639]	<-	R1(P)+0 {V(12 'tilemap' A)} [0..512], R3(IF)[0..127]	{}
+0002 ( 274)		LOADI1	R4(C)[0..255]	<-	R3(PF)+0 {V(12 'tilemap' A)} [0..639]	{}
+0003 ( 274)		LEAI	R3(P)+0 {V(13 'xtilemap' A)} [0..719]	<-	R0(P)+0 {V(13 'xtilemap' A)} [0..576], R2(I)[0..143]	{}
+0004 ( 274)		STOREI1		<-	R3(PF)+0 {V(13 'xtilemap' A)} [0..719], R4(CF)[0..255]	{}
+0005 ( 274)		BINOP1	R2(I)[1..144]	<-	R2(IF)[0..143], CI:1	{}
+0006 ( 272)		RELOP20	R3(B)[0..1]	<-	R2(I)[1..144], CI:144	{}
+0007 ( 272)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 8
+		==> 6
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 274)		LEAG	R0(P)[144..576]	<-	R0(PF)[0..576], CI:144	{}
+0001 ( 274)		LEAG	R1(P)[128..512]	<-	R1(PF)[0..512], CI:128	{}
+0002 ( 270)		RELOP20	R2(B)[0..1]	<-	R1(P)[128..512], V(12 'tilemap' A)+640 	{}
+0003 ( 270)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 5
+		==> 7
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 285)		CONST	R0(I)[0..0]	<-	CI:0	{I}
+0001 ( 285)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 285)		LEAG	R1(P)[0..120]	<-	V(14 'xcollision' A)+0 , R0(I)[0..120]	{}
+0001 ( 285)		STOREI1		<-	R1(PF)+0 {V(14 'xcollision' A)} [0..120], CC:1	{}
+0002 ( 285)		LEAG	R1(P)[1..121]	<-	V(14 'xcollision' A)+1 , R0(I)[0..120]	{}
+0003 ( 285)		STOREI1		<-	R1(PF)+0 {V(14 'xcollision' A)} [1..121], CC:1	{}
+0004 ( 285)		LEAG	R1(P)[2..122]	<-	V(14 'xcollision' A)+2 , R0(I)[0..120]	{}
+0005 ( 285)		STOREI1		<-	R1(PF)+0 {V(14 'xcollision' A)} [2..122], CC:1	{}
+0006 ( 285)		BINOP1	R0(I)[40..160]	<-	R0(IF)[0..120], CI:40	{}
+0007 ( 282)		RELOP20	R1(B)[0..1]	<-	R0(I)[40..160], CI:160	{}
+0008 ( 282)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 9
+		==> 10
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 287)		RET		<-		{}
+--------------------------------------------------------------------
+vic_setmode: /home/honza/projects/c64/projects/oscar64/include/c64/vic.h:94
+$00 R0(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  33)		STOREA1		<-	V(-1 '')+53265 , CC:27	{V}
+0001 (  34)		STOREA1		<-	V(-1 '')+53270 , CC:24	{V}
+0002 (  52)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56576 	{V}
+0003 (  52)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0004 (  52)		BINOP9	R0(I)[0..252]	<-	R0(IF)[0..255], CI:252	{}
+0005 (  52)		STOREA1		<-	V(-1 '')+56576 , R0(CF)[0..252]	{V}
+0006 (  53)		STOREA1		<-	V(-1 '')+53272 , CC:40	{V}
+0007 (  94)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_init_kernal: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:161
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 496)		CALLN		<-	V(5 'rirq_init_tables')+0 	{}
+0001 ( 500)		JSR		<-	V(-1 '')+0 	{}
+0002 ( 505)		STOREA1		<-	V(-1 '')+53274 , CC:1	{V}
+0003 ( 503)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'rirq_isr_kernal_io')	{S}
+0004 ( 503)		STOREA2		<-	V(-1 '')+788 , R0(PF)+0 {V(-1 'rirq_isr_kernal_io')} [0..0]	{}
+0005 ( 506)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0006 ( 506)		BINOP9	R0(C)[0..127]	<-	R0(CF)[0..255], CC:127	{}
+0007 ( 506)		STOREA1		<-	V(-1 '')+53265 , R0(CF)[0..127]	{V}
+0008 ( 507)		STOREA1		<-	V(-1 '')+53266 , CC:255	{V}
+0009 ( 509)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_init_tables: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c:482
+$00 R0(I), $00 R1(P), $00 R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 484)		CONST	R2(C)[0..0]	<-	CI:0	{}
+0001 ( 486)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 486)		CONV37	R0(I)[0..15]	<-	R2(C)[0..15]	{}
+0001 ( 486)		LEAG	R1(P)[0..15]	<-	V(19 'rasterIRQRows' A)+0 , R0(I)[0..15]	{}
+0002 ( 486)		STOREI1		<-	R1(PF)+0 {V(19 'rasterIRQRows' A)} [0..15], CC:255	{}
+0003 ( 487)		LEAG	R0(P)[1..16]	<-	V(20 'rasterIRQIndex' A)+1 , R0(IF)[0..15]	{}
+0004 ( 487)		STOREI1		<-	R0(PF)+0 {V(20 'rasterIRQIndex' A)} [1..16], R2(C)[0..15]	{}
+0005 ( 484)		BINOP1	R2(C)[1..16]	<-	R2(CF)[0..15], CI:1	{}
+0006 ( 484)		RELOP28	R0(B)[0..1]	<-	R2(C)[1..16], CC:16	{}
+0007 ( 484)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 491)		STOREG1		<-	V(21 'rasterIRQNext' A)+16 , CC:255	{}
+0001 ( 490)		STOREG1		<-	V(19 'rasterIRQRows' A)+16 , CC:0	{}
+0002 ( 489)		STOREG1		<-	V(20 'rasterIRQIndex' A)+0 , CC:16	{}
+0003 ( 492)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_init_io: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:177
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 566)		CALLN		<-	V(5 'rirq_init_tables')+0 	{}
+0001 ( 570)		JSR		<-	V(-1 '')+0 	{}
+0002 ( 575)		STOREA1		<-	V(-1 '')+53274 , CC:1	{V}
+0003 ( 573)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'rirq_isr_ram_io')	{S}
+0004 ( 573)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'rirq_isr_ram_io')} [0..0]	{}
+0005 ( 576)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0006 ( 576)		BINOP9	R0(C)[0..127]	<-	R0(CF)[0..255], CC:127	{}
+0007 ( 576)		STOREA1		<-	V(-1 '')+53265 , R0(CF)[0..127]	{V}
+0008 ( 577)		STOREA1		<-	V(-1 '')+53266 , CC:255	{V}
+0009 ( 579)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_build: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:120
+$00 R0(P), $00 R1(P), $00 R2(P), $00 R3(I), $00 R4(C), $00 R5(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 365)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 (  31)		STOREI1		<-	R0(P)+1, CC:160	{}
+0002 (  32)		STOREI1		<-	R0(P)+2, CC:0	{}
+0003 (  31)		STOREI1		<-	R0(P)+3, CC:162	{}
+0004 (  32)		STOREI1		<-	R0(P)+4, CC:0	{}
+0005 (  52)		STOREI1		<-	R0(P)+5, CC:205	{}
+0006 (  53)		STOREI1		<-	R0(P)+6, CC:18	{}
+0007 (  54)		STOREI1		<-	R0(P)+7, CC:208	{}
+0008 (  24)		STOREI1		<-	R0(P)+8, CC:176	{}
+0009 (  25)		STOREI1		<-	R0(P)+9, CC:251	{}
+000a (  52)		STOREI1		<-	R0(P)+10, CC:140	{}
+000b (  53)		STOREI1		<-	R0(P)+11, CC:0	{}
+000c (  54)		STOREI1		<-	R0(P)+12, CC:0	{}
+000d (  52)		STOREI1		<-	R0(P)+13, CC:142	{}
+000e (  53)		STOREI1		<-	R0(P)+14, CC:0	{}
+000f (  54)		STOREI1		<-	R0(P)+15, CC:0	{}
+0010 ( 120)		LOADZ1	R1(C)[3..4]	<-	V(2 '')+0 	{S}
+0011 ( 365)		STOREI1		<-	R0(P)+0, R1(C)[3..4]	{}
+0012 ( 386)		BINOP2	R4(C)[1..2]	<-	R1(CF)[3..4], CC:2	{}
+0013 ( 388)		LEAI	R1(P)+0	<-	R0(P)+0, CI:1	{IS}
+0014 ( 385)		CONST	R2(C)[15..15]	<-	CI:15	{}
+0015 ( 388)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 388)		CONV37	R3(I)[15..20]	<-	R2(CF)[15..20]	{}
+0001 ( 388)		LEAI	R2(P)+0	<-	R1(P)+0, R3(I)[15..20]	{}
+0002 (  31)		STOREI1		<-	R2(P)+0, CC:169	{}
+0003 (  32)		STOREI1		<-	R2(P)+1, CC:0	{}
+0004 (  52)		STOREI1		<-	R2(P)+2, CC:141	{}
+0005 (  53)		STOREI1		<-	R2(P)+3, CC:0	{}
+0006 (  54)		STOREI1		<-	R2(PF)+4, CC:0	{}
+0007 ( 389)		BINOP1	R2(I)[20..25]	<-	R3(I)[15..20], CI:5	{}
+0008 ( 386)		BINOP2	R4(C)[0..1]	<-	R4(CF)[1..2], CI:1	{}
+0009 ( 386)		RELOP27	R5(B)[0..1]	<-	R4(C)[0..1], CC:0	{}
+000a ( 386)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 391)		LEAI	R0(P)+0	<-	R0(PF)+0, R3(IF)[15..20]	{S}
+0001 (   5)		STOREI1		<-	R0(PF)+6, CC:96	{}
+0002 ( 120)		RET		<-		{}
+--------------------------------------------------------------------
+rirq_sort: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:192
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(C), $00 R4(C), $00 R5(C), $00 R6(B), $00 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 628)		LOADG1	R0(C)[0..16]	<-	V(20 'rasterIRQIndex' A)+1 	{}
+0001 ( 626)		STOREG1		<-	V(22 'nextIRQ' A)+0 , CC:255	{V}
+0002 ( 628)		CONV37	R0(I)[0..16]	<-	R0(CF)[0..16]	{}
+0003 ( 628)		LEAG	R0(P)[0..16]	<-	V(19 'rasterIRQRows' A)+0 , R0(IF)[0..16]	{}
+0004 ( 628)		LOADI1	R3(C)[0..255]	<-	R0(PF)+0 {V(19 'rasterIRQRows' A)} [0..16]	{}
+0005 ( 629)		CONST	R4(C)[2..2]	<-	CI:2	{}
+0006 ( 631)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 631)		CONV37	R0(I)[1..16]	<-	R4(C)[1..16]	{}
+0001 ( 631)		LEAG	R1(P)[1..16]	<-	V(20 'rasterIRQIndex' A)+0 , R0(I)[1..16]	{}
+0002 ( 631)		LOADI1	R5(C)[0..16]	<-	R1(P)+0 {V(20 'rasterIRQIndex' A)} [1..16]	{}
+0003 ( 632)		CONV37	R2(I)[0..16]	<-	R5(C)[0..16]	{}
+0004 ( 632)		LEAG	R2(P)[0..16]	<-	V(19 'rasterIRQRows' A)+0 , R2(IF)[0..16]	{}
+0005 ( 632)		LOADI1	R2(C)[0..255]	<-	R2(PF)+0 {V(19 'rasterIRQRows' A)} [0..16]	{}
+0006 ( 633)		RELOP28	R6(B)[0..1]	<-	R2(C)[0..255], R3(C)[0..255]	{}
+0007 ( 633)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 4
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 635)		LEAG	R0(P)[0..15]	<-	V(20 'rasterIRQIndex' A)+-1 , R0(IF)[1..16]	{}
+0001 ( 635)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(20 'rasterIRQIndex' A)} [0..15]	{}
+0002 ( 635)		STOREI1		<-	R1(PF)+0 {V(20 'rasterIRQIndex' A)} [1..16], R0(CF)[0..255]	{}
+0003 ( 636)		MOVE	R6(C)[1..16]	<-	R4(C)[1..16]	{}
+0004 ( 637)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 637)		CONV37	R0(I)[2..16]	<-	R6(C)[2..16]	{}
+0001 ( 637)		LEAG	R0(P)[0..14]	<-	V(20 'rasterIRQIndex' A)+-2 , R0(IF)[2..16]	{}
+0002 ( 637)		LOADI1	R7(C)[0..16]	<-	R0(P)+0 {V(20 'rasterIRQIndex' A)} [0..14]	{}
+0003 ( 637)		CONV37	R1(I)[0..16]	<-	R7(C)[0..16]	{}
+0004 ( 637)		LEAG	R1(P)[0..16]	<-	V(19 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+0005 ( 637)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(19 'rasterIRQRows' A)} [0..16]	{}
+0006 ( 637)		RELOP28	R1(B)[0..1]	<-	R2(C)[0..254], R1(CF)[0..255]	{}
+0007 ( 637)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 639)		STOREI1		<-	R0(PF)+1 {V(20 'rasterIRQIndex' A)} [0..14], R7(CF)[0..16]	{}
+0001 ( 640)		BINOP1	R6(C)[1..15]	<-	R6(CF)[2..16], CI:-1	{}
+0002 ( 637)		JUMP		<-		{}
+		==> 6
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 642)		STOREI1		<-	R0(PF)+1 {V(20 'rasterIRQIndex' A)} [0..14], R5(CF)[0..16]	{}
+0001 ( 629)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 629)		BINOP1	R4(C)[1..17]	<-	R4(CF)[0..16], CI:1	{}
+0001 ( 629)		RELOP28	R0(B)[0..1]	<-	R4(C)[1..17], CC:17	{}
+0002 ( 629)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 666)		CONST	R2(C)[3..3]	<-	CI:3	{}
+0001 ( 670)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 670)		CONV37	R0(I)[0..3]	<-	R2(C)[0..3]	{}
+0001 ( 670)		LEAG	R1(P)[1..4]	<-	V(20 'rasterIRQIndex' A)+1 , R0(I)[0..3]	{}
+0002 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(20 'rasterIRQIndex' A)} [1..4]	{}
+0003 ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+0004 ( 670)		LEAG	R1(P)[0..16]	<-	V(19 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+0005 ( 670)		LOADI1	R3(C)[0..255]	<-	R1(PF)+0 {V(19 'rasterIRQRows' A)} [0..16]	{}
+0006 ( 670)		LEAG	R1(P)[0..3]	<-	V(21 'rasterIRQNext' A)+0 , R0(I)[0..3]	{}
+0007 ( 670)		STOREI1		<-	R1(PF)+0 {V(21 'rasterIRQNext' A)} [0..3], R3(CF)[0..255]	{}
+0008 ( 670)		LEAG	R1(P)[5..8]	<-	V(20 'rasterIRQIndex' A)+5 , R0(I)[0..3]	{}
+0009 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(20 'rasterIRQIndex' A)} [5..8]	{}
+000a ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+000b ( 670)		LEAG	R1(P)[0..16]	<-	V(19 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+000c ( 670)		LOADI1	R3(C)[0..255]	<-	R1(PF)+0 {V(19 'rasterIRQRows' A)} [0..16]	{}
+000d ( 670)		LEAG	R1(P)[4..7]	<-	V(21 'rasterIRQNext' A)+4 , R0(I)[0..3]	{}
+000e ( 670)		STOREI1		<-	R1(PF)+0 {V(21 'rasterIRQNext' A)} [4..7], R3(CF)[0..255]	{}
+000f ( 670)		LEAG	R1(P)[9..12]	<-	V(20 'rasterIRQIndex' A)+9 , R0(I)[0..3]	{}
+0010 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(20 'rasterIRQIndex' A)} [9..12]	{}
+0011 ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+0012 ( 670)		LEAG	R1(P)[0..16]	<-	V(19 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+0013 ( 670)		LOADI1	R3(C)[0..255]	<-	R1(PF)+0 {V(19 'rasterIRQRows' A)} [0..16]	{}
+0014 ( 670)		LEAG	R1(P)[8..11]	<-	V(21 'rasterIRQNext' A)+8 , R0(I)[0..3]	{}
+0015 ( 670)		STOREI1		<-	R1(PF)+0 {V(21 'rasterIRQNext' A)} [8..11], R3(CF)[0..255]	{}
+0016 ( 670)		LEAG	R1(P)[13..16]	<-	V(20 'rasterIRQIndex' A)+13 , R0(I)[0..3]	{}
+0017 ( 670)		LOADI1	R1(C)[0..16]	<-	R1(PF)+0 {V(20 'rasterIRQIndex' A)} [13..16]	{}
+0018 ( 670)		CONV37	R1(I)[0..16]	<-	R1(CF)[0..16]	{}
+0019 ( 670)		LEAG	R1(P)[0..16]	<-	V(19 'rasterIRQRows' A)+0 , R1(IF)[0..16]	{}
+001a ( 670)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(19 'rasterIRQRows' A)} [0..16]	{}
+001b ( 670)		LEAG	R0(P)[12..15]	<-	V(21 'rasterIRQNext' A)+12 , R0(IF)[0..3]	{}
+001c ( 670)		STOREI1		<-	R0(PF)+0 {V(21 'rasterIRQNext' A)} [12..15], R1(CF)[0..255]	{}
+001d ( 666)		BINOP1	R2(C)[-1..2]	<-	R2(CF)[0..3], CI:-1	{}
+001e ( 666)		RELOP21	R0(B)[0..1]	<-	R2(C)[-1..2], CC:0	{}
+001f ( 666)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 10
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 674)		LOADG1	R0(C)[0..255]	<-	V(25 'rirq_count' A)+0 	{V}
+0002 ( 679)		LOADG1	R0(C)[0..255]	<-	V(21 'rasterIRQNext' A)+0 	{}
+0003 ( 680)		RELOP20	R1(B)[0..1]	<-	R0(C)[0..255], CC:255	{}
+0004 ( 680)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 12
+		==> 11
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 682)		BINOP2	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:1	{}
+0001 ( 682)		STOREA1		<-	V(-1 '')+53266 , R0(CF)[-1..254]	{V}
+0002 ( 683)		STOREG1		<-	V(22 'nextIRQ' A)+0 , CC:0	{V}
+0003 ( 680)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h
+0000 ( 192)		RET		<-		{}
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 645)		MOVE	R3(C)[0..255]	<-	R2(CF)[0..255]	{}
+0001 ( 629)		JUMP		<-		{}
+		==> 1
+--------------------------------------------------------------------
+rirq_start: /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.h:184
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/rasterirq.c
+0000 ( 692)		JSR		<-	V(-1 '')+0 	{}
+0001 ( 702)		RET		<-		{}
+--------------------------------------------------------------------
+sidfx_init: /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.h:15
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  30)		STOREG1:3		<-	V(65 'channels' A)+6 , CC:1	{}
+0001 (  30)		STOREG1:3		<-	V(65 'channels' A)+7 , CC:1	{}
+0002 (  30)		STOREG1:3		<-	V(65 'channels' A)+8 , CC:1	{}
+0003 (  29)		STOREG1:3		<-	V(65 'channels' A)+9 , CC:0	{}
+0004 (  29)		STOREG1:3		<-	V(65 'channels' A)+10 , CC:0	{}
+0005 (  29)		STOREG1:3		<-	V(65 'channels' A)+11 , CC:0	{}
+0006 (  27)		CONST	R0(P)[0..0]	<-	CA0(-1:0 '')	{S}
+0007 (  27)		STOREG2:3		<-	V(65 'channels' A)+0 , R0(P)+0 {V(-1 'ABS')} [0..0]	{V}
+0008 (  28)		STOREG1:3		<-	V(65 'channels' A)+15 , CC:0	{V}
+0009 (  27)		STOREG2:3		<-	V(65 'channels' A)+1 , R0(P)+0 {V(-1 'ABS')} [0..0]	{V}
+000a (  28)		STOREG1:3		<-	V(65 'channels' A)+16 , CC:0	{V}
+000b (  27)		STOREG2:3		<-	V(65 'channels' A)+2 , R0(PF)+0 {V(-1 'ABS')} [0..0]	{V}
+000c (  28)		STOREG1:3		<-	V(65 'channels' A)+17 , CC:0	{V}
+000d (  32)		RET		<-		{}
+--------------------------------------------------------------------
+status_init: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:171
+$00 R0(I), $00 R1(P), $00 R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 173)		CONST	R2(C)[0..0]	<-	CI:0	{}
+0001 ( 174)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 174)		CONV37	R0(I)[0..39]	<-	R2(C)[0..39]	{}
+0001 ( 174)		LEAG	R1(P)[0..39]	<-	V(67 'StatusText')+0 , R0(I)[0..39]	{}
+0002 ( 174)		LOADI1	R1(C)[3..83]	<-	R1(PF)+0 {V(67 'StatusText')} [0..39]	{}
+0003 ( 174)		LEAA	R0(P)[51200..51239]	<-	V(-1 '')+51200 , R0(IF)[0..39]	{}
+0004 ( 174)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [51200..51239], R1(CF)[3..83]	{}
+0005 ( 173)		BINOP1	R2(C)[1..40]	<-	R2(CF)[0..39], CI:1	{}
+0006 ( 173)		RELOP28	R0(B)[0..1]	<-	R2(C)[1..40], CC:40	{}
+0007 ( 173)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 175)		RET		<-		{}
+--------------------------------------------------------------------
+rand: /home/honza/projects/c64/projects/oscar64/include/stdlib.h:68
+$00 R0(I), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 ( 818)		LOADG2	R0(I)[0..65535]	<-	V(68 'seed')+0 	{}
+0001 ( 818)		BINOP16	R1(I)	<-	R0(I)[0..65535], CI:7	{}
+0002 ( 818)		BINOP10	R0(I)	<-	R1(IF), R0(IF)[0..65535]	{}
+0003 ( 819)		BINOP17	R1(I)[0..127]	<-	R0(I), CI:9	{}
+0004 ( 819)		BINOP10	R0(I)	<-	R1(IF)[0..127], R0(IF)	{}
+0005 ( 820)		BINOP16	R1(I)	<-	R0(I), CI:8	{}
+0006 ( 820)		BINOP10	R0(I)	<-	R1(IF), R0(IF)	{}
+0007 ( 820)		STOREG2		<-	V(68 'seed')+0 , R0(I)	{}
+0008 ( 821)		RETV		<-	R0(IF)	{}
+--------------------------------------------------------------------
+shot_init: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:461
+$00 R0(P), $00 R1(P), $00 R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 468)		STOREG1		<-	V(70 'shots' A)+0 , CC:6	{}
+0001 ( 467)		CONST	R0(P)[0..0]	<-	CG126(70:0 'shots' A)	{S}
+0002 ( 467)		STOREG2		<-	V(70 'shots' A)+5 , R0(PF)+0 {V(70 'shots' A)} [0..0]	{}
+0003 ( 471)		CONST	R0(P)[7..7]	<-	CG7(70:7 'shots' A)	{S}
+0004 ( 471)		STOREG2		<-	V(71 'freeShot')+0 , R0(PF)+0 {V(70 'shots' A)} [7..7]	{}
+0005 ( 473)		CONST	R0(P)[7..7]	<-	CG126(70:7 'shots' A)	{}
+0006 ( 472)		CONST	R2(C)[16..16]	<-	CI:16	{}
+0007 ( 473)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 473)		LEAI	R1(P)+0 {V(70 'shots' A)} [14..]	<-	R0(P)+0 {V(70 'shots' A)} [7..], CI:7	{}
+0001 ( 473)		STOREI2		<-	R0(PF)+5 {V(70 'shots' A)} [7..], R1(P)+0 {V(70 'shots' A)} [14..]	{}
+0002 ( 473)		MOVE	R0(P)+0 {V(70 'shots' A)} [14..]	<-	R1(PF)+0 {V(70 'shots' A)} [14..]	{}
+0003 ( 472)		BINOP2	R2(C)[0..15]	<-	R2(CF)[1..16], CI:1	{}
+0004 ( 472)		RELOP27	R1(B)[0..1]	<-	R2(C)[0..15], CC:0	{}
+0005 ( 472)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 474)		CONST	R0(P)[0..0]	<-	CA0(-1:0 '')	{S}
+0001 ( 474)		STOREG2		<-	V(70 'shots' A)+124 , R0(PF)+0 {V(-1 'ABS')} [0..0]	{}
+0002 ( 475)		RET		<-		{}
+--------------------------------------------------------------------
+game_init: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:775
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 781)		STOREG2		<-	V(73 'player')+0 , CI:40	{}
+0001 ( 777)		STOREG1		<-	V(72 'game')+2 , CC:80	{}
+0002 ( 778)		STOREG1		<-	V(72 'game')+3 , CC:0	{}
+0003 ( 779)		STOREG1		<-	V(72 'game')+4 , CC:0	{}
+0004 ( 780)		STOREG1		<-	V(72 'game')+5 , CC:4	{}
+0005 ( 782)		RET		<-		{}
+--------------------------------------------------------------------
+player_init: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:673
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 682)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0001 ( 682)		STOREC2		<-	V(1 '')+0 , CI:160	{}
+0002 ( 682)		STOREC2		<-	V(3 '')+0 , CI:100	{}
+0003 ( 682)		STOREC1		<-	V(5 '')+0 , CC:64	{}
+0004 ( 682)		STOREC1		<-	V(6 '')+0 , CC:6	{}
+0005 ( 676)		STOREG1		<-	V(73 'player')+2 , CC:0	{}
+0006 ( 677)		STOREG1		<-	V(73 'player')+3 , CC:1	{}
+0007 ( 678)		STOREG1		<-	V(73 'player')+5 , CC:100	{}
+0008 ( 679)		STOREG1		<-	V(73 'player')+6 , CC:0	{}
+0009 ( 682)		CALLN		<-	V(16 'spr_set')+0 	{}
+000a ( 683)		STOREC1		<-	V(0 '')+0 , CC:7	{}
+000b ( 683)		STOREC2		<-	V(1 '')+0 , CI:160	{}
+000c ( 683)		STOREC2		<-	V(3 '')+0 , CI:100	{}
+000d ( 683)		STOREC1		<-	V(5 '')+0 , CC:80	{}
+000e ( 683)		STOREC1		<-	V(6 '')+0 , CC:12	{}
+000f ( 683)		CALLN		<-	V(16 'spr_set')+0 	{}
+0010 ( 686)		STOREA1		<-	V(-1 '')+53275 , CC:128	{V}
+0011 ( 687)		RET		<-		{}
+--------------------------------------------------------------------
+spr_set: /home/honza/projects/c64/projects/oscar64/include/c64/sprites.h:12
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(I), $00 R4(I), $00 R5(I), $00 R6(P), $00 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  23)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53269 	{V}
+0001 (  23)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  18)		LOADZ1	R1(C)[0..7]	<-	V(0 '')+0 	{S}
+0003 (  18)		CONV37	R1(I)[0..7]	<-	R1(CF)[0..7]	{S}
+0004 (  20)		BINOP16	R2(I)[0..128]	<-	CI:1, R1(I)[0..7]	{S}
+0005 (  23)		BINOP8	R0(I)[0..255]	<-	R2(I)[0..128], R0(IF)[0..255]	{}
+0006 (  23)		STOREA1		<-	V(-1 '')+53269 , R0(CF)[0..255]	{V}
+0007 (  28)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53276 	{V}
+0008 (  28)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0009 (  28)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..255], R2(I)[0..128]	{}
+000a (  28)		STOREA1		<-	V(-1 '')+53276 , R0(CF)[0..255]	{V}
+000b (  35)		UNOP15	R0(I)	<-	R2(I)[0..128]	{S}
+000c (  35)		LOADA1	R3(C)[0..255]	<-	V(-1 '')+53277 	{V}
+000d (  35)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+000e (  35)		BINOP9	R3(I)	<-	R3(IF)[0..255], R0(I)	{}
+000f (  35)		STOREA1		<-	V(-1 '')+53277 , R3(CF)	{V}
+0010 (  40)		LOADA1	R3(C)[0..255]	<-	V(-1 '')+53271 	{V}
+0011 (  40)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+0012 (  40)		BINOP9	R3(I)	<-	R3(IF)[0..255], R0(I)	{}
+0013 (  40)		STOREA1		<-	V(-1 '')+53271 , R3(CF)	{V}
+0014 (  12)		LOADZ1	R7(C)[0..255]	<-	V(6 '')+0 	{S}
+0015 (  43)		LOADZ2	R3(I)[-32768..32767]	<-	V(1 '')+0 	{S}
+0016 (  42)		BINOP16	R4(I)[0..14]	<-	R1(I)[0..7], CI:1	{S}
+0017 (  42)		LOADZ2	R5(I)[-32768..32767]	<-	V(3 '')+0 	{S}
+0018 (  42)		LEAA	R6(P)[53249..53263]	<-	V(-1 '')+53249 , R4(I)[0..14]	{}
+0019 (  42)		STOREI1		<-	R6(PF)+0 {V(-1 'ABS')} [53249..53263], R5(CF)[-32768..32767]	{V}
+001a (  43)		BINOP9	R5(I)[0..255]	<-	R3(I)[-32768..32767], CI:255	{S}
+001b (  42)		LEAA	R4(P)[53248..53262]	<-	V(-1 '')+53248 , R4(IF)[0..14]	{S}
+001c (  43)		STOREI1		<-	R4(PF)+0 {V(-1 'ABS')} [53248..53262], R5(CF)[0..255]	{V}
+001d (  45)		LOADA1	R4(C)[0..255]	<-	V(-1 '')+53264 	{}
+001e (  45)		CONV37	R4(I)[0..255]	<-	R4(CF)[0..255]	{}
+001f (  44)		BINOP9	R3(I)[0..256]	<-	R3(IF)[-32768..32767], CI:256	{S}
+0020 (  44)		RELOP20	R3(B)[0..1]	<-	R3(IF)[0..256], CI:0	{S}
+0021 (  44)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  45)		BINOP8	R0(I)[0..255]	<-	R4(IF)[0..255], R2(IF)[0..128]	{}
+0001 (  44)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  47)		STOREA1		<-	V(-1 '')+53264 , R0(CF)	{}
+0001 (  49)		LOADG2	R0(P)	<-	V(18 'vspriteScreen')+0 	{}
+0002 (  49)		LOADZ1	R2(C)[0..255]	<-	V(5 '')+0 	{S}
+0003 (  49)		LEAI	R0(P)+0	<-	R0(PF)+0, R1(I)[0..7]	{}
+0004 (  49)		STOREI1		<-	R0(PF)+0, R2(CF)[0..255]	{V}
+0005 (  50)		LEAA	R0(P)[53287..53294]	<-	V(-1 '')+53287 , R1(IF)[0..7]	{S}
+0006 (  50)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [53287..53294], R7(CF)[6..14]	{V}
+0007 (  12)		RET		<-		{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  47)		BINOP9	R0(I)	<-	R4(IF)[0..255], R0(IF)	{}
+0001 (  44)		JUMP		<-		{}
+		==> 3
+--------------------------------------------------------------------
+game_state: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:972
+$00 R0(I), $02 R1(B), $03 R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 972)		LOADP1	R0(C)[0..4]	<-	V(0 '')+0 	{S}
+0001 ( 975)		STOREG1		<-	V(72 'game')+0 , R0(C)[0..4]	{}
+0002 ( 977)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0003 ( 977)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 4
+		==> 12
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 991)		CALLN		<-	V(15 'player_init')+0 	{}
+0001 ( 992)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (6)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 972)		RET		<-		{}
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 977)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0001 ( 977)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 14
+		==> 13
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 977)		BRANCH		<-	R0(CF)[0..1]	{}
+		==> 3
+		==> 2
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 985)		STOREG1		<-	V(72 'game')+1 , CC:120	{}
+0001 (  60)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53269 	{V}
+0002 (  60)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0003 (  60)		BINOP9	R0(I)[0..254]	<-	R0(IF)[0..255], CI:254	{}
+0004 (  60)		STOREA1		<-	V(-1 '')+53269 , R0(CF)[0..254]	{V}
+0005 (  60)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53269 	{V}
+0006 (  60)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0007 (  60)		BINOP9	R0(I)[0..127]	<-	R0(IF)[0..255], CI:127	{}
+0008 (  60)		STOREA1		<-	V(-1 '')+53269 , R0(CF)[0..127]	{V}
+0009 (  57)		JUMP		<-		{}
+		==> 1
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 981)		STOREF1		<-	V(0 '')+0 , CC:1	{}
+0001 ( 980)		CALLN		<-	V(14 'game_init')+0 	{}
+0002 ( 981)		CALLN		<-	V(17 'game_state')+0 	{}
+0003 ( 982)		JUMP		<-		{}
+		==> 1
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 977)		RELOP19	R1(B)[0..1]	<-	R0(C)[2..4], CC:3	{S}
+0001 ( 977)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 15
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 997)		STOREG1		<-	V(72 'game')+1 , CC:64	{}
+0001 ( 994)		CONST	R0(P)[0..0]	<-	CG42(79:0 'SIDFXBigExplosion' A)	{S}
+0002 (  46)		LOADG1:3	R1(C)[-128..255]	<-	V(65 'channels' A)+15 	{V}
+0003 (  48)		BRANCH		<-	R1(CF)[-128..255]	{}
+		==> 8
+		==> 7
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  50)		LOADG1:3	R1(C)[0..255]	<-	V(65 'channels' A)+9 	{}
+0001 (  50)		LOADG1	R2(C)[0..255]	<-	V(79 'SIDFXBigExplosion' A)+13 	{}
+0002 (  50)		RELOP26	R1(B)[0..1]	<-	R1(CF)[0..255], R2(CF)[0..255]	{}
+0003 (  50)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 10
+		==> 6
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  51)		CONST	R1(C)[1..1]	<-	CI:1	{}
+0001 (  50)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  56)		STOREG1:3		<-	V(65 'channels' A)+6 , CC:1	{}
+0001 (  60)		LOADG1	R2(C)[0..255]	<-	V(79 'SIDFXBigExplosion' A)+13 	{}
+0002 (  60)		STOREG1:3		<-	V(65 'channels' A)+9 , R2(CF)[0..255]	{}
+0003 (  55)		STOREG1:3		<-	V(65 'channels' A)+15 , CC:0	{V}
+0004 (  58)		STOREG2:3		<-	V(65 'channels' A)+0 , R0(PF)+0 {V(79 'SIDFXBigExplosion' A)} [0..0]	{V}
+0005 (  59)		STOREG1:3		<-	V(65 'channels' A)+12 , CC:2	{V}
+0006 (  62)		STOREG1:3		<-	V(65 'channels' A)+15 , R1(CF)[1..3]	{V}
+0007 ( 994)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 ( 111)		STOREA1		<-	V(-1 '')+53287 , CC:7	{V}
+0001 ( 111)		STOREA1		<-	V(-1 '')+53294 , CC:8	{V}
+0002 ( 998)		JUMP		<-		{}
+		==> 1
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  49)		CONST	R1(C)[3..3]	<-	CI:3	{}
+0001 (  48)		JUMP		<-		{}
+		==> 9
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 977)		RELOP19	R0(B)[0..1]	<-	R0(CF)[2..4], CC:4	{S}
+0001 ( 977)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 1
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1000)		CALLN		<-	V(18 'score_reset')+0 	{E}
+0001 (1001)		STOREG1		<-	V(72 'game')+1 , CC:120	{}
+0002 (1002)		JUMP		<-		{}
+		==> 1
+--------------------------------------------------------------------
+score_reset: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:230
+$00 R0(I), $00 R1(C), $00 R2(C), $00 R3(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 233)		CONST	R1(C)[0..0]	<-	CI:0	{}
+0001 ( 234)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 234)		CONV37	R0(I)[0..5]	<-	R1(C)[0..5]	{}
+0001 ( 234)		LEAA	R0(P)[51208..51213]	<-	V(-1 '')+51208 , R0(IF)[0..5]	{}
+0002 ( 234)		LOADI1	R2(C)[0..255]	<-	R0(P)+0 {V(-1 'ABS')} [51208..51213]	{}
+0003 ( 234)		LOADI1	R0(C)[0..255]	<-	R0(PF)+14 {V(-1 'ABS')} [51208..51213]	{}
+0004 ( 234)		RELOP19	R3(B)[0..1]	<-	R2(C)[0..255], R0(C)[0..255]	{}
+0005 ( 234)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 235)		BINOP1	R1(C)[1..6]	<-	R1(CF)[0..5], CI:1	{}
+0001 ( 234)		RELOP28	R0(B)[0..1]	<-	R1(C)[1..6], CC:6	{}
+0002 ( 234)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 250)		STOREA1		<-	V(-1 '')+51208 , CC:48	{}
+0001 ( 250)		STOREA1		<-	V(-1 '')+51209 , CC:48	{}
+0002 ( 250)		STOREA1		<-	V(-1 '')+51210 , CC:48	{}
+0003 ( 250)		STOREA1		<-	V(-1 '')+51211 , CC:48	{}
+0004 ( 250)		STOREA1		<-	V(-1 '')+51212 , CC:48	{}
+0005 ( 250)		STOREA1		<-	V(-1 '')+51213 , CC:48	{}
+0006 ( 251)		RET		<-		{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 238)		RELOP27	R0(B)[0..1]	<-	R2(CF)[0..255], R0(CF)[0..255]	{}
+0001 ( 238)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 4
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 243)		CONV37	R0(I)[0..5]	<-	R1(C)[0..5]	{}
+0001 ( 243)		LEAA	R0(P)[51208..51213]	<-	V(-1 '')+51208 , R0(IF)[0..5]	{}
+0002 ( 243)		LOADI1	R2(C)[0..255]	<-	R0(P)+0 {V(-1 'ABS')} [51208..51213]	{}
+0003 ( 243)		STOREI1		<-	R0(PF)+14 {V(-1 'ABS')} [51208..51213], R2(CF)[0..255]	{}
+0004 ( 244)		BINOP1	R1(C)[1..6]	<-	R1(CF)[0..5], CI:1	{}
+0005 ( 241)		RELOP28	R0(B)[0..1]	<-	R1(C)[1..6], CC:6	{}
+0006 ( 241)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 4
+--------------------------------------------------------------------
+game_loop: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:1007
+$00 R0(I), $02 R1(I), $10 R2(I), $04 R3(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1010)		LOADG2	R2(I)[-32768..32767]	<-	V(73 'player')+0 	{}
+0001 (1010)		BINOP9	R0(I)[0..4095]	<-	R2(I)[-32768..32767], CI:4095	{}
+0002 (1010)		STOREC2		<-	V(4 '')+0 , R0(IF)[0..4095]	{}
+0003 (1010)		CALLN		<-	V(20 'tiles_draw')+0 	{}
+0004 (1012)		LOADG1	R0(C)[0..4]	<-	V(72 'game')+0 	{}
+0005 (1012)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{}
+0006 (1012)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 4
+		==> 22
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1025)		CALLN		<-	V(25 'player_control')+0 	{}
+0001 ( 771)		LOADG1	R0(C)[-128..127]	<-	V(73 'player')+2 	{}
+0002 ( 771)		CONV40	R0(I)[-128..127]	<-	R0(CF)[-128..127]	{}
+0003 ( 771)		BINOP18	R0(I)[-32..31]	<-	R0(IF)[-128..127], CI:2	{}
+0004 ( 771)		LOADG2	R1(I)[-32768..32767]	<-	V(73 'player')+0 	{}
+0005 ( 771)		BINOP1	R0(I)	<-	R1(IF)[-32768..32767], R0(IF)[-32..31]	{}
+0006 ( 771)		STOREG2		<-	V(73 'player')+0 , R0(IF)	{}
+0007 (1031)		LOADG1	R0(C)[0..255]	<-	V(72 'game')+2 	{}
+0008 (1031)		BRANCH		<-	R0(C)[0..255]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1033)		BINOP1	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:-1	{}
+0001 (1033)		STOREG1		<-	V(72 'game')+2 , R0(C)[-1..254]	{}
+0002 (1034)		RELOP28	R1(B)[0..1]	<-	R0(C)[-1..254], CC:10	{}
+0003 (1034)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 8
+		==> 26
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1034)		CONV37	R0(I)[0..9]	<-	R0(CF)[0..9]	{}
+0001 (1034)		BINOP9	R0(I)[0..1]	<-	R0(IF)[0..9], CI:1	{}
+0002 (1034)		BRANCH		<-	R0(IF)[0..1]	{}
+		==> 26
+		==> 7
+L26: <= D-1: (5)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1048)		CALLN	R0(B)	<-	V(30 'shots_check')+0 	{}
+0001 (1048)		BRANCH		<-	R0(BF)	{}
+		==> 10
+		==> 27
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1049)		CONST	R0(P)[0..0]	<-	CG14(144:0 'SIDFXExplosion' A)	{S}
+0001 (  46)		LOADG1:3	R1(C)[-128..255]	<-	V(65 'channels' A)+16 	{V}
+0002 (  48)		BRANCH		<-	R1(CF)[-128..255]	{}
+		==> 12
+		==> 11
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  50)		LOADG1:3	R1(C)[0..255]	<-	V(65 'channels' A)+10 	{}
+0001 (  50)		LOADG1	R2(C)[0..255]	<-	V(144 'SIDFXExplosion' A)+13 	{}
+0002 (  50)		RELOP26	R1(B)[0..1]	<-	R1(CF)[0..255], R2(CF)[0..255]	{}
+0003 (  50)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 14
+		==> 27
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  51)		CONST	R1(C)[1..1]	<-	CI:1	{}
+0001 (  50)		JUMP		<-		{}
+		==> 13
+L13: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  56)		STOREG1:3		<-	V(65 'channels' A)+7 , CC:1	{}
+0001 (  60)		LOADG1	R2(C)[0..255]	<-	V(144 'SIDFXExplosion' A)+13 	{}
+0002 (  60)		STOREG1:3		<-	V(65 'channels' A)+10 , R2(CF)[0..255]	{}
+0003 (  55)		STOREG1:3		<-	V(65 'channels' A)+16 , CC:0	{V}
+0004 (  58)		STOREG2:3		<-	V(65 'channels' A)+1 , R0(PF)+0 {V(144 'SIDFXExplosion' A)} [0..0]	{V}
+0005 (  59)		STOREG1:3		<-	V(65 'channels' A)+13 , CC:0	{V}
+0006 (  62)		STOREG1:3		<-	V(65 'channels' A)+16 , R1(CF)[1..3]	{V}
+0007 (1052)		JUMP		<-		{}
+		==> 27
+L27: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1052)		CALLN	R0(B)	<-	V(31 'player_check')+0 	{}
+0001 (1052)		BRANCH		<-	R0(BF)	{}
+		==> 15
+		==> 1
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1053)		STOREF1		<-	V(0 '')+0 , CC:3	{}
+0001 (1053)		CALLN		<-	V(17 'game_state')+0 	{}
+0002 (1085)		CALLN		<-	V(33 'sidfx_loop')+0 	{}
+0003 (1089)		CALLN		<-	V(34 'status_update')+0 	{}
+0004 (1090)		RET		<-		{}
+L1: <= D-1: (6)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1085)		CALLN		<-	V(33 'sidfx_loop')+0 	{}
+0001 (1089)		CALLN		<-	V(34 'status_update')+0 	{}
+0002 (1090)		RET		<-		{}
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  49)		CONST	R1(C)[3..3]	<-	CI:3	{}
+0001 (  48)		JUMP		<-		{}
+		==> 13
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1035)		CALLN		<-	V(28 'enemies_spawn')+0 	{}
+0001 (1048)		JUMP		<-		{}
+		==> 26
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1040)		CALLN		<-	V(29 'enemies_move')+0 	{}
+0001 (1043)		LOADG1	R0(C)[0..255]	<-	V(72 'game')+3 	{}
+0002 (1043)		BRANCH		<-	R0(CF)[0..255]	{}
+		==> 26
+		==> 9
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1044)		CALLN	R0(I)	<-	V(12 'rand')+0 	{}
+0001 (1044)		BINOP9	R0(I)[0..63]	<-	R0(IF), CI:63	{}
+0002 (1044)		BINOP1	R0(I)[64..127]	<-	R0(IF)[0..63], CI:64	{}
+0003 (1044)		STOREG1		<-	V(72 'game')+2 , R0(CF)[64..127]	{}
+0004 (1048)		JUMP		<-		{}
+		==> 26
+L22: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1012)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{}
+0001 (1012)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 24
+		==> 23
+L24: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1012)		BRANCH		<-	R0(CF)[0..1]	{}
+		==> 2
+		==> 1
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1018)		LOADG1	R1(C)[0..255]	<-	V(72 'game')+1 	{}
+0001 (1018)		CONV37	R0(I)[0..255]	<-	R1(C)[0..255]	{}
+0002 (1018)		BINOP17	R0(I)[0..63]	<-	R0(IF)[0..255], CI:2	{}
+0003 (1018)		BINOP2	R0(I)[-32768..32767]	<-	R2(IF)[-32768..32767], R0(IF)[0..63]	{}
+0004 (1018)		STOREG2		<-	V(73 'player')+0 , R0(IF)[-32768..32767]	{}
+0005 (1020)		BINOP1	R1(C)[-1..254]	<-	R1(CF)[0..255], CI:-1	{}
+0006 (1020)		STOREG1		<-	V(72 'game')+1 , R1(C)[-1..254]	{}
+0007 (1020)		BRANCH		<-	R1(CF)[-1..254]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1021)		STOREF1		<-	V(0 '')+0 , CC:2	{}
+0001 (1021)		CALLN		<-	V(17 'game_state')+0 	{}
+0002 (1085)		CALLN		<-	V(33 'sidfx_loop')+0 	{}
+0003 (1089)		CALLN		<-	V(34 'status_update')+0 	{}
+0004 (1090)		RET		<-		{}
+L23: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1012)		RELOP19	R1(B)[0..1]	<-	R0(C)[2..4], CC:3	{}
+0001 (1012)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 16
+		==> 25
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1058)		LOADG1	R0(C)[0..255]	<-	V(72 'game')+1 	{}
+0001 ( 771)		LOADG1	R3(C)[-128..127]	<-	V(73 'player')+2 	{}
+0002 (1058)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0003 (1058)		BINOP17	R0(I)[0..63]	<-	R0(IF)[0..255], CI:2	{}
+0004 (1058)		BINOP2	R0(I)[64..127]	<-	CI:127, R0(IF)[0..63]	{}
+0005 ( 104)		LOADG2	R1(P)	<-	V(18 'vspriteScreen')+0 	{}
+0006 ( 104)		STOREI1		<-	R1(P)+0, R0(C)[64..127]	{V}
+0007 ( 104)		STOREI1		<-	R1(PF)+7, R0(CF)[64..127]	{V}
+0008 ( 771)		CONV40	R0(I)[-128..127]	<-	R3(CF)[-128..127]	{}
+0009 ( 771)		BINOP18	R0(I)[-32..31]	<-	R0(IF)[-128..127], CI:2	{}
+000a ( 771)		BINOP1	R0(I)	<-	R0(IF)[-32..31], R2(IF)[-32768..32767]	{}
+000b ( 771)		STOREG2		<-	V(73 'player')+0 , R0(IF)	{}
+000c (1062)		CALLN		<-	V(29 'enemies_move')+0 	{}
+000d (1065)		LOADG1	R0(C)[0..255]	<-	V(72 'game')+1 	{}
+000e (1065)		BINOP1	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:-1	{}
+000f (1065)		STOREG1		<-	V(72 'game')+1 , R0(C)[-1..254]	{}
+0010 (1065)		BRANCH		<-	R0(CF)[-1..254]	{}
+		==> 1
+		==> 17
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1067)		CALLN		<-	V(32 'enemies_reset')+0 	{}
+0001 (1068)		LOADG1	R0(C)[0..255]	<-	V(72 'game')+5 	{}
+0002 (1068)		BINOP1	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:-1	{}
+0003 (1068)		STOREG1		<-	V(72 'game')+5 , R0(C)[-1..254]	{}
+0004 (1071)		BRANCH		<-	R0(CF)[-1..254]	{}
+		==> 18
+		==> 19
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1072)		STOREF1		<-	V(0 '')+0 , CC:1	{}
+0001 (1072)		CALLN		<-	V(17 'game_state')+0 	{}
+0002 (1085)		CALLN		<-	V(33 'sidfx_loop')+0 	{}
+0003 (1089)		CALLN		<-	V(34 'status_update')+0 	{}
+0004 (1090)		RET		<-		{}
+L19: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1074)		STOREF1		<-	V(0 '')+0 , CC:4	{}
+0001 (1074)		CALLN		<-	V(17 'game_state')+0 	{}
+0002 (1085)		CALLN		<-	V(33 'sidfx_loop')+0 	{}
+0003 (1089)		CALLN		<-	V(34 'status_update')+0 	{}
+0004 (1090)		RET		<-		{}
+L25: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1012)		RELOP19	R0(B)[0..1]	<-	R0(CF)[2..4], CC:4	{}
+0001 (1012)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 20
+		==> 1
+L20: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1078)		LOADG1	R0(C)[0..255]	<-	V(72 'game')+1 	{}
+0001 (1078)		BINOP1	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:-1	{}
+0002 (1078)		STOREG1		<-	V(72 'game')+1 , R0(C)[-1..254]	{}
+0003 (1078)		BRANCH		<-	R0(CF)[-1..254]	{}
+		==> 1
+		==> 21
+L21: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 (1079)		STOREF1		<-	V(0 '')+0 , CC:0	{}
+0001 (1079)		CALLN		<-	V(17 'game_state')+0 	{}
+0002 (1085)		CALLN		<-	V(33 'sidfx_loop')+0 	{}
+0003 (1089)		CALLN		<-	V(34 'status_update')+0 	{}
+0004 (1090)		RET		<-		{}
+--------------------------------------------------------------------
+tiles_draw: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:543
+$00 R0(I), $02 R1(I), $04 R2(I), $07 R3(P), $09 R4(I), $0a R5(P), $0c R6(P), $0e R7(I), $10 R8(P), $06 R9(C), $00 R10(C), $0f R11(B), $12 R12(C), $13 R13(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  70)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  70)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  70)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  70)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 549)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53266 	{V}
+0001 ( 549)		RELOP28	R0(B)[0..1]	<-	R0(CF)[0..255], CC:106	{}
+0002 ( 549)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 554)		LOADZ2	R0(I)[0..65535]	<-	V(4 '')+0 	{S}
+0001 ( 554)		BINOP9	R1(I)[0..7]	<-	R0(I)[0..65535], CI:7	{S}
+0002 ( 554)		BINOP2	R1(I)[0..7]	<-	CI:7, R1(IF)[0..7]	{S}
+0003 ( 557)		BINOP8	R2(I)[0..31]	<-	R1(I)[0..7], CI:16	{S}
+0004 ( 443)		STOREG1		<-	V(56 'top' A)+4 , R2(CF)[0..31]	{V}
+0005 ( 558)		BINOP16	R1(I)[0..128]	<-	CI:1, R1(IF)[0..7]	{S}
+0006 ( 558)		UNOP15	R1(I)	<-	R1(IF)[0..128]	{S}
+0007 ( 443)		STOREG1		<-	V(56 'top' A)+17 , R1(CF)	{V}
+0008 ( 561)		BINOP17	R0(I)[0..8191]	<-	R0(IF)[0..65535], CI:3	{S}
+0009 ( 564)		BINOP9	R4(I)[0..3]	<-	R0(I)[0..8191], CI:3	{S}
+000a ( 582)		RELOP19	R11(B)[0..1]	<-	R4(C)[0..3], CC:2	{S}
+000b ( 564)		BINOP17	R0(I)[0..2047]	<-	R0(IF)[0..8191], CI:2	{S}
+000c ( 579)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..2047]	{S}
+000d ( 579)		LEAG	R5(P)[0..255]	<-	V(13 'xtilemap' A)+0 , R0(IF)[0..255]	{}
+000e ( 565)		CONST	R12(C)[0..0]	<-	CI:0	{}
+000f ( 566)		CONST	R13(C)[0..0]	<-	CI:0	{}
+0010 ( 569)		CONST	R6(P)[0..0]	<-	CG126(70:0 'shots' A)	{}
+0011 ( 572)		CONST	R7(I)[0..0]	<-	CI:0	{}
+0012 ( 576)		CONST	R8(P)[51320..51320]	<-	CA0(-1:51320 '')	{}
+0013 ( 591)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 591)		STOREC2		<-	V(0 '')+0 , R8(P)+0 {V(-1 'ABS')} [51320..51960]	{}
+0001 ( 591)		STOREC2		<-	V(2 '')+0 , R5(P)+0 {V(13 'xtilemap' A)} [0..831]	{}
+0002 ( 575)		LEAI	R3(P)+0 {V(-1 'ABS')} [55416..56056]	<-	R8(P)+0 {V(-1 'ABS')} [51320..51960], CI:4096	{}
+0003 ( 582)		BRANCH		<-	R11(B)[0..1]	{}
+		==> 9
+		==> 10
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 591)		CALLN		<-	V(23 'tiles_draw2')+0 	{}
+0001 ( 592)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 603)		CONV37	R0(I)[0..23]	<-	R12(C)[0..23]	{}
+0001 ( 603)		LEAG	R1(P)[0..23]	<-	V(69 'stars' A)+0 , R0(I)[0..23]	{}
+0002 ( 603)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(69 'stars' A)} [0..23]	{}
+0003 ( 603)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0004 ( 605)		LEAI	R2(P)+0 {V(-1 'ABS')} [55416..56311]	<-	R3(P)+0 {V(-1 'ABS')} [55416..56056], R1(I)[0..255]	{}
+0005 ( 604)		LEAI	R1(P)+0 {V(-1 'ABS')} [51320..52215]	<-	R8(P)+0 {V(-1 'ABS')} [51320..51960], R1(IF)[0..255]	{}
+0006 ( 604)		LOADI1	R9(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [51320..52215]	{}
+0007 ( 604)		BRANCH		<-	R9(CF)[0..255]	{}
+		==> 13
+		==> 14
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 605)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55416..56311], CC:8	{}
+0001 ( 604)		JUMP		<-		{}
+		==> 15
+L15: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 612)		LEAG	R1(P)[1..23]	<-	V(69 'stars' A)+1 , R0(I)[0..22]	{}
+0001 ( 612)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(69 'stars' A)} [1..23]	{}
+0002 ( 613)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0003 ( 614)		LEAI	R2(P)+0 {V(-1 'ABS')} [55416..56311]	<-	R3(P)+0 {V(-1 'ABS')} [55416..56056], R1(I)[0..255]	{}
+0004 ( 613)		LEAI	R1(P)+0 {V(-1 'ABS')} [51320..52215]	<-	R8(P)+0 {V(-1 'ABS')} [51320..51960], R1(IF)[0..255]	{}
+0005 ( 613)		LOADI1	R9(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [51320..52215]	{}
+0006 ( 613)		BRANCH		<-	R9(CF)[0..255]	{}
+		==> 16
+		==> 17
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 614)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55416..56311], CC:8	{}
+0001 ( 613)		JUMP		<-		{}
+		==> 18
+L18: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 621)		LEAG	R1(P)[2..23]	<-	V(69 'stars' A)+2 , R0(I)[0..21]	{}
+0001 ( 621)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(69 'stars' A)} [2..23]	{}
+0002 ( 622)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0003 ( 623)		LEAI	R2(P)+0 {V(-1 'ABS')} [55416..56311]	<-	R3(P)+0 {V(-1 'ABS')} [55416..56056], R1(I)[0..255]	{}
+0004 ( 622)		LEAI	R1(P)+0 {V(-1 'ABS')} [51320..52215]	<-	R8(P)+0 {V(-1 'ABS')} [51320..51960], R1(IF)[0..255]	{}
+0005 ( 622)		LOADI1	R9(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [51320..52215]	{}
+0006 ( 622)		BRANCH		<-	R9(CF)[0..255]	{}
+		==> 19
+		==> 20
+L19: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 623)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55416..56311], CC:8	{}
+0001 ( 622)		JUMP		<-		{}
+		==> 21
+L21: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 630)		LEAG	R0(P)[3..23]	<-	V(69 'stars' A)+3 , R0(IF)[0..20]	{}
+0001 ( 630)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(69 'stars' A)} [3..23]	{}
+0002 ( 631)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0003 ( 632)		LEAI	R1(P)+0 {V(-1 'ABS')} [55416..56311]	<-	R3(PF)+0 {V(-1 'ABS')} [55416..56056], R0(I)[0..255]	{}
+0004 ( 631)		LEAI	R0(P)+0 {V(-1 'ABS')} [51320..52215]	<-	R8(P)+0 {V(-1 'ABS')} [51320..51960], R0(IF)[0..255]	{}
+0005 ( 631)		LOADI1	R2(C)[0..255]	<-	R0(P)+0 {V(-1 'ABS')} [51320..52215]	{}
+0006 ( 631)		BRANCH		<-	R2(CF)[0..255]	{}
+		==> 22
+		==> 23
+L22: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 632)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55416..56311], CC:8	{}
+0001 ( 642)		JUMP		<-		{}
+		==> 29
+L29: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 640)		LOADI2	R0(P)	<-	R6(P)+5[0..0]	{}
+0001 ( 642)		JUMP		<-		{}
+		==> 24
+L24: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 642)		LOADI1	R1(C)[0..255]	<-	R0(P)+0	{}
+0001 ( 642)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0002 ( 642)		RELOP19	R1(B)[0..1]	<-	R1(IF)[0..255], R7(I)[0..4]	{}
+0003 ( 642)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 25
+		==> 26
+L25: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 645)		LOADI1	R1(C)[0..255]	<-	R0(P)+1	{}
+0001 ( 645)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0002 ( 645)		LOADI1	R2(C)[-128..127]	<-	R0(P)+4	{}
+0003 ( 645)		CONV40	R2(I)[-128..127]	<-	R2(CF)[-128..127]	{}
+0004 ( 645)		BINOP1	R1(I)[-128..382]	<-	R2(IF)[-128..127], R1(IF)[0..255]	{}
+0005 ( 645)		STOREI1		<-	R0(P)+1, R1(C)[-128..382]	{}
+0006 ( 648)		LOADI1	R2(C)[0..255]	<-	R0(P)+3	{}
+0007 ( 648)		BINOP1	R2(C)[-1..254]	<-	R2(CF)[0..255], CI:-1	{}
+0008 ( 648)		STOREI1		<-	R0(P)+3, R2(CF)[-1..254]	{}
+0009 ( 481)		CONV37	R1(I)[0..255]	<-	R1(CF)[-128..382]	{}
+000a ( 481)		LEAI	R1(P)+0 {V(-1 'ABS')} [51320..52215]	<-	R8(P)+0 {V(-1 'ABS')} [51320..51960], R1(IF)[0..255]	{}
+000b ( 481)		LOADI1	R9(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [51320..52215]	{}
+000c ( 651)		LOADI1	R10(C)[0..255]	<-	R0(P)+2	{}
+000d ( 484)		CONV37	R2(I)[0..19]	<-	R13(C)[0..19]	{}
+000e ( 487)		BINOP8	R3(I)[0..255]	<-	R2(I)[0..19], CI:224	{}
+000f ( 487)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [51320..52215], R3(CF)[0..255]	{}
+0010 ( 491)		BINOP16	R2(I)[0..152]	<-	R2(IF)[0..19], CI:3	{}
+0011 ( 490)		CONV37	R1(I)[0..255]	<-	R9(CF)[0..255]	{}
+0012 ( 490)		BINOP16	R1(I)[0..2040]	<-	R1(IF)[0..255], CI:3	{}
+0013 ( 490)		LEAA	R1(P)[57344..59384]	<-	V(-1 '')+57344 , R1(IF)[0..2040]	{}
+0014 ( 494)		LOADI1	R3(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [57344..59384]	{}
+0015 ( 491)		LEAA	R2(P)[59136..59288]	<-	V(-1 '')+59136 , R2(IF)[0..152]	{}
+0016 ( 494)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [59136..59288], R3(CF)[0..255]	{}
+0017 ( 494)		LOADI1	R3(C)[0..255]	<-	R1(P)+1 {V(-1 'ABS')} [57344..59384]	{}
+0018 ( 494)		STOREI1		<-	R2(P)+1 {V(-1 'ABS')} [59136..59288], R3(CF)[0..255]	{}
+0019 ( 494)		LOADI1	R3(C)[0..255]	<-	R1(P)+2 {V(-1 'ABS')} [57344..59384]	{}
+001a ( 494)		STOREI1		<-	R2(P)+2 {V(-1 'ABS')} [59136..59288], R3(CF)[0..255]	{}
+001b ( 494)		LOADI1	R3(C)[0..255]	<-	R1(P)+3 {V(-1 'ABS')} [57344..59384]	{}
+001c ( 494)		STOREI1		<-	R2(P)+3 {V(-1 'ABS')} [59136..59288], R3(CF)[0..255]	{}
+001d ( 495)		LOADI1	R3(C)[0..255]	<-	R1(P)+4 {V(-1 'ABS')} [57344..59384]	{}
+001e ( 495)		STOREI1		<-	R2(P)+4 {V(-1 'ABS')} [59136..59288], R3(CF)[0..255]	{}
+001f ( 495)		LOADI1	R3(C)[0..255]	<-	R1(P)+5 {V(-1 'ABS')} [57344..59384]	{}
+0020 ( 495)		STOREI1		<-	R2(P)+5 {V(-1 'ABS')} [59136..59288], R3(CF)[0..255]	{}
+0021 ( 495)		LOADI1	R3(C)[0..255]	<-	R1(P)+6 {V(-1 'ABS')} [57344..59384]	{}
+0022 ( 495)		STOREI1		<-	R2(P)+6 {V(-1 'ABS')} [59136..59288], R3(CF)[0..255]	{}
+0023 ( 495)		LOADI1	R1(C)[0..255]	<-	R1(PF)+7 {V(-1 'ABS')} [57344..59384]	{}
+0024 ( 495)		STOREI1		<-	R2(P)+7 {V(-1 'ABS')} [59136..59288], R1(CF)[0..255]	{}
+0025 ( 498)		CONV37	R1(I)[0..255]	<-	R10(CF)[0..255]	{}
+0026 ( 498)		LEAI	R2(P)+0 {V(-1 'ABS')} [59136..59543]	<-	R2(PF)+0 {V(-1 'ABS')} [59136..59288], R1(IF)[0..255]	{}
+0027 ( 498)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [59136..59543], CC:0	{}
+0028 ( 651)		BINOP1	R13(C)[1..20]	<-	R13(CF)[0..19], CI:1	{}
+0029 ( 653)		LOADI1	R1(C)[0..255]	<-	R0(P)+3	{}
+002a ( 653)		BRANCH		<-	R1(CF)[0..255]	{}
+		==> 27
+		==> 28
+L27: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 654)		MOVE	R6(P)	<-	R0(P)	{}
+0001 ( 663)		LOADI2	R0(P)	<-	R0(PF)+5	{}
+0002 ( 642)		JUMP		<-		{}
+		==> 24
+L28: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 659)		LOADI2	R1(P)	<-	R0(P)+5	{}
+0001 ( 659)		STOREI2		<-	R6(P)+5[~0..~0], R1(PF)	{}
+0002 ( 660)		LOADG2	R1(P)	<-	V(71 'freeShot')+0 	{}
+0003 ( 660)		STOREI2		<-	R0(P)+5, R1(PF)	{}
+0004 ( 661)		STOREG2		<-	V(71 'freeShot')+0 , R0(PF)	{}
+0005 ( 642)		JUMP		<-		{}
+		==> 29
+L26: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 667)		BINOP1	R12(C)[4..27]	<-	R12(CF)[0..23], CC:4	{}
+0001 ( 579)		LEAI	R5(P)+0 {V(13 'xtilemap' A)} [144..831]	<-	R5(PF)+0 {V(13 'xtilemap' A)} [0..831], CI:144	{}
+0002 ( 576)		LEAA	R8(P)[51480..51960]	<-	R8(PF)[51320..51960], CI:160	{}
+0003 ( 572)		BINOP1	R7(I)[1..5]	<-	R7(IF)[0..4], CI:1	{}
+0004 ( 572)		RELOP28	R0(B)[0..1]	<-	R7(I)[1..5], CI:5	{}
+0005 ( 572)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 5
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 670)		RET		<-		{}
+L23: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 635)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [55416..56311], CC:0	{}
+0001 ( 636)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [51320..52215], CC:248	{}
+0002 ( 642)		JUMP		<-		{}
+		==> 29
+L20: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 626)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55416..56311], CC:0	{}
+0001 ( 627)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [51320..52215], CC:248	{}
+0002 ( 622)		JUMP		<-		{}
+		==> 21
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 617)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55416..56311], CC:0	{}
+0001 ( 618)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [51320..52215], CC:248	{}
+0002 ( 613)		JUMP		<-		{}
+		==> 18
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 608)		STOREI1		<-	R2(PF)+0 {V(-1 'ABS')} [55416..56311], CC:0	{}
+0001 ( 609)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [51320..52215], CC:248	{}
+0002 ( 604)		JUMP		<-		{}
+		==> 15
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 582)		RELOP28	R0(B)[0..1]	<-	R4(C)[0..3], CC:2	{S}
+0001 ( 582)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 12
+		==> 11
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 582)		BRANCH		<-	R4(C)[0..1]	{}
+		==> 8
+		==> 7
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 588)		CALLN		<-	V(22 'tiles_draw1')+0 	{}
+0001 ( 589)		JUMP		<-		{}
+		==> 6
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 585)		CALLN		<-	V(21 'tiles_draw0')+0 	{}
+0001 ( 586)		JUMP		<-		{}
+		==> 6
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 594)		CALLN		<-	V(24 'tiles_draw3')+0 	{}
+0001 ( 595)		JUMP		<-		{}
+		==> 6
+--------------------------------------------------------------------
+tiles_draw0: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:292
+$00 R0(P), $00 R1(P), $00 R2(P), $02 R3(P), $00 R4(I), $00 R5(I), $04 R6(I), $05 R7(I), $00 R8(P), $00 R9(I), $00 R10(P), $06 R11(C), $00 R12(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 295)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 ( 295)		LEAI	R1(P)+0	<-	R0(P)+0, CI:40	{S}
+0002 ( 296)		LEAI	R2(P)+0	<-	R0(P)+0, CI:80	{S}
+0003 ( 297)		LEAI	R3(P)+0	<-	R0(P)+0, CI:120	{S}
+0004 ( 302)		CONST	R11(C)[0..0]	<-	CI:0	{}
+0005 ( 308)		CONST	R4(I)[0..0]	<-	CI:0	{}
+0006 ( 315)		CONST	R5(I)[1..1]	<-	CI:1	{}
+0007 ( 322)		CONST	R6(I)[2..2]	<-	CI:2	{}
+0008 ( 329)		CONST	R7(I)[3..3]	<-	CI:3	{}
+0009 ( 305)		LOADZ2	R8(P)	<-	V(2 '')+0 	{IS}
+000a ( 305)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 305)		CONV37	R9(I)[0..9]	<-	R11(C)[0..9]	{}
+0001 ( 305)		LEAI	R9(P)+0	<-	R8(P)+0, R9(IF)[0..9]	{}
+0002 ( 305)		LOADI1	R9(C)[0..63]	<-	R9(PF)+0	{}
+0003 ( 308)		CONV37	R9(I)[0..63]	<-	R9(CF)[0..63]	{}
+0004 ( 308)		LEAG	R10(P)[0..63]	<-	V(11 'xtileset' A)+0 , R9(I)[0..63]	{}
+0005 ( 308)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [0..63]	{}
+0006 ( 308)		LEAI	R10(P)+0	<-	R0(P)+0, R4(I)[0..36]	{}
+0007 ( 308)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0008 ( 309)		LEAG	R10(P)[256..319]	<-	V(11 'xtileset' A)+256 , R9(I)[0..63]	{}
+0009 ( 309)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [256..319]	{}
+000a ( 309)		LEAI	R10(P)+0	<-	R1(P)+0, R4(I)[0..36]	{}
+000b ( 309)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+000c ( 310)		LEAG	R10(P)[512..575]	<-	V(11 'xtileset' A)+512 , R9(I)[0..63]	{}
+000d ( 310)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [512..575]	{}
+000e ( 310)		LEAI	R10(P)+0	<-	R2(P)+0, R4(I)[0..36]	{}
+000f ( 310)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0010 ( 311)		LEAG	R10(P)[768..831]	<-	V(11 'xtileset' A)+768 , R9(I)[0..63]	{}
+0011 ( 311)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [768..831]	{}
+0012 ( 311)		LEAI	R10(P)+0	<-	R3(P)+0, R4(I)[0..36]	{}
+0013 ( 311)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0014 ( 315)		LEAG	R10(P)[64..127]	<-	V(11 'xtileset' A)+64 , R9(I)[0..63]	{}
+0015 ( 315)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [64..127]	{}
+0016 ( 315)		LEAI	R10(P)+0	<-	R0(P)+0, R5(I)[1..37]	{}
+0017 ( 315)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0018 ( 316)		LEAG	R10(P)[320..383]	<-	V(11 'xtileset' A)+320 , R9(I)[0..63]	{}
+0019 ( 316)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [320..383]	{}
+001a ( 316)		LEAI	R10(P)+0	<-	R1(P)+0, R5(I)[1..37]	{}
+001b ( 316)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+001c ( 317)		LEAG	R10(P)[576..639]	<-	V(11 'xtileset' A)+576 , R9(I)[0..63]	{}
+001d ( 317)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [576..639]	{}
+001e ( 317)		LEAI	R10(P)+0	<-	R2(P)+0, R5(I)[1..37]	{}
+001f ( 317)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0020 ( 318)		LEAG	R10(P)[832..895]	<-	V(11 'xtileset' A)+832 , R9(I)[0..63]	{}
+0021 ( 318)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [832..895]	{}
+0022 ( 318)		LEAI	R10(P)+0	<-	R3(P)+0, R5(I)[1..37]	{}
+0023 ( 318)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0024 ( 322)		LEAG	R10(P)[128..191]	<-	V(11 'xtileset' A)+128 , R9(I)[0..63]	{}
+0025 ( 322)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [128..191]	{}
+0026 ( 322)		LEAI	R10(P)+0	<-	R0(P)+0, R6(I)[2..38]	{}
+0027 ( 322)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0028 ( 323)		LEAG	R10(P)[384..447]	<-	V(11 'xtileset' A)+384 , R9(I)[0..63]	{}
+0029 ( 323)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [384..447]	{}
+002a ( 323)		LEAI	R10(P)+0	<-	R1(P)+0, R6(I)[2..38]	{}
+002b ( 323)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+002c ( 324)		LEAG	R10(P)[640..703]	<-	V(11 'xtileset' A)+640 , R9(I)[0..63]	{}
+002d ( 324)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [640..703]	{}
+002e ( 324)		LEAI	R10(P)+0	<-	R2(P)+0, R6(I)[2..38]	{}
+002f ( 324)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0030 ( 325)		LEAG	R10(P)[896..959]	<-	V(11 'xtileset' A)+896 , R9(I)[0..63]	{}
+0031 ( 325)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [896..959]	{}
+0032 ( 325)		LEAI	R10(P)+0	<-	R3(P)+0, R6(I)[2..38]	{}
+0033 ( 325)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0034 ( 329)		LEAG	R10(P)[192..255]	<-	V(11 'xtileset' A)+192 , R9(I)[0..63]	{}
+0035 ( 329)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [192..255]	{}
+0036 ( 329)		LEAI	R10(P)+0	<-	R0(P)+0, R7(I)[3..39]	{}
+0037 ( 329)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0038 ( 330)		LEAG	R10(P)[448..511]	<-	V(11 'xtileset' A)+448 , R9(I)[0..63]	{}
+0039 ( 330)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [448..511]	{}
+003a ( 330)		LEAI	R10(P)+0	<-	R1(P)+0, R7(I)[3..39]	{}
+003b ( 330)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+003c ( 331)		LEAG	R10(P)[704..767]	<-	V(11 'xtileset' A)+704 , R9(I)[0..63]	{}
+003d ( 331)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [704..767]	{}
+003e ( 331)		LEAI	R10(P)+0	<-	R2(P)+0, R7(I)[3..39]	{}
+003f ( 331)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0040 ( 332)		LEAG	R9(P)[960..1023]	<-	V(11 'xtileset' A)+960 , R9(IF)[0..63]	{}
+0041 ( 332)		LOADI1	R10(C)[0..255]	<-	R9(PF)+0 {V(11 'xtileset' A)} [960..1023]	{}
+0042 ( 332)		LEAI	R9(P)+0	<-	R3(P)+0, R7(I)[3..39]	{}
+0043 ( 332)		STOREI1		<-	R9(PF)+0, R10(CF)[0..255]	{}
+0044 ( 308)		BINOP1	R4(I)[4..40]	<-	R4(IF)[0..36], CI:4	{}
+0045 ( 315)		BINOP1	R5(I)[5..41]	<-	R5(IF)[1..37], CI:4	{}
+0046 ( 322)		BINOP1	R6(I)[6..42]	<-	R6(IF)[2..38], CI:4	{}
+0047 ( 329)		BINOP1	R7(I)[7..43]	<-	R7(IF)[3..39], CI:4	{}
+0048 ( 302)		BINOP1	R11(C)[1..10]	<-	R11(CF)[0..9], CI:1	{}
+0049 ( 302)		RELOP28	R9(B)[0..1]	<-	R11(C)[1..10], CC:10	{}
+004a ( 302)		BRANCH		<-	R9(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 335)		RET		<-		{}
+--------------------------------------------------------------------
+tiles_draw1: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:421
+$00 R0(P), $00 R1(P), $00 R2(P), $02 R3(P), $00 R4(I), $00 R5(I), $04 R6(I), $05 R7(I), $00 R8(P), $00 R9(I), $00 R10(P), $06 R11(C), $00 R12(C), $00 R13(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 425)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 ( 425)		LEAI	R1(P)+0	<-	R0(P)+0, CI:40	{S}
+0002 ( 426)		LEAI	R2(P)+0	<-	R0(P)+0, CI:80	{S}
+0003 ( 427)		LEAI	R3(P)+0	<-	R0(P)+0, CI:120	{S}
+0004 ( 430)		CONST	R11(C)[1..1]	<-	CI:1	{}
+0005 ( 432)		CONST	R4(I)[0..0]	<-	CI:0	{}
+0006 ( 438)		CONST	R5(I)[1..1]	<-	CI:1	{}
+0007 ( 444)		CONST	R6(I)[2..2]	<-	CI:2	{}
+0008 ( 452)		CONST	R7(I)[3..3]	<-	CI:3	{}
+0009 ( 423)		LOADZ2	R8(P)	<-	V(2 '')+0 	{S}
+000a ( 423)		LOADI1	R12(C)[0..255]	<-	R8(P)+0	{}
+000b ( 432)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 432)		CONV37	R9(I)[0..63]	<-	R12(CF)[0..63]	{}
+0001 ( 432)		LEAG	R10(P)[64..127]	<-	V(11 'xtileset' A)+64 , R9(I)[0..63]	{}
+0002 ( 432)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [64..127]	{}
+0003 ( 432)		LEAI	R10(P)+0	<-	R0(P)+0, R4(I)[0..36]	{}
+0004 ( 432)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0005 ( 433)		LEAG	R10(P)[320..383]	<-	V(11 'xtileset' A)+320 , R9(I)[0..63]	{}
+0006 ( 433)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [320..383]	{}
+0007 ( 433)		LEAI	R10(P)+0	<-	R1(P)+0, R4(I)[0..36]	{}
+0008 ( 433)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0009 ( 434)		LEAG	R10(P)[576..639]	<-	V(11 'xtileset' A)+576 , R9(I)[0..63]	{}
+000a ( 434)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [576..639]	{}
+000b ( 434)		LEAI	R10(P)+0	<-	R2(P)+0, R4(I)[0..36]	{}
+000c ( 434)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+000d ( 435)		LEAG	R10(P)[832..895]	<-	V(11 'xtileset' A)+832 , R9(I)[0..63]	{}
+000e ( 435)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [832..895]	{}
+000f ( 435)		LEAI	R10(P)+0	<-	R3(P)+0, R4(I)[0..36]	{}
+0010 ( 435)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0011 ( 438)		LEAG	R10(P)[128..191]	<-	V(11 'xtileset' A)+128 , R9(I)[0..63]	{}
+0012 ( 438)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [128..191]	{}
+0013 ( 438)		LEAI	R10(P)+0	<-	R0(P)+0, R5(I)[1..37]	{}
+0014 ( 438)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0015 ( 439)		LEAG	R10(P)[384..447]	<-	V(11 'xtileset' A)+384 , R9(I)[0..63]	{}
+0016 ( 439)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [384..447]	{}
+0017 ( 439)		LEAI	R10(P)+0	<-	R1(P)+0, R5(I)[1..37]	{}
+0018 ( 439)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0019 ( 440)		LEAG	R10(P)[640..703]	<-	V(11 'xtileset' A)+640 , R9(I)[0..63]	{}
+001a ( 440)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [640..703]	{}
+001b ( 440)		LEAI	R10(P)+0	<-	R2(P)+0, R5(I)[1..37]	{}
+001c ( 440)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+001d ( 441)		LEAG	R10(P)[896..959]	<-	V(11 'xtileset' A)+896 , R9(I)[0..63]	{}
+001e ( 441)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [896..959]	{}
+001f ( 441)		LEAI	R10(P)+0	<-	R3(P)+0, R5(I)[1..37]	{}
+0020 ( 441)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0021 ( 444)		LEAG	R10(P)[192..255]	<-	V(11 'xtileset' A)+192 , R9(I)[0..63]	{}
+0022 ( 444)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [192..255]	{}
+0023 ( 444)		LEAI	R10(P)+0	<-	R0(P)+0, R6(I)[2..38]	{}
+0024 ( 444)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0025 ( 445)		LEAG	R10(P)[448..511]	<-	V(11 'xtileset' A)+448 , R9(I)[0..63]	{}
+0026 ( 445)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [448..511]	{}
+0027 ( 445)		LEAI	R10(P)+0	<-	R1(P)+0, R6(I)[2..38]	{}
+0028 ( 445)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0029 ( 446)		LEAG	R10(P)[704..767]	<-	V(11 'xtileset' A)+704 , R9(I)[0..63]	{}
+002a ( 446)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [704..767]	{}
+002b ( 446)		LEAI	R10(P)+0	<-	R2(P)+0, R6(I)[2..38]	{}
+002c ( 446)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+002d ( 447)		LEAG	R9(P)[960..1023]	<-	V(11 'xtileset' A)+960 , R9(IF)[0..63]	{}
+002e ( 447)		LOADI1	R10(C)[0..255]	<-	R9(PF)+0 {V(11 'xtileset' A)} [960..1023]	{}
+002f ( 447)		LEAI	R9(P)+0	<-	R3(P)+0, R6(I)[2..38]	{}
+0030 ( 447)		STOREI1		<-	R9(PF)+0, R10(CF)[0..255]	{}
+0031 ( 450)		CONV37	R9(I)[1..10]	<-	R11(C)[1..10]	{}
+0032 ( 450)		LEAI	R9(P)+0	<-	R8(P)+0, R9(IF)[1..10]	{}
+0033 ( 450)		LOADI1	R12(C)[0..255]	<-	R9(PF)+0	{}
+0034 ( 452)		CONV37	R9(I)[0..255]	<-	R12(C)[0..255]	{}
+0035 ( 452)		LEAG	R10(P)[0..255]	<-	V(11 'xtileset' A)+0 , R9(I)[0..64]	{}
+0036 ( 452)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [0..255]	{}
+0037 ( 452)		LEAI	R10(P)+0	<-	R0(P)+0, R7(I)[3..39]	{}
+0038 ( 452)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0039 ( 453)		LEAG	R10(P)[256..511]	<-	V(11 'xtileset' A)+256 , R9(I)[0..64]	{}
+003a ( 453)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [256..511]	{}
+003b ( 453)		LEAI	R10(P)+0	<-	R1(P)+0, R7(I)[3..39]	{}
+003c ( 453)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+003d ( 454)		LEAG	R10(P)[512..767]	<-	V(11 'xtileset' A)+512 , R9(I)[0..64]	{}
+003e ( 454)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [512..767]	{}
+003f ( 454)		LEAI	R10(P)+0	<-	R2(P)+0, R7(I)[3..39]	{}
+0040 ( 454)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0041 ( 455)		LEAG	R9(P)[768..1023]	<-	V(11 'xtileset' A)+768 , R9(IF)[0..64]	{}
+0042 ( 455)		LOADI1	R10(C)[0..255]	<-	R9(PF)+0 {V(11 'xtileset' A)} [768..1023]	{}
+0043 ( 455)		LEAI	R9(P)+0	<-	R3(P)+0, R7(I)[3..39]	{}
+0044 ( 455)		STOREI1		<-	R9(PF)+0, R10(CF)[0..255]	{}
+0045 ( 432)		BINOP1	R4(I)[4..40]	<-	R4(IF)[0..36], CI:4	{}
+0046 ( 438)		BINOP1	R5(I)[5..41]	<-	R5(IF)[1..37], CI:4	{}
+0047 ( 444)		BINOP1	R6(I)[6..42]	<-	R6(IF)[2..38], CI:4	{}
+0048 ( 452)		BINOP1	R7(I)[7..43]	<-	R7(IF)[3..39], CI:4	{}
+0049 ( 430)		BINOP1	R11(C)[2..11]	<-	R11(CF)[1..10], CI:1	{}
+004a ( 430)		RELOP28	R9(B)[0..1]	<-	R11(C)[2..11], CC:11	{}
+004b ( 430)		BRANCH		<-	R9(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 458)		RET		<-		{}
+--------------------------------------------------------------------
+tiles_draw2: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:382
+$00 R0(P), $00 R1(P), $00 R2(P), $02 R3(P), $00 R4(I), $00 R5(I), $04 R6(I), $05 R7(I), $00 R8(P), $00 R9(I), $00 R10(P), $06 R11(C), $00 R12(C), $00 R13(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 386)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 ( 386)		LEAI	R1(P)+0	<-	R0(P)+0, CI:40	{S}
+0002 ( 387)		LEAI	R2(P)+0	<-	R0(P)+0, CI:80	{S}
+0003 ( 388)		LEAI	R3(P)+0	<-	R0(P)+0, CI:120	{S}
+0004 ( 391)		CONST	R11(C)[1..1]	<-	CI:1	{}
+0005 ( 393)		CONST	R4(I)[0..0]	<-	CI:0	{}
+0006 ( 399)		CONST	R5(I)[1..1]	<-	CI:1	{}
+0007 ( 407)		CONST	R6(I)[2..2]	<-	CI:2	{}
+0008 ( 413)		CONST	R7(I)[3..3]	<-	CI:3	{}
+0009 ( 384)		LOADZ2	R8(P)	<-	V(2 '')+0 	{S}
+000a ( 384)		LOADI1	R12(C)[0..255]	<-	R8(P)+0	{}
+000b ( 393)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 393)		CONV37	R9(I)[0..63]	<-	R12(CF)[0..63]	{}
+0001 ( 393)		LEAG	R10(P)[128..191]	<-	V(11 'xtileset' A)+128 , R9(I)[0..63]	{}
+0002 ( 393)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [128..191]	{}
+0003 ( 393)		LEAI	R10(P)+0	<-	R0(P)+0, R4(I)[0..36]	{}
+0004 ( 393)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0005 ( 394)		LEAG	R10(P)[384..447]	<-	V(11 'xtileset' A)+384 , R9(I)[0..63]	{}
+0006 ( 394)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [384..447]	{}
+0007 ( 394)		LEAI	R10(P)+0	<-	R1(P)+0, R4(I)[0..36]	{}
+0008 ( 394)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0009 ( 395)		LEAG	R10(P)[640..703]	<-	V(11 'xtileset' A)+640 , R9(I)[0..63]	{}
+000a ( 395)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [640..703]	{}
+000b ( 395)		LEAI	R10(P)+0	<-	R2(P)+0, R4(I)[0..36]	{}
+000c ( 395)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+000d ( 396)		LEAG	R10(P)[896..959]	<-	V(11 'xtileset' A)+896 , R9(I)[0..63]	{}
+000e ( 396)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [896..959]	{}
+000f ( 396)		LEAI	R10(P)+0	<-	R3(P)+0, R4(I)[0..36]	{}
+0010 ( 396)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0011 ( 399)		LEAG	R10(P)[192..255]	<-	V(11 'xtileset' A)+192 , R9(I)[0..63]	{}
+0012 ( 399)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [192..255]	{}
+0013 ( 399)		LEAI	R10(P)+0	<-	R0(P)+0, R5(I)[1..37]	{}
+0014 ( 399)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0015 ( 400)		LEAG	R10(P)[448..511]	<-	V(11 'xtileset' A)+448 , R9(I)[0..63]	{}
+0016 ( 400)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [448..511]	{}
+0017 ( 400)		LEAI	R10(P)+0	<-	R1(P)+0, R5(I)[1..37]	{}
+0018 ( 400)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0019 ( 401)		LEAG	R10(P)[704..767]	<-	V(11 'xtileset' A)+704 , R9(I)[0..63]	{}
+001a ( 401)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [704..767]	{}
+001b ( 401)		LEAI	R10(P)+0	<-	R2(P)+0, R5(I)[1..37]	{}
+001c ( 401)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+001d ( 402)		LEAG	R9(P)[960..1023]	<-	V(11 'xtileset' A)+960 , R9(IF)[0..63]	{}
+001e ( 402)		LOADI1	R10(C)[0..255]	<-	R9(PF)+0 {V(11 'xtileset' A)} [960..1023]	{}
+001f ( 402)		LEAI	R9(P)+0	<-	R3(P)+0, R5(I)[1..37]	{}
+0020 ( 402)		STOREI1		<-	R9(PF)+0, R10(CF)[0..255]	{}
+0021 ( 405)		CONV37	R9(I)[1..10]	<-	R11(C)[1..10]	{}
+0022 ( 405)		LEAI	R9(P)+0	<-	R8(P)+0, R9(IF)[1..10]	{}
+0023 ( 405)		LOADI1	R12(C)[0..191]	<-	R9(PF)+0	{}
+0024 ( 407)		CONV37	R9(I)[0..191]	<-	R12(C)[0..191]	{}
+0025 ( 407)		LEAG	R10(P)[0..191]	<-	V(11 'xtileset' A)+0 , R9(I)[0..64]	{}
+0026 ( 407)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [0..191]	{}
+0027 ( 407)		LEAI	R10(P)+0	<-	R0(P)+0, R6(I)[2..38]	{}
+0028 ( 407)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0029 ( 408)		LEAG	R10(P)[256..447]	<-	V(11 'xtileset' A)+256 , R9(I)[0..64]	{}
+002a ( 408)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [256..447]	{}
+002b ( 408)		LEAI	R10(P)+0	<-	R1(P)+0, R6(I)[2..38]	{}
+002c ( 408)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+002d ( 409)		LEAG	R10(P)[512..703]	<-	V(11 'xtileset' A)+512 , R9(I)[0..64]	{}
+002e ( 409)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [512..703]	{}
+002f ( 409)		LEAI	R10(P)+0	<-	R2(P)+0, R6(I)[2..38]	{}
+0030 ( 409)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0031 ( 410)		LEAG	R10(P)[768..959]	<-	V(11 'xtileset' A)+768 , R9(I)[0..64]	{}
+0032 ( 410)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [768..959]	{}
+0033 ( 410)		LEAI	R10(P)+0	<-	R3(P)+0, R6(I)[2..38]	{}
+0034 ( 410)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0035 ( 413)		LEAG	R10(P)[64..255]	<-	V(11 'xtileset' A)+64 , R9(I)[0..64]	{}
+0036 ( 413)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [64..255]	{}
+0037 ( 413)		LEAI	R10(P)+0	<-	R0(P)+0, R7(I)[3..39]	{}
+0038 ( 413)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0039 ( 414)		LEAG	R10(P)[320..511]	<-	V(11 'xtileset' A)+320 , R9(I)[0..64]	{}
+003a ( 414)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [320..511]	{}
+003b ( 414)		LEAI	R10(P)+0	<-	R1(P)+0, R7(I)[3..39]	{}
+003c ( 414)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+003d ( 415)		LEAG	R10(P)[576..767]	<-	V(11 'xtileset' A)+576 , R9(I)[0..64]	{}
+003e ( 415)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [576..767]	{}
+003f ( 415)		LEAI	R10(P)+0	<-	R2(P)+0, R7(I)[3..39]	{}
+0040 ( 415)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0041 ( 416)		LEAG	R9(P)[832..1023]	<-	V(11 'xtileset' A)+832 , R9(IF)[0..64]	{}
+0042 ( 416)		LOADI1	R10(C)[0..255]	<-	R9(PF)+0 {V(11 'xtileset' A)} [832..1023]	{}
+0043 ( 416)		LEAI	R9(P)+0	<-	R3(P)+0, R7(I)[3..39]	{}
+0044 ( 416)		STOREI1		<-	R9(PF)+0, R10(CF)[0..255]	{}
+0045 ( 393)		BINOP1	R4(I)[4..40]	<-	R4(IF)[0..36], CI:4	{}
+0046 ( 399)		BINOP1	R5(I)[5..41]	<-	R5(IF)[1..37], CI:4	{}
+0047 ( 407)		BINOP1	R6(I)[6..42]	<-	R6(IF)[2..38], CI:4	{}
+0048 ( 413)		BINOP1	R7(I)[7..43]	<-	R7(IF)[3..39], CI:4	{}
+0049 ( 391)		BINOP1	R11(C)[2..11]	<-	R11(CF)[1..10], CI:1	{}
+004a ( 391)		RELOP28	R9(B)[0..1]	<-	R11(C)[2..11], CC:11	{}
+004b ( 391)		BRANCH		<-	R9(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 419)		RET		<-		{}
+--------------------------------------------------------------------
+tiles_draw3: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:340
+$00 R0(P), $00 R1(P), $00 R2(P), $02 R3(P), $00 R4(I), $00 R5(I), $04 R6(I), $05 R7(I), $00 R8(P), $00 R9(I), $00 R10(P), $06 R11(C), $00 R12(C), $00 R13(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 344)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 ( 344)		LEAI	R1(P)+0	<-	R0(P)+0, CI:40	{S}
+0002 ( 345)		LEAI	R2(P)+0	<-	R0(P)+0, CI:80	{S}
+0003 ( 346)		LEAI	R3(P)+0	<-	R0(P)+0, CI:120	{S}
+0004 ( 349)		CONST	R11(C)[1..1]	<-	CI:1	{}
+0005 ( 352)		CONST	R4(I)[0..0]	<-	CI:0	{}
+0006 ( 362)		CONST	R5(I)[1..1]	<-	CI:1	{}
+0007 ( 368)		CONST	R6(I)[2..2]	<-	CI:2	{}
+0008 ( 374)		CONST	R7(I)[3..3]	<-	CI:3	{}
+0009 ( 342)		LOADZ2	R8(P)	<-	V(2 '')+0 	{S}
+000a ( 342)		LOADI1	R12(C)[0..255]	<-	R8(P)+0	{}
+000b ( 352)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 352)		CONV37	R9(I)[0..63]	<-	R12(CF)[0..63]	{}
+0001 ( 352)		LEAG	R10(P)[192..255]	<-	V(11 'xtileset' A)+192 , R9(I)[0..63]	{}
+0002 ( 352)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [192..255]	{}
+0003 ( 352)		LEAI	R10(P)+0	<-	R0(P)+0, R4(I)[0..36]	{}
+0004 ( 352)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0005 ( 353)		LEAG	R10(P)[448..511]	<-	V(11 'xtileset' A)+448 , R9(I)[0..63]	{}
+0006 ( 353)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [448..511]	{}
+0007 ( 353)		LEAI	R10(P)+0	<-	R1(P)+0, R4(I)[0..36]	{}
+0008 ( 353)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+0009 ( 354)		LEAG	R10(P)[704..767]	<-	V(11 'xtileset' A)+704 , R9(I)[0..63]	{}
+000a ( 354)		LOADI1	R12(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [704..767]	{}
+000b ( 354)		LEAI	R10(P)+0	<-	R2(P)+0, R4(I)[0..36]	{}
+000c ( 354)		STOREI1		<-	R10(PF)+0, R12(CF)[0..255]	{}
+000d ( 355)		LEAG	R9(P)[960..1023]	<-	V(11 'xtileset' A)+960 , R9(IF)[0..63]	{}
+000e ( 355)		LOADI1	R10(C)[0..255]	<-	R9(PF)+0 {V(11 'xtileset' A)} [960..1023]	{}
+000f ( 355)		LEAI	R9(P)+0	<-	R3(P)+0, R4(I)[0..36]	{}
+0010 ( 355)		STOREI1		<-	R9(PF)+0, R10(CF)[0..255]	{}
+0011 ( 359)		CONV37	R9(I)[1..10]	<-	R11(C)[1..10]	{}
+0012 ( 359)		LEAI	R9(P)+0	<-	R8(P)+0, R9(IF)[1..10]	{}
+0013 ( 359)		LOADI1	R12(C)[0..127]	<-	R9(PF)+0	{}
+0014 ( 362)		CONV37	R9(I)[0..127]	<-	R12(C)[0..127]	{}
+0015 ( 362)		LEAG	R10(P)[0..127]	<-	V(11 'xtileset' A)+0 , R9(I)[0..64]	{}
+0016 ( 362)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [0..127]	{}
+0017 ( 362)		LEAI	R10(P)+0	<-	R0(P)+0, R5(I)[1..37]	{}
+0018 ( 362)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0019 ( 363)		LEAG	R10(P)[256..383]	<-	V(11 'xtileset' A)+256 , R9(I)[0..64]	{}
+001a ( 363)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [256..383]	{}
+001b ( 363)		LEAI	R10(P)+0	<-	R1(P)+0, R5(I)[1..37]	{}
+001c ( 363)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+001d ( 364)		LEAG	R10(P)[512..639]	<-	V(11 'xtileset' A)+512 , R9(I)[0..64]	{}
+001e ( 364)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [512..639]	{}
+001f ( 364)		LEAI	R10(P)+0	<-	R2(P)+0, R5(I)[1..37]	{}
+0020 ( 364)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0021 ( 365)		LEAG	R10(P)[768..895]	<-	V(11 'xtileset' A)+768 , R9(I)[0..64]	{}
+0022 ( 365)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [768..895]	{}
+0023 ( 365)		LEAI	R10(P)+0	<-	R3(P)+0, R5(I)[1..37]	{}
+0024 ( 365)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0025 ( 368)		LEAG	R10(P)[64..191]	<-	V(11 'xtileset' A)+64 , R9(I)[0..64]	{}
+0026 ( 368)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [64..191]	{}
+0027 ( 368)		LEAI	R10(P)+0	<-	R0(P)+0, R6(I)[2..38]	{}
+0028 ( 368)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0029 ( 369)		LEAG	R10(P)[320..447]	<-	V(11 'xtileset' A)+320 , R9(I)[0..64]	{}
+002a ( 369)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [320..447]	{}
+002b ( 369)		LEAI	R10(P)+0	<-	R1(P)+0, R6(I)[2..38]	{}
+002c ( 369)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+002d ( 370)		LEAG	R10(P)[576..703]	<-	V(11 'xtileset' A)+576 , R9(I)[0..64]	{}
+002e ( 370)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [576..703]	{}
+002f ( 370)		LEAI	R10(P)+0	<-	R2(P)+0, R6(I)[2..38]	{}
+0030 ( 370)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0031 ( 371)		LEAG	R10(P)[832..959]	<-	V(11 'xtileset' A)+832 , R9(I)[0..64]	{}
+0032 ( 371)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [832..959]	{}
+0033 ( 371)		LEAI	R10(P)+0	<-	R3(P)+0, R6(I)[2..38]	{}
+0034 ( 371)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0035 ( 374)		LEAG	R10(P)[128..255]	<-	V(11 'xtileset' A)+128 , R9(I)[0..64]	{}
+0036 ( 374)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [128..255]	{}
+0037 ( 374)		LEAI	R10(P)+0	<-	R0(P)+0, R7(I)[3..39]	{}
+0038 ( 374)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0039 ( 375)		LEAG	R10(P)[384..511]	<-	V(11 'xtileset' A)+384 , R9(I)[0..64]	{}
+003a ( 375)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [384..511]	{}
+003b ( 375)		LEAI	R10(P)+0	<-	R1(P)+0, R7(I)[3..39]	{}
+003c ( 375)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+003d ( 376)		LEAG	R10(P)[640..767]	<-	V(11 'xtileset' A)+640 , R9(I)[0..64]	{}
+003e ( 376)		LOADI1	R13(C)[0..255]	<-	R10(PF)+0 {V(11 'xtileset' A)} [640..767]	{}
+003f ( 376)		LEAI	R10(P)+0	<-	R2(P)+0, R7(I)[3..39]	{}
+0040 ( 376)		STOREI1		<-	R10(PF)+0, R13(CF)[0..255]	{}
+0041 ( 377)		LEAG	R9(P)[896..1023]	<-	V(11 'xtileset' A)+896 , R9(IF)[0..64]	{}
+0042 ( 377)		LOADI1	R10(C)[0..255]	<-	R9(PF)+0 {V(11 'xtileset' A)} [896..1023]	{}
+0043 ( 377)		LEAI	R9(P)+0	<-	R3(P)+0, R7(I)[3..39]	{}
+0044 ( 377)		STOREI1		<-	R9(PF)+0, R10(CF)[0..255]	{}
+0045 ( 352)		BINOP1	R4(I)[4..40]	<-	R4(IF)[0..36], CI:4	{}
+0046 ( 362)		BINOP1	R5(I)[5..41]	<-	R5(IF)[1..37], CI:4	{}
+0047 ( 368)		BINOP1	R6(I)[6..42]	<-	R6(IF)[2..38], CI:4	{}
+0048 ( 374)		BINOP1	R7(I)[7..43]	<-	R7(IF)[3..39], CI:4	{}
+0049 ( 349)		BINOP1	R11(C)[2..11]	<-	R11(CF)[1..10], CI:1	{}
+004a ( 349)		RELOP28	R9(B)[0..1]	<-	R11(C)[2..11], CC:11	{}
+004b ( 349)		BRANCH		<-	R9(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 380)		RET		<-		{}
+--------------------------------------------------------------------
+player_control: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:690
+$00 R0(I), $05 R1(I), $02 R2(I), $04 R3(C), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 693)		CALLN		<-	V(26 'joy_poll')+0 	{}
+0001 ( 696)		LOADG1	R0(C)[-128..127]	<-	V(102 'joyx' A)+0 	{}
+0002 ( 696)		BRANCH		<-	R0(C)[-128..127]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 697)		STOREG1		<-	V(73 'player')+3 , R0(CF)[-128..127]	{}
+0001 ( 696)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 700)		LOADG1	R0(C)[-128..127]	<-	V(101 'joyy' A)+0 	{}
+0001 ( 700)		CONV40	R0(I)[-128..127]	<-	R0(CF)[-128..127]	{}
+0002 ( 700)		BINOP16	R0(I)[-256..254]	<-	R0(IF)[-128..127], CI:1	{}
+0003 ( 700)		LOADG1	R1(C)[0..255]	<-	V(73 'player')+5 	{}
+0004 ( 700)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0005 ( 700)		BINOP1	R0(I)[-256..509]	<-	R1(IF)[0..255], R0(IF)[-256..254]	{}
+0006 ( 700)		STOREG1		<-	V(73 'player')+5 , R0(C)[-256..509]	{}
+0007 ( 707)		LOADG1	R1(C)[-128..127]	<-	V(73 'player')+3 	{}
+0008 ( 701)		RELOP28	R2(B)[0..1]	<-	R0(C)[-256..509], CC:14	{}
+0009 ( 701)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 702)		STOREG1		<-	V(73 'player')+5 , CC:14	{}
+0001 ( 707)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 707)		RELOP23	R0(B)[0..1]	<-	R1(C)[-128..127], CC:0	{}
+0001 ( 707)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 710)		LOADG1	R0(C)[-128..127]	<-	V(73 'player')+2 	{}
+0001 ( 714)		LOADG1	R1(C)[0..255]	<-	V(73 'player')+4 	{}
+0002 ( 710)		RELOP24	R2(B)[0..1]	<-	R0(C)[-128..127], CC:32	{}
+0003 ( 710)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 711)		BINOP1	R0(C)[-127..32]	<-	R0(CF)[-128..31], CI:1	{}
+0001 ( 711)		STOREG1		<-	V(73 'player')+2 , R0(CF)[-127..32]	{}
+0002 ( 714)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 714)		RELOP27	R0(B)[0..1]	<-	R1(C)[0..255], CC:0	{}
+0001 ( 714)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 13
+		==> 9
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 714)		RELOP28	R0(B)[0..1]	<-	R1(C)[1..255], CC:16	{}
+0001 ( 714)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 12
+		==> 15
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 715)		BINOP1	R0(C)[0..14]	<-	R1(CF)[1..15], CI:-1	{}
+0001 ( 714)		JUMP		<-		{}
+		==> 44
+L44: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 717)		STOREG1		<-	V(73 'player')+4 , R0(CF)[0..32]	{}
+0001 ( 716)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (6)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 732)		LOADG1	R0(C)[0..255]	<-	V(73 'player')+4 	{}
+0001 ( 732)		BINOP9	R2(C)[0..31]	<-	R0(CF)[0..255], CC:31	{}
+0002 ( 732)		STOREG1		<-	V(73 'player')+4 , R2(C)[0..31]	{}
+0003 ( 739)		LOADG1	R3(C)[-128..127]	<-	V(73 'player')+2 	{}
+0004 ( 742)		LOADG1	R4(C)[0..255]	<-	V(73 'player')+6 	{}
+0005 ( 735)		CONV37	R0(I)[0..31]	<-	R2(C)[0..31]	{}
+0006 ( 735)		BINOP17	R0(I)[0..15]	<-	R0(IF)[0..31], CI:1	{}
+0007 ( 735)		BINOP1	R0(I)[64..79]	<-	R0(IF)[0..15], CI:64	{}
+0008 ( 104)		LOADG2	R1(P)	<-	V(18 'vspriteScreen')+0 	{}
+0009 ( 104)		STOREI1		<-	R1(P)+0, R0(C)[64..79]	{V}
+000a ( 736)		BINOP1	R0(I)[80..95]	<-	R0(IF)[64..79], CI:16	{}
+000b ( 104)		STOREI1		<-	R1(PF)+7, R0(CF)[80..95]	{V}
+000c ( 739)		CONV40	R0(I)[-128..127]	<-	R3(CF)[-128..127]	{}
+000d ( 739)		BINOP16	R0(I)[-512..508]	<-	R0(IF)[-128..127], CI:2	{}
+000e ( 739)		BINOP2	R1(I)[-360..660]	<-	CI:148, R0(IF)[-512..508]	{}
+000f ( 742)		BRANCH		<-	R4(C)[0..255]	{}
+		==> 23
+		==> 24
+L23: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 743)		BINOP1	R4(C)[-1..254]	<-	R4(CF)[0..255], CI:-1	{}
+0001 ( 743)		STOREG1		<-	V(73 'player')+6 , R4(CF)[-1..254]	{}
+0002 ( 742)		JUMP		<-		{}
+		==> 25
+L25: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 764)		LOADG1	R0(C)[0..255]	<-	V(73 'player')+5 	{}
+0001 (  70)		LOADA1	R2(C)[0..255]	<-	V(-1 '')+53264 	{}
+0002 ( 764)		BINOP1	R3(C)	<-	R0(CF)[0..255], CI:50	{}
+0003 (  67)		STOREA1		<-	V(-1 '')+53249 , R3(C)	{V}
+0004 ( 764)		BINOP1	R0(I)[-336..684]	<-	R1(IF)[-360..660], CI:24	{}
+0005 (  68)		BINOP9	R1(I)[0..255]	<-	R0(I)[-336..684], CI:255	{}
+0006 (  68)		STOREA1		<-	V(-1 '')+53248 , R1(CF)[0..255]	{V}
+0007 (  70)		CONV37	R1(I)[0..255]	<-	R2(CF)[0..255]	{}
+0008 (  69)		BINOP9	R2(I)[0..256]	<-	R0(I)[-336..684], CI:256	{}
+0009 (  69)		RELOP20	R2(B)[0..1]	<-	R2(IF)[0..256], CI:0	{}
+000a (  69)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 38
+		==> 39
+L38: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  70)		BINOP8	R1(I)[0..255]	<-	R1(IF)[0..255], CI:1	{}
+0001 (  69)		JUMP		<-		{}
+		==> 37
+L37: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  72)		STOREA1		<-	V(-1 '')+53264 , R1(C)[0..255]	{}
+0001 ( 765)		BINOP1	R3(C)[58..313]	<-	R3(CF), CI:8	{}
+0002 (  67)		STOREA1		<-	V(-1 '')+53263 , R3(CF)[58..313]	{V}
+0003 ( 765)		BINOP1	R0(I)[-328..692]	<-	R0(IF)[-336..684], CI:8	{}
+0004 (  68)		BINOP9	R2(I)[0..255]	<-	R0(I)[-328..692], CI:255	{}
+0005 (  68)		STOREA1		<-	V(-1 '')+53262 , R2(CF)[0..255]	{V}
+0006 (  70)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0007 (  69)		BINOP9	R0(I)[0..256]	<-	R0(IF)[-328..692], CI:256	{}
+0008 (  69)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..256], CI:0	{}
+0009 (  69)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 41
+		==> 42
+L41: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  70)		BINOP8	R0(I)[0..255]	<-	R1(IF)[0..255], CI:128	{}
+0001 (  69)		JUMP		<-		{}
+		==> 40
+L40: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  72)		STOREA1		<-	V(-1 '')+53264 , R0(CF)[0..255]	{}
+0001 ( 766)		RET		<-		{}
+L42: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  72)		BINOP9	R0(I)[0..127]	<-	R1(IF)[0..255], CI:127	{}
+0001 (  69)		JUMP		<-		{}
+		==> 40
+L39: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  72)		BINOP9	R1(I)[0..254]	<-	R1(IF)[0..255], CI:254	{}
+0001 (  69)		JUMP		<-		{}
+		==> 37
+L24: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 744)		LOADG1	R0(B)[0..1]	<-	V(103 'joyb' A)+0 	{}
+0001 ( 744)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 26
+		==> 25
+L26: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 746)		RELOP28	R0(B)[0..1]	<-	R2(C)[0..31], CC:4	{}
+0001 ( 746)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 27
+		==> 30
+L27: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 749)		LOADG1	R0(C)[0..255]	<-	V(73 'player')+5 	{}
+0001 ( 749)		STOREC1		<-	V(2 '')+0 , R0(CF)[0..255]	{}
+0002 ( 749)		STOREC1		<-	V(3 '')+0 , CC:1	{}
+0003 (  48)		JUMP		<-		{}
+		==> 43
+L43: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 749)		STOREC2		<-	V(0 '')+0 , R1(I)[-360..660]	{}
+0001 ( 755)		CALLN		<-	V(27 'shot_add')+0 	{}
+0002 ( 756)		CONST	R0(P)[0..0]	<-	CG14(109:0 'SIDFXFire' A)	{S}
+0003 (  46)		LOADG1:3	R2(C)[-128..255]	<-	V(65 'channels' A)+15 	{V}
+0004 (  48)		BRANCH		<-	R2(CF)[-128..255]	{}
+		==> 32
+		==> 31
+L32: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  50)		LOADG1:3	R2(C)[0..255]	<-	V(65 'channels' A)+9 	{}
+0001 (  50)		LOADG1	R3(C)[0..255]	<-	V(109 'SIDFXFire' A)+13 	{}
+0002 (  50)		RELOP26	R2(B)[0..1]	<-	R2(CF)[0..255], R3(CF)[0..255]	{}
+0003 (  50)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 34
+		==> 29
+L34: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  51)		CONST	R2(C)[1..1]	<-	CI:1	{}
+0001 (  50)		JUMP		<-		{}
+		==> 33
+L33: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 760)		STOREG1		<-	V(73 'player')+6 , CC:6	{}
+0001 (  56)		STOREG1:3		<-	V(65 'channels' A)+6 , CC:1	{}
+0002 (  60)		LOADG1	R3(C)[0..255]	<-	V(109 'SIDFXFire' A)+13 	{}
+0003 (  60)		STOREG1:3		<-	V(65 'channels' A)+9 , R3(CF)[0..255]	{}
+0004 (  55)		STOREG1:3		<-	V(65 'channels' A)+15 , CC:0	{V}
+0005 (  58)		STOREG2:3		<-	V(65 'channels' A)+0 , R0(PF)+0 {V(109 'SIDFXFire' A)} [0..0]	{V}
+0006 (  59)		STOREG1:3		<-	V(65 'channels' A)+12 , CC:0	{V}
+0007 (  62)		STOREG1:3		<-	V(65 'channels' A)+15 , R2(CF)[1..3]	{V}
+0008 ( 744)		JUMP		<-		{}
+		==> 25
+L29: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 760)		STOREG1		<-	V(73 'player')+6 , CC:6	{}
+0001 ( 744)		JUMP		<-		{}
+		==> 25
+L31: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  49)		CONST	R2(C)[3..3]	<-	CI:3	{}
+0001 (  48)		JUMP		<-		{}
+		==> 33
+L30: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 746)		RELOP25	R0(B)[0..1]	<-	R2(C)[4..31], CC:29	{}
+0001 ( 746)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 27
+		==> 28
+L28: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 752)		RELOP25	R0(B)[0..1]	<-	R2(C)[4..28], CC:13	{}
+0001 ( 752)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 36
+		==> 29
+L36: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 752)		RELOP28	R0(B)[0..1]	<-	R2(CF)[13..28], CC:20	{}
+0001 ( 752)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 35
+		==> 29
+L35: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 755)		LOADG1	R0(C)[0..255]	<-	V(73 'player')+5 	{}
+0001 ( 755)		STOREC1		<-	V(2 '')+0 , R0(CF)[0..255]	{}
+0002 ( 755)		STOREC1		<-	V(3 '')+0 , CC:-1	{}
+0003 (  48)		JUMP		<-		{}
+		==> 43
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 716)		RELOP28	R0(B)[0..1]	<-	R1(C)[16..255], CC:32	{}
+0001 ( 716)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 14
+		==> 9
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 717)		BINOP1	R0(C)[17..32]	<-	R1(CF)[16..31], CI:1	{}
+0001 ( 716)		JUMP		<-		{}
+		==> 44
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 719)		RELOP24	R0(B)[0..1]	<-	R1(CF)[-128..0], CC:0	{}
+0001 ( 719)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 16
+		==> 9
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 721)		LOADG1	R0(C)[-128..127]	<-	V(73 'player')+2 	{}
+0001 ( 721)		RELOP23	R1(B)[0..1]	<-	R0(C)[-128..127], CC:-32	{}
+0002 ( 721)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 17
+		==> 20
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 722)		BINOP1	R0(C)[-32..126]	<-	R0(CF)[-31..127], CI:-1	{}
+0001 ( 722)		STOREG1		<-	V(73 'player')+2 , R0(CF)[-32..126]	{}
+0002 ( 724)		JUMP		<-		{}
+		==> 20
+L20: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 724)		LOADG1	R0(C)[0..255]	<-	V(73 'player')+4 	{}
+0001 ( 724)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..255], CC:16	{}
+0002 ( 724)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 18
+		==> 19
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 725)		BINOP1	R0(C)[1..16]	<-	R0(CF)[0..15], CI:1	{}
+0001 ( 724)		JUMP		<-		{}
+		==> 44
+L19: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 726)		RELOP27	R1(B)[0..1]	<-	R0(C)[16..255], CC:16	{}
+0001 ( 726)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 22
+		==> 9
+L22: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 726)		RELOP28	R1(B)[0..1]	<-	R0(C)[17..255], CC:32	{}
+0001 ( 726)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 21
+		==> 9
+L21: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 727)		BINOP1	R0(C)[16..30]	<-	R0(CF)[17..31], CI:-1	{}
+0001 ( 726)		JUMP		<-		{}
+		==> 44
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 703)		RELOP27	R0(B)[0..1]	<-	R0(CF)[-256..509], CC:173	{}
+0001 ( 703)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 5
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 704)		STOREG1		<-	V(73 'player')+5 , CC:173	{}
+0001 ( 707)		JUMP		<-		{}
+		==> 5
+--------------------------------------------------------------------
+joy_poll: /home/honza/projects/c64/projects/oscar64/include/c64/joystick.h:13
+$00 R0(I), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (   8)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56320 	{V}
+0001 (  10)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  24)		BINOP9	R1(I)[0..16]	<-	R0(I)[0..255], CI:16	{}
+0003 (  24)		RELOP19	R1(B)[0..1]	<-	R1(IF)[0..16], CI:0	{}
+0004 (  24)		STOREG1		<-	V(103 'joyb' A)+0 , R1(BF)[0..1]	{}
+0005 (  10)		BINOP9	R1(I)[0..1]	<-	R0(I)[0..255], CI:1	{}
+0006 (  10)		BRANCH		<-	R1(IF)[0..1]	{}
+		==> 2
+		==> 1
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  12)		BINOP9	R1(I)[0..2]	<-	R0(I)[0..255], CI:2	{}
+0001 (  12)		BRANCH		<-	R1(IF)[0..2]	{}
+		==> 4
+		==> 3
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  15)		STOREG1		<-	V(101 'joyy' A)+0 , CC:0	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  17)		BINOP9	R1(I)[0..4]	<-	R0(I)[0..255], CI:4	{}
+0001 (  17)		BRANCH		<-	R1(IF)[0..4]	{}
+		==> 6
+		==> 5
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  19)		BINOP9	R0(I)[0..8]	<-	R0(IF)[0..255], CI:8	{}
+0001 (  19)		BRANCH		<-	R0(IF)[0..8]	{}
+		==> 9
+		==> 8
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  22)		STOREG1		<-	V(102 'joyx' A)+0 , CC:0	{}
+0001 (  19)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.h
+0000 (  13)		RET		<-		{}
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  20)		STOREG1		<-	V(102 'joyx' A)+0 , CC:1	{}
+0001 (  19)		JUMP		<-		{}
+		==> 7
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  18)		STOREG1		<-	V(102 'joyx' A)+0 , CC:-1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 7
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  13)		STOREG1		<-	V(101 'joyy' A)+0 , CC:1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  11)		STOREG1		<-	V(101 'joyy' A)+0 , CC:-1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+--------------------------------------------------------------------
+shot_add: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:502
+$00 R0(P), $00 R1(P), $00 R2(I), $00 R3(I), $01 R4(P), $03 R5(P), $00 R6(C), $00 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 511)		LOADG2	R0(P)	<-	V(71 'freeShot')+0 	{}
+0001 ( 512)		LOADI2	R1(P)	<-	R0(P)+5	{}
+0002 ( 512)		STOREG2		<-	V(71 'freeShot')+0 , R1(PF)	{}
+0003 ( 505)		LOADZ1	R1(C)[0..255]	<-	V(2 '')+0 	{S}
+0004 ( 505)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{S}
+0005 ( 505)		BINOP2	R1(I)[-14..241]	<-	R1(IF)[0..255], CI:14	{S}
+0006 ( 506)		CONV37	R1(I)[0..255]	<-	R1(CF)[-14..241]	{S}
+0007 ( 508)		BINOP9	R2(I)[0..7]	<-	R1(I)[0..255], CI:7	{S}
+0008 ( 507)		BINOP17	R3(I)[0..31]	<-	R1(I)[0..255], CI:3	{S}
+0009 ( 507)		BINOP9	R3(I)[0..3]	<-	R3(IF)[0..31], CI:3	{S}
+000a ( 506)		BINOP17	R1(I)[0..7]	<-	R1(IF)[0..255], CI:5	{S}
+000b ( 515)		CONST	R4(P)[0..0]	<-	CG126(70:0 'shots' A)	{}
+000c ( 502)		LOADZ1	R6(C)[-128..127]	<-	V(3 '')+0 	{S}
+000d ( 516)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 516)		LOADI2	R5(P)	<-	R4(P)+5[~0..~0]	{}
+0001 ( 516)		LOADI1	R7(C)[0..255]	<-	R5(P)+0	{}
+0002 ( 516)		RELOP28	R7(B)[0..1]	<-	R7(CF)[0..255], R1(C)[0..7]	{}
+0003 ( 516)		BRANCH		<-	R7(BF)[0..1]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 517)		MOVE	R4(P)	<-	R5(PF)	{}
+0001 ( 516)		JUMP		<-		{}
+		==> 1
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 522)		STOREI1		<-	R0(P)+0, R1(CF)[0..7]	{}
+0001 ( 523)		STOREI1		<-	R0(P)+2, R2(CF)[0..7]	{}
+0002 ( 524)		STOREI1		<-	R0(P)+4, R6(C)[-1..1]	{}
+0003 ( 518)		STOREI2		<-	R0(P)+5, R5(PF)	{}
+0004 ( 519)		STOREI2		<-	R4(PF)+5[~0..~0], R0(P)	{}
+0005 ( 531)		CONV37	R1(I)[0..3]	<-	R3(CF)[0..3]	{S}
+0006 ( 531)		BINOP3	R1(I)[0..120]	<-	R1(IF)[0..3], CI:40	{S}
+0007 ( 529)		LOADZ2	R2(I)[-32768..32767]	<-	V(0 '')+0 	{S}
+0008 ( 527)		RELOP24	R3(B)[0..1]	<-	R6(CF)[-1..1], CC:0	{S}
+0009 ( 527)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 4
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 529)		BINOP18	R2(I)[-4096..4095]	<-	R2(IF)[-32768..32767], CI:3	{S}
+0001 ( 530)		BINOP2	R3(C)	<-	R2(C)[-4096..4095], CI:1	{S}
+0002 ( 530)		STOREI1		<-	R0(P)+3, R3(CF)	{}
+0003 ( 530)		CONV37	R2(I)[0..255]	<-	R2(CF)[-4096..4095]	{S}
+0004 ( 531)		BINOP1	R1(I)[0..375]	<-	R2(IF)[0..255], R1(IF)[0..120]	{S}
+0005 ( 531)		STOREI1		<-	R0(PF)+1, R1(CF)[0..375]	{}
+0006 ( 527)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 502)		RET		<-		{}
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 535)		BINOP1	R2(I)[-32744..32791]	<-	R2(IF)[-32768..32767], CI:24	{S}
+0001 ( 535)		BINOP18	R2(I)[-4093..4095]	<-	R2(IF)[-32744..32791], CI:3	{S}
+0002 ( 536)		CONV37	R2(I)[0..255]	<-	R2(CF)[-4093..4095]	{S}
+0003 ( 536)		BINOP1	R1(I)[0..375]	<-	R2(I)[0..255], R1(IF)[0..120]	{S}
+0004 ( 536)		STOREI1		<-	R0(P)+1, R1(CF)[0..375]	{}
+0005 ( 537)		BINOP2	R2(I)[-216..39]	<-	CI:39, R2(IF)[0..255]	{S}
+0006 ( 537)		STOREI1		<-	R0(PF)+3, R2(CF)[-216..39]	{}
+0007 ( 527)		JUMP		<-		{}
+		==> 6
+--------------------------------------------------------------------
+enemies_spawn: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:834
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(P), $00 R4(P), $00 R5(I), $00 R6(C), $01 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 863)		STOREC1		<-	V(6 '')+0 , CC:14	{}
+0001 ( 837)		CALLN	R0(I)	<-	V(12 'rand')+0 	{}
+0002 ( 840)		LOADG1	R7(C)[0..4]	<-	V(72 'game')+3 	{}
+0003 ( 844)		CONV37	R1(I)[0..4]	<-	R7(C)[0..4]	{}
+0004 ( 850)		BINOP16	R2(I)[0..32]	<-	R1(I)[0..4], CI:3	{}
+0005 ( 859)		LEAG	R3(P)[4..36]	<-	V(127 'enemies' A)+4 , R2(I)[0..32]	{}
+0006 ( 859)		STOREI1		<-	R3(PF)+0 {V(127 'enemies' A)} [4..36], CC:128	{}
+0007 ( 850)		BINOP3	R3(I)[0..128]	<-	R1(I)[0..4], CI:32	{}
+0008 ( 850)		BINOP1	R3(I)[29..157]	<-	R3(IF)[0..128], CI:29	{}
+0009 ( 850)		LEAG	R4(P)[2..34]	<-	V(127 'enemies' A)+2 , R2(I)[0..32]	{}
+000a ( 850)		STOREI1		<-	R4(PF)+0 {V(127 'enemies' A)} [2..34], R3(C)[29..157]	{}
+000b ( 847)		CONV37	R0(I)[0..255]	<-	R0(CF)	{}
+000c ( 847)		BINOP9	R4(I)[0..3]	<-	R0(I)[0..255], CI:3	{}
+000d ( 847)		BINOP1	R4(I)[1..4]	<-	R4(IF)[0..3], CI:1	{}
+000e ( 850)		LEAG	R2(P)[0..32]	<-	V(127 'enemies' A)+0 , R2(IF)[0..32]	{}
+000f ( 856)		LOADG2	R5(I)[-32768..32767]	<-	V(73 'player')+0 	{}
+0010 ( 853)		LOADG1	R6(C)[-128..127]	<-	V(73 'player')+2 	{}
+0011 ( 853)		RELOP24	R6(B)[0..1]	<-	R6(CF)[-128..127], CC:0	{}
+0012 ( 853)		BRANCH		<-	R6(B)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 853)		STOREI1		<-	R2(P)+3 {V(127 'enemies' A)} [0..32], R4(CF)[1..4]	{}
+0001 ( 856)		BINOP2	R4(I)	<-	R5(I)[-32768..32767], CI:56	{}
+0002 ( 856)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 856)		BINOP17	R0(I)[0..127]	<-	R0(IF)[0..255], CI:1	{}
+0001 ( 856)		BINOP9	R0(I)[0..31]	<-	R0(IF)[0..127], CI:31	{}
+0002 ( 856)		BINOP1	R0(I)	<-	R0(IF)[0..31], R4(IF)	{}
+0003 ( 856)		STOREI2		<-	R2(PF)+0 {V(127 'enemies' A)} [0..32], R0(I)	{}
+0004 ( 863)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 4
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 863)		STOREC1		<-	V(5 '')+0 , CC:97	{}
+0001 ( 863)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 863)		BINOP1	R1(I)[2..6]	<-	R1(IF)[0..4], CI:2	{}
+0001 ( 863)		STOREC1		<-	V(0 '')+0 , R1(CF)[2..6]	{}
+0002 ( 862)		BINOP2	R0(I)	<-	R0(IF), R5(IF)[-32768..32767]	{}
+0003 ( 863)		BINOP1	R0(I)	<-	R0(IF), CI:24	{}
+0004 ( 863)		STOREC2		<-	V(1 '')+0 , R0(IF)	{}
+0005 ( 863)		BINOP1	R3(I)[79..207]	<-	R3(IF)[29..157], CI:50	{}
+0006 ( 863)		STOREC2		<-	V(3 '')+0 , R3(IF)[79..207]	{}
+0007 ( 863)		CALLN		<-	V(16 'spr_set')+0 	{}
+0008 ( 866)		BINOP1	R0(C)[1..5]	<-	R7(CF)[0..4], CI:1	{}
+0009 ( 866)		STOREG1		<-	V(72 'game')+3 , R0(CF)[1..5]	{}
+000a ( 867)		RET		<-		{}
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 863)		STOREC1		<-	V(5 '')+0 , CC:96	{}
+0001 ( 863)		JUMP		<-		{}
+		==> 6
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 853)		UNOP11	R4(I)[-4..-1]	<-	R4(IF)[1..4]	{}
+0001 ( 853)		STOREI1		<-	R2(P)+3 {V(127 'enemies' A)} [0..32], R4(CF)[-4..-1]	{}
+0002 ( 856)		BINOP1	R4(I)[-32448..33087]	<-	R5(I)[-32768..32767], CI:320	{}
+0003 ( 856)		JUMP		<-		{}
+		==> 3
+--------------------------------------------------------------------
+enemies_move: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:785
+$00 R0(I), $00 R1(I), $00 R2(P), $02 R3(I), $00 R4(I), $00 R5(I), $00 R6(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 791)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0001 ( 791)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 791)		BINOP16	R1(I)[0..32]	<-	R0(I)[0..4], CI:3	{}
+0001 ( 791)		LEAG	R2(P)[4..36]	<-	V(127 'enemies' A)+4 , R1(I)[0..32]	{}
+0002 ( 791)		LOADI1	R2(C)[0..255]	<-	R2(PF)+0 {V(127 'enemies' A)} [4..36]	{}
+0003 ( 791)		BRANCH		<-	R2(CF)[0..255]	{}
+		==> 4
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 791)		LEAG	R1(P)[0..32]	<-	V(127 'enemies' A)+0 , R1(IF)[0..32]	{}
+0001 ( 794)		LOADI1	R2(C)[-128..127]	<-	R1(P)+3 {V(127 'enemies' A)} [0..32]	{}
+0002 ( 794)		CONV40	R2(I)[-128..127]	<-	R2(CF)[-128..127]	{}
+0003 ( 794)		LOADI2	R3(I)[-32768..32767]	<-	R1(P)+0 {V(127 'enemies' A)} [0..32]	{}
+0004 ( 794)		BINOP1	R2(I)	<-	R3(IF)[-32768..32767], R2(IF)[-128..127]	{}
+0005 ( 794)		STOREI2		<-	R1(P)+0 {V(127 'enemies' A)} [0..32], R2(I)	{}
+0006 ( 797)		LOADG2	R3(I)[-32768..32767]	<-	V(73 'player')+0 	{}
+0007 ( 797)		BINOP2	R2(I)	<-	R2(IF), R3(IF)[-32768..32767]	{}
+0008 ( 799)		RELOP24	R3(B)[0..1]	<-	R2(I), CI:-192	{}
+0009 ( 799)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 5
+		==> 7
+L5: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 802)		STOREI1		<-	R1(PF)+4 {V(127 'enemies' A)} [0..32], CC:0	{}
+0001 ( 803)		LOADG1	R1(C)[0..255]	<-	V(72 'game')+3 	{}
+0002 ( 803)		BINOP1	R1(C)[-1..254]	<-	R1(CF)[0..255], CI:-1	{}
+0003 ( 803)		STOREG1		<-	V(72 'game')+3 , R1(CF)[-1..254]	{}
+0004 ( 804)		BINOP1	R1(I)[2..6]	<-	R0(I)[0..4], CI:2	{}
+0005 (  60)		BINOP16	R1(I)[0..64]	<-	CI:1, R1(IF)[2..6]	{}
+0006 (  60)		UNOP15	R1(I)	<-	R1(IF)[0..64]	{}
+0007 (  60)		LOADA1	R2(C)[0..255]	<-	V(-1 '')+53269 	{V}
+0008 (  60)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0009 (  60)		BINOP9	R1(I)	<-	R2(IF)[0..255], R1(IF)	{}
+000a (  60)		STOREA1		<-	V(-1 '')+53269 , R1(CF)	{V}
+000b ( 788)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (5)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 791)		BINOP1	R0(I)[1..5]	<-	R0(IF)[0..4], CI:1	{}
+0001 ( 788)		RELOP20	R1(B)[0..1]	<-	R0(I)[1..5], CI:5	{}
+0002 ( 788)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 831)		RET		<-		{}
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 799)		RELOP21	R3(B)[0..1]	<-	R2(I)[-192..32767], CI:480	{}
+0001 ( 799)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 5
+		==> 6
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 809)		LOADI1	R3(C)[0..255]	<-	R1(P)+2 {V(127 'enemies' A)} [0..32]	{}
+0001 ( 809)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+0002 ( 809)		BINOP1	R3(I)[50..305]	<-	R3(IF)[0..255], CI:50	{}
+0003 ( 809)		BINOP1	R4(I)[2..6]	<-	R0(I)[0..4], CI:2	{}
+0004 (  67)		BINOP16	R5(I)[4..12]	<-	R4(I)[2..6], CI:1	{}
+0005 (  67)		LEAA	R6(P)[53253..53261]	<-	V(-1 '')+53249 , R5(I)[4..12]	{}
+0006 (  67)		STOREI1		<-	R6(PF)+0 {V(-1 'ABS')} [53253..53261], R3(CF)[50..305]	{V}
+0007 ( 809)		BINOP1	R2(I)[-168..503]	<-	R2(IF)[-192..479], CI:24	{}
+0008 (  68)		BINOP9	R3(I)[0..255]	<-	R2(I)[-168..503], CI:255	{}
+0009 (  67)		LEAA	R5(P)[53252..53260]	<-	V(-1 '')+53248 , R5(IF)[4..12]	{}
+000a (  68)		STOREI1		<-	R5(PF)+0 {V(-1 'ABS')} [53252..53260], R3(CF)[0..255]	{V}
+000b (  70)		LOADA1	R3(C)[0..255]	<-	V(-1 '')+53264 	{}
+000c (  70)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+000d (  70)		BINOP16	R5(I)[0..64]	<-	CI:1, R4(I)[2..6]	{}
+000e (  69)		BINOP9	R2(I)[0..256]	<-	R2(IF)[-168..503], CI:256	{}
+000f (  69)		RELOP20	R2(B)[0..1]	<-	R2(IF)[0..256], CI:0	{}
+0010 (  69)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 9
+		==> 10
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  70)		BINOP8	R2(I)[0..255]	<-	R3(IF)[0..255], R5(I)[0..64]	{}
+0001 (  69)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  72)		STOREA1		<-	V(-1 '')+53264 , R2(CF)	{}
+0001 ( 811)		LOADI1	R2(C)[0..255]	<-	R1(P)+4 {V(127 'enemies' A)} [0..32]	{}
+0002 ( 811)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0003 ( 811)		BINOP9	R3(I)[0..128]	<-	R2(I)[0..255], CI:128	{}
+0004 ( 811)		RELOP20	R3(B)[0..1]	<-	R3(IF)[0..128], CI:0	{}
+0005 ( 811)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 1
+		==> 11
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 ( 104)		LOADG2	R3(P)	<-	V(18 'vspriteScreen')+0 	{}
+0001 ( 111)		LEAA	R6(P)[53289..53293]	<-	V(-1 '')+53289 , R0(I)[0..4]	{}
+0002 ( 111)		STOREI1		<-	R6(PF)+0 {V(-1 'ABS')} [53289..53293], CC:7	{V}
+0003 ( 104)		LEAI	R3(P)+0	<-	R3(PF)+0, R4(IF)[2..6]	{}
+0004 ( 819)		BINOP17	R2(I)[0..63]	<-	R2(IF)[0..255], CI:2	{}
+0005 ( 819)		BINOP2	R2(I)[64..127]	<-	CI:127, R2(IF)[0..63]	{}
+0006 ( 104)		STOREI1		<-	R3(PF)+0, R2(CF)[64..127]	{V}
+0007 ( 820)		LOADI1	R2(C)[0..255]	<-	R1(P)+4 {V(127 'enemies' A)} [0..32]	{}
+0008 ( 820)		BINOP1	R2(C)[-1..254]	<-	R2(CF)[0..255], CI:-1	{}
+0009 ( 820)		STOREI1		<-	R1(PF)+4 {V(127 'enemies' A)} [0..32], R2(C)[-1..254]	{}
+000a ( 821)		BRANCH		<-	R2(CF)[-1..254]	{}
+		==> 1
+		==> 12
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  60)		UNOP15	R5(I)	<-	R5(IF)[0..64]	{}
+0001 (  60)		LOADA1	R1(C)[0..255]	<-	V(-1 '')+53269 	{V}
+0002 (  60)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0003 (  60)		BINOP9	R1(I)	<-	R1(IF)[0..255], R5(IF)	{}
+0004 (  60)		STOREA1		<-	V(-1 '')+53269 , R1(CF)	{V}
+0005 ( 825)		LOADG1	R1(C)[0..255]	<-	V(72 'game')+3 	{}
+0006 ( 825)		BINOP1	R1(C)[-1..254]	<-	R1(CF)[0..255], CI:-1	{}
+0007 ( 825)		STOREG1		<-	V(72 'game')+3 , R1(CF)[-1..254]	{}
+0008 ( 788)		JUMP		<-		{}
+		==> 1
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  72)		UNOP15	R2(I)	<-	R5(I)[0..64]	{}
+0001 (  72)		BINOP9	R2(I)	<-	R2(IF), R3(IF)[0..255]	{}
+0002 (  69)		JUMP		<-		{}
+		==> 8
+--------------------------------------------------------------------
+shots_check: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:911
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(P), $02 R4(I), $00 R5(I), $00 R6(I), $00 R7(C), $04 R8(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 919)		CONST	R7(C)[0..0]	<-	CI:0	{}
+0001 ( 922)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0002 ( 915)		CONST	R1(P)[0..0]	<-	CG126(70:0 'shots' A)	{}
+0003 ( 916)		CONST	R8(B)[0..0]	<-	CI:0	{}
+0004 ( 922)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 922)		BINOP16	R2(I)[0..32]	<-	R0(I)[0..4], CI:3	{}
+0001 ( 922)		LEAG	R3(P)[4..36]	<-	V(127 'enemies' A)+4 , R2(I)[0..32]	{}
+0002 ( 922)		LOADI1	R4(C)[0..255]	<-	R3(P)+0 {V(127 'enemies' A)} [4..36]	{}
+0003 ( 922)		CONV37	R4(I)[0..255]	<-	R4(CF)[0..255]	{}
+0004 ( 922)		BINOP9	R4(I)[0..128]	<-	R4(IF)[0..255], CI:128	{}
+0005 ( 922)		RELOP20	R4(B)[0..1]	<-	R4(IF)[0..128], CI:0	{}
+0006 ( 922)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 4
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 922)		LEAG	R2(P)[0..32]	<-	V(127 'enemies' A)+0 , R2(IF)[0..32]	{}
+0001 ( 925)		LOADI2	R2(I)[-32768..32767]	<-	R2(PF)+0 {V(127 'enemies' A)} [0..32]	{}
+0002 ( 925)		LOADG2	R4(I)[-32768..32767]	<-	V(73 'player')+0 	{}
+0003 ( 925)		BINOP2	R2(I)[-32768..65535]	<-	R2(IF)[-32768..32767], R4(IF)[-32768..32767]	{}
+0004 ( 925)		BINOP18	R2(I)[-4096..4095]	<-	R2(IF)[-32768..65535], CI:3	{}
+0005 ( 928)		RELOP28	R4(B)[0..1]	<-	R2(C)[-4096..4095], CC:40	{}
+0006 ( 928)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 5
+		==> 1
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 932)		LOADI2	R4(P)	<-	R1(P)+5[0..0]	{}
+0001 ( 933)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 933)		LOADI1	R5(C)[0..255]	<-	R4(P)+0	{}
+0001 ( 933)		RELOP28	R6(B)[0..1]	<-	R5(C)[0..255], R7(C)[0..4]	{}
+0002 ( 933)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 6
+		==> 10
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 935)		MOVE	R1(P)	<-	R4(P)	{}
+0001 ( 936)		LOADI2	R4(P)	<-	R4(PF)+5	{}
+0002 ( 933)		JUMP		<-		{}
+		==> 11
+L10: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 940)		RELOP19	R5(B)[0..1]	<-	R5(CF)[0..255], R7(C)[0..4]	{}
+0001 ( 940)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 7
+		==> 1
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 943)		LOADI1	R5(C)[0..255]	<-	R4(P)+1	{}
+0001 ( 943)		CONV37	R5(I)[0..255]	<-	R5(CF)[0..255]	{}
+0002 ( 943)		CONV37	R6(I)[0..39]	<-	R2(C)[0..39]	{I}
+0003 ( 943)		BINOP2	R5(I)[-39..255]	<-	R5(IF)[0..255], R6(IF)[0..39]	{}
+0004 ( 943)		CONV37	R5(I)[0..255]	<-	R5(CF)[-39..255]	{}
+0005 ( 943)		LEAG	R5(P)[0..255]	<-	V(14 'xcollision' A)+0 , R5(IF)[0..255]	{}
+0006 ( 943)		LOADI1	R5(C)[0..255]	<-	R5(PF)+0 {V(14 'xcollision' A)} [0..255]	{}
+0007 ( 943)		BRANCH		<-	R5(CF)[0..255]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 951)		STOREI1		<-	R3(PF)+0 {V(127 'enemies' A)} [4..36], CC:64	{}
+0001 ( 946)		LOADI2	R2(P)	<-	R4(P)+5	{}
+0002 ( 946)		STOREI2		<-	R1(P)+5[~0..~0], R2(PF)	{}
+0003 ( 947)		LOADG2	R2(P)	<-	V(71 'freeShot')+0 	{}
+0004 ( 947)		STOREI2		<-	R4(P)+5, R2(PF)	{}
+0005 ( 948)		STOREG2		<-	V(71 'freeShot')+0 , R4(PF)	{}
+0006 ( 954)		LOADG1	R2(C)[0..255]	<-	V(72 'game')+4 	{}
+0007 ( 954)		BINOP1	R2(C)	<-	R2(CF)[0..255], CI:1	{}
+0008 ( 954)		STOREG1		<-	V(72 'game')+4 , R2(CF)	{}
+0009 ( 955)		CONST	R8(B)[1..1]	<-	CI:1	{}
+000a ( 919)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 922)		BINOP1	R0(I)[1..5]	<-	R0(IF)[0..4], CI:1	{}
+0001 ( 919)		BINOP1	R7(C)[1..5]	<-	R7(CF)[0..4], CI:1	{}
+0002 ( 919)		RELOP28	R2(B)[0..1]	<-	R7(C)[1..5], CC:5	{}
+0003 ( 919)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 968)		RETV		<-	R8(BF)[0..1]	{}
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 961)		MOVE	R1(P)	<-	R4(P)	{}
+0001 ( 962)		LOADI2	R4(P)	<-	R4(PF)+5	{}
+0002 ( 940)		LOADI1	R5(C)[0..255]	<-	R4(P)+0	{}
+0003 ( 940)		JUMP		<-		{}
+		==> 10
+--------------------------------------------------------------------
+player_check: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:885
+$00 R0(I), $00 R1(P), $00 R2(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 888)		LOADG1	R0(C)[0..255]	<-	V(73 'player')+5 	{}
+0001 ( 888)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 ( 888)		BINOP2	R0(I)[-14..241]	<-	R0(IF)[0..255], CI:14	{}
+0003 ( 888)		BINOP18	R0(I)[-1..7]	<-	R0(IF)[-14..241], CI:5	{}
+0004 ( 891)		RELOP28	R1(B)[0..1]	<-	R0(C)[-1..7], CC:5	{}
+0005 ( 891)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 2
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 891)		BINOP16	R0(I)[0..32]	<-	R0(IF)[0..4], CI:3	{}
+0001 ( 891)		LEAG	R1(P)[4..36]	<-	V(127 'enemies' A)+4 , R0(I)[0..32]	{}
+0002 ( 891)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(127 'enemies' A)} [4..36]	{}
+0003 ( 891)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0004 ( 891)		BINOP9	R1(I)[0..128]	<-	R1(IF)[0..255], CI:128	{}
+0005 ( 891)		RELOP20	R1(B)[0..1]	<-	R1(IF)[0..128], CI:0	{}
+0006 ( 891)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 891)		LEAG	R0(P)[0..32]	<-	V(127 'enemies' A)+0 , R0(IF)[0..32]	{}
+0001 ( 894)		LOADI2	R1(I)[-32768..32767]	<-	R0(P)+0 {V(127 'enemies' A)} [0..32]	{}
+0002 ( 894)		LOADG2	R2(I)[-32768..32767]	<-	V(73 'player')+0 	{}
+0003 ( 894)		BINOP2	R1(I)[-32768..65535]	<-	R1(IF)[-32768..32767], R2(IF)[-32768..32767]	{}
+0004 ( 896)		LOADG1	R2(C)[-128..127]	<-	V(73 'player')+2 	{}
+0005 ( 896)		CONV40	R2(I)[-128..127]	<-	R2(CF)[-128..127]	{}
+0006 ( 896)		BINOP16	R2(I)[-512..508]	<-	R2(IF)[-128..127], CI:2	{}
+0007 ( 896)		BINOP2	R2(I)[-360..660]	<-	CI:148, R2(IF)[-512..508]	{}
+0008 ( 896)		BINOP2	R1(I)[-32768..65535]	<-	R1(IF)[-32768..65535], R2(IF)[-360..660]	{}
+0009 ( 899)		RELOP21	R2(B)[0..1]	<-	R1(I)[-32768..65535], CI:-12	{}
+000a ( 899)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 5
+		==> 2
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 899)		RELOP22	R1(B)[0..1]	<-	R1(IF)[-12..32767], CI:12	{}
+0001 ( 899)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 4
+		==> 2
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 902)		STOREI1		<-	R0(PF)+4 {V(127 'enemies' A)} [0..32], CC:64	{}
+0001 ( 903)		RETV		<-	CB:1	{}
+L2: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 907)		RETV		<-	CB:0	{}
+--------------------------------------------------------------------
+enemies_reset: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:870
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 875)		CONST	R0(I)[2..2]	<-	CI:2	{}
+0001 ( 876)		CONST	R1(I)[0..0]	<-	CI:0	{}
+0002 (  60)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  60)		BINOP16	R2(I)[0..64]	<-	CI:1, R0(I)[2..6]	{}
+0001 (  60)		UNOP15	R2(I)	<-	R2(IF)[0..64]	{}
+0002 (  60)		LOADA1	R3(C)[0..255]	<-	V(-1 '')+53269 	{V}
+0003 (  60)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+0004 (  60)		BINOP9	R2(I)	<-	R3(IF)[0..255], R2(IF)	{}
+0005 (  60)		STOREA1		<-	V(-1 '')+53269 , R2(CF)	{V}
+0006 ( 876)		LEAG	R2(P)[4..36]	<-	V(127 'enemies' A)+4 , R1(I)[0..32]	{}
+0007 ( 876)		STOREI1		<-	R2(PF)+0 {V(127 'enemies' A)} [4..36], CC:0	{}
+0008 ( 876)		BINOP1	R1(I)[8..40]	<-	R1(IF)[0..32], CI:8	{}
+0009 ( 875)		BINOP1	R0(I)[3..7]	<-	R0(IF)[2..6], CI:1	{}
+000a ( 872)		RELOP20	R2(B)[0..1]	<-	R0(I)[3..7], CI:7	{}
+000b ( 872)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 880)		STOREG1		<-	V(72 'game')+2 , CC:80	{}
+0001 ( 881)		STOREG1		<-	V(72 'game')+3 , CC:0	{}
+0002 ( 882)		RET		<-		{}
+--------------------------------------------------------------------
+sidfx_loop: /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.h:25
+$00 R0(I), $00 R1(P), $00 R2(P), $00 R3(I), $02 R4(I), $00 R5(P), $00 R6(I), $00 R7(I), $04 R8(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 199)		CONST	R8(C)[0..0]	<-	CI:0	{}
+0001 (  77)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  77)		CONV37	R0(I)[0..2]	<-	R8(C)[0..2]	{}
+0001 (  77)		LEAG	R1(P)[15..17]	<-	V(65 'channels' A)+15 , R0(I)[0..2]	{}
+0002 (  77)		LOADI1:3	R1(C)[-128..255]	<-	R1(PF)+0 {V(65 'channels' A)} [15..17]	{V}
+0003 (  77)		BRANCH		<-	R1(CF)[-128..255]	{}
+		==> 4
+		==> 2
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  77)		LEAG	R1(P)[0..2]	<-	V(65 'channels' A)+0 , R0(I)[0..2]	{}
+0001 (  81)		LOADI1:3	R2(C)[0..255]	<-	R1(P)+6 {V(65 'channels' A)} [0..2]	{}
+0002 (  81)		BINOP1	R5(C)[-1..254]	<-	R2(CF)[0..255], CI:-1	{}
+0003 (  81)		STOREI1:3		<-	R1(P)+6 {V(65 'channels' A)} [0..2], R5(C)[-1..254]	{}
+0004 (  79)		LOADI2:3	R2(P)	<-	R1(P)+0 {V(65 'channels' A)} [0..2]	{V}
+0005 (  82)		BRANCH		<-	R5(C)[-1..254]	{}
+		==> 5
+		==> 35
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  84)		LOADI2	R3(I)[-32768..32767]	<-	R2(P)+7	{}
+0001 (  84)		RELOP20	R4(B)[0..1]	<-	R3(I)[-32768..32767], CI:0	{}
+0002 (  84)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 6
+		==> 36
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  86)		LOADI2:3	R4(I)[0..65535]	<-	R1(P)+18 {V(65 'channels' A)} [0..2]	{}
+0001 (  86)		BINOP1	R3(I)	<-	R4(IF)[0..65535], R3(IF)[-32768..32767]	{}
+0002 (  86)		STOREI2:3		<-	R1(P)+18 {V(65 'channels' A)} [0..2], R3(I)	{}
+0003 (  87)		BINOP3	R4(I)[0..14]	<-	R0(I)[0..2], CI:7	{}
+0004 (  87)		LEAA	R4(P)[54272..54286]	<-	V(-1 '')+54272 , R4(IF)[0..14]	{}
+0005 (  87)		STOREI2		<-	R4(PF)+0 {V(-1 'ABS')} [54272..54286], R3(IF)	{V}
+0006 (  89)		JUMP		<-		{}
+		==> 36
+L36: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  89)		LOADI2	R3(I)[-32768..32767]	<-	R2(P)+9	{}
+0001 (  89)		RELOP20	R4(B)[0..1]	<-	R3(I)[-32768..32767], CI:0	{}
+0002 (  89)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 7
+		==> 35
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  91)		LOADI2:3	R4(I)[0..65535]	<-	R1(P)+24 {V(65 'channels' A)} [0..2]	{}
+0001 (  91)		BINOP1	R3(I)	<-	R4(IF)[0..65535], R3(IF)[-32768..32767]	{}
+0002 (  91)		STOREI2:3		<-	R1(P)+24 {V(65 'channels' A)} [0..2], R3(I)	{}
+0003 (  92)		BINOP3	R4(I)[0..14]	<-	R0(I)[0..2], CI:7	{}
+0004 (  92)		LEAA	R4(P)[54274..54288]	<-	V(-1 '')+54274 , R4(IF)[0..14]	{}
+0005 (  92)		STOREI2		<-	R4(PF)+0 {V(-1 'ABS')} [54274..54288], R3(IF)	{V}
+0006 (  89)		JUMP		<-		{}
+		==> 35
+L35: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 155)		BINOP3	R3(I)[0..14]	<-	R0(I)[0..2], CI:7	{I}
+0001 (  96)		BRANCH		<-	R5(CF)[-1..255]	{}
+		==> 2
+		==> 9
+L2: <= D-1: (6)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 199)		BINOP1	R8(C)[1..3]	<-	R8(CF)[0..2], CI:1	{}
+0001 ( 199)		RELOP28	R0(B)[0..1]	<-	R8(C)[1..3], CC:3	{}
+0002 ( 199)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 201)		RET		<-		{}
+L9: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  98)		LOADI1:3	R4(C)[-128..255]	<-	R1(P)+15 {V(65 'channels' A)} [0..2]	{V}
+0001 (  98)		RELOP19	R5(B)[0..1]	<-	R4(C)[-128..255], CC:3	{}
+0002 (  98)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 15
+		==> 30
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 121)		LOADI2	R4(I)[0..65535]	<-	R2(P)+0	{}
+0001 ( 121)		STOREI2:3		<-	R1(P)+18 {V(65 'channels' A)} [0..2], R4(IF)[0..65535]	{}
+0002 ( 122)		LOADI2	R4(I)[0..65535]	<-	R2(P)+2	{}
+0003 ( 122)		STOREI2:3		<-	R1(P)+24 {V(65 'channels' A)} [0..2], R4(IF)[0..65535]	{}
+0004 ( 124)		LOADI2	R4(I)[0..65535]	<-	R2(P)+0	{}
+0005 ( 126)		LOADI1	R6(C)[0..255]	<-	R2(P)+5	{}
+0006 ( 124)		LEAA	R5(P)[54272..54286]	<-	V(-1 '')+54272 , R3(I)[0..14]	{I}
+0007 ( 124)		STOREI2		<-	R5(P)+0 {V(-1 'ABS')} [54272..54286], R4(IF)[0..65535]	{V}
+0008 ( 125)		LOADI2	R4(I)[0..65535]	<-	R2(P)+2	{}
+0009 ( 125)		STOREI2		<-	R5(P)+2 {V(-1 'ABS')} [54272..54286], R4(IF)[0..65535]	{V}
+000a ( 126)		STOREI1		<-	R5(P)+5 {V(-1 'ABS')} [54272..54286], R6(CF)[0..255]	{V}
+000b ( 127)		LOADI1	R4(C)[0..255]	<-	R2(P)+6	{}
+000c ( 127)		STOREI1		<-	R5(P)+6 {V(-1 'ABS')} [54272..54286], R4(CF)[0..255]	{V}
+000d ( 128)		LOADI1	R4(C)[0..255]	<-	R2(P)+4	{}
+000e ( 128)		STOREI1		<-	R5(PF)+4 {V(-1 'ABS')} [54272..54286], R4(CF)[0..255]	{V}
+000f ( 130)		LOADI1	R4(C)[0..255]	<-	R2(P)+4	{}
+0010 ( 130)		CONV37	R4(I)[0..255]	<-	R4(CF)[0..255]	{}
+0011 ( 130)		BINOP9	R4(I)[0..1]	<-	R4(IF)[0..255], CI:1	{}
+0012 ( 130)		RELOP20	R4(B)[0..1]	<-	R4(IF)[0..1], CI:0	{}
+0013 ( 130)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 16
+		==> 17
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 132)		LOADI1	R4(C)[0..255]	<-	R2(P)+11	{}
+0001 ( 130)		JUMP		<-		{}
+		==> 37
+L37: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 138)		STOREI1:3		<-	R1(P)+15 {V(65 'channels' A)} [0..2], CC:4	{V}
+0001 ( 130)		JUMP		<-		{}
+		==> 38
+L38: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 137)		STOREI1:3		<-	R1(P)+6 {V(65 'channels' A)} [0..2], R4(CF)[-1..255]	{}
+0001 ( 130)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (5)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  96)		LEAG	R4(P)[6..8]	<-	V(65 'channels' A)+6 , R0(I)[0..2]	{}
+0001 (  96)		LOADI1:3	R5(C)[0..255]	<-	R4(PF)+0 {V(65 'channels' A)} [6..8]	{}
+0002 (  96)		BRANCH		<-	R5(CF)[-1..255]	{}
+		==> 2
+		==> 9
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 137)		LOADI1	R4(C)[0..255]	<-	R2(P)+12	{}
+0001 ( 130)		JUMP		<-		{}
+		==> 37
+L30: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  98)		RELOP28	R5(B)[0..1]	<-	R4(C)[-128..255], CC:3	{}
+0001 (  98)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 32
+		==> 31
+L32: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  98)		RELOP19	R5(B)[0..1]	<-	R4(C)[0..2], CC:1	{}
+0001 (  98)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 11
+		==> 33
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 111)		STOREI1:3		<-	R1(P)+6 {V(65 'channels' A)} [0..2], CC:1	{}
+0001 ( 104)		LEAA	R0(P)[54276..54290]	<-	V(-1 '')+54276 , R3(IF)[0..14]	{I}
+0002 ( 104)		STOREI1		<-	R0(P)+0 {V(-1 'ABS')} [54276..54290], CC:0	{V}
+0003 ( 105)		STOREI1		<-	R0(P)+1 {V(-1 'ABS')} [54276..54290], CC:0	{V}
+0004 ( 106)		STOREI1		<-	R0(PF)+2 {V(-1 'ABS')} [54276..54290], CC:0	{V}
+0005 ( 107)		BRANCH		<-	R2(PF)	{}
+		==> 12
+		==> 13
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 108)		STOREI1:3		<-	R1(PF)+15 {V(65 'channels' A)} [0..2], CC:3	{V}
+0001 ( 107)		JUMP		<-		{}
+		==> 2
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 110)		STOREI1:3		<-	R1(PF)+15 {V(65 'channels' A)} [0..2], CC:0	{V}
+0001 ( 107)		JUMP		<-		{}
+		==> 2
+L33: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  98)		RELOP28	R4(B)[0..1]	<-	R4(CF)[0..2], CC:1	{}
+0001 (  98)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 10
+		==> 14
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 101)		STOREI1:3		<-	R1(PF)+6 {V(65 'channels' A)} [0..2], CC:1	{}
+0001 ( 102)		JUMP		<-		{}
+		==> 2
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 114)		LEAA	R4(P)[54276..54290]	<-	V(-1 '')+54276 , R3(I)[0..14]	{I}
+0001 ( 114)		STOREI1		<-	R4(P)+0 {V(-1 'ABS')} [54276..54290], CC:8	{V}
+0002 ( 115)		STOREI1		<-	R4(P)+0 {V(-1 'ABS')} [54276..54290], CC:0	{V}
+0003 ( 116)		STOREI1		<-	R4(P)+1 {V(-1 'ABS')} [54276..54290], CC:0	{V}
+0004 ( 117)		STOREI1		<-	R4(PF)+2 {V(-1 'ABS')} [54276..54290], CC:0	{V}
+0005 ( 119)		JUMP		<-		{}
+		==> 39
+L39: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 179)		STOREI1:3		<-	R1(P)+15 {V(65 'channels' A)} [0..2], CC:3	{V}
+0001 ( 176)		JUMP		<-		{}
+		==> 8
+L31: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  98)		RELOP19	R5(B)[0..1]	<-	R4(C)[-128..255], CC:4	{}
+0001 (  98)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 18
+		==> 34
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 142)		LOADI1	R4(C)[0..255]	<-	R2(P)+12	{}
+0001 ( 142)		BRANCH		<-	R4(CF)[0..255]	{}
+		==> 19
+		==> 20
+L19: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 144)		LOADI1	R4(C)[0..255]	<-	R2(P)+4	{}
+0001 ( 144)		CONV37	R4(I)[0..255]	<-	R4(CF)[0..255]	{}
+0002 ( 144)		BINOP9	R4(I)[0..254]	<-	R4(IF)[0..255], CI:254	{}
+0003 ( 144)		LEAA	R5(P)[54276..54290]	<-	V(-1 '')+54276 , R3(I)[0..14]	{I}
+0004 ( 144)		STOREI1		<-	R5(PF)+0 {V(-1 'ABS')} [54276..54290], R4(CF)[0..254]	{V}
+0005 ( 145)		LOADI1	R4(C)[0..255]	<-	R2(P)+12	{}
+0006 ( 146)		STOREI1:3		<-	R1(P)+15 {V(65 'channels' A)} [0..2], CC:5	{V}
+0007 ( 145)		BINOP2	R4(C)[-1..254]	<-	R4(CF)[0..255], CI:1	{}
+0008 ( 142)		JUMP		<-		{}
+		==> 38
+L20: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 148)		LOADI1:3	R4(C)[0..255]	<-	R1(P)+12 {V(65 'channels' A)} [0..2]	{V}
+0001 ( 148)		BRANCH		<-	R4(CF)[0..255]	{}
+		==> 21
+		==> 22
+L21: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 142)		MOVE	R4(P)	<-	R2(P)	{}
+0001 ( 150)		LOADI1	R7(C)[0..255]	<-	R2(P)+6	{}
+0002 ( 151)		LEAI	R2(P)+0	<-	R2(PF)+0, CI:14	{}
+0003 ( 153)		LOADI1	R5(C)[0..255]	<-	R4(P)+19	{}
+0004 ( 153)		CONV37	R5(I)[0..255]	<-	R5(CF)[0..255]	{}
+0005 ( 153)		BINOP9	R5(I)[0..255]	<-	R5(IF)[0..255], CI:239	{}
+0006 ( 153)		RELOP19	R5(B)[0..1]	<-	R5(IF)[0..255], CI:0	{}
+0007 ( 153)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 26
+		==> 24
+L26: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 152)		LOADI1	R5(C)[0..255]	<-	R4(P)+18	{}
+0001 ( 153)		CONV37	R5(I)[0..255]	<-	R5(CF)[0..255]	{}
+0002 ( 153)		BINOP9	R6(I)[0..1]	<-	R5(I)[0..255], CI:1	{}
+0003 ( 153)		RELOP20	R6(B)[0..1]	<-	R6(IF)[0..1], CI:0	{}
+0004 ( 153)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 25
+		==> 24
+L25: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 150)		CONV37	R6(I)[0..255]	<-	R7(CF)[0..255]	{}
+0001 ( 150)		BINOP9	R6(I)[0..240]	<-	R6(IF)[0..255], CI:240	{}
+0002 ( 153)		LOADI1	R7(C)[0..255]	<-	R4(P)+20	{}
+0003 ( 153)		CONV37	R7(I)[0..255]	<-	R7(CF)[0..255]	{}
+0004 ( 153)		BINOP9	R7(I)[0..240]	<-	R7(IF)[0..255], CI:240	{}
+0005 ( 153)		RELOP27	R6(B)[0..1]	<-	R7(IF)[0..240], R6(IF)[0..240]	{}
+0006 ( 153)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 23
+		==> 24
+L23: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 155)		BINOP9	R6(I)[0..254]	<-	R5(I)[0..255], CI:254	{}
+0001 ( 155)		LEAA	R7(P)[54276..54290]	<-	V(-1 '')+54276 , R3(I)[0..14]	{I}
+0002 ( 155)		STOREI1		<-	R7(P)+0 {V(-1 'ABS')} [54276..54290], R6(CF)[0..254]	{V}
+0003 ( 156)		BINOP8	R5(I)[0..255]	<-	R5(IF)[0..255], CI:1	{}
+0004 ( 156)		STOREI1		<-	R7(PF)+0 {V(-1 'ABS')} [54276..54290], R5(CF)[0..255]	{V}
+0005 ( 153)		JUMP		<-		{}
+		==> 24
+L24: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 158)		LOADI1:3	R5(C)[0..255]	<-	R1(P)+12 {V(65 'channels' A)} [0..2]	{V}
+0001 ( 158)		BINOP1	R5(C)[-1..254]	<-	R5(CF)[0..255], CI:-1	{}
+0002 ( 158)		STOREI1:3		<-	R1(P)+12 {V(65 'channels' A)} [0..2], R5(CF)[-1..254]	{V}
+0003 ( 160)		LOADI1	R4(C)[0..255]	<-	R4(PF)+27	{}
+0004 ( 160)		STOREI1:3		<-	R1(P)+9 {V(65 'channels' A)} [0..2], R4(CF)[0..255]	{}
+0005 ( 159)		STOREI2:3		<-	R1(P)+0 {V(65 'channels' A)} [0..2], R2(P)	{V}
+0006 ( 148)		JUMP		<-		{}
+		==> 39
+L22: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 166)		STOREI1:3		<-	R1(P)+15 {V(65 'channels' A)} [0..2], CC:1	{V}
+0001 ( 165)		CONST	R2(P)[0..0]	<-	CA0(-1:0 '')	{}
+0002 ( 148)		JUMP		<-		{}
+		==> 8
+L34: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 (  98)		RELOP19	R4(B)[0..1]	<-	R4(CF)[-128..255], CC:5	{}
+0001 (  98)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 27
+		==> 8
+L27: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 170)		LOADI1:3	R4(C)[0..255]	<-	R1(P)+12 {V(65 'channels' A)} [0..2]	{V}
+0001 ( 170)		BRANCH		<-	R4(CF)[0..255]	{}
+		==> 28
+		==> 22
+L28: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 173)		LOADI1:3	R4(C)[0..255]	<-	R1(P)+12 {V(65 'channels' A)} [0..2]	{V}
+0001 ( 173)		BINOP1	R4(C)[-1..254]	<-	R4(CF)[0..255], CI:-1	{}
+0002 ( 173)		STOREI1:3		<-	R1(P)+12 {V(65 'channels' A)} [0..2], R4(CF)[-1..254]	{V}
+0003 ( 175)		LOADI1	R4(C)[0..255]	<-	R2(P)+27	{}
+0004 ( 175)		STOREI1:3		<-	R1(P)+9 {V(65 'channels' A)} [0..2], R4(CF)[0..255]	{}
+0005 ( 176)		LOADI1	R4(C)[0..255]	<-	R2(P)+18	{}
+0006 ( 172)		LEAI	R2(P)+0	<-	R2(PF)+0, CI:14	{}
+0007 ( 174)		STOREI2:3		<-	R1(P)+0 {V(65 'channels' A)} [0..2], R2(P)	{V}
+0008 ( 176)		CONV37	R4(I)[0..255]	<-	R4(CF)[0..255]	{}
+0009 ( 176)		BINOP9	R4(I)[0..1]	<-	R4(IF)[0..255], CI:1	{}
+000a ( 176)		RELOP20	R4(B)[0..1]	<-	R4(IF)[0..1], CI:0	{}
+000b ( 176)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 29
+		==> 39
+L29: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/audio/sidfx.c
+0000 ( 177)		STOREI1:3		<-	R1(P)+15 {V(65 'channels' A)} [0..2], CC:1	{V}
+0001 ( 176)		JUMP		<-		{}
+		==> 8
+--------------------------------------------------------------------
+status_update: /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c:178
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(C), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 181)		LOADG1	R0(C)[0..255]	<-	V(72 'game')+5 	{}
+0001 ( 181)		BINOP1	R0(C)	<-	R0(CF)[0..255], CI:48	{}
+0002 ( 181)		STOREA1		<-	V(-1 '')+51238 , R0(CF)	{}
+0003 ( 184)		LOADG1	R0(C)[0..255]	<-	V(72 'game')+4 	{}
+0004 ( 184)		BRANCH		<-	R0(C)[0..255]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 186)		CONST	R3(C)[1..1]	<-	CI:1	{}
+0001 ( 190)		RELOP25	R1(B)[0..1]	<-	R0(C)[0..255], CC:100	{}
+0002 ( 190)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 192)		BINOP2	R0(C)[0..155]	<-	R0(CF)[100..255], CC:100	{}
+0001 ( 192)		STOREG1		<-	V(72 'game')+4 , R0(CF)[0..155]	{}
+0002 ( 193)		CONST	R4(C)[11..11]	<-	CI:11	{}
+0003 ( 190)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (4) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 211)		CONV37	R0(I)[0..9]	<-	R3(CF)[0..9]	{}
+0001 ( 212)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0002 ( 211)		CONV37	R1(I)[0..255]	<-	R4(C)[..13]	{}
+0003 ( 211)		LEAA	R1(P)[51200..51455]	<-	V(-1 '')+51200 , R1(IF)[0..255]	{}
+0004 ( 211)		LOADI1	R2(C)[0..255]	<-	R1(P)+0 {V(-1 'ABS')} [51200..51455]	{}
+0005 ( 211)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0006 ( 211)		BINOP1	R0(I)[0..264]	<-	R2(IF)[0..255], R0(IF)[0..9]	{}
+0007 ( 215)		RELOP27	R2(B)[0..1]	<-	R0(C)[0..255], CC:57	{}
+0008 ( 215)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 217)		BINOP2	R0(C)[48..245]	<-	R0(CF)[58..255], CC:10	{}
+0001 ( 218)		CONST	R3(C)[1..1]	<-	CI:1	{}
+0002 ( 215)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 221)		STOREI1		<-	R1(PF)+0 {V(-1 'ABS')} [51200..51455], R0(CF)[0..245]	{}
+0001 ( 224)		BINOP1	R4(C)[..12]	<-	R4(CF)[..13], CI:-1	{}
+0002 ( 208)		BRANCH		<-	R3(C)[0..1]	{}
+		==> 7
+		==> 2
+L2: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 227)		RET		<-		{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 195)		RELOP25	R1(B)[0..1]	<-	R0(C)[0..99], CC:10	{}
+0001 ( 195)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 197)		BINOP2	R0(C)[0..89]	<-	R0(CF)[10..99], CC:10	{}
+0001 ( 197)		STOREG1		<-	V(72 'game')+4 , R0(CF)[0..89]	{}
+0002 ( 198)		CONST	R4(C)[12..12]	<-	CI:12	{}
+0003 ( 195)		JUMP		<-		{}
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 203)		STOREG1		<-	V(72 'game')+4 , CC:0	{}
+0001 ( 208)		BRANCH		<-	R0(C)[0..9]	{}
+		==> 10
+		==> 2
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/hscrollshmup.c
+0000 ( 202)		MOVE	R3(C)[0..9]	<-	R0(CF)[0..9]	{}
+0001 ( 204)		CONST	R4(C)[13..13]	<-	CI:13	{}
+0002 ( 208)		JUMP		<-		{}
+		==> 7

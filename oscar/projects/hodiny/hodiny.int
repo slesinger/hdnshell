@@ -1,0 +1,2330 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c:246
+$00 R0(P), $02 R1(I), $10 R2(I), $12 R3(I), $14 R4(I), $16 R5(I), $18 R6(I), $1a R7(I), $1c R8(I), $1e R9(I), $20 R10(I), $21 R11(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (   8)		STOREC1		<-	V(0 '')+0 , CC:14	{}
+0001 (   8)		CALLN		<-	V(2 'putpch')+0 	{}
+0002 ( 256)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0003 ( 256)		STOREC1		<-	V(1 '')+0 , CC:0	{}
+0004 ( 390)		STOREA1		<-	V(-1 '')+53281 , CC:0	{V}
+0005 ( 395)		STOREA1		<-	V(-1 '')+53280 , CC:11	{V}
+0006 ( 253)		CALLN		<-	V(3 'clrscr')+0 	{}
+0007 ( 385)		STOREA1		<-	V(-1 '')+646 , CC:1	{V}
+0008 ( 256)		CALLN		<-	V(4 'gotoxy')+0 	{}
+0009 ( 385)		STOREA1		<-	V(-1 '')+646 , CC:3	{V}
+000a ( 258)		CONST	R0(P)[0..0]	<-	CG0(23:0 '')	{S}
+000b ( 258)		STOREG2		<-	V(-1 'sstack')+8 , R0(PF)+0 {V(23 '')} [0..0]	{}
+000c ( 258)		CALLN		<-	V(5 'printf')+0 	{}
+000d ( 260)		CALLN		<-	V(12 'draw_poem')+0 	{}
+000e ( 261)		CALLN		<-	V(13 'draw_divider')+0 	{}
+000f ( 262)		CALLN		<-	V(15 'draw_clock_bg')+0 	{E}
+0010 ( 248)		CONST	R3(I)[-1..-1]	<-	CI:-1	{}
+0011 ( 265)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (9) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 265)		CALLN		<-	V(16 'uii_get_time')+0 	{}
+0001 ( 271)		LOADG1	R2(C)[0..255]	<-	V(72 'uii_data' A)+0 	{}
+0002 ( 271)		BRANCH		<-	R2(C)[0..255]	{}
+		==> 7
+		==> 1
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 271)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+4 	{}
+0001 ( 271)		RELOP20	R0(B)[0..1]	<-	R0(CF)[0..255], CC:47	{}
+0002 ( 271)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 6
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 271)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+7 	{}
+0001 ( 271)		RELOP20	R0(B)[0..1]	<-	R0(CF)[0..255], CC:47	{}
+0002 ( 271)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 5
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 272)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+10 	{}
+0001 ( 272)		RELOP20	R0(B)[0..1]	<-	R0(CF)[0..255], CC:32	{}
+0002 ( 272)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 272)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+13 	{}
+0001 ( 272)		RELOP20	R0(B)[0..1]	<-	R0(CF)[0..255], CC:58	{}
+0002 ( 272)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 272)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+16 	{}
+0001 ( 272)		RELOP20	R0(B)[0..1]	<-	R0(CF)[0..255], CC:58	{}
+0002 ( 272)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 169)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+17 	{}
+0001 ( 169)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 ( 169)		BINOP3	R0(I)[0..2550]	<-	R0(IF)[0..255], CI:10	{}
+0003 ( 169)		LOADG1	R1(C)[0..255]	<-	V(72 'uii_data' A)+18 	{}
+0004 ( 169)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0005 ( 169)		BINOP1	R0(IF)[0..2805]	<-	R1(IF)[0..255], R0(IF)[0..2550]	{}
+0006 ( 169)		BINOP2	R4(I)[-528..2277]	<-	R0(IF)[0..2805], CI:528	{}
+0007 ( 276)		RELOP19	R0(B)[0..1]	<-	R4(I)[-528..2277], R3(I)[-528..2277]	{}
+0008 ( 276)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 8
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 277)		MOVE	R3(I)[-528..2277]	<-	R4(I)[-528..2277]	{}
+0001 ( 169)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+11 	{}
+0002 ( 169)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0003 ( 169)		BINOP3	R0(I)[0..2550]	<-	R0(IF)[0..255], CI:10	{}
+0004 ( 169)		LOADG1	R1(C)[0..255]	<-	V(72 'uii_data' A)+12 	{}
+0005 ( 169)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0006 ( 169)		BINOP1	R0(IF)[0..2805]	<-	R1(IF)[0..255], R0(IF)[0..2550]	{}
+0007 ( 169)		BINOP2	R5(I)[-528..2277]	<-	R0(IF)[0..2805], CI:528	{}
+0008 ( 284)		BINOP7	R6(I)	<-	R5(I)[-528..2277], CI:12	{}
+0009 ( 169)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+2 	{}
+000a ( 169)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+000b ( 169)		BINOP3	R0(I)[0..2550]	<-	R0(IF)[0..255], CI:10	{}
+000c ( 169)		LOADG1	R1(C)[0..255]	<-	V(72 'uii_data' A)+3 	{}
+000d ( 169)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+000e ( 169)		BINOP1	R0(IF)[0..2805]	<-	R1(IF)[0..255], R0(IF)[0..2550]	{}
+000f ( 169)		BINOP2	R0(I)[-528..2277]	<-	R0(IF)[0..2805], CI:528	{}
+0010 ( 271)		CONV37	R1(I)[0..255]	<-	R2(CF)[0..255]	{}
+0011 ( 169)		BINOP3	R1(I)[0..2550]	<-	R1(IF)[0..255], CI:10	{}
+0012 ( 169)		LOADG1	R2(C)[0..255]	<-	V(72 'uii_data' A)+1 	{}
+0013 ( 169)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0014 ( 169)		BINOP1	R1(IF)[0..2805]	<-	R2(IF)[0..255], R1(IF)[0..2550]	{}
+0015 ( 169)		BINOP2	R1(I)[-528..2277]	<-	R1(IF)[0..2805], CI:528	{}
+0016 ( 283)		BINOP3	R1(I)	<-	R1(IF)[-528..2277], CI:100	{}
+0017 ( 283)		BINOP1	R2(I)	<-	R1(IF), R0(IF)[-528..2277]	{}
+0018 ( 169)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+5 	{}
+0019 ( 169)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+001a ( 169)		BINOP3	R0(I)[0..2550]	<-	R0(IF)[0..255], CI:10	{}
+001b ( 169)		LOADG1	R1(C)[0..255]	<-	V(72 'uii_data' A)+6 	{}
+001c ( 169)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+001d ( 169)		BINOP1	R0(IF)[0..2805]	<-	R1(IF)[0..255], R0(IF)[0..2550]	{}
+001e ( 169)		BINOP2	R7(I)[-528..2277]	<-	R0(IF)[0..2805], CI:528	{}
+001f ( 169)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+8 	{}
+0020 ( 169)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0021 ( 169)		BINOP3	R0(I)[0..2550]	<-	R0(IF)[0..255], CI:10	{}
+0022 ( 169)		LOADG1	R1(C)[0..255]	<-	V(72 'uii_data' A)+9 	{}
+0023 ( 169)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0024 ( 169)		BINOP1	R0(IF)[0..2805]	<-	R1(IF)[0..255], R0(IF)[0..2550]	{}
+0025 ( 169)		BINOP2	R8(I)[-528..2277]	<-	R0(IF)[0..2805], CI:528	{}
+0026 ( 169)		LOADG1	R0(C)[0..255]	<-	V(72 'uii_data' A)+14 	{}
+0027 ( 169)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0028 ( 169)		BINOP3	R0(I)[0..2550]	<-	R0(IF)[0..255], CI:10	{}
+0029 ( 169)		LOADG1	R1(C)[0..255]	<-	V(72 'uii_data' A)+15 	{}
+002a ( 169)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+002b ( 169)		BINOP1	R0(IF)[0..2805]	<-	R1(IF)[0..255], R0(IF)[0..2550]	{}
+002c ( 169)		BINOP2	R9(I)[-528..2277]	<-	R0(IF)[0..2805], CI:528	{}
+002d ( 287)		LOADG2	R0(I)[-32768..32767]	<-	V(77 'old_valid')+0 	{}
+002e ( 287)		RELOP20	R0(B)[0..1]	<-	R0(IF)[-32768..32767], CI:0	{}
+002f ( 287)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 10
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 291)		CONST	R10(I)[0..0]	<-	CI:0	{I}
+0001 ( 290)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 290)		CONST	R11(I)[0..0]	<-	CI:0	{}
+0001 ( 291)		JUMP		<-		{}
+		==> 13
+L13: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 291)		BINOP1	R0(I)[0..29]	<-	R10(I)[0..20], R11(I)[0..9]	{}
+0001 ( 291)		LEAG	R1(P)[0..29]	<-	V(93 'old_hx' A)+0 , R0(I)[0..29]	{}
+0002 ( 291)		LOADI1	R1(C)[-128..127]	<-	R1(PF)+0 {V(93 'old_hx' A)} [0..29]	{}
+0003 ( 291)		CONV40	R1(I)[-128..127]	<-	R1(CF)[-128..127]	{}
+0004 ( 291)		STOREC2		<-	V(0 '')+0 , R1(IF)[-128..127]	{}
+0005 ( 291)		LEAG	R0(P)[0..29]	<-	V(94 'old_hy' A)+0 , R0(IF)[0..29]	{}
+0006 ( 291)		LOADI1	R0(C)[-128..127]	<-	R0(PF)+0 {V(94 'old_hy' A)} [0..29]	{}
+0007 ( 291)		CONV40	R0(I)[-128..127]	<-	R0(CF)[-128..127]	{}
+0008 ( 291)		STOREC2		<-	V(2 '')+0 , R0(IF)[-128..127]	{}
+0009 ( 291)		CALLN		<-	V(24 'restore_bg')+0 	{E}
+000a ( 290)		BINOP1	R11(I)[1..10]	<-	R11(IF)[0..9], CI:1	{}
+000b ( 290)		RELOP28	R0(B)[0..1]	<-	R11(I)[1..10], CI:10	{}
+000c ( 290)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 13
+		==> 12
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 291)		BINOP1	R10(I)[10..30]	<-	R10(IF)[0..20], CI:10	{}
+0001 ( 289)		RELOP20	R0(B)[0..1]	<-	R10(I)[10..30], CI:30	{}
+0002 ( 289)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 10
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 301)		STOREC2		<-	V(2 '')+0 , CI:95	{}
+0001 ( 301)		STOREC2		<-	V(4 '')+0 , CI:46	{}
+0002 ( 301)		STOREC2		<-	V(6 '')+0 , CI:2	{}
+0003 ( 297)		BINOP1	R0(I)[-483..2322]	<-	R4(I)[-528..2277], CI:45	{}
+0004 ( 297)		BINOP7	R0(I)	<-	R0(IF)[-483..2322], CI:60	{}
+0005 ( 301)		STOREC2		<-	V(0 '')+0 , R0(IF)	{}
+0006 ( 301)		CONST	R0(P)[0..0]	<-	CG10(93:0 'old_hx' A)	{S}
+0007 ( 301)		STOREC2		<-	V(8 '')+0 , R0(PF)+0 {V(93 'old_hx' A)} [0..0]	{}
+0008 ( 301)		CONST	R0(P)[0..0]	<-	CG10(94:0 'old_hy' A)	{S}
+0009 ( 301)		STOREC2		<-	V(10 '')+0 , R0(PF)+0 {V(94 'old_hy' A)} [0..0]	{}
+000a ( 301)		CALLN		<-	V(25 'draw_hand')+0 	{}
+000b ( 302)		STOREC2		<-	V(2 '')+0 , CI:85	{}
+000c ( 302)		STOREC2		<-	V(4 '')+0 , CI:35	{}
+000d ( 302)		STOREC2		<-	V(6 '')+0 , CI:7	{}
+000e ( 298)		BINOP1	R0(I)[-483..2322]	<-	R9(I)[-528..2277], CI:45	{}
+000f ( 298)		BINOP7	R0(I)	<-	R0(IF)[-483..2322], CI:60	{}
+0010 ( 302)		STOREC2		<-	V(0 '')+0 , R0(IF)	{}
+0011 ( 302)		CONST	R0(P)[10..10]	<-	CG10(93:10 'old_hx' A)	{S}
+0012 ( 302)		STOREC2		<-	V(8 '')+0 , R0(PF)+0 {V(93 'old_hx' A)} [10..10]	{}
+0013 ( 302)		CONST	R0(P)[10..10]	<-	CG10(94:10 'old_hy' A)	{S}
+0014 ( 302)		STOREC2		<-	V(10 '')+0 , R0(PF)+0 {V(94 'old_hy' A)} [10..10]	{}
+0015 ( 302)		CALLN		<-	V(25 'draw_hand')+0 	{}
+0016 ( 303)		STOREC2		<-	V(2 '')+0 , CI:60	{}
+0017 ( 303)		STOREC2		<-	V(4 '')+0 , CI:224	{}
+0018 ( 303)		STOREC2		<-	V(6 '')+0 , CI:1	{}
+0019 ( 299)		BINOP3	R0(I)	<-	R6(IF), CI:5	{}
+001a ( 299)		BINOP1	R0(I)	<-	R0(IF), CI:45	{}
+001b ( 299)		BINOP5	R1(I)	<-	R9(I)[-528..2277], CI:12	{}
+001c ( 299)		BINOP1	R0(I)	<-	R1(IF), R0(IF)	{}
+001d ( 299)		BINOP7	R0(I)	<-	R0(IF), CI:60	{}
+001e ( 303)		STOREC2		<-	V(0 '')+0 , R0(IF)	{}
+001f ( 303)		CONST	R0(P)[20..20]	<-	CG10(93:20 'old_hx' A)	{S}
+0020 ( 303)		STOREC2		<-	V(8 '')+0 , R0(PF)+0 {V(93 'old_hx' A)} [20..20]	{}
+0021 ( 303)		CONST	R0(P)[20..20]	<-	CG10(94:20 'old_hy' A)	{S}
+0022 ( 303)		STOREC2		<-	V(10 '')+0 , R0(PF)+0 {V(94 'old_hy' A)} [20..20]	{}
+0023 ( 303)		CALLN		<-	V(25 'draw_hand')+0 	{}
+0024 ( 309)		STOREC1		<-	V(0 '')+0 , CC:25	{}
+0025 ( 309)		STOREC1		<-	V(1 '')+0 , CC:9	{}
+0026 ( 163)		STOREA1		<-	V(-1 '')+1532 , CC:42	{}
+0027 ( 164)		STOREA1		<-	V(-1 '')+55804 , CC:7	{}
+0028 ( 304)		STOREG2		<-	V(77 'old_valid')+0 , CI:1	{}
+0029 ( 309)		CALLN		<-	V(4 'gotoxy')+0 	{}
+002a ( 385)		STOREA1		<-	V(-1 '')+646 , CC:8	{V}
+002b ( 311)		CONST	R0(P)[0..0]	<-	CG0(105:0 '')	{S}
+002c ( 311)		STOREG2		<-	V(-1 'sstack')+8 , R0(PF)+0 {V(105 '')} [0..0]	{}
+002d ( 311)		CALLN		<-	V(5 'printf')+0 	{}
+002e ( 314)		STOREC1		<-	V(0 '')+0 , CC:23	{}
+002f ( 314)		STOREC1		<-	V(1 '')+0 , CC:16	{}
+0030 ( 314)		CALLN		<-	V(4 'gotoxy')+0 	{}
+0031 ( 316)		STOREG2		<-	V(-1 'sstack')+10 , R8(IF)[-528..2277]	{}
+0032 ( 316)		STOREG2		<-	V(-1 'sstack')+12 , R7(IF)[-528..2277]	{}
+0033 ( 316)		STOREG2		<-	V(-1 'sstack')+14 , R2(IF)	{}
+0034 ( 385)		STOREA1		<-	V(-1 '')+646 , CC:3	{V}
+0035 ( 316)		CONST	R0(P)[0..0]	<-	CG0(106:0 '')	{S}
+0036 ( 316)		STOREG2		<-	V(-1 'sstack')+8 , R0(PF)+0 {V(106 '')} [0..0]	{}
+0037 ( 316)		CALLN		<-	V(5 'printf')+0 	{}
+0038 ( 318)		STOREC1		<-	V(0 '')+0 , CC:24	{}
+0039 ( 318)		STOREC1		<-	V(1 '')+0 , CC:17	{}
+003a ( 318)		CALLN		<-	V(4 'gotoxy')+0 	{}
+003b ( 320)		STOREG2		<-	V(-1 'sstack')+10 , R5(IF)[-528..2277]	{}
+003c ( 320)		STOREG2		<-	V(-1 'sstack')+12 , R9(IF)[-528..2277]	{}
+003d ( 320)		STOREG2		<-	V(-1 'sstack')+14 , R4(IF)[-528..2277]	{}
+003e ( 385)		STOREA1		<-	V(-1 '')+646 , CC:1	{V}
+003f ( 320)		CONST	R0(P)[0..0]	<-	CG0(107:0 '')	{S}
+0040 ( 320)		STOREG2		<-	V(-1 'sstack')+8 , R0(PF)+0 {V(107 '')} [0..0]	{}
+0041 ( 320)		CALLN		<-	V(5 'printf')+0 	{}
+0042 ( 264)		JUMP		<-		{}
+		==> 1
+--------------------------------------------------------------------
+putchar: /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.h:8
+$00 R0(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (   8)		LOADZ1	R0(C)[0..255]	<-	V(1 '')+0 	{S}
+0001 (   8)		STOREC1		<-	V(0 '')+0 , R0(CF)[0..255]	{}
+0002 (   8)		CALLN		<-	V(2 'putpch')+0 	{}
+0003 (   9)		RET		<-		{}
+--------------------------------------------------------------------
+putpch: /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.h:69
+$00 R0(I), $01 R1(C), $00 R2(C), $00 R3(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 204)		LOADG1	R1(C)[0..3]	<-	V(6 'giocharmap')+0 	{}
+0001 ( 204)		RELOP25	R0(B)[0..1]	<-	R1(C)[0..3], CC:1	{}
+0002 ( 204)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 206)		LOADZ1	R2(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 206)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:10	{}
+0002 ( 206)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 207)		CONST	R0(I)[13..13]	<-	CI:13	{S}
+0001 ( 239)		JUMP		<-		{}
+		==> 15
+L15: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 193)		JSR		<-	R0(CF)[0..95], V(-1 '')+0 	{V}
+0001 ( 239)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 214)		RET		<-		{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 208)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:9	{}
+0001 ( 208)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 413)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+211 	{V}
+0001 ( 210)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 ( 210)		BINOP9	R0(I)[0..3]	<-	R0(IF)[0..255], CI:3	{}
+0003 ( 212)		CONST	R1(C)[32..32]	<-	CI:32	{IS}
+0004 ( 193)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 193)		JSR		<-	R1(C)[32..32], V(-1 '')+0 	{V}
+0001 ( 213)		BINOP1	R0(C)[1..4]	<-	R0(CF)[0..3], CI:1	{}
+0002 ( 213)		RELOP28	R2(B)[0..1]	<-	R0(C)[1..4], CC:4	{}
+0003 ( 213)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 7
+		==> 8
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 216)		RELOP25	R0(B)[0..1]	<-	R1(C)[1..3], CC:2	{}
+0001 ( 216)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 2
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 218)		RELOP25	R0(B)[0..1]	<-	R2(C)[0..255], CC:65	{}
+0001 ( 218)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 2
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 218)		RELOP28	R0(B)[0..1]	<-	R2(C)[65..255], CC:123	{}
+0001 ( 218)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 10
+		==> 2
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 206)		CONV37	R0(I)[65..122]	<-	R2(C)[65..122]	{}
+0001 ( 220)		RELOP25	R3(B)[0..1]	<-	R2(C)[65..122], CC:97	{}
+0002 ( 220)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 12
+		==> 13
+L12: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 227)		BINOP10	R0(I)[0..127]	<-	R0(IF)[65..122], CI:32	{}
+0001 ( 227)		STOREZ1		<-	V(0 '')+0 , R0(C)[0..127]	{}
+0002 ( 230)		RELOP19	R1(B)[0..1]	<-	R1(CF)[2..3], CC:2	{}
+0003 ( 230)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 14
+		==> 2
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 231)		BINOP9	R0(C)[0..95]	<-	R0(CF)[0..127], CC:95	{}
+0001 ( 239)		JUMP		<-		{}
+		==> 15
+L2: <= D-1: (6)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 193)		JSR		<-	V(0 '')+0 , V(-1 '')+0 	{V}
+0001 ( 239)		JUMP		<-		{}
+		==> 8
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 220)		RELOP28	R2(B)[0..1]	<-	R2(CF)[65..96], CC:91	{}
+0001 ( 220)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 12
+		==> 2
+--------------------------------------------------------------------
+clrscr: /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.h:91
+$00 R0(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 345)		CONST	R0(C)[147..147]	<-	CI:147	{S}
+0001 ( 193)		JSR		<-	R0(CF)[147..147], V(-1 '')+0 	{V}
+0002 ( 346)		RET		<-		{}
+--------------------------------------------------------------------
+gotoxy: /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.h:93
+
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 375)		JSR		<-	V(0 '')+0 , V(1 '')+0 , V(-1 '')+0 	{V}
+0001 ( 381)		RET		<-		{}
+--------------------------------------------------------------------
+printf: /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.h:18
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 558)		STOREG1		<-	V(-1 'sstack')+7 , CB:1	{}
+0001 ( 557)		CONST	R0(P)[0..0]	<-	CG50(22:0 'buff' A)	{S}
+0002 ( 558)		STOREG2		<-	V(-1 'sstack')+1 , R0(PF)+0 {V(22 'buff' A)} [0..0]	{}
+0003 ( 558)		LOADG2	R0(P)	<-	V(-1 'sstack')+8 	{}
+0004 ( 558)		STOREG2		<-	V(-1 'sstack')+3 , R0(PF)	{}
+0005 ( 558)		CONST	R0(P)[2..2]	<-	CG2(-1:10 'sstack')	{S}
+0006 ( 558)		STOREG2		<-	V(-1 'sstack')+5 , R0(PF)+0 {V(20 '')} [2..2]	{}
+0007 ( 558)		CALLN		<-	V(6 'sformat')+0 	{}
+0008 ( 559)		RET		<-		{}
+--------------------------------------------------------------------
+sformat: /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c:351
+$00 R0(L), $10 R1(I), $04 R2(I), $12 R3(P), $14 R4(P), $16 R5(P), $18 R6(C), $19 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 356)		CONST	R6(C)[0..0]	<-	CI:0	{}
+0001 ( 353)		LOADG2	R3(P)	<-	V(-1 'sstack')+3 	{}
+0002 ( 354)		LOADG2	R4(P)	<-	V(-1 'sstack')+1 	{}
+0003 ( 359)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (13) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 359)		LOADI1	R1(C)[0..255]	<-	R3(P)+0	{}
+0001 ( 359)		BRANCH		<-	R1(C)[0..255]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 361)		RELOP19	R0(B)[0..1]	<-	R1(C)[0..255], CC:37	{}
+0001 ( 361)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 363)		BRANCH		<-	R6(C)	{}
+		==> 6
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 363)		CONV37	R0(I)[0..255]	<-	R6(CF)	{}
+0001 ( 372)		CONST	R6(C)[0..0]	<-	CI:0	{}
+0002 ( 365)		LOADG1	R1(B)[0..1]	<-	V(-1 'sstack')+7 	{S}
+0003 ( 365)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 368)		STOREC2		<-	V(1 '')+0 , R4(P)	{}
+0001 ( 367)		LEAI	R0(P)+0	<-	R4(P)+0, R0(IF)[0..255]	{}
+0002 ( 367)		STOREI1		<-	R0(PF)+0, CC:0	{}
+0003 ( 368)		CALLN		<-	V(7 'puts')+0 	{}
+0004 ( 363)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 380)		STOREG1		<-	V(19 'si' A)+5 , CB:0	{}
+0001 ( 381)		STOREG1		<-	V(19 'si' A)+6 , CB:0	{}
+0002 ( 382)		STOREG1		<-	V(19 'si' A)+7 , CB:0	{}
+0003 ( 374)		LOADI1	R2(C)[0..255]	<-	R3(P)+1	{}
+0004 ( 379)		STOREG1		<-	V(19 'si' A)+0 , CC:32	{}
+0005 ( 377)		STOREG1		<-	V(19 'si' A)+1 , CC:0	{}
+0006 ( 378)		STOREG1		<-	V(19 'si' A)+2 , CC:255	{}
+0007 ( 376)		STOREG1		<-	V(19 'si' A)+4 , CC:10	{}
+0008 ( 374)		LEAI	R3(P)+0	<-	R3(PF)+0, CI:2	{}
+0009 ( 386)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 386)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:43	{}
+0001 ( 386)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 12
+		==> 13
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 387)		STOREG1		<-	V(19 'si' A)+5 , CB:1	{}
+0001 ( 384)		JUMP		<-		{}
+		==> 94
+L94: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 396)		LOADI1	R2(C)[0..255]	<-	R3(P)+0	{}
+0001 ( 396)		LEAI	R3(P)+0	<-	R3(PF)+0, CI:1	{}
+0002 ( 384)		JUMP		<-		{}
+		==> 10
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 388)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:48	{}
+0001 ( 388)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 14
+		==> 15
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 389)		STOREG1		<-	V(19 'si' A)+0 , CC:48	{}
+0001 ( 384)		JUMP		<-		{}
+		==> 94
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 390)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:35	{}
+0001 ( 390)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 16
+		==> 17
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 391)		STOREG1		<-	V(19 'si' A)+7 , CB:1	{}
+0001 ( 384)		JUMP		<-		{}
+		==> 94
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 392)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:45	{}
+0001 ( 392)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 18
+		==> 11
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 393)		STOREG1		<-	V(19 'si' A)+6 , CB:1	{}
+0001 ( 384)		JUMP		<-		{}
+		==> 94
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 399)		RELOP25	R0(B)[0..1]	<-	R2(C)[0..255], CC:48	{}
+0001 ( 399)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 21
+		==> 20
+L21: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 399)		RELOP26	R0(B)[0..1]	<-	R2(C)[48..255], CC:57	{}
+0001 ( 399)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 19
+		==> 26
+L19: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 402)		CONV37	R0(I)[48..57]	<-	R2(CF)[48..57]	{}
+0001 ( 401)		CONST	R1(C)[0..0]	<-	CI:0	{}
+0002 ( 404)		JUMP		<-		{}
+		==> 22
+L22: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 404)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..2559]	{}
+0001 ( 404)		BINOP3	R1(I)[0..2550]	<-	R1(IF)[0..255], CI:10	{}
+0002 ( 404)		BINOP1	R0(I)[48..2607]	<-	R1(IF)[0..2550], R0(IF)[48..57]	{}
+0003 ( 404)		BINOP2	R1(I)[0..2559]	<-	R0(IF)[48..2607], CI:48	{}
+0004 ( 405)		LOADI1	R2(C)[0..255]	<-	R3(P)+0	{}
+0005 ( 405)		LEAI	R3(P)+0	<-	R3(PF)+0, CI:1	{}
+0006 ( 402)		RELOP25	R0(B)[0..1]	<-	R2(C)[0..255], CC:48	{}
+0007 ( 402)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 24
+		==> 23
+L24: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 402)		CONV37	R0(I)[48..255]	<-	R2(C)[48..255]	{}
+0001 ( 402)		RELOP26	R5(B)[0..1]	<-	R2(C)[48..255], CC:57	{}
+0002 ( 402)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 22
+		==> 23
+L23: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 407)		STOREG1		<-	V(19 'si' A)+1 , R1(CF)[0..2559]	{}
+0001 ( 410)		JUMP		<-		{}
+		==> 20
+L20: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 410)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:46	{}
+0001 ( 410)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 25
+		==> 26
+L25: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 412)		CONST	R0(C)[0..0]	<-	CI:0	{}
+0001 ( 417)		JUMP		<-		{}
+		==> 88
+L88: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 417)		LOADI1	R2(C)[0..255]	<-	R3(P)+0	{}
+0001 ( 417)		LEAI	R3(P)+0	<-	R3(PF)+0, CI:1	{}
+0002 ( 414)		RELOP25	R1(B)[0..1]	<-	R2(C)[0..255], CC:48	{}
+0003 ( 414)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 29
+		==> 28
+L29: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 414)		RELOP26	R1(B)[0..1]	<-	R2(C)[48..255], CC:57	{}
+0001 ( 414)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 27
+		==> 28
+L27: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 414)		CONV37	R1(I)[48..57]	<-	R2(CF)[48..57]	{}
+0001 ( 416)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..2559]	{}
+0002 ( 416)		BINOP3	R0(I)[0..2550]	<-	R0(IF)[0..255], CI:10	{}
+0003 ( 416)		BINOP1	R0(I)[48..2607]	<-	R0(IF)[0..2550], R1(IF)[48..57]	{}
+0004 ( 416)		BINOP2	R0(I)[0..2559]	<-	R0(IF)[48..2607], CI:48	{}
+0005 ( 414)		JUMP		<-		{}
+		==> 88
+L28: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 419)		STOREG1		<-	V(19 'si' A)+2 , R0(CF)[0..2559]	{}
+0001 ( 422)		JUMP		<-		{}
+		==> 26
+L26: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 422)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:100	{}
+0001 ( 422)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 30
+		==> 34
+L30: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 424)		STOREC1		<-	V(6 '')+0 , CB:1	{}
+0001 ( 422)		JUMP		<-		{}
+		==> 91
+L91: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 424)		STOREC2		<-	V(2 '')+0 , R4(P)	{}
+0001 ( 428)		LOADG2	R0(P)	<-	V(-1 'sstack')+5 	{}
+0002 ( 428)		LOADI2	R1(I)[-32768..32767]	<-	R0(P)+0	{}
+0003 ( 428)		STOREC2		<-	V(4 '')+0 , R1(IF)[-32768..32767]	{}
+0004 ( 428)		LEAI	R0(P)+0	<-	R0(PF)+0, CI:2	{}
+0005 ( 428)		STOREG2		<-	V(-1 'sstack')+5 , R0(PF)	{}
+0006 ( 428)		CONST	R0(P)[0..0]	<-	CG8(19:0 'si' A)	{S}
+0007 ( 428)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(19 'si' A)} [0..0]	{}
+0008 ( 428)		CALLN	R6(C)	<-	V(8 'nformi')+0 	{}
+0009 ( 426)		JUMP		<-		{}
+		==> 1
+L34: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 422)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:68	{}
+0001 ( 422)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 30
+		==> 33
+L33: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 422)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:105	{}
+0001 ( 422)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 30
+		==> 32
+L32: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 422)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:73	{}
+0001 ( 422)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 30
+		==> 31
+L31: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 426)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:117	{}
+0001 ( 426)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 35
+		==> 37
+L35: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 428)		STOREC1		<-	V(6 '')+0 , CB:0	{}
+0001 ( 426)		JUMP		<-		{}
+		==> 91
+L37: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 426)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:85	{}
+0001 ( 426)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 35
+		==> 36
+L36: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 422)		CONV37	R1(I)[0..255]	<-	R2(C)[0..255]	{}
+0001 ( 430)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:120	{}
+0002 ( 430)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 38
+		==> 40
+L38: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 434)		STOREC1		<-	V(6 '')+0 , CB:0	{}
+0001 ( 433)		STOREG1		<-	V(19 'si' A)+4 , CC:16	{}
+0002 ( 432)		BINOP9	R1(I)[0..224]	<-	R1(IF)[0..255], CI:224	{}
+0003 ( 432)		BINOP8	R1(I)[0..255]	<-	R1(IF)[0..224], CI:1	{}
+0004 ( 432)		STOREG1		<-	V(19 'si' A)+3 , R1(CF)[0..255]	{}
+0005 ( 430)		JUMP		<-		{}
+		==> 91
+L40: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 430)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:88	{}
+0001 ( 430)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 38
+		==> 39
+L39: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 437)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:108	{}
+0001 ( 437)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 41
+		==> 43
+L41: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 439)		LOADG2	R0(P)	<-	V(-1 'sstack')+5 	{}
+0001 ( 441)		LEAI	R1(P)+0	<-	R0(P)+0, CI:4	{}
+0002 ( 441)		STOREG2		<-	V(-1 'sstack')+5 , R1(PF)	{}
+0003 ( 443)		LOADI1	R2(C)[0..255]	<-	R3(P)+0	{}
+0004 ( 443)		LEAI	R3(P)+0	<-	R3(PF)+0, CI:1	{}
+0005 ( 439)		LOADI4	R0(L)[-2147483648..2147483647]	<-	R0(PF)+0	{}
+0006 ( 444)		RELOP19	R1(B)[0..1]	<-	R2(C)[0..255], CC:100	{}
+0007 ( 444)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 44
+		==> 48
+L44: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 446)		STOREC1		<-	V(8 '')+0 , CB:1	{}
+0001 ( 444)		JUMP		<-		{}
+		==> 92
+L92: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 446)		STOREC2		<-	V(2 '')+0 , R4(P)	{}
+0001 ( 446)		STOREC4		<-	V(4 '')+0 , R0(LF)[-2147483648..2147483647]	{}
+0002 ( 450)		CONST	R0(P)[0..0]	<-	CG8(19:0 'si' A)	{S}
+0003 ( 450)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(19 'si' A)} [0..0]	{}
+0004 ( 450)		CALLN	R6(C)	<-	V(9 'nforml')+0 	{}
+0005 ( 448)		JUMP		<-		{}
+		==> 1
+L48: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 444)		RELOP19	R1(B)[0..1]	<-	R2(C)[0..255], CC:68	{}
+0001 ( 444)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 44
+		==> 47
+L47: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 444)		RELOP19	R1(B)[0..1]	<-	R2(C)[0..255], CC:105	{}
+0001 ( 444)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 44
+		==> 46
+L46: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 444)		RELOP19	R1(B)[0..1]	<-	R2(C)[0..255], CC:73	{}
+0001 ( 444)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 44
+		==> 45
+L45: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 448)		RELOP19	R1(B)[0..1]	<-	R2(C)[0..255], CC:117	{}
+0001 ( 448)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 49
+		==> 51
+L49: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 450)		STOREC1		<-	V(8 '')+0 , CB:0	{}
+0001 ( 448)		JUMP		<-		{}
+		==> 92
+L51: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 448)		RELOP19	R1(B)[0..1]	<-	R2(C)[0..255], CC:85	{}
+0001 ( 448)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 49
+		==> 50
+L50: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 444)		CONV37	R1(I)[0..255]	<-	R2(C)[0..255]	{}
+0001 ( 452)		RELOP19	R5(B)[0..1]	<-	R2(C)[0..255], CC:120	{}
+0002 ( 452)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 52
+		==> 53
+L52: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 456)		STOREC1		<-	V(8 '')+0 , CB:0	{}
+0001 ( 455)		STOREG1		<-	V(19 'si' A)+4 , CC:16	{}
+0002 ( 454)		BINOP9	R1(I)[0..224]	<-	R1(IF)[0..255], CI:224	{}
+0003 ( 454)		BINOP8	R1(I)[0..255]	<-	R1(IF)[0..224], CI:1	{}
+0004 ( 454)		STOREG1		<-	V(19 'si' A)+3 , R1(CF)[0..255]	{}
+0005 ( 452)		JUMP		<-		{}
+		==> 92
+L53: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 452)		RELOP19	R2(B)[0..1]	<-	R2(CF)[0..255], CC:88	{}
+0001 ( 452)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 52
+		==> 1
+L43: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 437)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:76	{}
+0001 ( 437)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 41
+		==> 42
+L42: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 462)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:102	{}
+0001 ( 462)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 54
+		==> 60
+L54: <= D-1: (6)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 467)		STOREC2		<-	V(6 '')+0 , R4(P)	{}
+0001 ( 466)		BINOP9	R0(I)[0..224]	<-	R1(I)[0..255], CI:224	{}
+0002 ( 466)		BINOP8	R2(I)[0..255]	<-	R0(IF)[0..224], CI:1	{}
+0003 ( 466)		STOREG1		<-	V(19 'si' A)+3 , R2(C)[0..255]	{}
+0004 ( 466)		CONST	R0(P)[0..0]	<-	CG8(19:0 'si' A)	{S}
+0005 ( 467)		STOREC2		<-	V(4 '')+0 , R0(PF)+0 {V(19 'si' A)} [0..0]	{}
+0006 ( 467)		LOADG2	R5(P)	<-	V(-1 'sstack')+5 	{}
+0007 ( 467)		LOADI4	R0(F)	<-	R5(P)+0	{}
+0008 ( 467)		STOREC4		<-	V(8 '')+0 , R0(FF)	{}
+0009 ( 467)		BINOP2	R0(I)[-255..255]	<-	R1(IF)[0..255], R2(IF)[0..255]	{}
+000a ( 467)		BINOP1	R0(I)[-158..352]	<-	R0(IF)[-255..255], CI:97	{}
+000b ( 467)		STOREG1		<-	V(-1 'sstack')+0 , R0(CF)[-158..352]	{}
+000c ( 467)		CALLN	R6(C)	<-	V(10 'nformf')+0 	{}
+000d ( 469)		LEAI	R0(P)+0	<-	R5(PF)+0, CI:4	{}
+000e ( 469)		STOREG2		<-	V(-1 'sstack')+5 , R0(PF)	{}
+000f ( 461)		JUMP		<-		{}
+		==> 1
+L60: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 462)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:103	{}
+0001 ( 462)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 54
+		==> 59
+L59: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 462)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:101	{}
+0001 ( 462)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 54
+		==> 58
+L58: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 463)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:70	{}
+0001 ( 463)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 54
+		==> 57
+L57: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 463)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:71	{}
+0001 ( 463)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 54
+		==> 56
+L56: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 463)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:69	{}
+0001 ( 463)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 54
+		==> 55
+L55: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 472)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:115	{}
+0001 ( 472)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 61
+		==> 63
+L61: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 474)		LOADG2	R0(P)	<-	V(-1 'sstack')+5 	{}
+0001 ( 474)		LEAI	R1(P)+0	<-	R0(P)+0, CI:2	{}
+0002 ( 474)		STOREG2		<-	V(-1 'sstack')+5 , R1(PF)	{}
+0003 ( 474)		LOADI2	R0(I)[-32768..32767]	<-	R0(PF)+0	{}
+0004 ( 474)		CAST	R1(P)	<-	R0(IF)[-32768..32767]	{}
+0005 ( 476)		CONST	R7(C)[0..0]	<-	CI:0	{}
+0006 ( 477)		LOADG1	R2(C)[0..255]	<-	V(19 'si' A)+1 	{}
+0007 ( 477)		BRANCH		<-	R2(C)[0..255]	{}
+		==> 65
+		==> 64
+L65: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 479)		CONV37	R0(I)[0..255]	<-	R7(C)[0..]	{}
+0001 ( 479)		LEAI	R0(P)+0	<-	R1(P)+0, R0(IF)[0..255]	{}
+0002 ( 479)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0	{}
+0003 ( 479)		BRANCH		<-	R0(CF)[0..255]	{}
+		==> 66
+		==> 64
+L66: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 480)		BINOP1	R7(C)[1..]	<-	R7(CF)[0..], CI:1	{}
+0001 ( 479)		JUMP		<-		{}
+		==> 65
+L64: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 483)		LOADG1	R5(B)[0..1]	<-	V(19 'si' A)+6 	{}
+0001 ( 483)		BRANCH		<-	R5(B)[0..1]	{}
+		==> 67
+		==> 86
+L67: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 492)		LOADG1	R0(B)[0..1]	<-	V(-1 'sstack')+7 	{S}
+0001 ( 492)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 69
+		==> 85
+L69: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 494)		BRANCH		<-	R6(C)[0..]	{}
+		==> 71
+		==> 89
+L71: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 497)		STOREC2		<-	V(1 '')+0 , R4(P)	{}
+0001 ( 494)		CONV37	R0(I)[0..255]	<-	R6(CF)[0..]	{}
+0002 ( 496)		LEAI	R0(P)+0	<-	R4(P)+0, R0(IF)[0..255]	{}
+0003 ( 496)		STOREI1		<-	R0(PF)+0, CC:0	{}
+0004 ( 497)		CALLN		<-	V(7 'puts')+0 	{}
+0005 ( 498)		CONST	R6(C)[0..0]	<-	CI:0	{}
+0006 ( 509)		JUMP		<-		{}
+		==> 89
+L89: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 500)		STOREC2		<-	V(1 '')+0 , R1(PF)	{}
+0001 ( 500)		CALLN		<-	V(7 'puts')+0 	{}
+0002 ( 509)		LOADG1	R0(B)[0..1]	<-	V(19 'si' A)+6 	{}
+0003 ( 509)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 90
+		==> 1
+L90: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 511)		LOADG1	R0(C)[0..255]	<-	V(19 'si' A)+1 	{}
+0001 ( 511)		RELOP28	R0(B)[0..1]	<-	R7(C)[0..], R0(CF)[0..255]	{}
+0002 ( 511)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 73
+		==> 1
+L73: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 513)		CONV37	R0(I)[0..255]	<-	R6(C)[0..]	{}
+0001 ( 513)		LOADG1	R1(C)[0..255]	<-	V(19 'si' A)+0 	{}
+0002 ( 513)		LEAI	R0(P)+0	<-	R4(P)+0, R0(IF)[0..255]	{}
+0003 ( 513)		STOREI1		<-	R0(PF)+0, R1(CF)[0..255]	{}
+0004 ( 514)		BINOP1	R7(C)[1..255]	<-	R7(CF)[0..254], CI:1	{}
+0005 ( 513)		BINOP1	R6(C)[1..]	<-	R6(CF)[0..], CI:1	{}
+0006 ( 511)		JUMP		<-		{}
+		==> 90
+L85: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 504)		LOADI1	R2(C)[0..255]	<-	R1(P)+0	{}
+0001 ( 504)		BRANCH		<-	R2(C)[0..255]	{}
+		==> 87
+		==> 70
+L87: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 504)		LEAI	R0(P)+0	<-	R1(PF)+0, CI:1	{}
+0001 ( 505)		JUMP		<-		{}
+		==> 72
+L72: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 505)		CONV37	R1(I)[0..255]	<-	R6(C)[0..]	{}
+0001 ( 505)		LEAI	R1(P)+0	<-	R4(P)+0, R1(IF)[0..255]	{}
+0002 ( 505)		STOREI1		<-	R1(PF)+0, R2(CF)[0..255]	{}
+0003 ( 505)		BINOP1	R6(C)[1..]	<-	R6(CF)[0..], CI:1	{}
+0004 ( 504)		LOADI1	R2(C)[0..255]	<-	R0(P)+0	{}
+0005 ( 504)		LEAI	R0(P)+0	<-	R0(PF)+0, CI:1	{}
+0006 ( 504)		BRANCH		<-	R2(C)[0..255]	{}
+		==> 72
+		==> 70
+L70: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 509)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 90
+		==> 1
+L86: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 485)		RELOP28	R0(B)[0..1]	<-	R7(C)[0..], R2(CF)[0..255]	{}
+0001 ( 485)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 68
+		==> 67
+L68: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 487)		CONV37	R0(I)[0..255]	<-	R6(C)[0..]	{}
+0001 ( 487)		LOADG1	R2(C)[0..255]	<-	V(19 'si' A)+0 	{}
+0002 ( 487)		LEAI	R0(P)+0	<-	R4(P)+0, R0(IF)[0..255]	{}
+0003 ( 487)		STOREI1		<-	R0(PF)+0, R2(CF)[0..255]	{}
+0004 ( 488)		BINOP1	R7(C)[1..255]	<-	R7(CF)[0..254], CI:1	{}
+0005 ( 487)		BINOP1	R6(C)[1..]	<-	R6(CF)[0..], CI:1	{}
+0006 ( 485)		LOADG1	R2(C)[0..255]	<-	V(19 'si' A)+1 	{}
+0007 ( 485)		JUMP		<-		{}
+		==> 86
+L63: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 472)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:83	{}
+0001 ( 472)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 61
+		==> 62
+L62: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 518)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:99	{}
+0001 ( 518)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 74
+		==> 76
+L74: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 520)		LOADG2	R0(P)	<-	V(-1 'sstack')+5 	{}
+0001 ( 520)		LOADI2	R1(I)[-32768..32767]	<-	R0(P)+0	{}
+0002 ( 520)		STOREI1		<-	R4(P)+0, R1(CF)[-32768..32767]	{}
+0003 ( 520)		LEAI	R0(P)+0	<-	R0(PF)+0, CI:2	{}
+0004 ( 520)		STOREG2		<-	V(-1 'sstack')+5 , R0(PF)	{}
+0005 ( 518)		JUMP		<-		{}
+		==> 93
+L93: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 524)		CONST	R6(C)[1..1]	<-	CI:1	{}
+0001 ( 522)		JUMP		<-		{}
+		==> 1
+L76: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 518)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..255], CC:67	{}
+0001 ( 518)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 74
+		==> 75
+L75: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 522)		BRANCH		<-	R2(C)[0..255]	{}
+		==> 77
+		==> 1
+L77: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 524)		STOREI1		<-	R4(P)+0, R2(CF)[0..255]	{}
+0001 ( 522)		JUMP		<-		{}
+		==> 93
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 371)		LEAI	R4(P)+0	<-	R4(PF)+0, R0(IF)[0..255]	{}
+0001 ( 363)		JUMP		<-		{}
+		==> 7
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 529)		CONV37	R0(I)[0..255]	<-	R6(C)	{}
+0001 ( 529)		LEAI	R0(P)+0	<-	R4(P)+0, R0(IF)[0..255]	{}
+0002 ( 529)		STOREI1		<-	R0(PF)+0, R1(CF)[0..255]	{}
+0003 ( 359)		LEAI	R3(P)+0	<-	R3(PF)+0, CI:1	{}
+0004 ( 529)		BINOP1	R6(C)	<-	R6(CF), CI:1	{}
+0005 ( 530)		RELOP25	R0(B)[0..1]	<-	R6(C), CC:40	{}
+0006 ( 530)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 78
+		==> 1
+L78: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 530)		CONV37	R0(I)[40..255]	<-	R6(CF)[40..255]	{}
+0001 ( 539)		CONST	R6(C)[0..0]	<-	CI:0	{}
+0002 ( 532)		LOADG1	R1(B)[0..1]	<-	V(-1 'sstack')+7 	{S}
+0003 ( 532)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 79
+		==> 80
+L79: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 535)		STOREC2		<-	V(1 '')+0 , R4(P)	{}
+0001 ( 534)		LEAI	R0(P)+0	<-	R4(P)+0, R0(IF)[40..255]	{}
+0002 ( 534)		STOREI1		<-	R0(PF)+0, CC:0	{}
+0003 ( 535)		CALLN		<-	V(7 'puts')+0 	{}
+0004 ( 530)		JUMP		<-		{}
+		==> 1
+L80: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 538)		LEAI	R4(P)+0	<-	R4(PF)+0, R0(IF)[40..255]	{}
+0001 ( 530)		JUMP		<-		{}
+		==> 1
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 543)		CONV37	R0(I)[0..255]	<-	R6(C)	{}
+0001 ( 543)		LEAI	R0(P)+0	<-	R4(P)+0, R0(IF)[0..255]	{}
+0002 ( 543)		STOREI1		<-	R0(P)+0, CC:0	{}
+0003 ( 544)		BRANCH		<-	R6(CF)	{}
+		==> 81
+		==> 82
+L81: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 546)		LOADG1	R1(B)[0..1]	<-	V(-1 'sstack')+7 	{S}
+0001 ( 546)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 83
+		==> 84
+L83: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 547)		STOREC2		<-	V(1 '')+0 , R4(P)	{}
+0001 ( 547)		CALLN		<-	V(7 'puts')+0 	{}
+0002 ( 552)		RETV		<-	R4(PF)	{}
+L84: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 552)		RETV		<-	R0(PF)	{}
+L82: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 552)		RETV		<-	R4(PF)	{}
+--------------------------------------------------------------------
+puts: /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.h:12
+$00 R0(P), $00 R1(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  18)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  18)		LOADZ2	R0(P)	<-	V(1 '')+0 	{}
+0001 (  18)		LEAI	R1(P)+0	<-	R0(P)+0, CI:1	{}
+0002 (  18)		STOREZ2		<-	V(1 '')+0 , R1(PF)	{}
+0003 (  18)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0	{}
+0004 (  18)		BRANCH		<-	R0(C)[0..255]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  19)		STOREC1		<-	V(0 '')+0 , R0(CF)[0..255]	{}
+0001 (  19)		CALLN		<-	V(2 'putpch')+0 	{}
+0002 (  18)		JUMP		<-		{}
+		==> 1
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  20)		RET		<-		{}
+--------------------------------------------------------------------
+nformi: /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c:79
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(I), $00 R4(I), $00 R5(B), $01 R6(C), $02 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  85)		CONST	R5(B)[0..0]	<-	CI:0	{}
+0001 (  84)		LOADZ2	R0(I)[-32768..32767]	<-	V(4 '')+0 	{}
+0002 (  82)		LOADZ2	R1(P)	<-	V(0 '')+0 	{S}
+0003 (  82)		LOADI1	R6(C)[0..255]	<-	R1(P)+4	{}
+0004 (  87)		LOADZ1	R2(B)[0..1]	<-	V(6 '')+0 	{S}
+0005 (  87)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 2
+		==> 22
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  87)		RELOP24	R2(B)[0..1]	<-	R0(I)[-32768..32767], CI:0	{S}
+0001 (  87)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 1
+		==> 22
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  90)		UNOP11	R0(I)[1..32768]	<-	R0(IF)[-32768..-1]	{}
+0001 (  89)		CONST	R5(B)[1..1]	<-	CI:1	{}
+0002 (  94)		JUMP		<-		{}
+		==> 22
+L22: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  93)		CONST	R7(C)[16..16]	<-	CI:16	{}
+0001 (  94)		RELOP27	R2(B)[0..1]	<-	R0(I)[-32768..32768], CI:0	{}
+0002 (  94)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 25
+		==> 4
+L25: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  96)		CONV37	R2(I)[0..255]	<-	R6(C)[0..255]	{I}
+0001 (  96)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  96)		BINOP6	R3(I)[0..254]	<-	R0(I)[1..], R2(I)[0..255]	{}
+0001 (  99)		BINOP4	R0(I)[0..]	<-	R0(IF)[1..], R2(I)[0..255]	{}
+0002 (  97)		RELOP25	R4(B)[0..1]	<-	R3(C)[0..254], CC:10	{}
+0003 (  97)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 26
+		==> 27
+L26: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  97)		LOADI1	R4(C)[0..255]	<-	R1(P)+3	{}
+0001 (  97)		CONV37	R4(I)[0..255]	<-	R4(CF)[0..255]	{}
+0002 (  97)		BINOP2	R4(I)[-10..245]	<-	R4(IF)[0..255], CI:10	{}
+0003 (  97)		JUMP		<-		{}
+		==> 28
+L28: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  97)		CONV37	R3(I)[0..254]	<-	R3(CF)[0..254]	{}
+0001 (  97)		BINOP1	R3(I)[-10..499]	<-	R3(IF)[0..254], R4(IF)[-10..245]	{}
+0002 (  98)		CONV37	R4(I)[1..16]	<-	R7(C)[1..16]	{}
+0003 (  98)		LEAG	R4(P)[0..15]	<-	V(12 'buffer' A)+-1 , R4(IF)[1..16]	{}
+0004 (  98)		STOREI1		<-	R4(PF)+0 {V(12 'buffer' A)} [0..15], R3(CF)[-10..499]	{}
+0005 (  98)		BINOP1	R7(C)[0..15]	<-	R7(CF)[1..16], CI:-1	{}
+0006 (  94)		RELOP27	R3(B)[0..1]	<-	R0(I)[0..], CI:0	{}
+0007 (  94)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 102)		LOADI1	R0(C)[0..255]	<-	R1(P)+2	{}
+0001 ( 102)		RELOP20	R2(B)[0..1]	<-	R0(C)[0..255], CC:255	{}
+0002 ( 102)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 29
+		==> 30
+L29: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 102)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0001 ( 102)		BINOP2	R0(I)[-239..16]	<-	CI:16, R0(IF)[0..255]	{}
+0002 ( 102)		JUMP		<-		{}
+		==> 31
+L31: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 104)		RELOP27	R2(B)[0..1]	<-	R7(C)[0..16], R0(C)[-239..16]	{}
+0001 ( 104)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 105)		CONV37	R2(I)[1..16]	<-	R7(C)[1..16]	{}
+0001 ( 105)		LEAG	R2(P)[0..15]	<-	V(12 'buffer' A)+-1 , R2(IF)[1..16]	{}
+0002 ( 105)		STOREI1		<-	R2(PF)+0 {V(12 'buffer' A)} [0..15], CC:48	{}
+0003 ( 105)		BINOP1	R7(C)[0..15]	<-	R7(CF)[1..16], CI:-1	{}
+0004 ( 104)		JUMP		<-		{}
+		==> 31
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 107)		LOADI1	R0(B)[0..1]	<-	R1(P)+7	{}
+0001 ( 107)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 8
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 107)		RELOP19	R0(B)[0..1]	<-	R6(CF)[0..255], CC:16	{}
+0001 ( 107)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 109)		LOADI1	R3(C)[0..255]	<-	R1(P)+3	{}
+0001 ( 109)		CONV37	R0(I)[2..16]	<-	R7(C)[2..16]	{}
+0002 ( 110)		LEAG	R2(P)[0..14]	<-	V(12 'buffer' A)+-2 , R0(I)[2..16]	{}
+0003 ( 110)		STOREI1		<-	R2(PF)+0 {V(12 'buffer' A)} [0..14], CC:48	{}
+0004 ( 109)		BINOP1	R3(C)[23..278]	<-	R3(CF)[0..255], CI:23	{}
+0005 ( 109)		LEAG	R0(P)[1..15]	<-	V(12 'buffer' A)+-1 , R0(IF)[2..16]	{}
+0006 ( 109)		STOREI1		<-	R0(PF)+0 {V(12 'buffer' A)} [1..15], R3(CF)[23..278]	{}
+0007 ( 110)		BINOP1	R7(C)[0..14]	<-	R7(CF)[2..16], CI:-2	{}
+0008 ( 113)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 118)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0001 ( 113)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 114)		CONV37	R0(I)[1..16]	<-	R7(C)[1..16]	{}
+0001 ( 114)		LEAG	R0(P)[0..15]	<-	V(12 'buffer' A)+-1 , R0(IF)[1..16]	{}
+0002 ( 114)		STOREI1		<-	R0(PF)+0 {V(12 'buffer' A)} [0..15], CC:45	{}
+0003 ( 119)		JUMP		<-		{}
+		==> 33
+L33: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 116)		BINOP1	R7(C)[0..15]	<-	R7(CF)[1..16], CI:-1	{}
+0001 ( 119)		JUMP		<-		{}
+		==> 32
+L32: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 119)		LOADI1	R0(B)[0..1]	<-	R1(P)+6	{}
+0001 ( 119)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 20
+		==> 17
+L20: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 121)		RELOP28	R0(B)[0..1]	<-	R7(C)[0..16], CC:16	{}
+0001 ( 121)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 23
+		==> 15
+L23: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 122)		LOADZ2	R0(P)	<-	V(2 '')+0 	{IS}
+0001 ( 122)		JUMP		<-		{}
+		==> 14
+L14: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 122)		CONV37	R2(I)[0..255]	<-	R4(C)[0..]	{}
+0001 ( 122)		CONV37	R3(I)[0..15]	<-	R7(C)[0..15]	{}
+0002 ( 122)		LEAG	R3(P)[0..15]	<-	V(12 'buffer' A)+0 , R3(IF)[0..15]	{}
+0003 ( 122)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0 {V(12 'buffer' A)} [0..15]	{}
+0004 ( 122)		LEAI	R2(P)+0	<-	R0(P)+0, R2(IF)[0..255]	{}
+0005 ( 122)		STOREI1		<-	R2(PF)+0, R3(CF)[0..255]	{}
+0006 ( 122)		BINOP1	R4(C)[1..]	<-	R4(CF)[0..], CI:1	{}
+0007 ( 122)		BINOP1	R7(C)[1..16]	<-	R7(CF)[0..15], CI:1	{}
+0008 ( 121)		RELOP28	R2(B)[0..1]	<-	R7(C)[1..16], CC:16	{}
+0009 ( 121)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 14
+		==> 15
+L15: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 123)		LOADI1	R0(C)[0..255]	<-	R1(P)+1	{}
+0001 ( 123)		RELOP28	R0(B)[0..1]	<-	R4(C)[0..], R0(CF)[0..255]	{}
+0002 ( 123)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 16
+		==> 13
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 123)		CONV37	R0(I)[0..254]	<-	R4(C)[0..254]	{}
+0001 ( 124)		LOADZ2	R2(P)	<-	V(2 '')+0 	{S}
+0002 ( 124)		LEAI	R2(P)+0	<-	R2(PF)+0, R0(IF)[0..254]	{}
+0003 ( 124)		LOADI1	R0(C)[0..255]	<-	R1(P)+0	{}
+0004 ( 124)		STOREI1		<-	R2(PF)+0, R0(CF)[0..255]	{}
+0005 ( 124)		BINOP1	R4(C)[1..255]	<-	R4(CF)[0..254], CI:1	{}
+0006 ( 123)		JUMP		<-		{}
+		==> 15
+L13: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 134)		RETV		<-	R4(CF)[0..]	{}
+L17: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 128)		LOADI1	R0(C)[0..255]	<-	R1(P)+1	{}
+0001 ( 128)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 ( 128)		CONV37	R2(I)[0..16]	<-	R7(C)[0..16]	{}
+0003 ( 128)		BINOP1	R0(I)[0..271]	<-	R2(I)[0..16], R0(IF)[0..255]	{}
+0004 ( 128)		RELOP27	R0(B)[0..1]	<-	R0(IF)[0..271], CI:16	{}
+0005 ( 128)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 18
+		==> 21
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 129)		LOADI1	R3(C)[0..255]	<-	R1(P)+0	{}
+0001 ( 129)		LEAG	R0(P)[0..15]	<-	V(12 'buffer' A)+-1 , R2(IF)[1..16]	{}
+0002 ( 129)		STOREI1		<-	R0(PF)+0 {V(12 'buffer' A)} [0..15], R3(CF)[0..255]	{}
+0003 ( 129)		BINOP1	R7(C)[0..15]	<-	R7(CF)[1..16], CI:-1	{}
+0004 ( 128)		JUMP		<-		{}
+		==> 17
+L21: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 130)		RELOP28	R0(B)[0..1]	<-	R7(C)[0..16], CC:16	{}
+0001 ( 130)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 24
+		==> 13
+L24: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 131)		LOADZ2	R0(P)	<-	V(2 '')+0 	{IS}
+0001 ( 131)		JUMP		<-		{}
+		==> 19
+L19: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 131)		CONV37	R1(I)[0..255]	<-	R4(C)[0..]	{}
+0001 ( 131)		CONV37	R2(I)[0..15]	<-	R7(C)[0..15]	{}
+0002 ( 131)		LEAG	R2(P)[0..15]	<-	V(12 'buffer' A)+0 , R2(IF)[0..15]	{}
+0003 ( 131)		LOADI1	R2(C)[0..255]	<-	R2(PF)+0 {V(12 'buffer' A)} [0..15]	{}
+0004 ( 131)		LEAI	R1(P)+0	<-	R0(P)+0, R1(IF)[0..255]	{}
+0005 ( 131)		STOREI1		<-	R1(PF)+0, R2(CF)[0..255]	{}
+0006 ( 131)		BINOP1	R4(C)[1..]	<-	R4(CF)[0..], CI:1	{}
+0007 ( 131)		BINOP1	R7(C)[1..16]	<-	R7(CF)[0..15], CI:1	{}
+0008 ( 130)		RELOP28	R1(B)[0..1]	<-	R7(C)[1..16], CC:16	{}
+0009 ( 130)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 19
+		==> 13
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 115)		LOADI1	R0(B)[0..1]	<-	R1(P)+5	{}
+0001 ( 115)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 12
+		==> 32
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 116)		CONV37	R0(I)[1..16]	<-	R7(C)[1..16]	{}
+0001 ( 116)		LEAG	R0(P)[0..15]	<-	V(12 'buffer' A)+-1 , R0(IF)[1..16]	{}
+0002 ( 116)		STOREI1		<-	R0(PF)+0 {V(12 'buffer' A)} [0..15], CC:43	{}
+0003 ( 119)		JUMP		<-		{}
+		==> 33
+L30: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 102)		CONST	R0(I)[15..15]	<-	CI:15	{}
+0001 ( 102)		JUMP		<-		{}
+		==> 31
+L27: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 (  97)		CONST	R4(I)[48..48]	<-	CI:48	{}
+0001 (  97)		JUMP		<-		{}
+		==> 28
+--------------------------------------------------------------------
+nforml: /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c:137
+$00 R0(L), $00 R1(L), $00 R2(L), $00 R3(P), $00 R4(B), $01 R5(C), $00 R6(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 142)		CONST	R4(B)[0..0]	<-	CI:0	{}
+0001 ( 141)		LOADZ4	R0(L)[-2147483648..2147483647]	<-	V(4 '')+0 	{}
+0002 ( 144)		LOADZ1	R1(B)[0..1]	<-	V(8 '')+0 	{S}
+0003 ( 144)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 2
+		==> 22
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 144)		RELOP24	R1(B)[0..1]	<-	R0(L)[-2147483648..2147483647], CL:0	{S}
+0001 ( 144)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 22
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 147)		UNOP11	R0(L)[1..2147483648]	<-	R0(LF)[-2147483648..-1]	{}
+0001 ( 146)		CONST	R4(B)[1..1]	<-	CI:1	{}
+0002 ( 152)		JUMP		<-		{}
+		==> 22
+L22: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 150)		CONST	R5(C)[16..16]	<-	CI:16	{}
+0001 ( 152)		RELOP27	R1(B)[0..1]	<-	R0(L)[-2147483648..2147483648], CL:0	{}
+0002 ( 152)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 25
+		==> 4
+L25: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 154)		LOADZ2	R3(P)	<-	V(0 '')+0 	{IS}
+0001 ( 154)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 154)		LOADI1	R1(C)[0..255]	<-	R3(P)+4	{}
+0001 ( 154)		CONV38	R1(L)[0..255]	<-	R1(CF)[0..255]	{}
+0002 ( 157)		BINOP4	R2(L)[0..]	<-	R0(L)[1..], R1(L)[0..255]	{}
+0003 ( 154)		BINOP6	R0(L)[0..254]	<-	R0(LF)[1..], R1(LF)[0..255]	{}
+0004 ( 155)		RELOP25	R1(B)[0..1]	<-	R0(I)[0..254], CI:10	{}
+0005 ( 155)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 26
+		==> 27
+L26: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 155)		LOADI1	R1(C)[0..255]	<-	R3(P)+3	{}
+0001 ( 155)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0002 ( 155)		BINOP2	R1(I)[-10..245]	<-	R1(IF)[0..255], CI:10	{}
+0003 ( 155)		JUMP		<-		{}
+		==> 28
+L28: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 155)		BINOP1	R0(I)[-10..499]	<-	R1(IF)[-10..245], R0(IF)[0..254]	{}
+0001 ( 156)		CONV37	R1(I)[1..16]	<-	R5(C)[1..16]	{}
+0002 ( 156)		LEAG	R1(P)[0..15]	<-	V(14 'buffer' A)+-1 , R1(IF)[1..16]	{}
+0003 ( 156)		STOREI1		<-	R1(PF)+0 {V(14 'buffer' A)} [0..15], R0(CF)[-10..499]	{}
+0004 ( 156)		BINOP1	R5(C)[0..15]	<-	R5(CF)[1..16], CI:-1	{}
+0005 ( 157)		MOVE	R0(L)[0..]	<-	R2(L)[0..]	{}
+0006 ( 152)		RELOP27	R1(B)[0..1]	<-	R2(LF)[0..], CL:0	{}
+0007 ( 152)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 160)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 ( 160)		LOADI1	R1(C)[0..255]	<-	R0(P)+2	{}
+0002 ( 160)		RELOP20	R2(B)[0..1]	<-	R1(C)[0..255], CC:255	{}
+0003 ( 160)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 29
+		==> 30
+L29: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 160)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0001 ( 160)		BINOP2	R1(I)[-239..16]	<-	CI:16, R1(IF)[0..255]	{}
+0002 ( 160)		JUMP		<-		{}
+		==> 31
+L31: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 162)		RELOP27	R2(B)[0..1]	<-	R5(C)[0..16], R1(C)[-239..16]	{}
+0001 ( 162)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 163)		CONV37	R2(I)[1..16]	<-	R5(C)[1..16]	{}
+0001 ( 163)		LEAG	R2(P)[0..15]	<-	V(14 'buffer' A)+-1 , R2(IF)[1..16]	{}
+0002 ( 163)		STOREI1		<-	R2(PF)+0 {V(14 'buffer' A)} [0..15], CC:48	{}
+0003 ( 163)		BINOP1	R5(C)[0..15]	<-	R5(CF)[1..16], CI:-1	{}
+0004 ( 162)		JUMP		<-		{}
+		==> 31
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 165)		LOADI1	R1(B)[0..1]	<-	R0(P)+7	{}
+0001 ( 165)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 9
+		==> 8
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 165)		LOADI1	R1(C)[0..255]	<-	R0(P)+4	{}
+0001 ( 165)		RELOP19	R1(B)[0..1]	<-	R1(CF)[0..255], CC:16	{}
+0002 ( 165)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 167)		LOADI1	R3(C)[0..255]	<-	R0(P)+3	{}
+0001 ( 167)		CONV37	R1(I)[2..16]	<-	R5(C)[2..16]	{}
+0002 ( 168)		LEAG	R2(P)[0..14]	<-	V(14 'buffer' A)+-2 , R1(I)[2..16]	{}
+0003 ( 168)		STOREI1		<-	R2(PF)+0 {V(14 'buffer' A)} [0..14], CC:48	{}
+0004 ( 167)		BINOP1	R3(C)[23..278]	<-	R3(CF)[0..255], CI:23	{}
+0005 ( 167)		LEAG	R1(P)[1..15]	<-	V(14 'buffer' A)+-1 , R1(IF)[2..16]	{}
+0006 ( 167)		STOREI1		<-	R1(PF)+0 {V(14 'buffer' A)} [1..15], R3(CF)[23..278]	{}
+0007 ( 168)		BINOP1	R5(C)[0..14]	<-	R5(CF)[2..16], CI:-2	{}
+0008 ( 171)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 176)		CONST	R6(C)[0..0]	<-	CI:0	{}
+0001 ( 171)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 172)		CONV37	R1(I)[1..16]	<-	R5(C)[1..16]	{}
+0001 ( 172)		LEAG	R1(P)[0..15]	<-	V(14 'buffer' A)+-1 , R1(IF)[1..16]	{}
+0002 ( 172)		STOREI1		<-	R1(PF)+0 {V(14 'buffer' A)} [0..15], CC:45	{}
+0003 ( 177)		JUMP		<-		{}
+		==> 33
+L33: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 174)		BINOP1	R5(C)[0..15]	<-	R5(CF)[1..16], CI:-1	{}
+0001 ( 177)		JUMP		<-		{}
+		==> 32
+L32: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 177)		LOADI1	R1(B)[0..1]	<-	R0(P)+6	{}
+0001 ( 177)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 20
+		==> 17
+L20: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 179)		RELOP28	R1(B)[0..1]	<-	R5(C)[0..16], CC:16	{}
+0001 ( 179)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 23
+		==> 15
+L23: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 180)		LOADZ2	R1(P)	<-	V(2 '')+0 	{IS}
+0001 ( 180)		JUMP		<-		{}
+		==> 14
+L14: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 180)		CONV37	R2(I)[0..255]	<-	R6(C)[0..]	{}
+0001 ( 180)		CONV37	R3(I)[0..15]	<-	R5(C)[0..15]	{}
+0002 ( 180)		LEAG	R3(P)[0..15]	<-	V(14 'buffer' A)+0 , R3(IF)[0..15]	{}
+0003 ( 180)		LOADI1	R3(C)[0..255]	<-	R3(PF)+0 {V(14 'buffer' A)} [0..15]	{}
+0004 ( 180)		LEAI	R2(P)+0	<-	R1(P)+0, R2(IF)[0..255]	{}
+0005 ( 180)		STOREI1		<-	R2(PF)+0, R3(CF)[0..255]	{}
+0006 ( 180)		BINOP1	R6(C)[1..]	<-	R6(CF)[0..], CI:1	{}
+0007 ( 180)		BINOP1	R5(C)[1..16]	<-	R5(CF)[0..15], CI:1	{}
+0008 ( 179)		RELOP28	R2(B)[0..1]	<-	R5(C)[1..16], CC:16	{}
+0009 ( 179)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 14
+		==> 15
+L15: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 181)		LOADI1	R1(C)[0..255]	<-	R0(P)+1	{}
+0001 ( 181)		RELOP28	R1(B)[0..1]	<-	R6(C)[0..], R1(CF)[0..255]	{}
+0002 ( 181)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 16
+		==> 13
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 181)		CONV37	R1(I)[0..254]	<-	R6(C)[0..254]	{}
+0001 ( 182)		LOADZ2	R2(P)	<-	V(2 '')+0 	{S}
+0002 ( 182)		LEAI	R2(P)+0	<-	R2(PF)+0, R1(IF)[0..254]	{}
+0003 ( 182)		LOADI1	R1(C)[0..255]	<-	R0(P)+0	{}
+0004 ( 182)		STOREI1		<-	R2(PF)+0, R1(CF)[0..255]	{}
+0005 ( 182)		BINOP1	R6(C)[1..255]	<-	R6(CF)[0..254], CI:1	{}
+0006 ( 181)		JUMP		<-		{}
+		==> 15
+L13: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 192)		RETV		<-	R6(CF)[0..]	{}
+L17: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 186)		LOADI1	R1(C)[0..255]	<-	R0(P)+1	{}
+0001 ( 186)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0002 ( 186)		CONV37	R2(I)[0..16]	<-	R5(C)[0..16]	{}
+0003 ( 186)		BINOP1	R1(I)[0..271]	<-	R2(I)[0..16], R1(IF)[0..255]	{}
+0004 ( 186)		RELOP27	R1(B)[0..1]	<-	R1(IF)[0..271], CI:16	{}
+0005 ( 186)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 18
+		==> 21
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 187)		LOADI1	R3(C)[0..255]	<-	R0(P)+0	{}
+0001 ( 187)		LEAG	R1(P)[0..15]	<-	V(14 'buffer' A)+-1 , R2(IF)[1..16]	{}
+0002 ( 187)		STOREI1		<-	R1(PF)+0 {V(14 'buffer' A)} [0..15], R3(CF)[0..255]	{}
+0003 ( 187)		BINOP1	R5(C)[0..15]	<-	R5(CF)[1..16], CI:-1	{}
+0004 ( 186)		JUMP		<-		{}
+		==> 17
+L21: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 188)		RELOP28	R0(B)[0..1]	<-	R5(C)[0..16], CC:16	{}
+0001 ( 188)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 24
+		==> 13
+L24: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 189)		LOADZ2	R0(P)	<-	V(2 '')+0 	{IS}
+0001 ( 189)		JUMP		<-		{}
+		==> 19
+L19: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 189)		CONV37	R1(I)[0..255]	<-	R6(C)[0..]	{}
+0001 ( 189)		CONV37	R2(I)[0..15]	<-	R5(C)[0..15]	{}
+0002 ( 189)		LEAG	R2(P)[0..15]	<-	V(14 'buffer' A)+0 , R2(IF)[0..15]	{}
+0003 ( 189)		LOADI1	R2(C)[0..255]	<-	R2(PF)+0 {V(14 'buffer' A)} [0..15]	{}
+0004 ( 189)		LEAI	R1(P)+0	<-	R0(P)+0, R1(IF)[0..255]	{}
+0005 ( 189)		STOREI1		<-	R1(PF)+0, R2(CF)[0..255]	{}
+0006 ( 189)		BINOP1	R6(C)[1..]	<-	R6(CF)[0..], CI:1	{}
+0007 ( 189)		BINOP1	R5(C)[1..16]	<-	R5(CF)[0..15], CI:1	{}
+0008 ( 188)		RELOP28	R1(B)[0..1]	<-	R5(C)[1..16], CC:16	{}
+0009 ( 188)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 19
+		==> 13
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 173)		LOADI1	R1(B)[0..1]	<-	R0(P)+5	{}
+0001 ( 173)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 12
+		==> 32
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 174)		CONV37	R1(I)[1..16]	<-	R5(C)[1..16]	{}
+0001 ( 174)		LEAG	R1(P)[0..15]	<-	V(14 'buffer' A)+-1 , R1(IF)[1..16]	{}
+0002 ( 174)		STOREI1		<-	R1(PF)+0 {V(14 'buffer' A)} [0..15], CC:43	{}
+0003 ( 177)		JUMP		<-		{}
+		==> 33
+L30: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 160)		CONST	R1(I)[15..15]	<-	CI:15	{}
+0001 ( 160)		JUMP		<-		{}
+		==> 31
+L27: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 155)		CONST	R1(I)[48..48]	<-	CI:48	{}
+0001 ( 155)		JUMP		<-		{}
+		==> 28
+--------------------------------------------------------------------
+nformf: /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c:199
+$00 R0(F), $04 R1(F), $08 R2(P), $0a R3(I), $0c R4(I), $0e R5(I), $0f R6(P), $10 R7(I), $00 R8(P), $11 R9(C), $12 R10(B), $13 R11(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 201)		LOADZ2	R8(P)	<-	V(6 '')+0 	{S}
+0001 ( 205)		LOADZ4	R0(F)	<-	V(8 '')+0 	{}
+0002 ( 205)		RELOP24	R1(B)[0..1]	<-	R0(F), CF:0.000000 (00000000)	{}
+0003 ( 205)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 208)		STOREI1		<-	R8(P)+0, CC:45	{}
+0001 ( 207)		UNOP11	R0(F)	<-	R0(FF)	{}
+0002 ( 213)		STOREC4		<-	V(0 '')+0 , R0(F)	{}
+0003 ( 207)		STOREZ4		<-	V(8 '')+0 , R0(FF)	{}
+0004 ( 213)		JUMP		<-		{}
+		==> 62
+L62: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 213)		CALLN	R0(B)	<-	V(11 'isinf')+0 	{EC}
+0001 ( 211)		CONST	R9(C)[1..1]	<-	CI:1	{}
+0002 ( 213)		BRANCH		<-	R0(BF)	{}
+		==> 60
+		==> 6
+L60: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 215)		CONST	R0(I)[1..1]	<-	CI:1	{}
+0001 ( 217)		CONST	R1(I)[3..3]	<-	CI:3	{}
+0002 ( 213)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 215)		LOADZ2	R2(P)	<-	V(4 '')+0 	{S}
+0001 ( 215)		LOADI1	R3(C)[0..255]	<-	R2(P)+3	{}
+0002 ( 215)		BINOP1	R3(C)[8..263]	<-	R3(CF)[0..255], CI:8	{}
+0003 ( 215)		LEAI	R0(P)+0	<-	R8(P)+0, R0(IF)[0..1]	{}
+0004 ( 215)		STOREI1		<-	R0(P)+0, R3(CF)[8..263]	{}
+0005 ( 216)		LOADI1	R3(C)[0..255]	<-	R2(P)+3	{}
+0006 ( 216)		BINOP1	R3(C)[13..268]	<-	R3(CF)[0..255], CI:13	{}
+0007 ( 216)		STOREI1		<-	R0(PF)+1, R3(CF)[13..268]	{}
+0008 ( 217)		LOADI1	R0(C)[0..255]	<-	R2(PF)+3	{}
+0009 ( 217)		BINOP1	R2(C)	<-	R0(CF)[0..255], CI:5	{}
+000a ( 217)		LEAI	R0(P)+0	<-	R8(P)+0, R1(IF)[2..3]	{}
+000b ( 217)		STOREI1		<-	R0(PF)+0, R2(CF)	{}
+000c ( 217)		BINOP1	R9(C)[3..4]	<-	R9(CF)[0..1], CI:3	{}
+000d ( 213)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 331)		LOADZ2	R0(P)	<-	V(4 '')+0 	{S}
+0001 ( 331)		LOADI1	R1(C)[0..255]	<-	R0(P)+1	{}
+0002 ( 331)		RELOP28	R1(B)[0..1]	<-	R9(C), R1(CF)[0..255]	{}
+0003 ( 331)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 40
+		==> 41
+L40: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 333)		LOADI1	R1(B)[0..1]	<-	R0(P)+6	{}
+0001 ( 333)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 42
+		==> 43
+L42: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0001 ( 335)		JUMP		<-		{}
+		==> 45
+L45: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 335)		LOADI1	R1(C)[0..255]	<-	R0(P)+1	{}
+0001 ( 335)		RELOP28	R1(B)[0..1]	<-	R9(C)[0..255], R1(CF)[0..255]	{}
+0002 ( 335)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 46
+		==> 44
+L46: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 335)		CONV37	R1(I)[0..254]	<-	R9(C)[0..254]	{}
+0001 ( 336)		LEAI	R1(P)+0	<-	R8(P)+0, R1(IF)[0..254]	{}
+0002 ( 336)		STOREI1		<-	R1(PF)+0, CC:32	{}
+0003 ( 335)		BINOP1	R9(C)[1..255]	<-	R9(CF)[0..254], CI:1	{}
+0004 ( 335)		JUMP		<-		{}
+		==> 45
+L44: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 345)		LOADI1	R0(C)[0..255]	<-	R0(PF)+1	{}
+0001 ( 348)		RETV		<-	R0(CF)[0..255]	{}
+L43: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 340)		RELOP26	R1(B)[0..1]	<-	CC:1, R9(C)[0..254]	{}
+0001 ( 340)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 56
+		==> 48
+L56: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 341)		CONV37	R1(I)[0..254]	<-	R9(C)[0..254]	{I}
+0001 ( 341)		BINOP2	R1(I)[-1..253]	<-	R1(IF)[0..254], CI:1	{}
+0002 ( 341)		LEAI	R1(P)+0	<-	R8(P)+0, R1(IF)[-1..253]	{}
+0003 ( 340)		CONST	R3(C)[1..1]	<-	CI:1	{}
+0004 ( 341)		JUMP		<-		{}
+		==> 47
+L47: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 341)		LOADI1	R2(C)[0..255]	<-	R0(P)+1	{}
+0001 ( 341)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0002 ( 341)		BINOP2	R2(I)[-254..254]	<-	R2(IF)[0..255], R3(I)[1..254]	{}
+0003 ( 341)		LOADI1	R4(C)[0..255]	<-	R1(P)+0	{}
+0004 ( 341)		LEAI	R2(P)+0	<-	R8(P)+0, R2(IF)[-254..254]	{}
+0005 ( 341)		STOREI1		<-	R2(PF)+0, R4(CF)[0..255]	{}
+0006 ( 341)		LEAI	R1(P)+0	<-	R1(PF)+0, CI:-1	{}
+0007 ( 340)		BINOP1	R3(C)[2..255]	<-	R3(CF)[1..254], CI:1	{}
+0008 ( 340)		RELOP26	R2(B)[0..1]	<-	R3(C)[2..255], R9(C)[0..254]	{}
+0009 ( 340)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 47
+		==> 48
+L48: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 342)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0001 ( 342)		JUMP		<-		{}
+		==> 49
+L49: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 342)		LOADI1	R1(C)[0..255]	<-	R0(P)+1	{}
+0001 ( 342)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0002 ( 342)		CONV37	R2(I)[0..254]	<-	R9(C)[0..254]	{I}
+0003 ( 342)		BINOP2	R1(I)[-254..255]	<-	R1(IF)[0..255], R2(IF)[0..254]	{}
+0004 ( 342)		CONV37	R2(I)[0..255]	<-	R3(C)[0..]	{}
+0005 ( 342)		RELOP28	R1(B)[0..1]	<-	R2(I)[0..255], R1(IF)[-254..255]	{}
+0006 ( 342)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 50
+		==> 44
+L50: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 343)		LEAI	R1(P)+0	<-	R8(P)+0, R2(IF)[0..254]	{}
+0001 ( 343)		STOREI1		<-	R1(PF)+0, CC:32	{}
+0002 ( 342)		BINOP1	R3(C)[1..]	<-	R3(CF)[0..], CI:1	{}
+0003 ( 342)		JUMP		<-		{}
+		==> 49
+L41: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 348)		RETV		<-	R9(CF)	{}
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 223)		LOADZ2	R2(P)	<-	V(4 '')+0 	{S}
+0001 ( 223)		LOADI1	R0(C)[0..255]	<-	R2(P)+2	{}
+0002 ( 223)		RELOP20	R1(B)[0..1]	<-	R0(C)[0..255], CC:255	{}
+0003 ( 223)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 57
+		==> 58
+L57: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 223)		CONV37	R3(I)[0..255]	<-	R0(CF)[0..255]	{}
+0001 ( 223)		JUMP		<-		{}
+		==> 59
+L59: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 223)		MOVE	R6(C)[0..255]	<-	R3(C)[0..255]	{}
+0001 ( 221)		CONST	R4(I)[0..0]	<-	CI:0	{}
+0002 ( 225)		LOADZ4	R0(F)	<-	V(8 '')+0 	{}
+0003 ( 225)		RELOP20	R1(B)[0..1]	<-	R0(F), CF:0.000000 (00000000)	{}
+0004 ( 225)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 55
+		==> 8
+L55: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 227)		RELOP21	R1(B)[0..1]	<-	R0(F), CF:1000.000000 (447a0000)	{}
+0001 ( 227)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 9
+		==> 54
+L9: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 230)		BINOP1	R4(I)[3..]	<-	R4(IF)[0..], CI:3	{}
+0001 ( 229)		BINOP5	R0(F)	<-	R0(FF), CF:1000.000000 (447a0000)	{}
+0002 ( 227)		RELOP21	R1(B)[0..1]	<-	R0(F), CF:1000.000000 (447a0000)	{}
+0003 ( 227)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 9
+		==> 54
+L54: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 233)		RELOP24	R1(B)[0..1]	<-	R0(F), CF:1.000000 (3f800000)	{}
+0001 ( 233)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 10
+		==> 53
+L10: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 236)		BINOP2	R4(I)	<-	R4(IF), CI:3	{}
+0001 ( 235)		BINOP3	R0(F)	<-	R0(FF), CF:1000.000000 (447a0000)	{}
+0002 ( 233)		RELOP24	R1(B)[0..1]	<-	R0(F), CF:1.000000 (3f800000)	{}
+0003 ( 233)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 10
+		==> 53
+L53: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 239)		RELOP21	R1(B)[0..1]	<-	R0(F), CF:10.000000 (41200000)	{}
+0001 ( 239)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 11
+		==> 8
+L11: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 242)		BINOP1	R4(I)	<-	R4(IF), CI:1	{}
+0001 ( 241)		BINOP5	R0(F)	<-	R0(FF), CF:10.000000 (41200000)	{}
+0002 ( 239)		RELOP21	R1(B)[0..1]	<-	R0(F), CF:10.000000 (41200000)	{}
+0003 ( 239)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 11
+		==> 8
+L8: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 248)		LOADG1	R7(C)[0..255]	<-	V(-1 'sstack')+0 	{S}
+0001 ( 248)		RELOP19	R10(B)[0..1]	<-	R7(C)[0..255], CC:101	{}
+0002 ( 247)		CONV37	R1(I)[0..255]	<-	R3(C)[0..255]	{}
+0003 ( 247)		BINOP1	R5(I)[1..256]	<-	R1(I)[0..255], CI:1	{}
+0004 ( 250)		RELOP19	R7(B)[0..1]	<-	R7(CF)[0..255], CC:103	{S}
+0005 ( 250)		BRANCH		<-	R7(BF)[0..1]	{}
+		==> 12
+		==> 13
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 252)		RELOP23	R7(B)[0..1]	<-	R4(I), CI:3	{}
+0001 ( 252)		BRANCH		<-	R7(BF)[0..1]	{}
+		==> 14
+		==> 15
+L14: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 253)		CONST	R10(B)[1..1]	<-	CI:1	{}
+0001 ( 256)		JUMP		<-		{}
+		==> 16
+L16: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 279)		RELOP28	R1(B)[0..1]	<-	R5(C)[1..255], CC:7	{}
+0001 ( 279)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 23
+		==> 24
+L23: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 280)		BINOP16	R1(I)[4..24]	<-	R5(C)[1..6], CI:2	{}
+0001 ( 280)		LEAG	R1(P)[0..20]	<-	V(17 'fround5' A)+-4 , R1(IF)[4..24]	{}
+0002 ( 280)		LOADI4	R1(F)	<-	R1(PF)+0 {V(17 'fround5' A)} [0..20]	{}
+0003 ( 284)		JUMP		<-		{}
+		==> 63
+L63: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 282)		BINOP1	R0(F)	<-	R1(FF), R0(FF)	{}
+0001 ( 282)		STOREZ4		<-	V(8 '')+0 , R0(F)	{}
+0002 ( 284)		RELOP21	R1(B)[0..1]	<-	R0(F), CF:10.000000 (41200000)	{}
+0003 ( 284)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 25
+		==> 17
+L25: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 286)		BINOP5	R0(F)	<-	R0(FF), CF:10.000000 (41200000)	{}
+0001 ( 286)		STOREZ4		<-	V(8 '')+0 , R0(FF)	{}
+0002 ( 287)		BINOP1	R4(I)	<-	R4(IF), CI:1	{}
+0003 ( 284)		JUMP		<-		{}
+		==> 17
+L17: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 292)		CONV37	R0(I)[0..255]	<-	R5(C)[1..33023]	{}
+0001 ( 292)		CONV37	R1(I)[0..255]	<-	R6(CF)[-1..255]	{}
+0002 ( 292)		BINOP2	R3(I)[-255..255]	<-	R0(IF)[0..255], R1(IF)[0..255]	{}
+0003 ( 294)		RELOP27	R0(B)[0..1]	<-	R5(C)[1..33023], CC:20	{}
+0004 ( 294)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 26
+		==> 27
+L26: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 295)		CONST	R5(C)[20..20]	<-	CI:20	{}
+0001 ( 297)		BRANCH		<-	R3(C)[-128..255]	{}
+		==> 51
+		==> 28
+L51: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 300)		CONST	R11(C)[0..0]	<-	CI:0	{}
+0001 ( 302)		JUMP		<-		{}
+		==> 30
+L30: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 302)		RELOP19	R0(B)[0..1]	<-	R11(C)[0..19], R3(C)[-128..255]	{}
+0001 ( 302)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 32
+		==> 33
+L32: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 303)		CONV37	R0(I)[0..255]	<-	R9(C)[0..]	{}
+0001 ( 303)		LEAI	R0(P)+0	<-	R8(P)+0, R0(IF)[0..255]	{}
+0002 ( 303)		STOREI1		<-	R0(PF)+0, CC:46	{}
+0003 ( 303)		BINOP1	R9(C)[1..]	<-	R9(CF)[0..], CI:1	{}
+0004 ( 304)		JUMP		<-		{}
+		==> 33
+L33: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 305)		CONV37	R0(I)[0..255]	<-	R9(C)[0..]	{}
+0001 ( 305)		LEAI	R6(P)+0	<-	R8(P)+0, R0(IF)[0..255]	{}
+0002 ( 304)		RELOP27	R0(B)[0..1]	<-	R11(C)[0..19], CC:6	{}
+0003 ( 304)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 34
+		==> 35
+L34: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 305)		STOREI1		<-	R6(PF)+0, CC:48	{}
+0001 ( 300)		JUMP		<-		{}
+		==> 29
+L29: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 305)		BINOP1	R9(C)[1..]	<-	R9(CF)[0..], CI:1	{}
+0001 ( 300)		BINOP1	R11(C)[1..20]	<-	R11(CF)[0..19], CI:1	{}
+0002 ( 300)		RELOP28	R0(B)[0..1]	<-	R11(C)[1..20], R5(C)[1..20]	{}
+0003 ( 300)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 30
+		==> 31
+L31: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 315)		BRANCH		<-	R10(BF)[0..1]	{}
+		==> 36
+		==> 7
+L36: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 317)		CONV37	R0(I)[1..254]	<-	R9(C)[1..254]	{}
+0001 ( 317)		LOADI1	R1(C)[0..255]	<-	R2(PF)+3	{}
+0002 ( 317)		BINOP1	R1(C)[4..259]	<-	R1(CF)[0..255], CI:4	{}
+0003 ( 317)		LEAI	R0(P)+0	<-	R8(P)+0, R0(IF)[1..254]	{}
+0004 ( 317)		STOREI1		<-	R0(PF)+0, R1(CF)[4..259]	{}
+0005 ( 317)		BINOP1	R9(C)[2..255]	<-	R9(CF)[1..254], CI:1	{}
+0006 ( 320)		CONV37	R0(I)[2..255]	<-	R9(C)[2..255]	{}
+0007 ( 320)		LEAI	R0(P)+0	<-	R8(P)+0, R0(IF)[2..255]	{}
+0008 ( 318)		RELOP24	R1(B)[0..1]	<-	R4(I), CI:0	{}
+0009 ( 318)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 37
+		==> 38
+L37: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 320)		STOREI1		<-	R0(PF)+0, CC:45	{}
+0001 ( 321)		UNOP11	R4(I)[1..32768]	<-	R4(IF)[-32768..-1]	{}
+0002 ( 318)		JUMP		<-		{}
+		==> 39
+L39: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 320)		BINOP1	R9(C)	<-	R9(CF)[2..255], CI:1	{}
+0001 ( 326)		CONV37	R0(I)[0..255]	<-	R9(C)	{}
+0002 ( 326)		BINOP5	R1(I)	<-	R4(I)[0..32768], CI:10	{}
+0003 ( 326)		BINOP1	R1(I)	<-	R1(IF), CI:48	{}
+0004 ( 326)		LEAI	R0(P)+0	<-	R8(P)+0, R0(IF)[0..255]	{}
+0005 ( 326)		STOREI1		<-	R0(PF)+0, R1(CF)	{}
+0006 ( 326)		BINOP1	R9(C)	<-	R9(CF), CI:1	{}
+0007 ( 327)		CONV37	R0(I)[0..255]	<-	R9(C)	{}
+0008 ( 327)		BINOP7	R4(I)	<-	R4(IF)[0..32768], CI:10	{}
+0009 ( 327)		BINOP1	R4(I)	<-	R4(IF), CI:48	{}
+000a ( 327)		LEAI	R0(P)+0	<-	R8(P)+0, R0(IF)[0..255]	{}
+000b ( 327)		STOREI1		<-	R0(PF)+0, R4(CF)	{}
+000c ( 327)		BINOP1	R9(C)	<-	R9(CF), CI:1	{}
+000d ( 315)		JUMP		<-		{}
+		==> 7
+L38: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 324)		STOREI1		<-	R0(PF)+0, CC:43	{}
+0001 ( 318)		JUMP		<-		{}
+		==> 39
+L35: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 308)		LOADZ4	R0(F)	<-	V(8 '')+0 	{}
+0001 ( 308)		CONV29	R7(I)	<-	R0(F)	{}
+0002 ( 309)		CONV30	R1(F)	<-	R7(I)	{}
+0003 ( 309)		BINOP2	R0(F)	<-	R0(FF), R1(FF)	{}
+0004 ( 310)		BINOP3	R0(F)	<-	R0(FF), CF:10.000000 (41200000)	{}
+0005 ( 310)		STOREZ4		<-	V(8 '')+0 , R0(FF)	{}
+0006 ( 311)		BINOP1	R7(I)	<-	R7(IF), CI:48	{}
+0007 ( 311)		STOREI1		<-	R6(PF)+0, R7(CF)	{}
+0008 ( 300)		JUMP		<-		{}
+		==> 29
+L28: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 298)		CONV37	R0(I)[0..1]	<-	R9(C)[0..1]	{}
+0001 ( 298)		LEAI	R0(P)+0	<-	R8(P)+0, R0(IF)[0..1]	{}
+0002 ( 298)		STOREI1		<-	R0(PF)+0, CC:48	{}
+0003 ( 298)		BINOP1	R9(C)[1..2]	<-	R9(CF)[0..1], CI:1	{}
+0004 ( 300)		JUMP		<-		{}
+		==> 51
+L27: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 297)		BRANCH		<-	R3(C)[-128..255]	{}
+		==> 51
+		==> 28
+L24: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 282)		LOADG4	R1(F)	<-	V(17 'fround5' A)+24 	{}
+0001 ( 284)		JUMP		<-		{}
+		==> 63
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 252)		RELOP24	R7(B)[0..1]	<-	R4(I)[-32768..3], CI:0	{}
+0001 ( 252)		BRANCH		<-	R7(BF)[0..1]	{}
+		==> 14
+		==> 13
+L13: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 256)		BRANCH		<-	R10(B)[0..1]	{}
+		==> 16
+		==> 52
+L52: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 258)		RELOP24	R5(B)[0..1]	<-	R4(I), CI:0	{}
+0001 ( 258)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 18
+		==> 19
+L18: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 260)		BINOP5	R0(F)	<-	R0(FF), CF:10.000000 (41200000)	{}
+0001 ( 261)		BINOP1	R4(I)[-32767..0]	<-	R4(IF)[-32768..-1], CI:1	{}
+0002 ( 258)		RELOP24	R5(B)[0..1]	<-	R4(I)[-32767..0], CI:0	{}
+0003 ( 258)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 18
+		==> 19
+L19: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 264)		BINOP1	R1(I)[0..33022]	<-	R1(IF)[0..255], R4(I)[0..32767]	{}
+0001 ( 264)		BINOP1	R5(I)[1..33023]	<-	R1(IF)[0..33022], CI:1	{}
+0002 ( 266)		RELOP28	R1(B)[0..1]	<-	R5(C)[1..33023], CC:7	{}
+0003 ( 266)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 20
+		==> 21
+L20: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 267)		BINOP16	R1(I)[4..24]	<-	R5(I)[1..6], CI:2	{}
+0001 ( 267)		LEAG	R1(P)[0..20]	<-	V(17 'fround5' A)+-4 , R1(IF)[4..24]	{}
+0002 ( 267)		LOADI4	R1(F)	<-	R1(PF)+0 {V(17 'fround5' A)} [0..20]	{}
+0003 ( 271)		JUMP		<-		{}
+		==> 64
+L64: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 269)		BINOP1	R0(F)	<-	R1(FF), R0(FF)	{}
+0001 ( 269)		STOREZ4		<-	V(8 '')+0 , R0(F)	{}
+0002 ( 271)		RELOP21	R1(B)[0..1]	<-	R0(F), CF:10.000000 (41200000)	{}
+0003 ( 271)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 22
+		==> 17
+L22: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 273)		BINOP5	R0(F)	<-	R0(FF), CF:10.000000 (41200000)	{}
+0001 ( 273)		STOREZ4		<-	V(8 '')+0 , R0(FF)	{}
+0002 ( 274)		BINOP1	R6(C)[-1..254]	<-	R3(CF)[0..255], CI:-1	{}
+0003 ( 271)		JUMP		<-		{}
+		==> 17
+L21: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 269)		LOADG4	R1(F)	<-	V(17 'fround5' A)+24 	{}
+0001 ( 271)		JUMP		<-		{}
+		==> 64
+L58: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 223)		CONST	R3(I)[6..6]	<-	CI:6	{}
+0001 ( 223)		JUMP		<-		{}
+		==> 59
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 213)		STOREC4		<-	V(0 '')+0 , R0(FF)	{}
+0001 ( 210)		LOADZ2	R0(P)	<-	V(4 '')+0 	{S}
+0002 ( 210)		LOADI1	R0(B)[0..1]	<-	R0(PF)+5	{}
+0003 ( 210)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 3
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 211)		STOREI1		<-	R8(P)+0, CC:43	{}
+0001 ( 213)		JUMP		<-		{}
+		==> 62
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 213)		CALLN	R0(B)	<-	V(11 'isinf')+0 	{EC}
+0001 ( 203)		CONST	R9(C)[0..0]	<-	CI:0	{}
+0002 ( 213)		BRANCH		<-	R0(BF)	{}
+		==> 61
+		==> 6
+L61: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/stdio.c
+0000 ( 215)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0001 ( 217)		CONST	R1(I)[2..2]	<-	CI:2	{}
+0002 ( 213)		JUMP		<-		{}
+		==> 5
+--------------------------------------------------------------------
+isinf: /home/honza/projects/c64/projects/hdnsh/oscar/include/math.h:26
+$00 R0(F), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/math.c
+0000 ( 224)		LOADZ4	R0(F)	<-	V(0 '')+0 	{S}
+0001 ( 224)		STOREG4		<-	V(16 'x')+0 , R0(FF)	{}
+0002 ( 226)		LOADG2	R0(I)[0..65535]	<-	V(16 'x')+2 	{}
+0003 ( 226)		BINOP17	R0(I)[0..511]	<-	R0(IF)[0..65535], CI:7	{}
+0004 ( 226)		BINOP9	R0(I)[0..255]	<-	R0(IF)[0..511], CI:255	{}
+0005 ( 226)		RELOP19	R0(B)[0..1]	<-	R0(IF)[0..255], CI:255	{}
+0006 ( 226)		RETV		<-	R0(BF)[0..1]	{}
+--------------------------------------------------------------------
+draw_poem: /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c:192
+$10 R0(I), $12 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 195)		CONST	R1(I)[1..1]	<-	CI:1	{}
+0001 ( 195)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 195)		BINOP16	R0(I)[2..48]	<-	R1(I)[1..24], CI:1	{}
+0001 ( 195)		LEAG	R0(P)[0..46]	<-	V(24 'poem')+-2 , R0(IF)[2..48]	{}
+0002 ( 195)		LOADI2	R0(P)	<-	R0(PF)+0 {V(24 'poem')} [0..46]	{}
+0003 ( 195)		BRANCH		<-	R0(P)	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 196)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0001 ( 196)		STOREC1		<-	V(1 '')+0 , R1(C)[1..24]	{}
+0002 ( 196)		CALLN		<-	V(4 'gotoxy')+0 	{}
+0003 ( 198)		STOREG2		<-	V(-1 'sstack')+10 , R0(PF)	{}
+0004 ( 385)		STOREA1		<-	V(-1 '')+646 , CC:13	{V}
+0005 ( 198)		CONST	R0(P)[0..0]	<-	CG0(49:0 '')	{S}
+0006 ( 198)		STOREG2		<-	V(-1 'sstack')+8 , R0(PF)+0 {V(49 '')} [0..0]	{}
+0007 ( 198)		CALLN		<-	V(5 'printf')+0 	{}
+0008 ( 195)		BINOP1	R1(I)[2..25]	<-	R1(IF)[1..24], CI:1	{}
+0009 ( 195)		RELOP26	R0(B)[0..1]	<-	R1(I)[2..25], CI:24	{}
+000a ( 195)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 200)		RET		<-		{}
+--------------------------------------------------------------------
+draw_divider: /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c:202
+$02 R0(I), $00 R1(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 205)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0001 ( 206)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 206)		STOREC1		<-	V(0 '')+0 , CC:16	{}
+0001 ( 206)		STOREC1		<-	V(1 '')+0 , R0(C)[0..24]	{}
+0002 ( 206)		CALLN		<-	V(4 'gotoxy')+0 	{}
+0003 ( 340)		STOREC1		<-	V(0 '')+0 , CC:124	{}
+0004 ( 385)		STOREA1		<-	V(-1 '')+646 , CC:11	{V}
+0005 ( 340)		CALLN		<-	V(2 'putpch')+0 	{}
+0006 ( 205)		BINOP1	R0(I)[1..25]	<-	R0(IF)[0..24], CI:1	{}
+0007 ( 205)		RELOP26	R1(B)[0..1]	<-	R0(I)[1..25], CI:24	{}
+0008 ( 205)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 210)		RET		<-		{}
+--------------------------------------------------------------------
+putch: /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.h:89
+$00 R0(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/conio.c
+0000 ( 340)		LOADZ1	R0(C)[0..255]	<-	V(1 '')+0 	{S}
+0001 ( 340)		STOREC1		<-	V(0 '')+0 , R0(CF)[0..255]	{}
+0002 ( 340)		CALLN		<-	V(2 'putpch')+0 	{}
+0003 ( 341)		RET		<-		{}
+--------------------------------------------------------------------
+draw_clock_bg: /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c:212
+$00 R0(P), $00 R1(I), $00 R2(P), $00 R3(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 217)		CONST	R0(P)[1104..1104]	<-	CA0(-1:1104 '')	{}
+0001 ( 216)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 216)		CONST	R1(I)[17..17]	<-	CI:17	{}
+0001 ( 218)		LEAI	R2(P)+0 {V(-1 'ABS')} [1121..1943]	<-	R0(P)+0 {V(-1 'ABS')} [1104..1944], CI:17	{}
+0002 ( 218)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 218)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1121..1943], CC:32	{}
+0001 ( 219)		STOREI1		<-	R2(P)+54272 {V(-1 'ABS')} [1121..1943], CC:0	{}
+0002 ( 218)		LEAI	R2(P)+0 {V(-1 'ABS')} [1122..1944]	<-	R2(PF)+0 {V(-1 'ABS')} [1121..1943], CI:1	{}
+0003 ( 216)		BINOP1	R1(I)[18..40]	<-	R1(IF)[17..39], CI:1	{}
+0004 ( 216)		RELOP26	R3(B)[0..1]	<-	R1(I)[18..40], CI:39	{}
+0005 ( 216)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 4
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 217)		LEAA	R0(P)[1144..1944]	<-	R0(PF)[1104..1904], CI:40	{}
+0001 ( 215)		RELOP20	R1(B)[0..1]	<-	R0(P)[1144..1944], V(-1 '')+1944 	{}
+0002 ( 215)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 221)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0001 ( 222)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 222)		LEAG	R1(P)[0..71]	<-	V(52 'ring_x')+0 , R0(I)[0..71]	{}
+0001 ( 222)		LOADI1	R1(C)[19..37]	<-	R1(PF)+0 {V(52 'ring_x')} [0..71]	{}
+0002 ( 222)		CONV37	R1(I)[19..37]	<-	R1(CF)[19..37]	{}
+0003 ( 222)		LEAG	R2(P)[0..71]	<-	V(53 'ring_y')+0 , R0(I)[0..71]	{}
+0004 ( 222)		LOADI1	R2(C)[2..22]	<-	R2(PF)+0 {V(53 'ring_y')} [0..71]	{}
+0005 ( 222)		CONV37	R2(I)[2..22]	<-	R2(CF)[2..22]	{}
+0006 ( 162)		BINOP3	R2(I)[80..880]	<-	R2(IF)[2..22], CI:40	{}
+0007 ( 162)		LEAA	R2(P)[1104..1904]	<-	V(-1 '')+1024 , R2(IF)[80..880]	{}
+0008 ( 163)		LEAI	R2(P)+0 {V(-1 'ABS')} [1123..1941]	<-	R2(PF)+0 {V(-1 'ABS')} [1104..1904], R1(IF)[19..37]	{}
+0009 ( 163)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1123..1941], CC:94	{}
+000a ( 164)		STOREI1		<-	R2(PF)+54272 {V(-1 'ABS')} [1123..1941], CC:8	{}
+000b ( 221)		BINOP1	R0(I)[1..72]	<-	R0(IF)[0..71], CI:1	{}
+000c ( 221)		RELOP28	R1(B)[0..1]	<-	R0(I)[1..72], CI:72	{}
+000d ( 221)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 6
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 223)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0001 ( 224)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 224)		LEAG	R1(P)[0..11]	<-	V(54 'tick_x')+0 , R0(I)[0..11]	{}
+0001 ( 224)		LOADI1	R1(C)[19..37]	<-	R1(PF)+0 {V(54 'tick_x')} [0..11]	{}
+0002 ( 224)		CONV37	R1(I)[19..37]	<-	R1(CF)[19..37]	{}
+0003 ( 224)		LEAG	R2(P)[0..11]	<-	V(55 'tick_y')+0 , R0(I)[0..11]	{}
+0004 ( 224)		LOADI1	R2(C)[2..22]	<-	R2(PF)+0 {V(55 'tick_y')} [0..11]	{}
+0005 ( 224)		CONV37	R2(I)[2..22]	<-	R2(CF)[2..22]	{}
+0006 ( 162)		BINOP3	R2(I)[80..880]	<-	R2(IF)[2..22], CI:40	{}
+0007 ( 162)		LEAA	R2(P)[1104..1904]	<-	V(-1 '')+1024 , R2(IF)[80..880]	{}
+0008 ( 163)		LEAI	R2(P)+0 {V(-1 'ABS')} [1123..1941]	<-	R2(PF)+0 {V(-1 'ABS')} [1104..1904], R1(IF)[19..37]	{}
+0009 ( 163)		STOREI1		<-	R2(P)+0 {V(-1 'ABS')} [1123..1941], CC:91	{}
+000a ( 164)		STOREI1		<-	R2(PF)+54272 {V(-1 'ABS')} [1123..1941], CC:7	{}
+000b ( 223)		BINOP1	R0(I)[1..12]	<-	R0(IF)[0..11], CI:1	{}
+000c ( 223)		RELOP28	R1(B)[0..1]	<-	R0(I)[1..12], CI:12	{}
+000d ( 223)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 7
+		==> 8
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 225)		RET		<-		{}
+--------------------------------------------------------------------
+uii_get_time: /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.h:162
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 435)		STOREC2		<-	V(2 '')+0 , CI:2	{}
+0001 (  49)		STOREG1		<-	V(68 'uii_target')+0 , CC:1	{}
+0002 ( 433)		COPY2:GG		<-	V(76 'cmd' A)+0 , V(67 '')+0 	{}
+0003 ( 433)		CONST	R0(P)[0..0]	<-	CG2(76:0 'cmd' A)	{S}
+0004 ( 435)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(76 'cmd' A)} [0..0]	{}
+0005 ( 435)		CALLN		<-	V(18 'uii_sendcommand')+0 	{}
+0006 ( 437)		CALLN		<-	V(19 'uii_readdata')+0 	{}
+0007 ( 438)		CALLN		<-	V(21 'uii_readstatus')+0 	{}
+0008 ( 439)		CALLN		<-	V(23 'uii_accept')+0 	{}
+0009 ( 440)		RET		<-		{}
+--------------------------------------------------------------------
+uii_settarget: /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.h:104
+$00 R0(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 (  49)		LOADZ1	R0(C)[0..255]	<-	V(0 '')+0 	{S}
+0001 (  49)		STOREG1		<-	V(68 'uii_target')+0 , R0(CF)[0..255]	{}
+0002 (  50)		RET		<-		{}
+--------------------------------------------------------------------
+uii_sendcommand: /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.h:142
+$00 R0(P), $00 R1(I), $00 R2(P), $02 R3(I), $04 R4(P), $06 R5(P), $00 R6(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 464)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 ( 464)		LOADG1	R1(C)[0..255]	<-	V(68 'uii_target')+0 	{}
+0002 ( 464)		STOREI1		<-	R0(P)+0, R1(CF)[0..255]	{}
+0003 ( 461)		CONST	R1(I)[0..0]	<-	CI:0	{}
+0004 ( 472)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 472)		LOADG2	R2(P)	<-	V(69 'statusreg')+0 	{I}
+0001 ( 472)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 472)		LOADI1	R3(C)[0..255]	<-	R2(P)+0	{V}
+0001 ( 472)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+0002 ( 472)		BINOP9	R3(I)[0..32]	<-	R3(IF)[0..255], CI:32	{}
+0003 ( 472)		RELOP20	R3(B)[0..1]	<-	R3(IF)[0..32], CI:0	{}
+0004 ( 472)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 472)		LOADI1	R3(C)[0..255]	<-	R2(P)+0	{V}
+0001 ( 472)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+0002 ( 472)		BINOP9	R3(I)[0..16]	<-	R3(IF)[0..255], CI:16	{}
+0003 ( 472)		RELOP20	R3(B)[0..1]	<-	R3(IF)[0..16], CI:0	{}
+0004 ( 472)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 1
+		==> 9
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 479)		LOADZ2	R3(I)[-32768..32767]	<-	V(2 '')+0 	{S}
+0001 ( 479)		RELOP24	R4(B)[0..1]	<-	R1(I)[0..32767], R3(I)[-32768..32767]	{}
+0002 ( 479)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 11
+		==> 4
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 480)		LEAI	R4(P)+0	<-	R0(P)+0, R1(I)[0..32766]	{}
+0001 ( 480)		LOADG2	R5(P)	<-	V(70 'cmddatareg')+0 	{I}
+0002 ( 480)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 480)		LOADI1	R6(C)[0..255]	<-	R4(P)+0	{}
+0001 ( 480)		STOREI1		<-	R5(P)+0, R6(CF)[0..255]	{}
+0002 ( 480)		LEAI	R4(P)+0	<-	R4(PF)+0, CI:1	{}
+0003 ( 480)		BINOP1	R1(I)[1..32767]	<-	R1(IF)[0..32766], CI:1	{}
+0004 ( 479)		RELOP24	R6(B)[0..1]	<-	R1(I)[1..32767], R3(I)[-32768..32767]	{}
+0005 ( 479)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 484)		LOADG2	R3(P)	<-	V(71 'controlreg')+0 	{}
+0001 ( 484)		LOADI1	R5(C)[0..255]	<-	R3(P)+0	{}
+0002 ( 484)		BINOP8	R4(C)[0..255]	<-	R5(C)[0..255], CC:1	{}
+0003 ( 484)		STOREI1		<-	R3(P)+0, R4(CF)[0..255]	{}
+0004 ( 489)		LOADI1	R4(C)[0..255]	<-	R2(P)+0	{V}
+0005 ( 489)		CONV37	R4(I)[0..255]	<-	R4(CF)[0..255]	{}
+0006 ( 489)		BINOP9	R4(I)[0..4]	<-	R4(IF)[0..255], CI:4	{}
+0007 ( 489)		RELOP20	R4(B)[0..1]	<-	R4(IF)[0..4], CI:0	{}
+0008 ( 489)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 492)		BINOP8	R5(C)[0..255]	<-	R5(CF)[0..255], CC:9	{}
+0001 ( 492)		STOREI1		<-	R3(PF)+0, R5(CF)[0..255]	{}
+0002 ( 466)		JUMP		<-		{}
+		==> 10
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 499)		LOADI1	R0(C)[0..255]	<-	R2(P)+0	{V}
+0001 ( 499)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 ( 499)		BINOP9	R0(I)[0..32]	<-	R0(IF)[0..255], CI:32	{}
+0003 ( 499)		RELOP19	R0(B)[0..1]	<-	R0(IF)[0..32], CI:0	{}
+0004 ( 499)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 7
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 499)		LOADI1	R0(C)[0..255]	<-	R2(P)+0	{V}
+0001 ( 499)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 ( 499)		BINOP9	R0(I)[0..16]	<-	R0(IF)[0..255], CI:16	{}
+0003 ( 499)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..16], CI:0	{}
+0004 ( 499)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+L7: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 510)		RET		<-		{}
+--------------------------------------------------------------------
+uii_readdata: /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.h:143
+$00 R0(I), $02 R1(I), $04 R2(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 558)		STOREG1		<-	V(72 'uii_data' A)+0 , CC:0	{}
+0001 ( 563)		CALLN	R0(I)	<-	V(20 'uii_isdataavailable')+0 	{E}
+0002 ( 557)		CONST	R1(I)[0..0]	<-	CI:0	{}
+0003 ( 563)		RELOP20	R0(B)[0..1]	<-	R0(IF), CI:0	{}
+0004 ( 563)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 2
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 565)		CONST	R2(P)[0..0]	<-	CG1792(72:0 'uii_data' A)	{}
+0001 ( 565)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 565)		LOADG2	R0(P)	<-	V(73 'respdatareg')+0 	{}
+0001 ( 565)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0	{}
+0002 ( 565)		STOREI1		<-	R2(P)+0 {V(72 'uii_data' A)} [0..1791], R0(CF)[0..255]	{}
+0003 ( 565)		BINOP1	R1(I)[1..1792]	<-	R1(IF)[0..1791], CI:1	{}
+0004 ( 565)		LEAG	R2(P)[1..1791]	<-	R2(PF)[0..1791], CI:1	{}
+0005 ( 563)		CALLN	R0(I)	<-	V(20 'uii_isdataavailable')+0 	{E}
+0006 ( 563)		RELOP20	R0(B)[0..1]	<-	R0(IF), CI:0	{}
+0007 ( 563)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 567)		LEAG	R0(P)[0..1791]	<-	V(72 'uii_data' A)+0 , R1(I)[0..1791]	{}
+0001 ( 567)		STOREI1		<-	R0(PF)+0 {V(72 'uii_data' A)} [0..1791], CC:0	{}
+0002 ( 568)		RETV		<-	R1(IF)[0..1791]	{}
+--------------------------------------------------------------------
+uii_isdataavailable: /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.h:147
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 533)		LOADG2	R0(P)	<-	V(69 'statusreg')+0 	{}
+0001 ( 533)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0	{V}
+0002 ( 533)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0003 ( 533)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0004 ( 533)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0005 ( 533)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 534)		RETV		<-	CI:1	{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 536)		RETV		<-	CI:0	{}
+--------------------------------------------------------------------
+uii_readstatus: /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.h:144
+$00 R0(I), $00 R1(P), $00 R2(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 574)		STOREG1		<-	V(74 'uii_status' A)+0 , CC:0	{}
+0001 ( 573)		CONST	R2(I)[0..0]	<-	CI:0	{}
+0002 ( 579)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 579)		CALLN	R0(I)	<-	V(22 'uii_isstatusdataavailable')+0 	{E}
+0001 ( 581)		LEAG	R1(P)[0..255]	<-	V(74 'uii_status' A)+0 , R2(I)[0..255]	{}
+0002 ( 579)		RELOP20	R0(B)[0..1]	<-	R0(IF), CI:0	{}
+0003 ( 579)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 581)		LOADG2	R0(P)	<-	V(75 'statusdatareg')+0 	{}
+0001 ( 581)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0	{}
+0002 ( 581)		STOREI1		<-	R1(PF)+0 {V(74 'uii_status' A)} [0..255], R0(CF)[0..255]	{}
+0003 ( 581)		BINOP1	R2(I)[1..256]	<-	R2(IF)[0..255], CI:1	{}
+0004 ( 579)		JUMP		<-		{}
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 584)		STOREI1		<-	R1(PF)+0 {V(74 'uii_status' A)} [0..255], CC:0	{}
+0001 ( 585)		RETV		<-	R2(IF)[0..255]	{}
+--------------------------------------------------------------------
+uii_isstatusdataavailable: /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.h:148
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 541)		LOADG2	R0(P)	<-	V(69 'statusreg')+0 	{}
+0001 ( 541)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0	{V}
+0002 ( 541)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0003 ( 541)		BINOP9	R0(I)[0..64]	<-	R0(IF)[0..255], CI:64	{}
+0004 ( 541)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..64], CI:0	{}
+0005 ( 541)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 542)		RETV		<-	CI:1	{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 544)		RETV		<-	CI:0	{}
+--------------------------------------------------------------------
+uii_accept: /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.h:145
+$00 R0(P), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 517)		LOADG2	R0(P)	<-	V(71 'controlreg')+0 	{}
+0001 ( 517)		LOADI1	R1(C)[0..255]	<-	R0(P)+0	{}
+0002 ( 517)		BINOP8	R1(C)[0..255]	<-	R1(CF)[0..255], CC:2	{}
+0003 ( 517)		STOREI1		<-	R0(PF)+0, R1(CF)[0..255]	{}
+0004 ( 518)		LOADG2	R0(P)	<-	V(69 'statusreg')+0 	{I}
+0005 ( 518)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 518)		LOADI1	R1(C)[0..255]	<-	R0(P)+0	{V}
+0001 ( 518)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0002 ( 518)		BINOP9	R1(I)[0..2]	<-	R1(IF)[0..255], CI:2	{}
+0003 ( 518)		RELOP20	R1(B)[0..1]	<-	R1(IF)[0..2], CI:0	{}
+0004 ( 518)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/include/ultimate_lib.c
+0000 ( 522)		RET		<-		{}
+--------------------------------------------------------------------
+restore_bg: /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c:172
+$00 R0(I), $00 R1(I), $00 R2(P), $00 R3(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 175)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0001 ( 176)		LOADZ2	R1(I)[-32768..32767]	<-	V(0 '')+0 	{IS}
+0002 ( 176)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 176)		LEAG	R2(P)[0..11]	<-	V(54 'tick_x')+0 , R0(I)[0..11]	{}
+0001 ( 176)		LOADI1	R2(C)[19..37]	<-	R2(PF)+0 {V(54 'tick_x')} [0..11]	{}
+0002 ( 176)		CONV37	R2(I)[19..37]	<-	R2(CF)[19..37]	{}
+0003 ( 176)		RELOP19	R2(B)[0..1]	<-	R2(IF)[19..37], R1(I)[-32768..32767]	{}
+0004 ( 176)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 5
+		==> 2
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 176)		LEAG	R2(P)[0..11]	<-	V(55 'tick_y')+0 , R0(I)[0..11]	{}
+0001 ( 176)		LOADI1	R2(C)[2..22]	<-	R2(PF)+0 {V(55 'tick_y')} [0..11]	{}
+0002 ( 176)		CONV37	R2(I)[2..22]	<-	R2(CF)[2..22]	{}
+0003 ( 176)		LOADZ2	R3(I)[-32768..32767]	<-	V(2 '')+0 	{S}
+0004 ( 176)		RELOP19	R2(B)[0..1]	<-	R2(IF)[2..22], R3(I)[-32768..32767]	{}
+0005 ( 176)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 4
+		==> 2
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP24	R0(B)[0..1]	<-	R1(I)[-32768..32767], CI:17	{S}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 10
+L6: <= D-1: (15)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 178)		RET		<-		{}
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP27	R0(B)[0..1]	<-	R1(I)[17..32767], CI:39	{S}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 9
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP24	R0(B)[0..1]	<-	R3(I)[-32768..32767], CI:2	{S}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 8
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP27	R0(B)[0..1]	<-	R3(I)[2..32767], CI:22	{S}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 162)		BINOP3	R3(I)[80..880]	<-	R3(IF)[2..22], CI:40	{S}
+0001 ( 162)		LEAA	R0(P)[1104..1904]	<-	V(-1 '')+1024 , R3(IF)[80..880]	{S}
+0002 ( 163)		LEAI	R0(P)+0 {V(-1 'ABS')} [1121..1943]	<-	R0(PF)+0 {V(-1 'ABS')} [1104..1904], R1(IF)[17..39]	{S}
+0003 ( 163)		STOREI1		<-	R0(P)+0 {V(-1 'ABS')} [1121..1943], CC:91	{}
+0004 ( 164)		STOREI1		<-	R0(PF)+54272 {V(-1 'ABS')} [1121..1943], CC:7	{}
+0005 ( 177)		JUMP		<-		{}
+		==> 6
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 175)		BINOP1	R0(I)[1..12]	<-	R0(IF)[0..11], CI:1	{}
+0001 ( 175)		RELOP28	R2(B)[0..1]	<-	R0(I)[1..12], CI:12	{}
+0002 ( 175)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 181)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0001 ( 182)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 182)		LEAG	R2(P)[0..71]	<-	V(52 'ring_x')+0 , R0(I)[0..71]	{}
+0001 ( 182)		LOADI1	R2(C)[19..37]	<-	R2(PF)+0 {V(52 'ring_x')} [0..71]	{}
+0002 ( 182)		CONV37	R2(I)[19..37]	<-	R2(CF)[19..37]	{}
+0003 ( 182)		RELOP19	R2(B)[0..1]	<-	R2(IF)[19..37], R1(I)[-32768..32767]	{}
+0004 ( 182)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 15
+		==> 12
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 182)		LEAG	R2(P)[0..71]	<-	V(53 'ring_y')+0 , R0(I)[0..71]	{}
+0001 ( 182)		LOADI1	R2(C)[2..22]	<-	R2(PF)+0 {V(53 'ring_y')} [0..71]	{}
+0002 ( 182)		CONV37	R2(I)[2..22]	<-	R2(CF)[2..22]	{}
+0003 ( 182)		LOADZ2	R3(I)[-32768..32767]	<-	V(2 '')+0 	{S}
+0004 ( 182)		RELOP19	R2(B)[0..1]	<-	R2(IF)[2..22], R3(I)[-32768..32767]	{}
+0005 ( 182)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 14
+		==> 12
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP24	R0(B)[0..1]	<-	R1(I)[-32768..32767], CI:17	{S}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 19
+L19: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP27	R0(B)[0..1]	<-	R1(I)[17..32767], CI:39	{S}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 18
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP24	R0(B)[0..1]	<-	R3(I)[-32768..32767], CI:2	{S}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 17
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP27	R0(B)[0..1]	<-	R3(I)[2..32767], CI:22	{S}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 16
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 162)		BINOP3	R3(I)[80..880]	<-	R3(IF)[2..22], CI:40	{S}
+0001 ( 162)		LEAA	R0(P)[1104..1904]	<-	V(-1 '')+1024 , R3(IF)[80..880]	{S}
+0002 ( 163)		LEAI	R0(P)+0 {V(-1 'ABS')} [1121..1943]	<-	R0(PF)+0 {V(-1 'ABS')} [1104..1904], R1(IF)[17..39]	{S}
+0003 ( 163)		STOREI1		<-	R0(P)+0 {V(-1 'ABS')} [1121..1943], CC:94	{}
+0004 ( 164)		STOREI1		<-	R0(PF)+54272 {V(-1 'ABS')} [1121..1943], CC:8	{}
+0005 ( 183)		JUMP		<-		{}
+		==> 6
+L12: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 181)		BINOP1	R0(I)[1..72]	<-	R0(IF)[0..71], CI:1	{}
+0001 ( 181)		RELOP28	R2(B)[0..1]	<-	R0(I)[1..72], CI:72	{}
+0002 ( 181)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 11
+		==> 13
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP24	R0(B)[0..1]	<-	R1(I)[-32768..32767], CI:17	{S}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 23
+L23: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP27	R0(B)[0..1]	<-	R1(I)[17..32767], CI:39	{S}
+0001 ( 160)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 22
+L22: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 187)		LOADZ2	R0(I)[-32768..32767]	<-	V(2 '')+0 	{S}
+0001 ( 160)		RELOP24	R2(B)[0..1]	<-	R0(I)[-32768..32767], CI:2	{S}
+0002 ( 160)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 6
+		==> 21
+L21: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP27	R2(B)[0..1]	<-	R0(I)[2..32767], CI:22	{S}
+0001 ( 160)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 6
+		==> 20
+L20: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 162)		BINOP3	R0(I)[80..880]	<-	R0(IF)[2..22], CI:40	{S}
+0001 ( 162)		LEAA	R0(P)[1104..1904]	<-	V(-1 '')+1024 , R0(IF)[80..880]	{S}
+0002 ( 163)		LEAI	R0(P)+0 {V(-1 'ABS')} [1121..1943]	<-	R0(PF)+0 {V(-1 'ABS')} [1104..1904], R1(IF)[17..39]	{S}
+0003 ( 163)		STOREI1		<-	R0(P)+0 {V(-1 'ABS')} [1121..1943], CC:32	{}
+0004 ( 164)		STOREI1		<-	R0(PF)+54272 {V(-1 'ABS')} [1121..1943], CC:0	{}
+0005 ( 187)		JUMP		<-		{}
+		==> 6
+--------------------------------------------------------------------
+draw_hand: /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c:228
+$00 R0(L), $03 R1(L), $05 R2(L), $07 R3(L), $0b R4(L), $0d R5(L), $00 R6(L), $0f R7(I), $00 R8(P), $00 R9(P), $00 R10(I), $00 R11(I), $10 R12(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 235)		LOADZ2	R0(I)[-32768..32767]	<-	V(2 '')+0 	{IS}
+0001 ( 235)		CONV42	R0(L)[-32768..32767]	<-	R0(IF)[-32768..32767]	{IS}
+0002 ( 232)		LOADZ2	R2(I)[0..59]	<-	V(0 '')+0 	{S}
+0003 ( 233)		LEAG	R1(P)[0..59]	<-	V(96 'sin60')+0 , R2(I)[0..59]	{S}
+0004 ( 233)		LOADI1	R1(C)[-100..100]	<-	R1(PF)+0 {V(96 'sin60')} [0..59]	{}
+0005 ( 233)		CONV41	R1(L)[-100..100]	<-	R1(CF)[-100..100]	{}
+0006 ( 232)		LEAG	R2(P)[0..59]	<-	V(95 'cos60')+0 , R2(IF)[0..59]	{S}
+0007 ( 232)		LOADI1	R2(C)[-100..100]	<-	R2(PF)+0 {V(95 'cos60')} [0..59]	{}
+0008 ( 232)		CONV41	R2(L)[-100..100]	<-	R2(CF)[-100..100]	{}
+0009 ( 234)		CONST	R7(I)[0..0]	<-	CI:0	{}
+000a ( 238)		LOADZ2	R8(P)	<-	V(8 '')+0 	{IS}
+000b ( 239)		LOADZ2	R9(P)	<-	V(10 '')+0 	{IS}
+000c ( 240)		LOADZ2	R10(I)[-32768..32767]	<-	V(4 '')+0 	{IS}
+000d ( 240)		LOADZ2	R11(I)[-32768..32767]	<-	V(6 '')+0 	{IS}
+000e ( 235)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 235)		BINOP1	R12(I)[1..10]	<-	R7(I)[0..9], CI:1	{}
+0001 ( 235)		CONV42	R3(L)[1..10]	<-	R12(I)[1..10]	{}
+0002 ( 235)		BINOP3	R3(L)	<-	R3(LF)[1..10], R0(L)[-32768..32767]	{}
+0003 ( 236)		BINOP3	R4(L)	<-	R3(L), R2(L)[-100..100]	{}
+0004 ( 236)		BINOP3	R4(L)	<-	R4(LF), CL:9	{}
+0005 ( 236)		BINOP5	R4(L)	<-	R4(LF), CL:100000	{}
+0006 ( 236)		BINOP1	R5(L)	<-	R4(L), CL:28	{}
+0007 ( 238)		LEAI	R6(P)+0	<-	R8(P)+0, R7(I)[0..9]	{}
+0008 ( 238)		STOREI1		<-	R6(PF)+0, R5(C)	{}
+0009 ( 237)		BINOP3	R3(L)	<-	R1(L)[-100..100], R3(LF)	{}
+000a ( 237)		BINOP5	R3(L)	<-	R3(LF), CL:10000	{}
+000b ( 237)		BINOP1	R6(L)	<-	R3(L), CL:12	{}
+000c ( 239)		LEAI	R7(P)+0	<-	R9(P)+0, R7(IF)[0..9]	{}
+000d ( 239)		STOREI1		<-	R7(PF)+0, R6(C)	{}
+000e ( 160)		RELOP24	R4(B)[0..1]	<-	R4(LF), CI:-11	{}
+000f ( 160)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 1
+		==> 7
+L1: <= D-1: (5)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 234)		MOVE	R7(I)[1..10]	<-	R12(I)[1..10]	{}
+0001 ( 234)		RELOP28	R3(B)[0..1]	<-	R12(IF)[1..10], CI:10	{}
+0002 ( 234)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 242)		RET		<-		{}
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP27	R4(B)[0..1]	<-	R5(I)[17..32767], CI:39	{}
+0001 ( 160)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 1
+		==> 6
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP24	R4(B)[0..1]	<-	R3(L), CI:-10	{}
+0001 ( 160)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 1
+		==> 5
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 160)		RELOP27	R4(B)[0..1]	<-	R6(IF)[2..32767], CI:22	{}
+0001 ( 160)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 1
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/hdnsh/oscar/hodiny/hodiny.c
+0000 ( 162)		BINOP3	R3(I)	<-	R3(IF)[-10..2147483647], CI:40	{}
+0001 ( 162)		LEAA	R3(P)	<-	V(-1 '')+1504 , R3(IF)	{}
+0002 ( 163)		LEAI	R3(P)+0 {V(-1 'ABS')} 	<-	R3(PF)+0 {V(-1 'ABS')} , R5(IF)[17..39]	{}
+0003 ( 163)		STOREI1		<-	R3(P)+0 {V(-1 'ABS')} , R10(C)[-32768..32767]	{}
+0004 ( 164)		STOREI1		<-	R3(PF)+54272 {V(-1 'ABS')} , R11(C)[-32768..32767]	{}
+0005 ( 234)		JUMP		<-		{}
+		==> 1

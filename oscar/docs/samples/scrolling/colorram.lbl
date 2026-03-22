@@ -1,0 +1,16 @@
+al 00f7 .ZeroStart
+al 00f7 .ZeroEnd
+al 0801 .startup
+al 0880 .main
+al 08f3 .vic_waitLine
+al 090c .scrollLeft0
+al 09d4 .scrollLeft1
+al 0b7b .prepcol
+al 0ba2 .rand
+al 0bc9 .spentry
+al 0bca .seed
+al 0bcc .rbuff
+al 0bcc .BSSStart
+al 0be5 .cbuff
+al 0bfe .BSSEnd
+al a000 .StackEnd

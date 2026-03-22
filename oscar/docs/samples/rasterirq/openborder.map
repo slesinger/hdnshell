@@ -1,0 +1,78 @@
+sections
+0880 - 0ba2 : DATA, code
+09fd - 0c80 : DATA, data
+0c80 - 0cc0 : BSS, bss
+0cc0 - 9000 : HEAP, heap
+9000 - a000 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, rirq_init_tables@stack
+a000 - a000 : SSTACK, rirq_init_kernal@stack
+a000 - a000 : SSTACK, rirq_init_io@stack
+a000 - a000 : SSTACK, rirq_build@stack
+a000 - a000 : SSTACK, rirq_sort@stack
+a000 - a000 : SSTACK, rirq_start@stack
+a000 - a000 : SSTACK, rirq_wait@stack
+a000 - a000 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 0c80, 0440, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 09b2 : main, NATIVE_CODE:code
+09b2 - 09d3 : rirq_init_kernal, NATIVE_CODE:code
+09d3 - 09f1 : rirq_init_tables, NATIVE_CODE:code
+09f1 - 09fd : rirq_wait, NATIVE_CODE:code
+09fd - 09fe : spentry, DATA:data
+09fe - 09ff : nextIRQ, DATA:bss
+09ff - 0a00 : rirq_count, DATA:bss
+0a00 - 0a5d : rirq_isr_kernal_io, NATIVE_CODE:code
+0a5d - 0b01 : rirq_build, NATIVE_CODE:code
+0b01 - 0b90 : rirq_sort, NATIVE_CODE:code
+0b90 - 0ba2 : rirq_start, NATIVE_CODE:code
+0ba2 - 0bb3 : rasterIRQRows, DATA:bss
+0bb3 - 0bc4 : rasterIRQIndex, DATA:bss
+0bc4 - 0bd5 : rasterIRQNext, DATA:bss
+0bd5 - 0be5 : rasterIRQLow, DATA:bss
+0be5 - 0bf5 : rasterIRQHigh, DATA:bss
+0bf5 - 0bf6 : rirq_pcount, DATA:bss
+0c00 - 0c80 : spdata, DATA:data
+0c80 - 0ca0 : open, DATA:bss
+0c80 - 0c80 : BSSStart, START:bss
+0ca0 - 0cc0 : bottom, DATA:bss
+0cc0 - 0cc0 : BSSEnd, END:bss
+a000 - a000 : StackEnd, END:stack
+
+objects by size
+0880 (0132) : main, NATIVE_CODE:code
+0a5d (00a4) : rirq_build, NATIVE_CODE:code
+0b01 (008f) : rirq_sort, NATIVE_CODE:code
+0c00 (0080) : spdata, DATA:data
+0a00 (005d) : rirq_isr_kernal_io, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+09b2 (0021) : rirq_init_kernal, NATIVE_CODE:code
+0c80 (0020) : open, DATA:bss
+0ca0 (0020) : bottom, DATA:bss
+09d3 (001e) : rirq_init_tables, NATIVE_CODE:code
+0b90 (0012) : rirq_start, NATIVE_CODE:code
+0ba2 (0011) : rasterIRQRows, DATA:bss
+0bb3 (0011) : rasterIRQIndex, DATA:bss
+0bc4 (0011) : rasterIRQNext, DATA:bss
+0bd5 (0010) : rasterIRQLow, DATA:bss
+0be5 (0010) : rasterIRQHigh, DATA:bss
+09f1 (000c) : rirq_wait, NATIVE_CODE:code
+09fd (0001) : spentry, DATA:data
+09fe (0001) : nextIRQ, DATA:bss
+09ff (0001) : rirq_count, DATA:bss
+0bf5 (0001) : rirq_pcount, DATA:bss
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0c80 (0000) : BSSStart, START:bss
+0cc0 (0000) : BSSEnd, END:bss
+a000 (0000) : StackEnd, END:stack

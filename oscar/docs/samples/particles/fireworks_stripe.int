@@ -1,0 +1,418 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c:170
+$05 R0(P), $07 R1(I), $09 R2(I), $0b R3(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  80)		STOREA1		<-	V(-1 '')+1 , CC:54	{VM}
+0001 ( 176)		CALLN		<-	V(1 'mmap_trampoline')+0 	{}
+0002 (  80)		STOREA1		<-	V(-1 '')+1 , CC:53	{VM}
+0003 ( 182)		STOREC1		<-	V(0 '')+0 , CC:4	{}
+0004 ( 182)		CONST	R0(P)[51200..51200]	<-	CA0(-1:51200 '')	{S}
+0005 ( 182)		STOREC2		<-	V(1 '')+0 , R0(PF)+0 {V(-1 'ABS')} [51200..51200]	{}
+0006 ( 182)		CONST	R0(P)[57344..57344]	<-	CA0(-1:57344 '')	{S}
+0007 ( 182)		STOREC2		<-	V(3 '')+0 , R0(P)+0 {V(-1 'ABS')} [57344..57344]	{}
+0008 ( 182)		CALLN		<-	V(2 'vic_setmode')+0 	{}
+0009 ( 187)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(-1 'ABS')} [57344..57344]	{}
+000a ( 187)		STOREC2		<-	V(2 '')+0 , CI:0	{}
+000b ( 187)		STOREC2		<-	V(4 '')+0 , CI:8000	{}
+000c ( 185)		FILLA1000		<-	V(-1 '')+51200 , CC:120	{}
+000d ( 186)		FILLA1000		<-	V(-1 '')+55296 , CC:14	{}
+000e ( 187)		CALLN		<-	V(3 'memset')+0 	{}
+000f ( 190)		STOREA1		<-	V(-1 '')+53280 , CC:0	{V}
+0010 ( 191)		STOREA1		<-	V(-1 '')+53281 , CC:0	{V}
+0011 ( 194)		CALLN		<-	V(4 'particle_init')+0 	{}
+0012 ( 196)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0013 ( 197)		CONST	R2(I)[-10000..-10000]	<-	CI:-10000	{}
+0014 ( 200)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 200)		CALLN		<-	V(5 'particle_move')+0 	{}
+0001 ( 202)		RELOP28	R0(B)[0..1]	<-	R3(C)[0..], CC:25	{}
+0002 ( 202)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 205)		CALLN	R1(I)	<-	V(9 'rnorm')+0 	{}
+0001 ( 205)		CALLN	R0(I)	<-	V(9 'rnorm')+0 	{}
+0002 ( 205)		STOREC2		<-	V(0 '')+0 , CI:256	{}
+0003 ( 205)		STOREC1		<-	V(8 '')+0 , CC:85	{}
+0004 ( 205)		BINOP18	R1(I)[-512..511]	<-	R1(IF), CI:6	{}
+0005 ( 205)		BINOP1	R1(I)[-256..767]	<-	R1(IF)[-512..511], CI:256	{}
+0006 ( 202)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 205)		STOREC2		<-	V(2 '')+0 , CI:12544	{}
+0001 ( 210)		STOREC2		<-	V(4 '')+0 , R1(IF)[-767..767]	{}
+0002 ( 210)		BINOP18	R0(I)[-512..511]	<-	R0(IF), CI:6	{}
+0003 ( 210)		BINOP1	R0(I)[-128..895]	<-	R0(IF)[-512..511], CI:384	{}
+0004 ( 210)		UNOP11	R0(I)[-895..128]	<-	R0(IF)[-128..895]	{}
+0005 ( 210)		STOREC2		<-	V(6 '')+0 , R0(IF)[-895..128]	{}
+0006 ( 210)		CALLN		<-	V(8 'particle_add')+0 	{}
+0007 ( 207)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 219)		BINOP1	R3(C)[1..]	<-	R3(CF)[0..], CI:1	{}
+0001 ( 220)		RELOP19	R0(B)[0..1]	<-	R3(C)[1..], CC:75	{}
+0002 ( 220)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 10
+		==> 1
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 221)		CONST	R3(C)[0..0]	<-	CI:0	{}
+0001 ( 197)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 197)		BINOP1	R2(I)[-9999..0]	<-	R2(IF)[-10000..-1], CI:1	{}
+0001 ( 197)		RELOP20	R0(B)[0..1]	<-	R2(I)[-9999..0], CI:0	{}
+0002 ( 197)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 224)		RETV		<-	CI:0	{}
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 207)		RELOP28	R0(B)[0..1]	<-	R3(C)[25..], CC:50	{}
+0001 ( 207)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 210)		CALLN	R1(I)	<-	V(9 'rnorm')+0 	{}
+0001 ( 210)		CALLN	R0(I)	<-	V(9 'rnorm')+0 	{}
+0002 ( 210)		STOREC2		<-	V(0 '')+0 , CI:20224	{}
+0003 ( 210)		STOREC1		<-	V(8 '')+0 , CC:170	{}
+0004 ( 210)		BINOP18	R1(I)[-512..511]	<-	R1(IF), CI:6	{}
+0005 ( 210)		BINOP1	R1(I)[-256..767]	<-	R1(IF)[-512..511], CI:256	{}
+0006 ( 210)		UNOP11	R1(I)[-767..256]	<-	R1(IF)[-256..767]	{}
+0007 ( 207)		JUMP		<-		{}
+		==> 11
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 212)		RELOP28	R0(B)[0..1]	<-	R3(C)[50..], CC:75	{}
+0001 ( 212)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 9
+		==> 6
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 215)		CALLN	R1(I)	<-	V(9 'rnorm')+0 	{}
+0001 ( 215)		CALLN	R0(I)	<-	V(9 'rnorm')+0 	{}
+0002 ( 215)		STOREC2		<-	V(0 '')+0 , CI:10240	{}
+0003 ( 215)		STOREC1		<-	V(8 '')+0 , CC:255	{}
+0004 ( 215)		BINOP18	R1(I)[-512..511]	<-	R1(IF), CI:6	{}
+0005 ( 212)		JUMP		<-		{}
+		==> 11
+--------------------------------------------------------------------
+mmap_trampoline: /home/honza/projects/c64/projects/oscar64/include/c64/memmap.h:25
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  71)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'NMITrampoline')	{S}
+0001 (  71)		STOREA2		<-	V(-1 '')+65530 , R0(PF)+0 {V(-1 'NMITrampoline')} [0..0]	{}
+0002 (  72)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'IRQTrampoline')	{S}
+0003 (  72)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'IRQTrampoline')} [0..0]	{}
+0004 (  73)		RET		<-		{}
+--------------------------------------------------------------------
+vic_setmode: /home/honza/projects/c64/projects/oscar64/include/c64/vic.h:94
+$00 R0(I), $00 R1(P), $00 R2(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		LOADZ1	R0(C)[0..4]	<-	V(0 '')+0 	{S}
+0001 (  26)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0002 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  37)		STOREA1		<-	V(-1 '')+53265 , CC:91	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  38)		STOREA1		<-	V(-1 '')+53270 , CC:8	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  52)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56576 	{V}
+0001 (  52)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  52)		BINOP9	R0(I)[0..252]	<-	R0(IF)[0..255], CI:252	{}
+0003 (  52)		LOADZ2	R1(P)	<-	V(1 '')+0 	{S}
+0004 (  52)		CAST	R1(I)	<-	R1(PF)	{S}
+0005 (  52)		BINOP17	R2(I)[0..3]	<-	R1(I), CI:14	{S}
+0006 (  52)		BINOP10	R2(I)[0..3]	<-	R2(IF)[0..3], CI:3	{S}
+0007 (  52)		BINOP8	R0(I)[0..255]	<-	R2(IF)[0..3], R0(IF)[0..252]	{}
+0008 (  52)		STOREA1		<-	V(-1 '')+56576 , R0(CF)[0..255]	{V}
+0009 (  53)		BINOP17	R1(I)[0..1023]	<-	R1(IF), CI:6	{S}
+000a (  53)		BINOP9	R1(I)[0..240]	<-	R1(IF)[0..1023], CI:240	{S}
+000b (  53)		LOADZ2	R0(P)	<-	V(3 '')+0 	{S}
+000c (  53)		CAST	R0(I)	<-	R0(PF)	{S}
+000d (  53)		BINOP17	R0(I)[0..63]	<-	R0(IF), CI:10	{S}
+000e (  53)		BINOP9	R0(I)[0..14]	<-	R0(IF)[0..63], CI:14	{S}
+000f (  53)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..14], R1(IF)[0..240]	{S}
+0010 (  53)		STOREA1		<-	V(-1 '')+53272 , R0(CF)[0..255]	{V}
+0011 (  54)		RET		<-		{}
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0001 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 4
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  33)		STOREA1		<-	V(-1 '')+53265 , CC:27	{V}
+0001 (  26)		BRANCH		<-	R0(CF)[0..1]	{}
+		==> 7
+		==> 6
+L7: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  46)		STOREA1		<-	V(-1 '')+53270 , CC:24	{V}
+0001 (  47)		JUMP		<-		{}
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  41)		STOREA1		<-	V(-1 '')+53265 , CC:59	{V}
+0001 (  26)		RELOP19	R0(B)[0..1]	<-	R0(CF)[2..4], CC:3	{S}
+0002 (  26)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+--------------------------------------------------------------------
+memset: /home/honza/projects/c64/projects/oscar64/include/string.h:28
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/string.c
+0000 ( 270)		JSR		<-	V(0 '')+0 , V(4 '')+0 , V(2 '')+0 , V(-1 '')+0 	{V}
+0001 ( 270)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0002 ( 291)		RETV		<-	R0(PF)	{}
+--------------------------------------------------------------------
+particle_init: /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c:62
+$00 R0(I), $00 R1(P), $00 R2(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 (  66)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0001 (  66)		CONST	R1(P)[57344..57344]	<-	CA0(-1:57344 '')	{}
+0002 (  66)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 (  66)		LEAG	R2(P)[0..48]	<-	V(6 'Hirows' A)+0 , R0(I)[0..48]	{}
+0001 (  66)		STOREI2		<-	R2(PF)+0 {V(6 'Hirows' A)} [0..48], R1(P)+0 {V(-1 'ABS')} [57344..]	{}
+0002 (  66)		LEAI	R1(P)+0 {V(-1 'ABS')} [57664..]	<-	R1(PF)+0 {V(-1 'ABS')} [57344..], CI:320	{}
+0003 (  66)		BINOP1	R0(I)[2..50]	<-	R0(IF)[0..48], CI:2	{}
+0004 (  65)		RELOP20	R2(B)[0..1]	<-	R0(I)[2..50], CI:50	{}
+0005 (  65)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 (  70)		STOREG1		<-	V(8 'pfree')+0 , CC:1	{}
+0001 (  69)		STOREG1		<-	V(7 'pfirst')+0 , CC:0	{}
+0002 (  73)		CONST	R0(I)[1..1]	<-	CI:1	{}
+0003 (  74)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 (  74)		BINOP1	R1(I)[2..255]	<-	R0(I)[1..254], CI:1	{}
+0001 (  74)		LEAG	R0(P)[2305..2558]	<-	V(9 'particles' A)+2304 , R0(IF)[1..254]	{}
+0002 (  74)		STOREI1:256		<-	R0(PF)+0 {V(9 'particles' A)} [2305..2558], R1(C)[2..255]	{}
+0003 (  73)		MOVE	R0(I)[2..255]	<-	R1(I)[2..255]	{}
+0004 (  73)		RELOP28	R1(B)[0..1]	<-	R1(IF)[2..255], CI:255	{}
+0005 (  73)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 (  75)		RET		<-		{}
+--------------------------------------------------------------------
+particle_move: /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c:104
+$00 R0(I), $00 R1(I), $00 R2(I), $01 R3(I), $00 R4(P), $00 R5(P), $03 R6(C), $04 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 108)		LOADG1	R6(C)[0..255]	<-	V(7 'pfirst')+0 	{}
+0001 ( 111)		BRANCH		<-	R6(C)[0..255]	{}
+		==> 11
+		==> 2
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 108)		CONST	R7(C)[0..0]	<-	CI:0	{}
+0001 ( 114)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 114)		CONV37	R2(I)[0..255]	<-	R6(C)[0..255]	{}
+0001 ( 114)		LEAG	R4(P)[0..255]	<-	V(9 'particles' A)+0 , R2(I)[0..255]	{}
+0002 ( 117)		LOADI2:256	R0(I)[-32768..32767]	<-	R4(P)+0 {V(9 'particles' A)} [0..255]	{}
+0003 ( 117)		BINOP18	R0(I)[-256..255]	<-	R0(IF)[-32768..32767], CI:7	{}
+0004 ( 117)		STOREC1		<-	V(0 '')+0 , R0(CF)[-256..255]	{}
+0005 ( 117)		LEAG	R5(P)[512..767]	<-	V(9 'particles' A)+512 , R2(I)[0..255]	{}
+0006 ( 117)		LOADI2:256	R0(I)[-32768..32767]	<-	R5(P)+0 {V(9 'particles' A)} [512..767]	{}
+0007 ( 117)		BINOP18	R0(I)[-256..255]	<-	R0(IF)[-32768..32767], CI:7	{}
+0008 ( 117)		STOREC1		<-	V(1 '')+0 , R0(CF)[-256..255]	{}
+0009 ( 117)		CALLN		<-	V(6 'pix_clr')+0 	{}
+000a ( 120)		LEAG	R0(P)[1024..1279]	<-	V(9 'particles' A)+1024 , R2(I)[0..255]	{}
+000b ( 120)		LOADI2:256	R0(I)[-32768..32767]	<-	R0(PF)+0 {V(9 'particles' A)} [1024..1279]	{}
+000c ( 120)		LOADI2:256	R1(I)[-32768..32767]	<-	R4(P)+0 {V(9 'particles' A)} [0..255]	{}
+000d ( 120)		BINOP1	R0(I)	<-	R1(IF)[-32768..32767], R0(IF)[-32768..32767]	{}
+000e ( 120)		STOREI2:256		<-	R4(P)+0 {V(9 'particles' A)} [0..255], R0(I)	{}
+000f ( 124)		LEAG	R1(P)[1536..1791]	<-	V(9 'particles' A)+1536 , R2(IF)[0..255]	{}
+0010 ( 124)		LOADI2:256	R2(I)[-32768..32767]	<-	R1(P)+0 {V(9 'particles' A)} [1536..1791]	{}
+0011 ( 121)		LOADI2:256	R3(I)[-32768..32767]	<-	R5(P)+0 {V(9 'particles' A)} [512..767]	{}
+0012 ( 121)		BINOP1	R3(I)	<-	R3(IF)[-32768..32767], R2(I)[-32768..32767]	{}
+0013 ( 121)		STOREI2:256		<-	R5(PF)+0 {V(9 'particles' A)} [512..767], R3(I)	{}
+0014 ( 124)		BINOP1	R2(I)[-32760..32775]	<-	R2(IF)[-32768..32767], CI:8	{}
+0015 ( 124)		STOREI2:256		<-	R1(PF)+0 {V(9 'particles' A)} [1536..1791], R2(IF)[-32760..32775]	{}
+0016 ( 127)		RELOP24	R1(B)[0..1]	<-	R0(I), CI:0	{}
+0017 ( 127)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 7
+L3: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 132)		LOADI1:256	R1(C)[0..255]	<-	R4(P)+2304 {V(9 'particles' A)} [0..255]	{}
+0001 ( 135)		BRANCH		<-	R7(C)[0..255]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 135)		CONV37	R0(I)[0..255]	<-	R7(C)[0..255]	{}
+0001 ( 136)		LEAG	R0(P)[2304..2559]	<-	V(9 'particles' A)+2304 , R0(IF)[0..255]	{}
+0002 ( 136)		STOREI1:256		<-	R0(PF)+0 {V(9 'particles' A)} [2304..2559], R1(C)[0..255]	{}
+0003 ( 135)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 141)		LOADG1	R0(C)[0..255]	<-	V(8 'pfree')+0 	{}
+0001 ( 141)		STOREI1:256		<-	R4(PF)+2304 {V(9 'particles' A)} [0..255], R0(CF)[0..255]	{}
+0002 ( 142)		STOREG1		<-	V(8 'pfree')+0 , R6(CF)[0..255]	{}
+0003 ( 145)		MOVE	R6(C)[0..255]	<-	R1(CF)[0..255]	{}
+0004 ( 127)		BRANCH		<-	R6(C)[0..255]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 157)		RET		<-		{}
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 138)		STOREG1		<-	V(7 'pfirst')+0 , R1(C)[0..255]	{}
+0001 ( 135)		JUMP		<-		{}
+		==> 10
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 127)		RELOP25	R1(B)[0..1]	<-	R0(I)[0..32767], CI:20480	{}
+0001 ( 127)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 6
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 127)		RELOP24	R1(B)[0..1]	<-	R3(I), CI:0	{}
+0001 ( 127)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 5
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 127)		RELOP25	R1(B)[0..1]	<-	R3(I)[0..32767], CI:12800	{}
+0001 ( 127)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 150)		LOADI1:256	R1(C)[0..255]	<-	R4(P)+2048 {V(9 'particles' A)} [0..255]	{}
+0001 ( 150)		STOREC1		<-	V(2 '')+0 , R1(CF)[0..255]	{}
+0002 ( 150)		BINOP17	R0(I)[0..159]	<-	R0(IF)[0..20479], CI:7	{}
+0003 ( 150)		STOREC1		<-	V(0 '')+0 , R0(CF)[0..159]	{}
+0004 ( 150)		BINOP17	R3(I)[0..99]	<-	R3(IF)[0..12799], CI:7	{}
+0005 ( 150)		STOREC1		<-	V(1 '')+0 , R3(CF)[0..99]	{}
+0006 ( 150)		CALLN		<-	V(7 'pix_set')+0 	{}
+0007 ( 153)		MOVE	R7(C)[0..255]	<-	R6(CF)[0..255]	{}
+0008 ( 154)		LOADI1:256	R6(C)[0..255]	<-	R4(PF)+2304 {V(9 'particles' A)} [0..255]	{}
+0009 ( 111)		BRANCH		<-	R6(C)[0..255]	{}
+		==> 1
+		==> 2
+--------------------------------------------------------------------
+pix_clr: /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c:48
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 (  50)		LOADZ1	R0(C)[0..159]	<-	V(0 '')+0 	{S}
+0001 (  50)		CONV37	R0(I)[0..159]	<-	R0(CF)[0..159]	{S}
+0002 (  54)		BINOP9	R1(I)[0..156]	<-	R0(I)[0..159], CI:252	{S}
+0003 (  54)		BINOP16	R1(I)[0..312]	<-	R1(IF)[0..156], CI:1	{S}
+0004 (  51)		LOADZ1	R2(C)[0..99]	<-	V(1 '')+0 	{S}
+0005 (  51)		CONV37	R2(I)[0..99]	<-	R2(CF)[0..99]	{S}
+0006 (  54)		BINOP9	R3(I)[0..96]	<-	R2(I)[0..99], CI:124	{S}
+0007 (  54)		BINOP17	R3(I)[0..48]	<-	R3(IF)[0..96], CI:1	{S}
+0008 (  54)		LEAG	R3(P)[0..48]	<-	V(6 'Hirows' A)+0 , R3(IF)[0..48]	{S}
+0009 (  54)		LOADI2	R3(P)	<-	R3(PF)+0 {V(6 'Hirows' A)} [0..48]	{}
+000a (  54)		LEAI	R3(P)+0	<-	R3(PF)+0, R1(IF)[0..312]	{}
+000b (  57)		BINOP9	R2(I)[0..3]	<-	R2(IF)[0..99], CI:3	{S}
+000c (  57)		BINOP16	R2(I)[0..6]	<-	R2(IF)[0..3], CI:1	{S}
+000d (  58)		LEAI	R3(P)+0	<-	R3(PF)+0, R2(IF)[0..6]	{}
+000e (  58)		LOADI1	R1(C)[0..255]	<-	R3(P)+0	{}
+000f (  58)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0010 (  58)		BINOP9	R0(I)[0..3]	<-	R0(IF)[0..159], CI:3	{S}
+0011 (  58)		LEAG	R0(P)[0..3]	<-	V(10 'clrmask')+0 , R0(IF)[0..3]	{S}
+0012 (  58)		LOADI1	R0(C)[63..252]	<-	R0(PF)+0 {V(10 'clrmask')} [0..3]	{}
+0013 (  58)		CONV37	R0(I)[63..252]	<-	R0(CF)[63..252]	{}
+0014 (  58)		BINOP9	R0(I)[0..255]	<-	R0(IF)[63..252], R1(IF)[0..255]	{}
+0015 (  58)		STOREI1		<-	R3(P)+0, R0(C)[0..255]	{}
+0016 (  58)		STOREI1		<-	R3(PF)+1, R0(CF)[0..255]	{}
+0017 (  59)		RET		<-		{}
+--------------------------------------------------------------------
+pix_set: /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c:34
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 (  36)		LOADZ1	R0(C)[0..159]	<-	V(0 '')+0 	{S}
+0001 (  36)		CONV37	R0(I)[0..159]	<-	R0(CF)[0..159]	{S}
+0002 (  40)		BINOP9	R1(I)[0..156]	<-	R0(I)[0..159], CI:252	{S}
+0003 (  40)		BINOP16	R1(I)[0..312]	<-	R1(IF)[0..156], CI:1	{S}
+0004 (  37)		LOADZ1	R2(C)[0..99]	<-	V(1 '')+0 	{S}
+0005 (  37)		CONV37	R2(I)[0..99]	<-	R2(CF)[0..99]	{S}
+0006 (  40)		BINOP9	R3(I)[0..96]	<-	R2(I)[0..99], CI:124	{S}
+0007 (  40)		BINOP17	R3(I)[0..48]	<-	R3(IF)[0..96], CI:1	{S}
+0008 (  40)		LEAG	R3(P)[0..48]	<-	V(6 'Hirows' A)+0 , R3(IF)[0..48]	{S}
+0009 (  40)		LOADI2	R3(P)	<-	R3(PF)+0 {V(6 'Hirows' A)} [0..48]	{}
+000a (  40)		LEAI	R3(P)+0	<-	R3(PF)+0, R1(IF)[0..312]	{}
+000b (  43)		BINOP9	R2(I)[0..3]	<-	R2(IF)[0..99], CI:3	{S}
+000c (  43)		BINOP16	R2(I)[0..6]	<-	R2(IF)[0..3], CI:1	{S}
+000d (  44)		LEAI	R3(P)+0	<-	R3(PF)+0, R2(IF)[0..6]	{}
+000e (  44)		LOADI1	R1(C)[0..255]	<-	R3(P)+0	{}
+000f (  44)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0010 (  44)		BINOP9	R0(I)[0..3]	<-	R0(IF)[0..159], CI:3	{S}
+0011 (  44)		LEAG	R0(P)[0..3]	<-	V(13 'setmask')+0 , R0(IF)[0..3]	{S}
+0012 (  44)		LOADI1	R0(C)[0..192]	<-	R0(PF)+0 {V(13 'setmask')} [0..3]	{}
+0013 (  44)		LOADZ1	R2(C)[0..255]	<-	V(2 '')+0 	{S}
+0014 (  44)		BINOP9	R0(C)	<-	R2(CF)[0..255], R0(CF)[0..192]	{}
+0015 (  44)		CONV37	R0(I)[0..255]	<-	R0(CF)	{}
+0016 (  44)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..255], R1(IF)[0..255]	{}
+0017 (  44)		STOREI1		<-	R3(P)+0, R0(C)[0..255]	{}
+0018 (  44)		STOREI1		<-	R3(PF)+1, R0(CF)[0..255]	{}
+0019 (  45)		RET		<-		{}
+--------------------------------------------------------------------
+particle_add: /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c:78
+$00 R0(I), $00 R1(P), $00 R2(P), $00 R3(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 (  81)		LOADG1	R2(C)[0..255]	<-	V(8 'pfree')+0 	{}
+0001 (  81)		BRANCH		<-	R2(C)[0..255]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 (  81)		CONV37	R0(I)[0..255]	<-	R2(C)[0..255]	{}
+0001 (  88)		LEAG	R1(P)[2304..2559]	<-	V(9 'particles' A)+2304 , R0(I)[0..255]	{}
+0002 (  88)		LOADI1:256	R3(C)[0..255]	<-	R1(P)+0 {V(9 'particles' A)} [2304..2559]	{}
+0003 (  88)		STOREG1		<-	V(8 'pfree')+0 , R3(CF)[0..255]	{}
+0004 (  89)		LOADG1	R3(C)[0..255]	<-	V(7 'pfirst')+0 	{}
+0005 (  89)		STOREI1:256		<-	R1(PF)+0 {V(9 'particles' A)} [2304..2559], R3(CF)[0..255]	{}
+0006 (  92)		STOREG1		<-	V(7 'pfirst')+0 , R2(CF)[0..255]	{}
+0007 (  95)		LOADZ2	R1(I)[-32768..32767]	<-	V(0 '')+0 	{S}
+0008 (  85)		LEAG	R2(P)[0..255]	<-	V(9 'particles' A)+0 , R0(I)[0..255]	{}
+0009 (  95)		STOREI2:256		<-	R2(PF)+0 {V(9 'particles' A)} [0..255], R1(IF)[-32768..32767]	{}
+000a (  96)		LOADZ2	R1(I)[-32768..32767]	<-	V(2 '')+0 	{S}
+000b (  96)		LEAG	R2(P)[512..767]	<-	V(9 'particles' A)+512 , R0(I)[0..255]	{}
+000c (  96)		STOREI2:256		<-	R2(PF)+0 {V(9 'particles' A)} [512..767], R1(IF)[-32768..32767]	{}
+000d (  97)		LOADZ2	R1(I)[-32768..32767]	<-	V(4 '')+0 	{S}
+000e (  97)		LEAG	R2(P)[1024..1279]	<-	V(9 'particles' A)+1024 , R0(I)[0..255]	{}
+000f (  97)		STOREI2:256		<-	R2(PF)+0 {V(9 'particles' A)} [1024..1279], R1(IF)[-32768..32767]	{}
+0010 (  98)		LOADZ2	R1(I)[-32768..32767]	<-	V(6 '')+0 	{S}
+0011 (  98)		LEAG	R2(P)[1536..1791]	<-	V(9 'particles' A)+1536 , R0(I)[0..255]	{}
+0012 (  98)		STOREI2:256		<-	R2(PF)+0 {V(9 'particles' A)} [1536..1791], R1(IF)[-32768..32767]	{}
+0013 (  99)		LOADZ1	R1(C)[0..255]	<-	V(8 '')+0 	{S}
+0014 (  99)		LEAG	R0(P)[2048..2303]	<-	V(9 'particles' A)+2048 , R0(IF)[0..255]	{}
+0015 (  99)		STOREI1:256		<-	R0(PF)+0 {V(9 'particles' A)} [2048..2303], R1(CF)[0..255]	{}
+0016 (  81)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 101)		RET		<-		{}
+--------------------------------------------------------------------
+rnorm: /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c:160
+$00 R0(I), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/particles/fireworks_stripe.c
+0000 ( 162)		CALLN	R0(I)	<-	V(10 'rand')+0 	{}
+0001 ( 162)		BINOP9	R1(I)[0..4095]	<-	R0(IF), CI:4095	{}
+0002 ( 163)		CALLN	R0(I)	<-	V(10 'rand')+0 	{}
+0003 ( 163)		BINOP9	R0(I)[0..4095]	<-	R0(IF), CI:4095	{}
+0004 ( 167)		BINOP1	R1(IF)[0..8190]	<-	R0(IF)[0..4095], R1(IF)[0..4095]	{}
+0005 ( 164)		CALLN	R0(I)	<-	V(10 'rand')+0 	{}
+0006 ( 164)		BINOP9	R0(I)[0..4095]	<-	R0(IF), CI:4095	{}
+0007 ( 167)		BINOP1	R1(IF)[0..12285]	<-	R0(IF)[0..4095], R1(IF)[0..8190]	{}
+0008 ( 165)		CALLN	R0(I)	<-	V(10 'rand')+0 	{}
+0009 ( 165)		BINOP9	R0(I)[0..4095]	<-	R0(IF), CI:4095	{}
+000a ( 167)		BINOP1	R0(IF)[0..16380]	<-	R0(IF)[0..4095], R1(IF)[0..12285]	{}
+000b ( 167)		BINOP2	R0(I)[-8192..8188]	<-	R0(IF)[0..16380], CI:8192	{}
+000c ( 167)		RETV		<-	R0(IF)[-8192..8188]	{}
+--------------------------------------------------------------------
+rand: /home/honza/projects/c64/projects/oscar64/include/stdlib.h:68
+$00 R0(I), $00 R1(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 ( 818)		LOADG2	R0(I)[0..65535]	<-	V(20 'seed')+0 	{}
+0001 ( 818)		BINOP16	R1(I)	<-	R0(I)[0..65535], CI:7	{}
+0002 ( 818)		BINOP10	R0(I)	<-	R1(IF), R0(IF)[0..65535]	{}
+0003 ( 819)		BINOP17	R1(I)[0..127]	<-	R0(I), CI:9	{}
+0004 ( 819)		BINOP10	R0(I)	<-	R1(IF)[0..127], R0(IF)	{}
+0005 ( 820)		BINOP16	R1(I)	<-	R0(I), CI:8	{}
+0006 ( 820)		BINOP10	R0(I)	<-	R1(IF), R0(IF)	{}
+0007 ( 820)		STOREG2		<-	V(20 'seed')+0 , R0(I)	{}
+0008 ( 821)		RETV		<-	R0(IF)	{}

@@ -1,0 +1,2263 @@
+--------------------------------------------------------------------
+main: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:772
+$00 R0(P), $00 R1(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 774)		CALLN		<-	V(1 'mmap_trampoline')+0 	{}
+0001 (  80)		STOREA1		<-	V(-1 '')+1 , CC:48	{VM}
+0002 ( 778)		STOREC2		<-	V(4 '')+0 , CI:2048	{}
+0003 ( 778)		CONST	R1(P)[53248..53248]	<-	CA0(-1:53248 '')	{S}
+0004 ( 778)		STOREC2		<-	V(0 '')+0 , R1(P)+0 {V(-1 'ABS')} [53248..53248]	{}
+0005 ( 778)		CONST	R0(P)[0..0]	<-	CG2048(6:0 'charset' A)	{S}
+0006 ( 778)		STOREC2		<-	V(2 '')+0 , R0(PF)+0 {V(6 'charset' A)} [0..0]	{}
+0007 ( 778)		CALLN		<-	V(2 'memcpy')+0 	{}
+0008 ( 779)		COPY256:GA		<-	V(-1 '')+55296 , V(7 'spriteset' A)+0 	{}
+0009 (  80)		STOREA1		<-	V(-1 '')+1 , CC:54	{VM}
+000a ( 783)		STOREC1		<-	V(0 '')+0 , CC:1	{}
+000b ( 783)		STOREC2		<-	V(3 '')+0 , R1(PF)+0 {V(-1 'ABS')} [53248..53248]	{}
+000c ( 783)		CONST	R1(P)[51200..51200]	<-	CA0(-1:51200 '')	{S}
+000d ( 783)		STOREC2		<-	V(1 '')+0 , R1(P)+0 {V(-1 'ABS')} [51200..51200]	{}
+000e ( 783)		CALLN		<-	V(3 'vic_setmode')+0 	{}
+000f ( 801)		STOREC2		<-	V(2 '')+0 , R1(P)+0 {V(-1 'ABS')} [51200..51200]	{}
+0010 ( 801)		STOREC1		<-	V(4 '')+0 , CC:5	{}
+0011 ( 801)		STOREC1		<-	V(5 '')+0 , CC:0	{}
+0012 ( 801)		STOREC1		<-	V(6 '')+0 , CC:30	{}
+0013 ( 801)		STOREC1		<-	V(7 '')+0 , CC:1	{}
+0014 ( 788)		STOREA1		<-	V(-1 '')+53280 , CC:6	{V}
+0015 ( 789)		STOREA1		<-	V(-1 '')+53281 , CC:0	{V}
+0016 ( 790)		STOREA1		<-	V(-1 '')+53282 , CC:6	{V}
+0017 ( 791)		STOREA1		<-	V(-1 '')+53283 , CC:1	{V}
+0018 ( 793)		STOREA1		<-	V(-1 '')+53285 , CC:11	{V}
+0019 ( 794)		STOREA1		<-	V(-1 '')+53286 , CC:1	{V}
+001a (  12)		CONST	R0(P)[52216..52216]	<-	CA0(-1:52216 '')	{S}
+001b (  12)		STOREG2		<-	V(8 'vspriteScreen')+0 , R0(PF)+0 {V(-1 'ABS')} [52216..52216]	{}
+001c ( 797)		FILLA1000		<-	V(-1 '')+51200 , CC:96	{}
+001d ( 798)		FILLA1000		<-	V(-1 '')+55296 , CC:15	{}
+001e ( 801)		CONST	R0(P)[0..0]	<-	CG12(10:0 'cws' A)	{S}
+001f ( 801)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(10 'cws' A)} [0..0]	{}
+0020 ( 801)		CALLN		<-	V(5 'cwin_init')+0 	{}
+0021 ( 802)		STOREC2		<-	V(2 '')+0 , R1(P)+0 {V(-1 'ABS')} [51200..51200]	{}
+0022 ( 802)		STOREC1		<-	V(4 '')+0 , CC:2	{}
+0023 ( 802)		STOREC1		<-	V(5 '')+0 , CC:3	{}
+0024 ( 802)		STOREC1		<-	V(6 '')+0 , CC:28	{}
+0025 ( 802)		STOREC1		<-	V(7 '')+0 , CC:19	{}
+0026 ( 802)		CONST	R0(P)[0..0]	<-	CG12(11:0 'cwm' A)	{S}
+0027 ( 802)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(11 'cwm' A)} [0..0]	{}
+0028 ( 802)		CALLN		<-	V(5 'cwin_init')+0 	{}
+0029 ( 803)		STOREC2		<-	V(2 '')+0 , R1(P)+0 {V(-1 'ABS')} [51200..51200]	{}
+002a ( 803)		STOREC1		<-	V(4 '')+0 , CC:30	{}
+002b ( 803)		STOREC1		<-	V(5 '')+0 , CC:6	{}
+002c ( 803)		STOREC1		<-	V(6 '')+0 , CC:8	{}
+002d ( 803)		STOREC1		<-	V(7 '')+0 , CC:7	{}
+002e ( 803)		CONST	R0(P)[0..0]	<-	CG12(12:0 'cw' A)	{S}
+002f ( 803)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(12 'cw' A)} [0..0]	{}
+0030 ( 803)		CALLN		<-	V(5 'cwin_init')+0 	{}
+0031 ( 804)		STOREC2		<-	V(2 '')+0 , R1(PF)+0 {V(-1 'ABS')} [51200..51200]	{}
+0032 ( 804)		STOREC1		<-	V(4 '')+0 , CC:30	{}
+0033 ( 804)		STOREC1		<-	V(5 '')+0 , CC:15	{}
+0034 ( 804)		STOREC1		<-	V(6 '')+0 , CC:8	{}
+0035 ( 804)		STOREC1		<-	V(7 '')+0 , CC:7	{}
+0036 ( 804)		CONST	R0(P)[0..0]	<-	CG12(13:0 'cwt' A)	{S}
+0037 ( 804)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(13 'cwt' A)} [0..0]	{}
+0038 ( 804)		CALLN		<-	V(5 'cwin_init')+0 	{}
+0039 ( 809)		STOREG1		<-	V(-1 'sstack')+4 , CC:0	{}
+003a ( 807)		CALLN		<-	V(6 'ai_init')+0 	{}
+003b ( 809)		CALLN		<-	V(7 'game_state')+0 	{}
+003c ( 813)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (3) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 813)		CALLN		<-	V(17 'game_loop')+0 	{}
+0001 (  76)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  76)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  76)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  76)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  76)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..128], CI:0	{}
+0004 (  76)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  78)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  78)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  78)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  78)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 1
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  78)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  78)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  78)		BINOP9	R0(I)[0..128]	<-	R0(IF)[0..255], CI:128	{}
+0003 (  78)		BRANCH		<-	R0(IF)[0..128]	{}
+		==> 1
+		==> 4
+--------------------------------------------------------------------
+mmap_trampoline: /home/honza/projects/c64/projects/oscar64/include/c64/memmap.h:25
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/memmap.c
+0000 (  71)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'NMITrampoline')	{S}
+0001 (  71)		STOREA2		<-	V(-1 '')+65530 , R0(PF)+0 {V(-1 'NMITrampoline')} [0..0]	{}
+0002 (  72)		CONST	R0(P)[0..0]	<-	CP0(-1:0 'IRQTrampoline')	{S}
+0003 (  72)		STOREA2		<-	V(-1 '')+65534 , R0(PF)+0 {V(-1 'IRQTrampoline')} [0..0]	{}
+0004 (  73)		RET		<-		{}
+--------------------------------------------------------------------
+memcpy: /home/honza/projects/c64/projects/oscar64/include/string.h:30
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/string.c
+0000 ( 307)		JSR		<-	V(0 '')+0 , V(2 '')+0 , V(4 '')+0 , V(-1 '')+0 	{V}
+0001 ( 307)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0002 ( 334)		RETV		<-	R0(PF)	{}
+--------------------------------------------------------------------
+vic_setmode: /home/honza/projects/c64/projects/oscar64/include/c64/vic.h:94
+$00 R0(I), $00 R1(P), $00 R2(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		LOADZ1	R0(C)[0..4]	<-	V(0 '')+0 	{S}
+0001 (  26)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0002 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  37)		STOREA1		<-	V(-1 '')+53265 , CC:91	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  38)		STOREA1		<-	V(-1 '')+53270 , CC:8	{V}
+0001 (  39)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  52)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+56576 	{V}
+0001 (  52)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  52)		BINOP9	R0(I)[0..252]	<-	R0(IF)[0..255], CI:252	{}
+0003 (  52)		LOADZ2	R1(P)	<-	V(1 '')+0 	{S}
+0004 (  52)		CAST	R1(I)	<-	R1(PF)	{S}
+0005 (  52)		BINOP17	R2(I)[0..3]	<-	R1(I), CI:14	{S}
+0006 (  52)		BINOP10	R2(I)[0..3]	<-	R2(IF)[0..3], CI:3	{S}
+0007 (  52)		BINOP8	R0(I)[0..255]	<-	R2(IF)[0..3], R0(IF)[0..252]	{}
+0008 (  52)		STOREA1		<-	V(-1 '')+56576 , R0(CF)[0..255]	{V}
+0009 (  53)		BINOP17	R1(I)[0..1023]	<-	R1(IF), CI:6	{S}
+000a (  53)		BINOP9	R1(I)[0..240]	<-	R1(IF)[0..1023], CI:240	{S}
+000b (  53)		LOADZ2	R0(P)	<-	V(3 '')+0 	{S}
+000c (  53)		CAST	R0(I)	<-	R0(PF)	{S}
+000d (  53)		BINOP17	R0(I)[0..63]	<-	R0(IF), CI:10	{S}
+000e (  53)		BINOP9	R0(I)[0..14]	<-	R0(IF)[0..63], CI:14	{S}
+000f (  53)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..14], R1(IF)[0..240]	{S}
+0010 (  53)		STOREA1		<-	V(-1 '')+53272 , R0(CF)[0..255]	{V}
+0011 (  54)		RET		<-		{}
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  26)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..4], CC:2	{S}
+0001 (  26)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 4
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  33)		STOREA1		<-	V(-1 '')+53265 , CC:27	{V}
+0001 (  26)		BRANCH		<-	R0(CF)[0..1]	{}
+		==> 7
+		==> 6
+L7: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  46)		STOREA1		<-	V(-1 '')+53270 , CC:24	{V}
+0001 (  47)		JUMP		<-		{}
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  41)		STOREA1		<-	V(-1 '')+53265 , CC:59	{V}
+0001 (  26)		RELOP19	R0(B)[0..1]	<-	R0(CF)[2..4], CC:3	{S}
+0002 (  26)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+--------------------------------------------------------------------
+spr_init: /home/honza/projects/c64/projects/oscar64/include/c64/sprites.h:8
+$00 R0(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  12)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 (  12)		LEAI	R0(P)+0	<-	R0(PF)+0, CI:1016	{S}
+0002 (  12)		STOREG2		<-	V(8 'vspriteScreen')+0 , R0(PF)	{}
+0003 (  13)		RET		<-		{}
+--------------------------------------------------------------------
+cwin_init: /home/honza/projects/c64/projects/oscar64/include/c64/charwin.h:15
+$00 R0(P), $00 R1(I), $00 R2(I), $00 R3(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  43)		LOADZ2	R0(P)	<-	V(0 '')+0 	{S}
+0001 (  47)		STOREI1		<-	R0(P)+4, CC:0	{}
+0002 (  48)		STOREI1		<-	R0(P)+5, CC:0	{}
+0003 (  43)		LOADZ1	R1(C)[0..255]	<-	V(4 '')+0 	{S}
+0004 (  43)		STOREI1		<-	R0(P)+0, R1(C)[0..255]	{}
+0005 (  44)		LOADZ1	R2(C)[0..24]	<-	V(5 '')+0 	{S}
+0006 (  44)		STOREI1		<-	R0(P)+1, R2(C)[0..24]	{}
+0007 (  45)		LOADZ1	R3(C)[0..255]	<-	V(6 '')+0 	{S}
+0008 (  45)		STOREI1		<-	R0(P)+2, R3(CF)[0..255]	{}
+0009 (  46)		LOADZ1	R3(C)[0..255]	<-	V(7 '')+0 	{S}
+000a (  46)		STOREI1		<-	R0(P)+3, R3(CF)[0..255]	{}
+000b (  49)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{S}
+000c (  49)		CONV37	R2(I)[0..24]	<-	R2(CF)[0..24]	{S}
+000d (  49)		BINOP16	R2(I)[0..48]	<-	R2(IF)[0..24], CI:1	{S}
+000e (  49)		LEAG	R2(P)[0..48]	<-	V(9 'mul40')+0 , R2(IF)[0..48]	{S}
+000f (  49)		LOADI2	R2(I)[0..65535]	<-	R2(PF)+0 {V(9 'mul40')} [0..48]	{}
+0010 (  50)		LEAA	R3(P)[55296..120831]	<-	V(-1 '')+55296 , R2(I)[0..65535]	{}
+0011 (  50)		LEAI	R3(P)+0 {V(-1 'ABS')} [55296..121086]	<-	R3(PF)+0 {V(-1 'ABS')} [55296..120831], R1(I)[0..255]	{}
+0012 (  50)		STOREI2		<-	R0(P)+10, R3(PF)+0 {V(-1 'ABS')} [55296..121086]	{}
+0013 (  49)		LOADZ2	R3(P)	<-	V(2 '')+0 	{S}
+0014 (  49)		LEAI	R3(P)+0	<-	R3(PF)+0, R2(IF)[0..65535]	{}
+0015 (  49)		LEAI	R3(P)+0	<-	R3(PF)+0, R1(IF)[0..255]	{}
+0016 (  49)		STOREI2		<-	R0(PF)+8, R3(PF)	{}
+0017 (  51)		RET		<-		{}
+--------------------------------------------------------------------
+ai_init: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:365
+$00 R0(I), $01 R1(I), $02 R2(I), $00 R3(I), $00 R4(I), $03 R5(I), $00 R6(P), $05 R7(P), $06 R8(C), $07 R9(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 370)		CONST	R7(C)[0..0]	<-	CI:0	{}
+0001 ( 372)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 372)		CONST	R8(C)[0..0]	<-	CI:0	{}
+0001 ( 376)		CONST	R0(I)[0..0]	<-	CI:0	{I}
+0002 ( 381)		CONST	R1(I)[0..0]	<-	CI:0	{I}
+0003 ( 381)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 381)		BINOP16	R2(I)[0..8]	<-	R0(I)[0..4], CI:1	{I}
+0001 ( 374)		CONST	R9(C)[0..0]	<-	CI:0	{}
+0002 ( 376)		BRANCH		<-	R8(C)[0..4]	{}
+		==> 10
+		==> 13
+L10: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 376)		BRANCH		<-	R9(C)[0..4]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 377)		CONV37	R3(I)[0..4]	<-	R7(C)[0..4]	{}
+0001 ( 377)		BINOP3	R3(I)[0..100]	<-	R3(IF)[0..4], CI:25	{}
+0002 ( 377)		BINOP1	R3(I)[0..120]	<-	R3(IF)[0..100], R1(I)[0..20]	{}
+0003 ( 376)		CONV37	R4(I)[0..4]	<-	R9(C)[0..4]	{}
+0004 ( 377)		BINOP1	R3(I)[0..124]	<-	R4(IF)[0..4], R3(IF)[0..120]	{}
+0005 ( 377)		BINOP16	R3(I)[0..248]	<-	R3(IF)[0..124], CI:1	{}
+0006 ( 377)		LEAG	R3(P)[0..248]	<-	V(14 'fscore' A)+0 , R3(IF)[0..248]	{}
+0007 ( 377)		STOREI2		<-	R3(PF)+0 {V(14 'fscore' A)} [0..248], CI:0	{}
+0008 ( 374)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 374)		BINOP1	R9(C)[1..5]	<-	R9(CF)[0..4], CI:1	{}
+0001 ( 374)		RELOP28	R3(B)[0..1]	<-	R9(C)[1..5], CC:5	{}
+0002 ( 374)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 7
+		==> 5
+L7: <= D-1: (1) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 376)		BRANCH		<-	R8(C)[0..4]	{}
+		==> 10
+		==> 13
+L13: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 378)		RELOP19	R3(B)[0..1]	<-	R9(C)[0..4], CC:4	{}
+0001 ( 378)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 11
+		==> 12
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 379)		CONV37	R3(I)[0..4]	<-	R7(C)[0..4]	{}
+0001 ( 379)		LEAG	R4(P)[0..8]	<-	V(15 'score')+0 , R2(I)[0..8]	{I}
+0002 ( 379)		LOADI2	R6(I)[-32768..32767]	<-	R4(PF)+0 {V(15 'score')} [0..8]	{}
+0003 ( 379)		CONV37	R4(I)[0..4]	<-	R9(C)[0..4]	{}
+0004 ( 379)		BINOP16	R5(I)[0..8]	<-	R4(I)[0..4], CI:1	{}
+0005 ( 379)		LEAG	R5(P)[0..8]	<-	V(15 'score')+0 , R5(IF)[0..8]	{}
+0006 ( 379)		LOADI2	R5(I)[-32768..32767]	<-	R5(PF)+0 {V(15 'score')} [0..8]	{}
+0007 ( 379)		BINOP2	R5(I)[-32768..65535]	<-	R6(IF)[-32768..32767], R5(IF)[-32768..32767]	{}
+0008 ( 374)		JUMP		<-		{}
+		==> 29
+L29: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 381)		BINOP3	R3(I)[0..100]	<-	R3(IF)[0..4], CI:25	{}
+0001 ( 381)		BINOP1	R3(I)[0..120]	<-	R3(IF)[0..100], R1(I)[0..20]	{}
+0002 ( 381)		BINOP1	R3(I)[0..124]	<-	R3(IF)[0..120], R4(IF)[0..4]	{}
+0003 ( 381)		BINOP16	R3(I)[0..248]	<-	R3(IF)[0..124], CI:1	{}
+0004 ( 381)		LEAG	R3(P)[0..248]	<-	V(14 'fscore' A)+0 , R3(IF)[0..248]	{}
+0005 ( 381)		STOREI2		<-	R3(PF)+0 {V(14 'fscore' A)} [0..248], R5(IF)	{}
+0006 ( 374)		JUMP		<-		{}
+		==> 6
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 381)		LEAG	R3(P)[0..8]	<-	V(15 'score')+0 , R2(I)[0..8]	{I}
+0001 ( 381)		LOADI2	R5(I)[-32768..32767]	<-	R3(PF)+0 {V(15 'score')} [0..8]	{}
+0002 ( 378)		CONV37	R4(I)[0..4]	<-	R9(C)[0..4]	{}
+0003 ( 381)		BINOP16	R3(I)[0..8]	<-	R4(I)[0..4], CI:1	{}
+0004 ( 381)		LEAG	R3(P)[0..8]	<-	V(15 'score')+0 , R3(IF)[0..8]	{}
+0005 ( 381)		LOADI2	R3(I)[-32768..32767]	<-	R3(PF)+0 {V(15 'score')} [0..8]	{}
+0006 ( 381)		BINOP2	R5(I)[-32768..65535]	<-	R5(IF)[-32768..32767], R3(IF)[-32768..32767]	{}
+0007 ( 381)		CONV37	R3(I)[0..4]	<-	R7(C)[0..4]	{}
+0008 ( 381)		BINOP1	R6(I)[1..5]	<-	R3(I)[0..4], CI:1	{}
+0009 ( 381)		BINOP3	R5(I)	<-	R6(IF)[1..5], R5(IF)[-32768..65535]	{}
+000a ( 374)		JUMP		<-		{}
+		==> 29
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 381)		BINOP1	R1(I)[5..25]	<-	R1(IF)[0..20], CI:5	{}
+0001 ( 376)		BINOP1	R0(I)[1..5]	<-	R0(IF)[0..4], CI:1	{}
+0002 ( 372)		BINOP1	R8(C)[1..5]	<-	R8(CF)[0..4], CI:1	{}
+0003 ( 372)		RELOP28	R2(B)[0..1]	<-	R8(C)[1..5], CC:5	{}
+0004 ( 372)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 4
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 370)		BINOP1	R7(C)[1..5]	<-	R7(CF)[0..4], CI:1	{}
+0001 ( 370)		RELOP28	R0(B)[0..1]	<-	R7(C)[1..5], CC:5	{}
+0002 ( 370)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 388)		CONST	R8(C)[0..0]	<-	CI:0	{}
+0001 ( 391)		CONST	R7(C)[0..0]	<-	CI:0	{}
+0002 ( 395)		JUMP		<-		{}
+		==> 14
+L14: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 395)		CONV37	R0(I)[0..6]	<-	R7(C)[0..6]	{I}
+0001 ( 396)		BINOP1	R1(I)[8..14]	<-	R0(I)[0..6], CI:8	{}
+0002 ( 397)		BINOP1	R2(I)[16..22]	<-	R0(I)[0..6], CI:16	{}
+0003 ( 398)		BINOP1	R3(I)[24..30]	<-	R0(I)[0..6], CI:24	{}
+0004 ( 399)		CONST	R4(I)[25..25]	<-	CI:25	{}
+0005 ( 395)		JUMP		<-		{}
+		==> 17
+L17: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 395)		CONV37	R5(I)[0..68]	<-	R8(C)[0..68]	{}
+0001 ( 395)		LEAG	R6(P)[0..68]	<-	V(16 'frows' A)+0 , R5(I)[0..68]	{}
+0002 ( 395)		STOREI1		<-	R6(PF)+0 {V(16 'frows' A)} [0..68], R0(C)[0..]	{}
+0003 ( 396)		LEAG	R6(P)[69..137]	<-	V(16 'frows' A)+69 , R5(I)[0..68]	{}
+0004 ( 396)		STOREI1		<-	R6(PF)+0 {V(16 'frows' A)} [69..137], R1(C)[8..]	{}
+0005 ( 397)		LEAG	R6(P)[138..206]	<-	V(16 'frows' A)+138 , R5(I)[0..68]	{}
+0006 ( 397)		STOREI1		<-	R6(PF)+0 {V(16 'frows' A)} [138..206], R2(C)[16..]	{}
+0007 ( 398)		LEAG	R6(P)[207..275]	<-	V(16 'frows' A)+207 , R5(I)[0..68]	{}
+0008 ( 398)		STOREI1		<-	R6(PF)+0 {V(16 'frows' A)} [207..275], R3(C)[24..]	{}
+0009 ( 399)		LEAG	R5(P)[276..344]	<-	V(16 'frows' A)+276 , R5(IF)[0..68]	{}
+000a ( 399)		STOREI1		<-	R5(PF)+0 {V(16 'frows' A)} [276..344], R4(C)[25..75]	{}
+000b ( 400)		BINOP1	R8(C)[1..69]	<-	R8(CF)[0..68], CI:1	{}
+000c ( 395)		BINOP1	R0(I)[8..]	<-	R0(IF)[0..], CI:8	{}
+000d ( 396)		BINOP1	R1(I)[16..]	<-	CI:8, R1(IF)[8..]	{}
+000e ( 397)		BINOP1	R2(I)[24..]	<-	CI:8, R2(IF)[16..]	{}
+000f ( 398)		BINOP1	R3(I)[32..]	<-	CI:8, R3(IF)[24..]	{}
+0010 ( 399)		BINOP1	R4(I)[50..100]	<-	CI:25, R4(IF)[25..75]	{}
+0011 ( 393)		RELOP20	R5(B)[0..1]	<-	R4(I)[50..100], CI:100	{}
+0012 ( 393)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 17
+		==> 15
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 391)		BINOP1	R7(C)[1..7]	<-	R7(CF)[0..6], CI:1	{}
+0001 ( 391)		RELOP28	R0(B)[0..1]	<-	R7(C)[1..7], CC:7	{}
+0002 ( 391)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 14
+		==> 16
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 409)		CONST	R0(I)[0..0]	<-	CI:0	{I}
+0001 ( 410)		JUMP		<-		{}
+		==> 18
+L18: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 410)		BINOP1	R1(I)[1..4]	<-	R0(I)[0..3], CI:1	{}
+0001 ( 411)		BINOP1	R2(I)[2..5]	<-	R0(I)[0..3], CI:2	{}
+0002 ( 412)		BINOP1	R3(I)[3..6]	<-	R0(I)[0..3], CI:3	{}
+0003 ( 409)		MOVE	R4(I)[0..3]	<-	R0(I)[0..3]	{}
+0004 ( 407)		CONST	R9(C)[0..0]	<-	CI:0	{}
+0005 ( 413)		CONST	R5(I)[-25..-25]	<-	CI:-25	{}
+0006 ( 409)		JUMP		<-		{}
+		==> 21
+L21: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 409)		CONV37	R6(I)[1..68]	<-	R8(C)[1..68]	{}
+0001 ( 409)		LEAG	R7(P)[1..68]	<-	V(16 'frows' A)+0 , R6(I)[1..68]	{}
+0002 ( 409)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [1..68], R4(C)[0..]	{}
+0003 ( 410)		LEAG	R7(P)[70..137]	<-	V(16 'frows' A)+69 , R6(I)[1..68]	{}
+0004 ( 410)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [70..137], R1(C)[1..]	{}
+0005 ( 411)		LEAG	R7(P)[139..206]	<-	V(16 'frows' A)+138 , R6(I)[1..68]	{}
+0006 ( 411)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [139..206], R2(C)[2..]	{}
+0007 ( 412)		LEAG	R7(P)[208..275]	<-	V(16 'frows' A)+207 , R6(I)[1..68]	{}
+0008 ( 412)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [208..275], R3(C)[3..]	{}
+0009 ( 413)		RELOP27	R7(B)[0..1]	<-	R9(C)[0..5], CC:0	{}
+000a ( 413)		BRANCH		<-	R7(BF)[0..1]	{}
+		==> 26
+		==> 27
+L26: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 413)		MOVE	R7(I)[-25..100]	<-	R5(I)[-25..100]	{}
+0001 ( 413)		JUMP		<-		{}
+		==> 28
+L28: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 413)		LEAG	R6(P)[277..344]	<-	V(16 'frows' A)+276 , R6(IF)[1..68]	{}
+0001 ( 413)		STOREI1		<-	R6(PF)+0 {V(16 'frows' A)} [277..344], R7(CF)[-25..100]	{}
+0002 ( 414)		BINOP1	R8(C)[2..69]	<-	R8(CF)[1..68], CI:1	{}
+0003 ( 409)		BINOP1	R4(I)[8..]	<-	R4(IF)[0..], CI:8	{}
+0004 ( 410)		BINOP1	R1(I)[9..]	<-	CI:8, R1(IF)[1..]	{}
+0005 ( 411)		BINOP1	R2(I)[10..]	<-	CI:8, R2(IF)[2..]	{}
+0006 ( 412)		BINOP1	R3(I)[11..]	<-	CI:8, R3(IF)[3..]	{}
+0007 ( 413)		BINOP1	R5(I)[0..125]	<-	CI:25, R5(IF)[-25..100]	{}
+0008 ( 407)		BINOP1	R9(C)[1..6]	<-	R9(CF)[0..5], CI:1	{}
+0009 ( 407)		RELOP28	R6(B)[0..1]	<-	R9(C)[1..6], CC:6	{}
+000a ( 407)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 21
+		==> 22
+L22: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 421)		BINOP1	R1(I)[9..12]	<-	R0(I)[0..3], CI:9	{}
+0001 ( 422)		BINOP1	R2(I)[18..21]	<-	R0(I)[0..3], CI:18	{}
+0002 ( 423)		BINOP1	R3(I)[27..30]	<-	R0(I)[0..3], CI:27	{}
+0003 ( 420)		MOVE	R4(I)[0..3]	<-	R0(I)[0..3]	{}
+0004 ( 424)		CONST	R5(I)[25..25]	<-	CI:25	{}
+0005 ( 420)		JUMP		<-		{}
+		==> 23
+L23: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 420)		CONV37	R6(I)[2..68]	<-	R8(C)[2..68]	{}
+0001 ( 420)		LEAG	R7(P)[2..68]	<-	V(16 'frows' A)+0 , R6(I)[2..68]	{}
+0002 ( 420)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [2..68], R4(C)[0..]	{}
+0003 ( 421)		LEAG	R7(P)[71..137]	<-	V(16 'frows' A)+69 , R6(I)[2..68]	{}
+0004 ( 421)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [71..137], R1(C)[9..]	{}
+0005 ( 422)		LEAG	R7(P)[140..206]	<-	V(16 'frows' A)+138 , R6(I)[2..68]	{}
+0006 ( 422)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [140..206], R2(C)[18..]	{}
+0007 ( 423)		LEAG	R7(P)[209..275]	<-	V(16 'frows' A)+207 , R6(I)[2..68]	{}
+0008 ( 423)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [209..275], R3(C)[27..]	{}
+0009 ( 424)		LEAG	R6(P)[278..344]	<-	V(16 'frows' A)+276 , R6(IF)[2..68]	{}
+000a ( 424)		STOREI1		<-	R6(PF)+0 {V(16 'frows' A)} [278..344], R5(C)[25..75]	{}
+000b ( 425)		BINOP1	R8(C)[3..69]	<-	R8(CF)[2..68], CI:1	{}
+000c ( 420)		BINOP1	R4(I)[8..]	<-	CI:8, R4(IF)[0..]	{}
+000d ( 421)		BINOP1	R1(I)[17..]	<-	CI:8, R1(IF)[9..]	{}
+000e ( 422)		BINOP1	R2(I)[26..]	<-	CI:8, R2(IF)[18..]	{}
+000f ( 423)		BINOP1	R3(I)[35..]	<-	CI:8, R3(IF)[27..]	{}
+0010 ( 424)		BINOP1	R5(I)[50..100]	<-	CI:25, R5(IF)[25..75]	{}
+0011 ( 418)		RELOP20	R6(B)[0..1]	<-	R5(I)[50..100], CI:100	{}
+0012 ( 418)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 23
+		==> 24
+L24: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 431)		BINOP1	R1(I)[24..27]	<-	CI:24, R0(I)[0..3]	{}
+0001 ( 432)		BINOP2	R2(I)[17..20]	<-	R1(I)[24..27], CI:7	{}
+0002 ( 433)		BINOP2	R3(I)[10..13]	<-	R1(I)[24..27], CI:14	{}
+0003 ( 434)		BINOP2	R4(I)[3..6]	<-	R1(I)[24..27], CI:21	{}
+0004 ( 435)		CONST	R5(I)[25..25]	<-	CI:25	{}
+0005 ( 431)		JUMP		<-		{}
+		==> 25
+L25: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 431)		CONV37	R6(I)[3..68]	<-	R8(C)[3..68]	{}
+0001 ( 431)		LEAG	R7(P)[3..68]	<-	V(16 'frows' A)+0 , R6(I)[3..68]	{}
+0002 ( 431)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [3..68], R1(C)[24..]	{}
+0003 ( 432)		LEAG	R7(P)[72..137]	<-	V(16 'frows' A)+69 , R6(I)[3..68]	{}
+0004 ( 432)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [72..137], R2(C)[17..]	{}
+0005 ( 433)		LEAG	R7(P)[141..206]	<-	V(16 'frows' A)+138 , R6(I)[3..68]	{}
+0006 ( 433)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [141..206], R3(C)[10..]	{}
+0007 ( 434)		LEAG	R7(P)[210..275]	<-	V(16 'frows' A)+207 , R6(I)[3..68]	{}
+0008 ( 434)		STOREI1		<-	R7(PF)+0 {V(16 'frows' A)} [210..275], R4(C)[3..]	{}
+0009 ( 435)		LEAG	R6(P)[279..344]	<-	V(16 'frows' A)+276 , R6(IF)[3..68]	{}
+000a ( 435)		STOREI1		<-	R6(PF)+0 {V(16 'frows' A)} [279..344], R5(C)[25..75]	{}
+000b ( 436)		BINOP1	R8(C)[4..69]	<-	R8(CF)[3..68], CI:1	{}
+000c ( 431)		BINOP1	R1(I)[32..]	<-	CI:8, R1(IF)[24..]	{}
+000d ( 432)		BINOP1	R2(I)[25..]	<-	CI:8, R2(IF)[17..]	{}
+000e ( 433)		BINOP1	R3(I)[18..]	<-	CI:8, R3(IF)[10..]	{}
+000f ( 434)		BINOP1	R4(I)[11..]	<-	CI:8, R4(IF)[3..]	{}
+0010 ( 435)		BINOP1	R5(I)[50..100]	<-	CI:25, R5(IF)[25..75]	{}
+0011 ( 429)		RELOP20	R6(B)[0..1]	<-	R5(I)[50..100], CI:100	{}
+0012 ( 429)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 25
+		==> 19
+L19: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 409)		BINOP1	R0(I)[1..4]	<-	R0(IF)[0..3], CI:1	{}
+0001 ( 404)		RELOP20	R1(B)[0..1]	<-	R0(I)[1..4], CI:4	{}
+0002 ( 404)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 18
+		==> 20
+L20: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 439)		RET		<-		{}
+L27: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 413)		CONST	R7(I)[0..0]	<-	CI:0	{}
+0001 ( 413)		JUMP		<-		{}
+		==> 28
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 378)		RELOP19	R3(B)[0..1]	<-	R8(C)[0..4], CC:4	{I}
+0001 ( 378)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 11
+		==> 13
+--------------------------------------------------------------------
+game_state: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:612
+$00 R0(P), $00 R1(P), $0c R2(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 761)		STOREC1		<-	V(2 '')+0 , CC:0	{}
+0001 ( 761)		STOREC1		<-	V(3 '')+0 , CC:0	{}
+0002 ( 761)		STOREC1		<-	V(4 '')+0 , CC:40	{}
+0003 ( 761)		STOREC1		<-	V(5 '')+0 , CC:1	{}
+0004 ( 761)		STOREC1		<-	V(7 '')+0 , CC:1	{}
+0005 ( 615)		LOADG1	R2(C)[0..5]	<-	V(-1 'sstack')+4 	{S}
+0006 ( 615)		STOREG1		<-	V(17 'TheGame')+0 , R2(C)[0..5]	{}
+0007 ( 619)		CONST	R1(P)[0..0]	<-	CG12(10:0 'cws' A)	{S}
+0008 ( 761)		STOREC2		<-	V(0 '')+0 , R1(P)+0 {V(10 'cws' A)} [0..0]	{}
+0009 ( 184)		LOADG1	R0(C)[0..255]	<-	V(18 'p2smap' A)+1 	{}
+000a ( 184)		BINOP10	R0(C)[0..255]	<-	R0(CF)[0..255], CC:32	{}
+000b ( 761)		STOREC1		<-	V(6 '')+0 , R0(CF)[0..255]	{}
+000c ( 761)		CALLN		<-	V(8 'cwin_fill_rect_raw')+0 	{}
+000d ( 621)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..5], CC:3	{S}
+000e ( 621)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 8
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 645)		STOREC1		<-	V(6 '')+0 , CC:7	{}
+0001 ( 645)		CONST	R0(P)[0..0]	<-	CG0(33:0 '')	{S}
+0002 ( 649)		JUMP		<-		{}
+		==> 14
+L14: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 645)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(10 'cws' A)} [0..0]	{}
+0001 ( 645)		STOREC1		<-	V(2 '')+0 , CC:0	{}
+0002 ( 645)		STOREC1		<-	V(3 '')+0 , CC:0	{}
+0003 ( 652)		STOREC2		<-	V(4 '')+0 , R0(PF)+0 {V(34 '')} [0..0]	{}
+0004 ( 652)		CALLN		<-	V(16 'cwin_putat_string')+0 	{}
+0005 ( 655)		STOREG1		<-	V(17 'TheGame')+1 , CC:240	{}
+0006 ( 656)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 665)		RET		<-		{}
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 621)		RELOP28	R0(B)[0..1]	<-	R2(C)[0..5], CC:3	{S}
+0001 ( 621)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 10
+		==> 9
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 621)		RELOP19	R0(B)[0..1]	<-	R2(C)[0..2], CC:1	{S}
+0001 ( 621)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 11
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 636)		STOREC1		<-	V(11 '')+0 , CC:3	{}
+0001 ( 636)		STOREG1		<-	V(-1 'sstack')+2 , CC:3	{}
+0002 ( 636)		STOREG1		<-	V(-1 'sstack')+3 , CC:7	{}
+0003 ( 635)		STOREG1		<-	V(17 'TheGame')+2 , CC:3	{}
+0004 ( 636)		CONST	R0(P)[0..0]	<-	CG12(11:0 'cwm' A)	{S}
+0005 ( 636)		STOREG2		<-	V(-1 'sstack')+0 , R0(PF)+0 {V(11 'cwm' A)} [0..0]	{}
+0006 ( 636)		CALLN		<-	V(14 'column_select_anim')+0 	{}
+0007 ( 637)		STOREC1		<-	V(6 '')+0 , CC:7	{}
+0008 ( 637)		CONST	R0(P)[0..0]	<-	CG0(31:0 '')	{S}
+0009 ( 638)		JUMP		<-		{}
+		==> 13
+L13: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 637)		STOREC2		<-	V(0 '')+0 , R1(PF)+0 {V(10 'cws' A)} [0..0]	{}
+0001 ( 637)		STOREC1		<-	V(2 '')+0 , CC:0	{}
+0002 ( 637)		STOREC1		<-	V(3 '')+0 , CC:0	{}
+0003 ( 641)		STOREC2		<-	V(4 '')+0 , R0(PF)+0 {V(32 '')} [0..0]	{}
+0004 ( 641)		CALLN		<-	V(16 'cwin_putat_string')+0 	{}
+0005 ( 642)		JUMP		<-		{}
+		==> 1
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 621)		RELOP28	R0(B)[0..1]	<-	R2(CF)[0..2], CC:1	{S}
+0001 ( 621)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 4
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 625)		STOREG1		<-	V(17 'TheGame')+1 , CC:60	{}
+0001 ( 626)		STOREG1		<-	V(17 'TheGame')+3 , CC:0	{}
+0002 ( 629)		CALLN		<-	V(9 'board_init')+0 	{}
+0003 ( 630)		CONST	R0(P)[0..0]	<-	CG12(11:0 'cwm' A)	{S}
+0004 ( 630)		STOREG2		<-	V(-1 'sstack')+2 , R0(PF)+0 {V(11 'cwm' A)} [0..0]	{}
+0005 ( 630)		CALLN		<-	V(10 'board_init_main')+0 	{}
+0006 ( 631)		JUMP		<-		{}
+		==> 1
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 641)		STOREC1		<-	V(6 '')+0 , CC:2	{}
+0001 ( 641)		CONST	R0(P)[0..0]	<-	CG0(32:0 '')	{S}
+0002 ( 642)		JUMP		<-		{}
+		==> 13
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 621)		RELOP19	R0(B)[0..1]	<-	R2(C)[3..5], CC:4	{S}
+0001 ( 621)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 12
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 652)		STOREC1		<-	V(6 '')+0 , CC:2	{}
+0001 ( 652)		CONST	R0(P)[0..0]	<-	CG0(34:0 '')	{S}
+0002 ( 656)		JUMP		<-		{}
+		==> 14
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 621)		RELOP19	R0(B)[0..1]	<-	R2(CF)[3..5], CC:5	{S}
+0001 ( 621)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 1
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 659)		STOREC1		<-	V(6 '')+0 , CC:1	{}
+0001 ( 659)		CONST	R0(P)[0..0]	<-	CG0(35:0 '')	{S}
+0002 ( 663)		JUMP		<-		{}
+		==> 14
+--------------------------------------------------------------------
+cwin_fill_rect_raw: /home/honza/projects/c64/projects/oscar64/include/c64/charwin.h:174
+$00 R0(I), $00 R1(P), $00 R2(P), $00 R3(I), $00 R4(C), $00 R5(C), $00 R6(C), $00 R7(C), $00 R8(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 745)		LOADZ1	R4(C)[0..255]	<-	V(4 '')+0 	{S}
+0001 ( 745)		RELOP27	R0(B)[0..1]	<-	R4(C)[0..255], CC:0	{S}
+0002 ( 745)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 750)		LOADZ1	R5(C)[0..255]	<-	V(5 '')+0 	{S}
+0001 ( 750)		RELOP28	R0(B)[0..1]	<-	CC:0, R5(C)[0..255]	{S}
+0002 ( 750)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 2
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 747)		LOADZ1	R0(C)[0..24]	<-	V(3 '')+0 	{S}
+0001 ( 747)		CONV37	R0(I)[0..24]	<-	R0(CF)[0..24]	{S}
+0002 ( 747)		BINOP16	R0(I)[0..48]	<-	R0(IF)[0..24], CI:1	{S}
+0003 ( 747)		LEAG	R0(P)[0..48]	<-	V(9 'mul40')+0 , R0(IF)[0..48]	{S}
+0004 ( 747)		LOADI2	R0(I)[0..65535]	<-	R0(PF)+0 {V(9 'mul40')} [0..48]	{}
+0005 ( 747)		LOADZ2	R1(P)	<-	V(0 '')+0 	{S}
+0006 ( 747)		LOADI2	R2(P)	<-	R1(P)+8	{}
+0007 ( 747)		LEAI	R2(P)+0	<-	R2(PF)+0, R0(I)[0..65535]	{}
+0008 ( 747)		LOADZ1	R3(C)[0..255]	<-	V(2 '')+0 	{S}
+0009 ( 747)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{S}
+000a ( 747)		LEAI	R2(P)+0	<-	R2(PF)+0, R3(I)[0..255]	{}
+000b ( 748)		LOADI2	R1(P)	<-	R1(PF)+10	{}
+000c ( 748)		LEAI	R1(P)+0	<-	R1(PF)+0, R0(IF)[0..65535]	{}
+000d ( 748)		LEAI	R1(P)+0	<-	R1(PF)+0, R3(IF)[0..255]	{}
+000e ( 752)		LOADZ1	R6(C)[0..255]	<-	V(6 '')+0 	{S}
+000f ( 752)		LOADZ1	R7(C)[0..255]	<-	V(7 '')+0 	{S}
+0010 (  23)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  23)		CONST	R8(C)[0..0]	<-	CI:0	{}
+0001 (  25)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 (  25)		CONV37	R0(I)[0..254]	<-	R8(C)[0..254]	{}
+0001 (  25)		LEAI	R3(P)+0	<-	R2(P)+0, R0(I)[0..254]	{}
+0002 (  25)		STOREI1		<-	R3(PF)+0, R6(C)[0..255]	{}
+0003 (  26)		LEAI	R0(P)+0	<-	R1(P)+0, R0(IF)[0..254]	{}
+0004 (  26)		STOREI1		<-	R0(PF)+0, R7(C)[0..255]	{}
+0005 (  23)		BINOP1	R8(C)[1..255]	<-	R8(CF)[0..254], CI:1	{}
+0006 (  23)		RELOP28	R0(B)[0..1]	<-	R8(C)[1..255], R4(C)[1..255]	{}
+0007 (  23)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 754)		LEAI	R1(P)+0	<-	R1(PF)+0, CI:40	{}
+0001 ( 753)		LEAI	R2(P)+0	<-	R2(PF)+0, CI:40	{}
+0002 ( 750)		BINOP2	R5(C)[0..254]	<-	R5(CF)[1..255], CI:1	{}
+0003 ( 750)		RELOP27	R0(B)[0..1]	<-	R5(C)[0..254], CC:0	{}
+0004 ( 750)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 2
+L2: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 757)		RET		<-		{}
+--------------------------------------------------------------------
+board_init: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:240
+$00 R0(I), $00 R1(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 243)		CONST	R1(C)[0..0]	<-	CI:0	{}
+0001 ( 244)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 244)		CONV37	R0(I)[0..6]	<-	R1(C)[0..6]	{}
+0001 ( 244)		LEAG	R0(P)[48..54]	<-	V(19 'board')+48 , R0(IF)[0..6]	{}
+0002 ( 244)		STOREI1		<-	R0(PF)+0 {V(19 'board')} [48..54], CC:6	{}
+0003 ( 243)		BINOP1	R1(C)[1..7]	<-	R1(CF)[0..6], CI:1	{}
+0004 ( 243)		RELOP28	R0(B)[0..1]	<-	R1(C)[1..7], CC:7	{}
+0005 ( 243)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 247)		CONST	R1(C)[0..0]	<-	CI:0	{}
+0001 ( 248)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 248)		CONV37	R0(I)[0..47]	<-	R1(C)[0..47]	{}
+0001 ( 248)		LEAG	R0(P)[0..47]	<-	V(19 'board')+0 , R0(IF)[0..47]	{}
+0002 ( 248)		STOREI1		<-	R0(PF)+0 {V(19 'board')} [0..47], CC:0	{}
+0003 ( 247)		BINOP1	R1(C)[1..48]	<-	R1(CF)[0..47], CI:1	{}
+0004 ( 247)		RELOP28	R0(B)[0..1]	<-	R1(C)[1..48], CC:48	{}
+0005 ( 247)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 4
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 249)		RET		<-		{}
+--------------------------------------------------------------------
+board_init_main: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:140
+$00 R0(P), $00 R1(I), $00 R2(B), $00 R3(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 144)		STOREC1		<-	V(2 '')+0 , CC:0	{}
+0001 ( 144)		STOREC1		<-	V(3 '')+0 , CC:1	{}
+0002 ( 144)		STOREC1		<-	V(4 '')+0 , CC:84	{}
+0003 ( 144)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+0004 ( 144)		LOADG2	R0(P)	<-	V(-1 'sstack')+2 	{S}
+0005 ( 144)		STOREC2		<-	V(0 '')+0 , R0(P)	{}
+0006 ( 144)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0007 ( 145)		STOREC2		<-	V(0 '')+0 , R0(P)	{}
+0008 ( 145)		STOREC1		<-	V(2 '')+0 , CC:1	{}
+0009 ( 145)		STOREC1		<-	V(3 '')+0 , CC:1	{}
+000a ( 145)		STOREC1		<-	V(4 '')+0 , CC:21	{}
+000b ( 145)		STOREC1		<-	V(5 '')+0 , CC:1	{}
+000c ( 145)		STOREC1		<-	V(6 '')+0 , CC:85	{}
+000d ( 145)		STOREC1		<-	V(7 '')+0 , CC:14	{}
+000e ( 145)		CALLN		<-	V(8 'cwin_fill_rect_raw')+0 	{}
+000f ( 146)		STOREC2		<-	V(0 '')+0 , R0(P)	{}
+0010 ( 146)		STOREC1		<-	V(2 '')+0 , CC:22	{}
+0011 ( 146)		STOREC1		<-	V(3 '')+0 , CC:1	{}
+0012 ( 146)		STOREC1		<-	V(4 '')+0 , CC:86	{}
+0013 ( 146)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+0014 ( 146)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0015 ( 147)		STOREC2		<-	V(0 '')+0 , R0(P)	{}
+0016 ( 147)		STOREC1		<-	V(2 '')+0 , CC:0	{}
+0017 ( 147)		STOREC1		<-	V(3 '')+0 , CC:2	{}
+0018 ( 147)		STOREC1		<-	V(4 '')+0 , CC:1	{}
+0019 ( 147)		STOREC1		<-	V(5 '')+0 , CC:18	{}
+001a ( 147)		STOREC1		<-	V(6 '')+0 , CC:87	{}
+001b ( 147)		STOREC1		<-	V(7 '')+0 , CC:14	{}
+001c ( 147)		CALLN		<-	V(8 'cwin_fill_rect_raw')+0 	{}
+001d ( 148)		STOREC2		<-	V(0 '')+0 , R0(P)	{}
+001e ( 148)		STOREC1		<-	V(2 '')+0 , CC:22	{}
+001f ( 148)		STOREC1		<-	V(3 '')+0 , CC:2	{}
+0020 ( 148)		STOREC1		<-	V(4 '')+0 , CC:1	{}
+0021 ( 148)		STOREC1		<-	V(5 '')+0 , CC:18	{}
+0022 ( 148)		STOREC1		<-	V(6 '')+0 , CC:88	{}
+0023 ( 148)		STOREC1		<-	V(7 '')+0 , CC:14	{}
+0024 ( 148)		CALLN		<-	V(8 'cwin_fill_rect_raw')+0 	{}
+0025 ( 149)		STOREC2		<-	V(0 '')+0 , R0(P)	{}
+0026 ( 149)		STOREC1		<-	V(2 '')+0 , CC:0	{}
+0027 ( 149)		STOREC1		<-	V(3 '')+0 , CC:20	{}
+0028 ( 149)		STOREC1		<-	V(4 '')+0 , CC:89	{}
+0029 ( 149)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+002a ( 149)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+002b ( 150)		STOREC2		<-	V(0 '')+0 , R0(P)	{}
+002c ( 150)		STOREC1		<-	V(2 '')+0 , CC:1	{}
+002d ( 150)		STOREC1		<-	V(3 '')+0 , CC:20	{}
+002e ( 150)		STOREC1		<-	V(4 '')+0 , CC:21	{}
+002f ( 150)		STOREC1		<-	V(5 '')+0 , CC:1	{}
+0030 ( 150)		STOREC1		<-	V(6 '')+0 , CC:90	{}
+0031 ( 150)		STOREC1		<-	V(7 '')+0 , CC:14	{}
+0032 ( 150)		CALLN		<-	V(8 'cwin_fill_rect_raw')+0 	{}
+0033 ( 151)		STOREC2		<-	V(0 '')+0 , R0(P)	{}
+0034 ( 151)		STOREC1		<-	V(2 '')+0 , CC:22	{}
+0035 ( 151)		STOREC1		<-	V(3 '')+0 , CC:20	{}
+0036 ( 151)		STOREC1		<-	V(4 '')+0 , CC:91	{}
+0037 ( 151)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+0038 ( 151)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0039 ( 156)		CONST	R3(C)[49..49]	<-	CI:49	{}
+003a ( 156)		CONST	R1(I)[2..2]	<-	CI:2	{}
+003b ( 156)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 156)		STOREC2		<-	V(0 '')+0 , R0(P)	{}
+0001 ( 156)		STOREC1		<-	V(2 '')+0 , R1(C)[2..20]	{}
+0002 ( 156)		STOREC1		<-	V(3 '')+0 , CC:0	{}
+0003 ( 156)		STOREC1		<-	V(4 '')+0 , R3(C)[49..55]	{}
+0004 ( 156)		STOREC1		<-	V(5 '')+0 , CC:1	{}
+0005 ( 156)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0006 ( 156)		BINOP1	R1(I)[5..23]	<-	CI:3, R1(IF)[2..20]	{}
+0007 ( 156)		BINOP1	R3(C)[50..56]	<-	R3(CF)[49..55], CC:1	{}
+0008 ( 155)		RELOP20	R2(B)[0..1]	<-	R3(C)[50..56], CC:56	{}
+0009 ( 155)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 158)		STOREG2		<-	V(-1 'sstack')+0 , R0(PF)	{}
+0001 ( 158)		CALLN		<-	V(12 'board_draw_main')+0 	{}
+0002 ( 159)		RET		<-		{}
+--------------------------------------------------------------------
+cwin_putat_char_raw: /home/honza/projects/c64/projects/oscar64/include/c64/charwin.h:95
+$00 R0(I), $00 R1(I), $00 R2(P), $00 R3(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 351)		LOADZ1	R0(C)[0..255]	<-	V(2 '')+0 	{S}
+0001 ( 351)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0002 ( 351)		LOADZ1	R1(C)[0..24]	<-	V(3 '')+0 	{S}
+0003 ( 351)		CONV37	R1(I)[0..24]	<-	R1(CF)[0..24]	{S}
+0004 ( 351)		BINOP16	R1(I)[0..48]	<-	R1(IF)[0..24], CI:1	{S}
+0005 ( 351)		LEAG	R1(P)[0..48]	<-	V(9 'mul40')+0 , R1(IF)[0..48]	{S}
+0006 ( 351)		LOADI2	R1(I)[0..65535]	<-	R1(PF)+0 {V(9 'mul40')} [0..48]	{}
+0007 ( 351)		BINOP1	R0(I)	<-	R1(IF)[0..65535], R0(IF)[0..255]	{}
+0008 ( 353)		LOADZ2	R1(P)	<-	V(0 '')+0 	{S}
+0009 ( 353)		LOADI2	R2(P)	<-	R1(P)+8	{}
+000a ( 353)		LOADZ1	R3(C)[0..255]	<-	V(4 '')+0 	{S}
+000b ( 353)		LEAI	R2(P)+0	<-	R2(PF)+0, R0(I)	{}
+000c ( 353)		STOREI1		<-	R2(PF)+0, R3(CF)[0..255]	{}
+000d ( 354)		LOADI2	R1(P)	<-	R1(PF)+10	{}
+000e ( 354)		LEAI	R1(P)+0	<-	R1(PF)+0, R0(IF)	{}
+000f ( 354)		LOADZ1	R0(C)[0..255]	<-	V(5 '')+0 	{S}
+0010 ( 354)		STOREI1		<-	R1(PF)+0, R0(CF)[0..255]	{}
+0011 ( 355)		RET		<-		{}
+--------------------------------------------------------------------
+board_draw_main: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:122
+$00 R0(I), $07 R1(I), $00 R2(P), $08 R3(I), $09 R4(I), $02 R5(B), $0a R6(C), $0b R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 124)		CONST	R6(C)[0..0]	<-	CI:0	{}
+0001 ( 128)		CONST	R1(I)[0..0]	<-	CI:0	{I}
+0002 ( 129)		LOADG2	R2(P)	<-	V(-1 'sstack')+0 	{IS}
+0003 ( 128)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 128)		BINOP16	R3(I)[0..40]	<-	R1(I)[0..5], CI:3	{I}
+0001 ( 126)		CONST	R7(C)[0..0]	<-	CI:0	{}
+0002 ( 128)		CONST	R4(I)[0..0]	<-	CI:0	{}
+0003 ( 129)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 129)		STOREC2		<-	V(6 '')+0 , R2(P)	{}
+0001 ( 128)		BINOP1	R0(I)[0..46]	<-	R4(I)[0..6], R3(I)[0..40]	{}
+0002 ( 128)		LEAG	R0(P)[0..46]	<-	V(19 'board')+0 , R0(IF)[0..46]	{}
+0003 ( 128)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(19 'board')} [0..46]	{}
+0004 ( 128)		RELOP19	R5(B)[0..1]	<-	R0(C)[0..255], CC:1	{}
+0005 ( 128)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 129)		STOREC1		<-	V(10 '')+0 , CC:10	{}
+0001 ( 126)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 129)		STOREC1		<-	V(8 '')+0 , R7(C)[0..6]	{}
+0001 ( 129)		STOREC1		<-	V(9 '')+0 , R6(C)[0..5]	{}
+0002 ( 129)		CALLN		<-	V(13 'board_draw_item')+0 	{}
+0003 ( 128)		BINOP1	R4(I)[1..7]	<-	R4(IF)[0..6], CI:1	{}
+0004 ( 126)		BINOP1	R7(C)[1..7]	<-	R7(CF)[0..6], CI:1	{}
+0005 ( 126)		RELOP28	R0(B)[0..1]	<-	R7(C)[1..7], CC:7	{}
+0006 ( 126)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 128)		BINOP1	R1(I)[1..6]	<-	R1(IF)[0..5], CI:1	{}
+0001 ( 124)		BINOP1	R6(C)[1..6]	<-	R6(CF)[0..5], CI:1	{}
+0002 ( 124)		RELOP28	R0(B)[0..1]	<-	R6(C)[1..6], CC:6	{}
+0003 ( 124)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 136)		RET		<-		{}
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 130)		RELOP19	R0(B)[0..1]	<-	R0(CF)[0..255], CC:5	{}
+0001 ( 130)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 131)		STOREC1		<-	V(10 '')+0 , CC:15	{}
+0001 ( 126)		JUMP		<-		{}
+		==> 4
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 133)		STOREC1		<-	V(10 '')+0 , CC:0	{}
+0001 ( 126)		JUMP		<-		{}
+		==> 4
+--------------------------------------------------------------------
+board_draw_item: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:86
+$00 R0(I), $00 R1(P), $02 R2(I), $03 R3(I), $04 R4(I), $05 R5(I), $06 R6(I), $00 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  92)		LOADZ2	R1(P)	<-	V(6 '')+0 	{S}
+0001 (  92)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0002 (  88)		LOADZ1	R0(C)[0..255]	<-	V(8 '')+0 	{S}
+0003 (  88)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0004 (  88)		BINOP3	R0(I)[0..765]	<-	R0(IF)[0..255], CI:3	{S}
+0005 (  88)		BINOP1	R0(I)[1..766]	<-	R0(IF)[0..765], CI:1	{S}
+0006 (  92)		CONV37	R2(I)[0..255]	<-	R0(CF)[1..766]	{S}
+0007 (  92)		STOREC1		<-	V(2 '')+0 , R2(C)[0..255]	{}
+0008 (  88)		LOADZ1	R0(C)[0..255]	<-	V(9 '')+0 	{S}
+0009 (  88)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+000a (  88)		BINOP3	R0(I)[0..765]	<-	R0(IF)[0..255], CI:3	{S}
+000b (  88)		BINOP1	R0(I)[2..767]	<-	R0(IF)[0..765], CI:2	{S}
+000c (  92)		CONV37	R0(I)[0..255]	<-	R0(CF)[2..767]	{S}
+000d (  92)		STOREC1		<-	V(3 '')+0 , R0(C)[0..255]	{}
+000e ( 100)		BINOP1	R3(I)[2..257]	<-	R0(I)[0..255], CI:2	{S}
+000f (  96)		BINOP1	R4(I)[1..256]	<-	R0(I)[0..255], CI:1	{S}
+0010 (  94)		BINOP1	R5(I)[2..257]	<-	R2(I)[0..255], CI:2	{S}
+0011 (  93)		BINOP1	R6(I)[1..256]	<-	R2(I)[0..255], CI:1	{S}
+0012 (  90)		LOADZ1	R7(C)[0..255]	<-	V(10 '')+0 	{S}
+0013 (  90)		BRANCH		<-	R7(C)[0..255]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  92)		STOREC1		<-	V(4 '')+0 , CC:73	{}
+0001 (  92)		STOREC1		<-	V(5 '')+0 , R7(C)[0..255]	{}
+0002 (  92)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0003 (  93)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0004 (  93)		STOREC1		<-	V(2 '')+0 , R6(C)[1..256]	{}
+0005 (  93)		STOREC1		<-	V(3 '')+0 , R0(C)[0..255]	{}
+0006 (  93)		STOREC1		<-	V(4 '')+0 , CC:74	{}
+0007 (  93)		STOREC1		<-	V(5 '')+0 , R7(C)[0..255]	{}
+0008 (  93)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0009 (  94)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+000a (  94)		STOREC1		<-	V(2 '')+0 , R5(C)[2..257]	{}
+000b (  94)		STOREC1		<-	V(3 '')+0 , R0(CF)[0..255]	{}
+000c (  94)		STOREC1		<-	V(4 '')+0 , CC:75	{}
+000d (  94)		STOREC1		<-	V(5 '')+0 , R7(C)[0..255]	{}
+000e (  94)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+000f (  96)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0010 (  96)		STOREC1		<-	V(2 '')+0 , R2(C)[0..255]	{}
+0011 (  96)		STOREC1		<-	V(3 '')+0 , R4(C)[1..256]	{}
+0012 (  96)		STOREC1		<-	V(4 '')+0 , CC:76	{}
+0013 (  96)		STOREC1		<-	V(5 '')+0 , R7(C)[0..255]	{}
+0014 (  96)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0015 (  97)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0016 (  97)		STOREC1		<-	V(2 '')+0 , R6(C)[1..256]	{}
+0017 (  97)		STOREC1		<-	V(3 '')+0 , R4(C)[1..256]	{}
+0018 (  97)		STOREC1		<-	V(4 '')+0 , CC:77	{}
+0019 (  97)		STOREC1		<-	V(5 '')+0 , R7(C)[0..255]	{}
+001a (  97)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+001b (  98)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+001c (  98)		STOREC1		<-	V(2 '')+0 , R5(C)[2..257]	{}
+001d (  98)		STOREC1		<-	V(3 '')+0 , R4(CF)[1..256]	{}
+001e (  98)		STOREC1		<-	V(4 '')+0 , CC:78	{}
+001f (  98)		STOREC1		<-	V(5 '')+0 , R7(C)[0..255]	{}
+0020 (  98)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0021 ( 100)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0022 ( 100)		STOREC1		<-	V(2 '')+0 , R2(CF)[0..255]	{}
+0023 ( 100)		STOREC1		<-	V(3 '')+0 , R3(C)[2..257]	{}
+0024 ( 100)		STOREC1		<-	V(4 '')+0 , CC:79	{}
+0025 ( 100)		STOREC1		<-	V(5 '')+0 , R7(C)[0..255]	{}
+0026 ( 100)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0027 ( 101)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0028 ( 101)		STOREC1		<-	V(2 '')+0 , R6(CF)[1..256]	{}
+0029 ( 101)		STOREC1		<-	V(3 '')+0 , R3(C)[2..257]	{}
+002a ( 101)		STOREC1		<-	V(4 '')+0 , CC:80	{}
+002b ( 101)		STOREC1		<-	V(5 '')+0 , R7(C)[0..255]	{}
+002c ( 101)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+002d ( 102)		STOREC1		<-	V(4 '')+0 , CC:81	{}
+002e ( 102)		STOREC1		<-	V(5 '')+0 , R7(CF)[0..255]	{}
+002f (  90)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 102)		STOREC2		<-	V(0 '')+0 , R1(PF)	{}
+0001 ( 102)		STOREC1		<-	V(2 '')+0 , R5(CF)[2..257]	{}
+0002 ( 102)		STOREC1		<-	V(3 '')+0 , R3(CF)[2..257]	{}
+0003 ( 102)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0004 ( 118)		RET		<-		{}
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 106)		STOREC1		<-	V(4 '')+0 , CC:64	{}
+0001 ( 106)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+0002 ( 106)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0003 ( 107)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0004 ( 107)		STOREC1		<-	V(2 '')+0 , R6(C)[1..256]	{}
+0005 ( 107)		STOREC1		<-	V(3 '')+0 , R0(C)[0..255]	{}
+0006 ( 107)		STOREC1		<-	V(4 '')+0 , CC:65	{}
+0007 ( 107)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+0008 ( 107)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0009 ( 108)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+000a ( 108)		STOREC1		<-	V(2 '')+0 , R5(C)[2..257]	{}
+000b ( 108)		STOREC1		<-	V(3 '')+0 , R0(CF)[0..255]	{}
+000c ( 108)		STOREC1		<-	V(4 '')+0 , CC:66	{}
+000d ( 108)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+000e ( 108)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+000f ( 110)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0010 ( 110)		STOREC1		<-	V(2 '')+0 , R2(C)[0..255]	{}
+0011 ( 110)		STOREC1		<-	V(3 '')+0 , R4(C)[1..256]	{}
+0012 ( 110)		STOREC1		<-	V(4 '')+0 , CC:67	{}
+0013 ( 110)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+0014 ( 110)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0015 ( 111)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0016 ( 111)		STOREC1		<-	V(2 '')+0 , R6(C)[1..256]	{}
+0017 ( 111)		STOREC1		<-	V(3 '')+0 , R4(C)[1..256]	{}
+0018 ( 111)		STOREC1		<-	V(4 '')+0 , CC:68	{}
+0019 ( 111)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+001a ( 111)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+001b ( 112)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+001c ( 112)		STOREC1		<-	V(2 '')+0 , R5(C)[2..257]	{}
+001d ( 112)		STOREC1		<-	V(3 '')+0 , R4(CF)[1..256]	{}
+001e ( 112)		STOREC1		<-	V(4 '')+0 , CC:69	{}
+001f ( 112)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+0020 ( 112)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0021 ( 114)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0022 ( 114)		STOREC1		<-	V(2 '')+0 , R2(CF)[0..255]	{}
+0023 ( 114)		STOREC1		<-	V(3 '')+0 , R3(C)[2..257]	{}
+0024 ( 114)		STOREC1		<-	V(4 '')+0 , CC:70	{}
+0025 ( 114)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+0026 ( 114)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0027 ( 115)		STOREC2		<-	V(0 '')+0 , R1(P)	{}
+0028 ( 115)		STOREC1		<-	V(2 '')+0 , R6(CF)[1..256]	{}
+0029 ( 115)		STOREC1		<-	V(3 '')+0 , R3(C)[2..257]	{}
+002a ( 115)		STOREC1		<-	V(4 '')+0 , CC:71	{}
+002b ( 115)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+002c ( 115)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+002d ( 116)		STOREC1		<-	V(4 '')+0 , CC:72	{}
+002e ( 116)		STOREC1		<-	V(5 '')+0 , CC:14	{}
+002f (  90)		JUMP		<-		{}
+		==> 3
+--------------------------------------------------------------------
+column_select_anim: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:211
+$00 R0(I), $02 R1(P), $04 R2(I), $00 R3(I), $06 R4(I), $00 R5(I), $00 R6(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 220)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0001 ( 220)		STOREC1		<-	V(1 '')+0 , CB:1	{}
+0002 ( 220)		STOREC1		<-	V(6 '')+0 , CC:97	{}
+0003 ( 220)		STOREC1		<-	V(8 '')+0 , CB:1	{}
+0004 ( 220)		STOREC1		<-	V(9 '')+0 , CB:0	{}
+0005 ( 220)		STOREC1		<-	V(10 '')+0 , CB:0	{}
+0006 ( 214)		LOADZ1	R0(C)[0..255]	<-	V(11 '')+0 	{S}
+0007 ( 214)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0008 ( 214)		BINOP3	R0(I)[0..765]	<-	R0(IF)[0..255], CI:3	{S}
+0009 ( 214)		LOADG2	R1(P)	<-	V(-1 'sstack')+0 	{S}
+000a ( 214)		LOADI1	R2(C)[0..255]	<-	R1(P)+0	{}
+000b ( 214)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+000c ( 214)		BINOP1	R0(I)[0..1020]	<-	R2(I)[0..255], R0(IF)[0..765]	{}
+000d ( 214)		BINOP16	R0(I)[0..8160]	<-	R0(IF)[0..1020], CI:3	{}
+000e ( 214)		BINOP1	R4(I)[32..8192]	<-	R0(IF)[0..8160], CI:32	{}
+000f ( 220)		STOREC2		<-	V(2 '')+0 , R4(I)[32..8192]	{}
+0010 ( 214)		LOADI1	R0(C)[0..255]	<-	R1(PF)+1	{}
+0011 ( 214)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0012 ( 214)		BINOP16	R0(I)[0..2040]	<-	R0(IF)[0..255], CI:3	{}
+0013 ( 214)		BINOP1	R5(I)[36..2076]	<-	R0(IF)[0..2040], CI:36	{}
+0014 ( 220)		STOREC2		<-	V(4 '')+0 , R5(I)[36..2076]	{}
+0015 ( 220)		LOADG1	R0(C)[0..255]	<-	V(-1 'sstack')+3 	{S}
+0016 ( 220)		STOREC1		<-	V(7 '')+0 , R0(CF)[0..255]	{}
+0017 ( 220)		CALLN		<-	V(15 'spr_set')+0 	{}
+0018 ( 223)		STOREA1		<-	V(-1 '')+53275 , CC:1	{V}
+0019 ( 217)		LOADG1	R0(C)[0..255]	<-	V(-1 'sstack')+2 	{S}
+001a ( 217)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+001b ( 217)		BINOP3	R0(I)[0..765]	<-	R0(IF)[0..255], CI:3	{S}
+001c ( 217)		BINOP1	R0(I)[0..1020]	<-	R0(IF)[0..765], R2(IF)[0..255]	{}
+001d ( 217)		BINOP16	R0(I)[0..8160]	<-	R0(IF)[0..1020], CI:3	{}
+001e ( 217)		BINOP1	R0(I)[32..8192]	<-	R0(IF)[0..8160], CI:32	{}
+001f ( 226)		RELOP20	R1(B)[0..1]	<-	R4(I)[32..8192], R0(I)[32..8192]	{}
+0020 ( 226)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 229)		CONST	R1(I)[1..1]	<-	CI:1	{}
+0001 (  76)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  76)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  76)		LOADA1	R2(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  76)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0002 (  76)		BINOP9	R2(I)[0..128]	<-	R2(IF)[0..255], CI:128	{}
+0003 (  76)		RELOP20	R2(B)[0..1]	<-	R2(IF)[0..128], CI:0	{}
+0004 (  76)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 5
+		==> 6
+L6: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  78)		LOADA1	R2(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  78)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0002 (  78)		BINOP9	R2(I)[0..128]	<-	R2(IF)[0..255], CI:128	{}
+0003 (  78)		BRANCH		<-	R2(IF)[0..128]	{}
+		==> 4
+		==> 6
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  70)		LOADA1	R6(C)[0..255]	<-	V(-1 '')+53264 	{}
+0001 (  67)		STOREA1		<-	V(-1 '')+53249 , R5(C)[36..2076]	{V}
+0002 ( 233)		BINOP3	R2(I)	<-	R0(I)[32..8192], R1(I)[1..8]	{}
+0003 ( 233)		BINOP2	R3(I)[0..7]	<-	CI:8, R1(I)[1..8]	{}
+0004 ( 233)		BINOP3	R3(I)	<-	R3(IF)[0..7], R4(I)[32..8192]	{}
+0005 ( 233)		BINOP1	R2(I)	<-	R3(IF), R2(IF)	{}
+0006 ( 233)		BINOP18	R2(I)[-4096..4095]	<-	R2(IF), CI:3	{}
+0007 (  68)		BINOP9	R3(I)[0..255]	<-	R2(I)[-4096..4095], CI:255	{}
+0008 (  68)		STOREA1		<-	V(-1 '')+53248 , R3(CF)[0..255]	{V}
+0009 (  70)		CONV37	R3(I)[0..255]	<-	R6(CF)[0..255]	{}
+000a (  69)		BINOP9	R2(I)[0..256]	<-	R2(IF)[-4096..4095], CI:256	{}
+000b (  69)		RELOP20	R2(B)[0..1]	<-	R2(IF)[0..256], CI:0	{}
+000c (  69)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  70)		BINOP8	R2(I)[0..255]	<-	R3(IF)[0..255], CI:1	{}
+0001 ( 229)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  72)		STOREA1		<-	V(-1 '')+53264 , R2(CF)[0..255]	{}
+0001 ( 229)		BINOP1	R1(I)[2..9]	<-	R1(IF)[1..8], CI:1	{}
+0002 ( 229)		RELOP26	R2(B)[0..1]	<-	R1(I)[2..9], CI:8	{}
+0003 ( 229)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 9
+		==> 2
+L2: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 236)		RET		<-		{}
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  72)		BINOP9	R2(I)[0..254]	<-	R3(IF)[0..255], CI:254	{}
+0001 ( 229)		JUMP		<-		{}
+		==> 3
+--------------------------------------------------------------------
+spr_set: /home/honza/projects/c64/projects/oscar64/include/c64/sprites.h:12
+$00 R0(I), $00 R1(I), $00 R2(I), $00 R3(I), $00 R4(I), $00 R5(P), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  23)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53269 	{V}
+0001 (  23)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0002 (  18)		LOADZ1	R1(C)[0..7]	<-	V(0 '')+0 	{S}
+0003 (  18)		CONV37	R1(I)[0..7]	<-	R1(CF)[0..7]	{S}
+0004 (  20)		BINOP16	R2(I)[0..128]	<-	CI:1, R1(I)[0..7]	{S}
+0005 (  22)		LOADZ1	R3(B)[0..1]	<-	V(1 '')+0 	{S}
+0006 (  22)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  23)		BINOP8	R0(I)[0..255]	<-	R2(I)[0..128], R0(IF)[0..255]	{}
+0001 (  27)		JUMP		<-		{}
+		==> 13
+L13: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  25)		STOREA1		<-	V(-1 '')+53269 , R0(CF)	{V}
+0001 (  28)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53276 	{V}
+0002 (  28)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0003 (  27)		LOADZ1	R3(B)[0..1]	<-	V(8 '')+0 	{S}
+0004 (  27)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  28)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..255], R2(I)[0..128]	{}
+0001 (  32)		JUMP		<-		{}
+		==> 14
+L14: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  30)		STOREA1		<-	V(-1 '')+53276 , R0(CF)	{V}
+0001 (  33)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53277 	{V}
+0002 (  33)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0003 (  32)		LOADZ1	R3(B)[0..1]	<-	V(9 '')+0 	{S}
+0004 (  32)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  33)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..255], R2(I)[0..128]	{}
+0001 (  37)		JUMP		<-		{}
+		==> 15
+L15: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  35)		STOREA1		<-	V(-1 '')+53277 , R0(CF)	{V}
+0001 (  38)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53271 	{V}
+0002 (  38)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0003 (  37)		LOADZ1	R3(B)[0..1]	<-	V(10 '')+0 	{S}
+0004 (  37)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  38)		BINOP8	R0(I)[0..255]	<-	R0(IF)[0..255], R2(I)[0..128]	{}
+0001 (  37)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  40)		STOREA1		<-	V(-1 '')+53271 , R0(CF)	{V}
+0001 (  43)		LOADZ2	R0(I)[-32768..32767]	<-	V(2 '')+0 	{S}
+0002 (  42)		BINOP16	R3(I)[0..14]	<-	R1(I)[0..7], CI:1	{S}
+0003 (  42)		LOADZ2	R4(I)[-32768..32767]	<-	V(4 '')+0 	{S}
+0004 (  42)		LEAA	R5(P)[53249..53263]	<-	V(-1 '')+53249 , R3(I)[0..14]	{}
+0005 (  42)		STOREI1		<-	R5(PF)+0 {V(-1 'ABS')} [53249..53263], R4(CF)[-32768..32767]	{V}
+0006 (  43)		BINOP9	R4(I)[0..255]	<-	R0(I)[-32768..32767], CI:255	{S}
+0007 (  42)		LEAA	R3(P)[53248..53262]	<-	V(-1 '')+53248 , R3(IF)[0..14]	{S}
+0008 (  43)		STOREI1		<-	R3(PF)+0 {V(-1 'ABS')} [53248..53262], R4(CF)[0..255]	{V}
+0009 (  45)		LOADA1	R3(C)[0..255]	<-	V(-1 '')+53264 	{}
+000a (  45)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+000b (  44)		BINOP9	R0(I)[0..256]	<-	R0(IF)[-32768..32767], CI:256	{S}
+000c (  44)		RELOP20	R0(B)[0..1]	<-	R0(IF)[0..256], CI:0	{S}
+000d (  44)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  45)		BINOP8	R0(I)[0..255]	<-	R2(IF)[0..128], R3(IF)[0..255]	{}
+0001 (  44)		JUMP		<-		{}
+		==> 12
+L12: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  47)		STOREA1		<-	V(-1 '')+53264 , R0(CF)	{}
+0001 (  50)		LOADZ1	R2(C)[0..255]	<-	V(7 '')+0 	{S}
+0002 (  49)		LOADG2	R0(P)	<-	V(8 'vspriteScreen')+0 	{}
+0003 (  49)		LOADZ1	R3(C)[0..255]	<-	V(6 '')+0 	{S}
+0004 (  49)		LEAI	R0(P)+0	<-	R0(PF)+0, R1(I)[0..7]	{}
+0005 (  49)		STOREI1		<-	R0(PF)+0, R3(CF)[0..255]	{V}
+0006 (  50)		LEAA	R0(P)[53287..53294]	<-	V(-1 '')+53287 , R1(IF)[0..7]	{S}
+0007 (  50)		STOREI1		<-	R0(PF)+0 {V(-1 'ABS')} [53287..53294], R2(CF)[0..255]	{V}
+0008 (  51)		RET		<-		{}
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  47)		UNOP15	R2(I)	<-	R2(IF)[0..128]	{S}
+0001 (  47)		BINOP9	R0(I)	<-	R2(IF), R3(IF)[0..255]	{}
+0002 (  44)		JUMP		<-		{}
+		==> 12
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  40)		UNOP15	R3(I)	<-	R2(I)[0..128]	{S}
+0001 (  40)		BINOP9	R0(I)	<-	R3(IF), R0(IF)[0..255]	{}
+0002 (  37)		JUMP		<-		{}
+		==> 9
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  35)		UNOP15	R3(I)	<-	R2(I)[0..128]	{S}
+0001 (  35)		BINOP9	R0(I)	<-	R3(IF), R0(IF)[0..255]	{}
+0002 (  37)		JUMP		<-		{}
+		==> 15
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  30)		UNOP15	R3(I)	<-	R2(I)[0..128]	{S}
+0001 (  30)		BINOP9	R0(I)	<-	R3(IF), R0(IF)[0..255]	{}
+0002 (  32)		JUMP		<-		{}
+		==> 14
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  25)		UNOP15	R3(I)	<-	R2(I)[0..128]	{S}
+0001 (  25)		BINOP9	R0(I)	<-	R3(IF), R0(IF)[0..255]	{}
+0002 (  27)		JUMP		<-		{}
+		==> 13
+--------------------------------------------------------------------
+cwin_putat_string: /home/honza/projects/c64/projects/oscar64/include/c64/charwin.h:90
+$00 R0(I), $00 R1(I), $00 R2(P), $00 R3(I), $00 R4(P), $00 R5(C), $00 R6(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 331)		LOADZ1	R0(C)[0..255]	<-	V(2 '')+0 	{S}
+0001 ( 331)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0002 ( 331)		LOADZ1	R1(C)[0..24]	<-	V(3 '')+0 	{S}
+0003 ( 331)		CONV37	R1(I)[0..24]	<-	R1(CF)[0..24]	{S}
+0004 ( 331)		BINOP16	R1(I)[0..48]	<-	R1(IF)[0..24], CI:1	{S}
+0005 ( 331)		LEAG	R1(P)[0..48]	<-	V(9 'mul40')+0 , R1(IF)[0..48]	{S}
+0006 ( 331)		LOADI2	R1(I)[0..65535]	<-	R1(PF)+0 {V(9 'mul40')} [0..48]	{}
+0007 ( 331)		BINOP1	R0(I)	<-	R1(IF)[0..65535], R0(IF)[0..255]	{}
+0008 ( 333)		LOADZ2	R1(P)	<-	V(0 '')+0 	{S}
+0009 ( 333)		LOADI2	R2(P)	<-	R1(P)+8	{}
+000a ( 333)		LEAI	R2(P)+0	<-	R2(PF)+0, R0(I)	{}
+000b ( 334)		LOADI2	R1(P)	<-	R1(PF)+10	{}
+000c ( 334)		LEAI	R1(P)+0	<-	R1(PF)+0, R0(IF)	{}
+000d ( 336)		CONST	R5(C)[0..0]	<-	CI:0	{}
+000e ( 337)		LOADZ2	R0(P)	<-	V(4 '')+0 	{IS}
+000f ( 337)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 337)		CONV37	R3(I)[0..255]	<-	R5(C)[0..]	{}
+0001 ( 337)		LEAI	R4(P)+0	<-	R0(P)+0, R3(I)[0..255]	{}
+0002 ( 337)		LOADI1	R6(C)[0..255]	<-	R4(PF)+0	{}
+0003 ( 337)		BRANCH		<-	R6(C)[0..255]	{}
+		==> 2
+		==> 3
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 337)		CONV37	R4(I)[0..255]	<-	R6(C)[0..255]	{}
+0001 ( 184)		BINOP17	R4(I)[0..7]	<-	R4(IF)[0..255], CI:5	{}
+0002 ( 184)		LEAG	R4(P)[0..7]	<-	V(18 'p2smap' A)+0 , R4(IF)[0..7]	{}
+0003 ( 184)		LOADI1	R4(C)[0..255]	<-	R4(PF)+0 {V(18 'p2smap' A)} [0..7]	{}
+0004 ( 184)		BINOP10	R6(C)	<-	R4(CF)[0..255], R6(CF)[0..255]	{}
+0005 ( 339)		LEAI	R4(P)+0	<-	R2(P)+0, R3(I)[0..255]	{}
+0006 ( 339)		STOREI1		<-	R4(PF)+0, R6(CF)	{}
+0007 ( 340)		LOADZ1	R4(C)[0..255]	<-	V(6 '')+0 	{S}
+0008 ( 340)		LEAI	R3(P)+0	<-	R1(P)+0, R3(IF)[0..255]	{}
+0009 ( 340)		STOREI1		<-	R3(PF)+0, R4(CF)[0..255]	{}
+000a ( 341)		BINOP1	R5(C)[1..]	<-	R5(CF)[0..], CI:1	{}
+000b ( 337)		JUMP		<-		{}
+		==> 1
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/charwin.c
+0000 ( 344)		RETV		<-	R5(CF)[0..]	{}
+--------------------------------------------------------------------
+game_loop: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:669
+$10 R0(P), $00 R1(I), $11 R2(P), $12 R3(P), $13 R4(C), $02 R5(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 673)		LOADG1	R0(C)[0..5]	<-	V(17 'TheGame')+0 	{}
+0001 ( 673)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..5], CC:2	{}
+0002 ( 673)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 21
+		==> 29
+L21: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 738)		LOADG1	R4(C)[0..255]	<-	V(17 'TheGame')+3 	{}
+0001 ( 738)		STOREC1		<-	V(0 '')+0 , R4(C)[0..255]	{}
+0002 ( 738)		CONST	R0(P)[4..4]	<-	CG21(17:4 'TheGame')	{S}
+0003 ( 738)		STOREC2		<-	V(1 '')+0 , R0(PF)+0 {V(17 'TheGame')} [4..4]	{}
+0004 ( 738)		CALLN	R0(C)	<-	V(24 'board_opening')+0 	{E}
+0005 ( 739)		RELOP19	R1(B)[0..1]	<-	R0(C), CC:255	{}
+0006 ( 739)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 22
+		==> 23
+L22: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 740)		STOREF1		<-	V(0 '')+0 , CC:0	{}
+0001 ( 740)		STOREF2		<-	V(1 '')+0 , CI:-32767	{}
+0002 ( 740)		STOREF2		<-	V(3 '')+0 , CI:32767	{}
+0003 ( 740)		STOREF1		<-	V(5 '')+0 , CB:0	{}
+0004 ( 740)		CALLN	R0(I)	<-	V(25 'board_check')+0 	{}
+0005 ( 739)		JUMP		<-		{}
+		==> 23
+L23: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 256)		CONV37	R1(I)[0..6]	<-	R0(C)[0..6]	{}
+0001 ( 256)		LEAG	R2(P)[48..54]	<-	V(19 'board')+48 , R1(I)[0..6]	{}
+0002 ( 256)		LOADI1	R3(C)[0..255]	<-	R2(P)+0 {V(19 'board')} [48..54]	{}
+0003 ( 256)		BRANCH		<-	R3(C)[0..255]	{}
+		==> 24
+		==> 1
+L24: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 746)		STOREC1		<-	V(11 '')+0 , R0(CF)[0..6]	{}
+0001 ( 746)		STOREG1		<-	V(-1 'sstack')+3 , CC:2	{}
+0002 ( 259)		BINOP1	R0(C)[0..6]	<-	R3(C)[1..7], CI:-1	{}
+0003 ( 746)		STOREG1		<-	V(-1 'sstack')+2 , R0(C)[0..6]	{}
+0004 ( 259)		STOREI1		<-	R2(PF)+0 {V(19 'board')} [48..54], R0(CF)[0..6]	{}
+0005 ( 260)		CONV37	R0(I)[1..7]	<-	R3(CF)[1..7]	{}
+0006 ( 260)		BINOP16	R0(I)[8..56]	<-	R0(IF)[1..7], CI:3	{}
+0007 ( 260)		BINOP1	R0(I)[8..62]	<-	R0(IF)[8..56], R1(IF)[0..6]	{}
+0008 ( 260)		LEAG	R0(P)[0..54]	<-	V(19 'board')+-8 , R0(IF)[8..48]	{}
+0009 ( 260)		STOREI1		<-	R0(PF)+0 {V(19 'board')} [0..54], CC:1	{}
+000a ( 746)		CONST	R0(P)[0..0]	<-	CG12(11:0 'cwm' A)	{S}
+000b ( 746)		STOREG2		<-	V(-1 'sstack')+0 , R0(P)+0 {V(11 'cwm' A)} [0..0]	{}
+000c ( 746)		CALLN		<-	V(22 'item_drop_anim')+0 	{}
+000d ( 749)		STOREG2		<-	V(-1 'sstack')+0 , R0(PF)+0 {V(11 'cwm' A)} [0..0]	{}
+000e ( 749)		CALLN		<-	V(12 'board_draw_main')+0 	{}
+000f ( 753)		STOREC1		<-	V(0 '')+0 , CB:0	{}
+0010 (  60)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53269 	{V}
+0011 (  60)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0012 (  60)		BINOP9	R0(I)[0..254]	<-	R0(IF)[0..255], CI:254	{}
+0013 (  60)		STOREA1		<-	V(-1 '')+53269 , R0(CF)[0..254]	{V}
+0014 ( 753)		CALLN	R0(I)	<-	V(23 'board_eval')+0 	{E}
+0015 ( 753)		RELOP19	R0(B)[0..1]	<-	R0(IF), CI:32000	{}
+0016 ( 753)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 25
+		==> 26
+L25: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 754)		STOREG1		<-	V(-1 'sstack')+4 , CC:4	{}
+0001 ( 753)		JUMP		<-		{}
+		==> 33
+L33: <= D-1: (6)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 729)		CALLN		<-	V(7 'game_state')+0 	{}
+0001 ( 728)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (7)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 769)		RET		<-		{}
+L26: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 755)		RELOP19	R0(B)[0..1]	<-	R4(CF)[0..255], CC:21	{}
+0001 ( 755)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 27
+		==> 3
+L27: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 756)		STOREG1		<-	V(-1 'sstack')+4 , CC:5	{}
+0001 ( 755)		JUMP		<-		{}
+		==> 33
+L3: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 677)		STOREG1		<-	V(-1 'sstack')+4 , CC:1	{}
+0001 ( 676)		JUMP		<-		{}
+		==> 33
+L29: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 673)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..5], CC:2	{}
+0001 ( 673)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 31
+		==> 30
+L31: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 673)		BRANCH		<-	R0(CF)[0..1]	{}
+		==> 4
+		==> 2
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 682)		LOADG1	R3(C)[0..255]	<-	V(17 'TheGame')+2 	{}
+0001 ( 685)		CALLN	R0(C)	<-	V(18 'kbhit')+0 	{}
+0002 ( 682)		MOVE	R4(C)[0..255]	<-	R3(C)[0..255]	{}
+0003 ( 671)		CONST	R2(C)[255..255]	<-	CI:255	{}
+0004 ( 685)		BRANCH		<-	R0(CF)	{}
+		==> 5
+		==> 6
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 688)		CALLN	R0(C)	<-	V(19 'getch')+0 	{}
+0001 ( 691)		RELOP25	R1(B)[0..1]	<-	R0(C), CC:49	{}
+0002 ( 691)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 9
+		==> 7
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 691)		RELOP26	R1(B)[0..1]	<-	R0(C)[49..], CC:55	{}
+0001 ( 691)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 8
+		==> 7
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 691)		CONV37	R0(I)[49..55]	<-	R0(CF)[49..55]	{}
+0001 ( 692)		BINOP2	R2(I)[0..6]	<-	R0(IF)[49..55], CI:49	{}
+0002 ( 692)		MOVE	R4(C)[0..6]	<-	R2(C)[0..6]	{}
+0003 ( 691)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (7)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 709)		STOREC1		<-	V(11 '')+0 , R3(CF)[0..255]	{}
+0001 ( 709)		STOREG1		<-	V(-1 'sstack')+2 , R4(C)[0..255]	{}
+0002 ( 709)		STOREG1		<-	V(-1 'sstack')+3 , CC:7	{}
+0003 ( 709)		CONST	R3(P)[0..0]	<-	CG12(11:0 'cwm' A)	{S}
+0004 ( 709)		STOREG2		<-	V(-1 'sstack')+0 , R3(P)+0 {V(11 'cwm' A)} [0..0]	{}
+0005 ( 709)		CALLN		<-	V(14 'column_select_anim')+0 	{}
+0006 ( 710)		STOREG1		<-	V(17 'TheGame')+2 , R4(CF)[0..255]	{}
+0007 ( 712)		RELOP20	R0(B)[0..1]	<-	R2(C)[0..255], CC:255	{}
+0008 ( 712)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 17
+		==> 1
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 712)		CONV37	R0(I)[0..6]	<-	R2(C)[0..6]	{}
+0001 ( 256)		LEAG	R1(P)[48..54]	<-	V(19 'board')+48 , R0(I)[0..6]	{}
+0002 ( 256)		LOADI1	R4(C)[0..255]	<-	R1(P)+0 {V(19 'board')} [48..54]	{}
+0003 ( 256)		BRANCH		<-	R4(C)[0..255]	{}
+		==> 18
+		==> 1
+L18: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 721)		STOREC1		<-	V(11 '')+0 , R2(C)[0..6]	{}
+0001 ( 721)		STOREG2		<-	V(-1 'sstack')+0 , R3(P)+0 {V(11 'cwm' A)} [0..0]	{}
+0002 ( 721)		STOREG1		<-	V(-1 'sstack')+3 , CC:7	{}
+0003 ( 259)		BINOP1	R5(C)[0..6]	<-	R4(C)[1..7], CI:-1	{}
+0004 ( 721)		STOREG1		<-	V(-1 'sstack')+2 , R5(C)[0..6]	{}
+0005 ( 259)		STOREI1		<-	R1(PF)+0 {V(19 'board')} [48..54], R5(CF)[0..6]	{}
+0006 ( 260)		CONV37	R1(I)[1..7]	<-	R4(CF)[1..7]	{}
+0007 ( 260)		BINOP16	R1(I)[8..56]	<-	R1(IF)[1..7], CI:3	{}
+0008 ( 260)		BINOP1	R0(I)[8..62]	<-	R1(IF)[8..56], R0(IF)[0..6]	{}
+0009 ( 260)		LEAG	R0(P)[0..54]	<-	V(19 'board')+-8 , R0(IF)[8..48]	{}
+000a ( 260)		STOREI1		<-	R0(PF)+0 {V(19 'board')} [0..54], CC:5	{}
+000b ( 718)		LOADG1	R0(C)[0..20]	<-	V(17 'TheGame')+3 	{}
+000c ( 718)		BINOP1	R1(C)[1..21]	<-	R0(C)[0..20], CI:1	{}
+000d ( 718)		STOREG1		<-	V(17 'TheGame')+3 , R1(CF)[1..21]	{}
+000e ( 718)		CONV37	R0(I)[0..20]	<-	R0(CF)[0..20]	{}
+000f ( 718)		LEAG	R0(P)[4..24]	<-	V(17 'TheGame')+4 , R0(IF)[0..20]	{}
+0010 ( 718)		STOREI1		<-	R0(PF)+0 {V(17 'TheGame')} [4..24], R2(CF)[0..6]	{}
+0011 ( 721)		CALLN		<-	V(22 'item_drop_anim')+0 	{}
+0012 ( 724)		STOREG2		<-	V(-1 'sstack')+0 , R3(PF)+0 {V(11 'cwm' A)} [0..0]	{}
+0013 ( 724)		CALLN		<-	V(12 'board_draw_main')+0 	{}
+0014 ( 728)		STOREC1		<-	V(0 '')+0 , CB:1	{}
+0015 (  60)		LOADA1	R0(C)[0..255]	<-	V(-1 '')+53269 	{V}
+0016 (  60)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0017 (  60)		BINOP9	R0(I)[0..254]	<-	R0(IF)[0..255], CI:254	{}
+0018 (  60)		STOREA1		<-	V(-1 '')+53269 , R0(CF)[0..254]	{V}
+0019 ( 728)		CALLN	R0(I)	<-	V(23 'board_eval')+0 	{E}
+001a ( 728)		RELOP19	R0(B)[0..1]	<-	R0(IF), CI:32000	{}
+001b ( 728)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 19
+		==> 20
+L19: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 729)		STOREG1		<-	V(-1 'sstack')+4 , CC:3	{}
+0001 ( 728)		JUMP		<-		{}
+		==> 33
+L20: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 731)		STOREG1		<-	V(-1 'sstack')+4 , CC:2	{}
+0001 ( 728)		JUMP		<-		{}
+		==> 33
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 697)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0001 ( 697)		CALLN		<-	V(21 'joy_poll')+0 	{}
+0002 ( 700)		LOADG1	R0(C)[-128..127]	<-	V(48 'joyx' A)+0 	{}
+0003 ( 700)		RELOP24	R1(B)[0..1]	<-	R0(C)[-128..127], CC:0	{}
+0004 ( 700)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 12
+		==> 11
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 700)		RELOP27	R1(B)[0..1]	<-	R3(C)[0..255], CC:0	{}
+0001 ( 700)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 701)		BINOP1	R4(C)[0..254]	<-	R3(C)[1..255], CI:-1	{}
+0001 ( 700)		JUMP		<-		{}
+		==> 7
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 702)		RELOP23	R0(B)[0..1]	<-	R0(CF)[-128..127], CC:0	{}
+0001 ( 702)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 15
+		==> 14
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 702)		RELOP28	R0(B)[0..1]	<-	R3(C)[0..255], CC:6	{}
+0001 ( 702)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 13
+		==> 14
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 703)		BINOP1	R4(C)[1..6]	<-	R3(C)[0..5], CI:1	{}
+0001 ( 702)		JUMP		<-		{}
+		==> 7
+L14: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 704)		LOADG1	R0(B)[0..1]	<-	V(49 'joyb' A)+0 	{}
+0001 ( 704)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 16
+		==> 7
+L16: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 705)		MOVE	R2(C)[0..255]	<-	R3(C)[0..255]	{}
+0001 ( 704)		JUMP		<-		{}
+		==> 7
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 676)		LOADG1	R0(C)[0..255]	<-	V(17 'TheGame')+1 	{}
+0001 ( 676)		BINOP1	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:-1	{}
+0002 ( 676)		STOREG1		<-	V(17 'TheGame')+1 , R0(C)[-1..254]	{}
+0003 ( 676)		BRANCH		<-	R0(CF)[-1..254]	{}
+		==> 1
+		==> 3
+L30: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 673)		RELOP28	R0(B)[0..1]	<-	R0(CF)[2..5], CC:3	{}
+0001 ( 673)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 32
+L32: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 765)		LOADG1	R0(C)[0..255]	<-	V(17 'TheGame')+1 	{}
+0001 ( 765)		BINOP1	R0(C)[-1..254]	<-	R0(CF)[0..255], CI:-1	{}
+0002 ( 765)		STOREG1		<-	V(17 'TheGame')+1 , R0(C)[-1..254]	{}
+0003 ( 765)		BRANCH		<-	R0(CF)[-1..254]	{}
+		==> 1
+		==> 28
+L28: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 766)		STOREG1		<-	V(-1 'sstack')+4 , CC:0	{}
+0001 ( 765)		JUMP		<-		{}
+		==> 33
+--------------------------------------------------------------------
+kbhit: /home/honza/projects/c64/projects/oscar64/include/conio.h:79
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 291)		JSR	R0(L)	<-	V(-1 '')+0 	{V}
+0001 ( 289)		RETV		<-	R0(CF)	{}
+--------------------------------------------------------------------
+getch: /home/honza/projects/c64/projects/oscar64/include/conio.h:83
+$00 R0(L), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 320)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 320)		JSR	R0(L)	<-	V(-1 '')+0 	{V}
+0001 ( 323)		BRANCH		<-	R0(C)	{}
+		==> 2
+		==> 1
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 325)		STOREC1		<-	V(0 '')+0 , R0(CF)	{}
+0001 ( 325)		CALLN	R0(C)	<-	V(20 'convch')+0 	{E}
+0002 ( 325)		RETV		<-	R0(CF)	{}
+--------------------------------------------------------------------
+convch: /home/honza/projects/c64/projects/oscar64/include/conio.c:242
+$00 R0(I), $00 R1(B), $00 R2(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 246)		LOADG1	R0(C)[0..3]	<-	V(45 'giocharmap')+0 	{}
+0001 ( 246)		RELOP25	R1(B)[0..1]	<-	R0(C)[0..3], CC:1	{}
+0002 ( 246)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 248)		LOADZ1	R1(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 248)		RELOP19	R2(B)[0..1]	<-	R1(C)[0..255], CC:13	{}
+0002 ( 248)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 263)		RETV		<-	CC:10	{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 250)		RELOP25	R0(B)[0..1]	<-	R0(CF)[1..3], CC:2	{}
+0001 ( 250)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 2
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 252)		RELOP25	R0(B)[0..1]	<-	R1(C)[0..255], CC:65	{}
+0001 ( 252)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 2
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 252)		RELOP28	R0(B)[0..1]	<-	R1(C)[65..255], CC:219	{}
+0001 ( 252)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 2
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 254)		RELOP25	R0(B)[0..1]	<-	R1(C)[65..218], CC:193	{}
+0001 ( 254)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 248)		CONV37	R0(I)[193..218]	<-	R1(CF)[193..218]	{}
+0001 ( 255)		BINOP10	R0(I)[0..255]	<-	R0(IF)[193..218], CI:160	{}
+0002 ( 255)		STOREZ1		<-	V(0 '')+0 , R0(C)[0..255]	{}
+0003 ( 256)		RELOP28	R0(B)[0..1]	<-	R0(CF)[0..255], CC:123	{}
+0004 ( 256)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 2
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		LOADZ1	R1(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 256)		CONV37	R0(I)[0..255]	<-	R1(C)[0..255]	{}
+0002 ( 256)		RELOP25	R2(B)[0..1]	<-	R1(C)[0..255], CC:97	{}
+0003 ( 256)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 10
+		==> 12
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 257)		BINOP10	R0(I)[0..255]	<-	R0(IF)[0..255], CI:32	{}
+0001 ( 263)		RETV		<-	R0(CF)[0..255]	{}
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		RELOP28	R1(B)[0..1]	<-	R1(CF)[0..96], CC:91	{}
+0001 ( 256)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 10
+		==> 2
+L2: <= D-1: (7)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 263)		LOADZ1	R0(C)[0..255]	<-	V(0 '')+0 	{}
+0001 ( 263)		RETV		<-	R0(CF)[0..255]	{}
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/conio.c
+0000 ( 256)		RELOP28	R0(B)[0..1]	<-	R1(CF)[65..192], CC:123	{}
+0001 ( 256)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 11
+		==> 2
+--------------------------------------------------------------------
+joy_poll: /home/honza/projects/c64/projects/oscar64/include/c64/joystick.h:13
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(I), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (   8)		LOADZ1	R0(C)[0..1]	<-	V(0 '')+0 	{S}
+0001 (   8)		CONV37	R0(I)[0..1]	<-	R0(CF)[0..1]	{S}
+0002 (   8)		LEAA	R1(P)[56320..56321]	<-	V(-1 '')+56320 , R0(I)[0..1]	{S}
+0003 (   8)		LOADI1	R1(C)[0..255]	<-	R1(PF)+0 {V(-1 'ABS')} [56320..56321]	{V}
+0004 (  10)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0005 (  24)		BINOP9	R2(I)[0..16]	<-	R1(I)[0..255], CI:16	{}
+0006 (  24)		RELOP19	R3(B)[0..1]	<-	R2(IF)[0..16], CI:0	{}
+0007 (  24)		LEAG	R2(P)[0..1]	<-	V(49 'joyb' A)+0 , R0(I)[0..1]	{S}
+0008 (  24)		STOREI1		<-	R2(PF)+0 {V(49 'joyb' A)} [0..1], R3(BF)[0..1]	{}
+0009 (  15)		LEAG	R2(P)[0..1]	<-	V(47 'joyy' A)+0 , R0(I)[0..1]	{S}
+000a (  10)		BINOP9	R3(I)[0..1]	<-	R1(I)[0..255], CI:1	{}
+000b (  10)		BRANCH		<-	R3(IF)[0..1]	{}
+		==> 2
+		==> 1
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  12)		BINOP9	R3(I)[0..2]	<-	R1(I)[0..255], CI:2	{}
+0001 (  12)		BRANCH		<-	R3(IF)[0..2]	{}
+		==> 4
+		==> 3
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  15)		STOREI1		<-	R2(PF)+0 {V(47 'joyy' A)} [0..1], CC:0	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+L10: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  22)		LEAG	R0(P)[0..1]	<-	V(48 'joyx' A)+0 , R0(IF)[0..1]	{S}
+0001 (  17)		BINOP9	R2(I)[0..4]	<-	R1(I)[0..255], CI:4	{}
+0002 (  17)		BRANCH		<-	R2(IF)[0..4]	{}
+		==> 6
+		==> 5
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  19)		BINOP9	R1(I)[0..8]	<-	R1(IF)[0..255], CI:8	{}
+0001 (  19)		BRANCH		<-	R1(IF)[0..8]	{}
+		==> 9
+		==> 8
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  22)		STOREI1		<-	R0(PF)+0 {V(48 'joyx' A)} [0..1], CC:0	{}
+0001 (  19)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  25)		RET		<-		{}
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  20)		STOREI1		<-	R0(PF)+0 {V(48 'joyx' A)} [0..1], CC:1	{}
+0001 (  19)		JUMP		<-		{}
+		==> 7
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  18)		STOREI1		<-	R0(PF)+0 {V(48 'joyx' A)} [0..1], CC:-1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 7
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  13)		STOREI1		<-	R2(PF)+0 {V(47 'joyy' A)} [0..1], CC:1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/joystick.c
+0000 (  11)		STOREI1		<-	R2(PF)+0 {V(47 'joyy' A)} [0..1], CC:-1	{}
+0001 (  17)		JUMP		<-		{}
+		==> 10
+--------------------------------------------------------------------
+item_drop_anim: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:163
+$00 R0(I), $02 R1(I), $04 R2(I), $06 R3(I), $08 R4(P), $0a R5(I), $00 R6(I), $00 R7(C), $00 R8(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 170)		STOREC1		<-	V(0 '')+0 , CC:0	{}
+0001 ( 170)		STOREC1		<-	V(1 '')+0 , CB:1	{}
+0002 ( 170)		STOREC1		<-	V(6 '')+0 , CC:97	{}
+0003 ( 170)		STOREC1		<-	V(8 '')+0 , CB:1	{}
+0004 ( 170)		STOREC1		<-	V(9 '')+0 , CB:0	{}
+0005 ( 170)		STOREC1		<-	V(10 '')+0 , CB:0	{}
+0006 ( 167)		LOADZ1	R0(C)[0..255]	<-	V(11 '')+0 	{S}
+0007 ( 167)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{S}
+0008 ( 167)		BINOP3	R0(I)[0..765]	<-	R0(IF)[0..255], CI:3	{S}
+0009 ( 167)		LOADG2	R4(P)	<-	V(-1 'sstack')+0 	{S}
+000a ( 167)		LOADI1	R1(C)[0..255]	<-	R4(P)+0	{}
+000b ( 167)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+000c ( 167)		BINOP1	R0(I)[0..1020]	<-	R1(IF)[0..255], R0(IF)[0..765]	{}
+000d ( 167)		BINOP16	R0(I)[0..8160]	<-	R0(IF)[0..1020], CI:3	{}
+000e ( 167)		BINOP1	R2(I)[32..8192]	<-	R0(IF)[0..8160], CI:32	{}
+000f ( 170)		STOREC2		<-	V(2 '')+0 , R2(I)[32..8192]	{}
+0010 ( 167)		LOADI1	R0(C)[0..255]	<-	R4(P)+1	{}
+0011 ( 167)		CONV37	R0(I)[0..255]	<-	R0(CF)[0..255]	{}
+0012 ( 167)		BINOP16	R1(I)[0..2040]	<-	R0(IF)[0..255], CI:3	{}
+0013 ( 167)		BINOP1	R0(I)[36..2076]	<-	R1(I)[0..2040], CI:36	{}
+0014 ( 170)		STOREC2		<-	V(4 '')+0 , R0(IF)[36..2076]	{}
+0015 ( 170)		LOADG1	R0(C)[0..255]	<-	V(-1 'sstack')+3 	{S}
+0016 ( 170)		STOREC1		<-	V(7 '')+0 , R0(CF)[0..255]	{}
+0017 ( 170)		CALLN		<-	V(15 'spr_set')+0 	{}
+0018 ( 173)		STOREA1		<-	V(-1 '')+53275 , CC:1	{V}
+0019 ( 176)		BINOP3	R0(I)[0..32640]	<-	R1(IF)[0..2040], CI:16	{}
+001a ( 176)		BINOP1	R0(I)[576..33216]	<-	R0(IF)[0..32640], CI:576	{}
+001b (  68)		BINOP9	R1(I)[0..255]	<-	R2(I)[32..8192], CI:255	{I}
+001c (  69)		BINOP9	R2(I)[0..256]	<-	R2(IF)[32..8192], CI:256	{I}
+001d ( 176)		LOADG1	R3(C)[0..255]	<-	V(-1 'sstack')+2 	{S}
+001e ( 176)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{S}
+001f ( 176)		BINOP3	R3(I)[0..765]	<-	R3(IF)[0..255], CI:3	{S}
+0020 ( 176)		LOADI1	R4(C)[0..255]	<-	R4(PF)+1	{}
+0021 ( 176)		CONV37	R4(I)[0..255]	<-	R4(CF)[0..255]	{}
+0022 ( 176)		BINOP1	R3(I)[0..1020]	<-	R4(IF)[0..255], R3(IF)[0..765]	{}
+0023 ( 176)		BINOP3	R3(I)	<-	R3(IF)[0..1020], CI:128	{}
+0024 ( 176)		BINOP1	R3(I)	<-	R3(IF), CI:1056	{}
+0025 ( 194)		BINOP16	R4(I)	<-	R3(I), CI:1	{I}
+0026 ( 176)		CONST	R5(I)[0..0]	<-	CI:0	{}
+0027 ( 179)		CONST	R7(C)[3..3]	<-	CI:3	{}
+0028 ( 185)		JUMP		<-		{}
+		==> 2
+L2: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 185)		BINOP1	R5(I)[-2045..]	<-	R5(IF)[-2048..], CI:3	{}
+0001 ( 188)		BINOP1	R0(I)	<-	R5(I)[-2045..], R0(IF)	{}
+0002 ( 191)		RELOP23	R6(B)[0..1]	<-	R0(I), R3(I)	{}
+0003 ( 191)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 4
+		==> 5
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 200)		BINOP1	R7(C)[0..2]	<-	R7(CF)[1..3], CI:-1	{}
+0001 ( 197)		UNOP11	R5(I)[..2045]	<-	R5(IF)[-2045..]	{}
+0002 ( 197)		BINOP3	R5(I)[..10225]	<-	R5(IF)[..2045], CI:5	{}
+0003 ( 197)		BINOP18	R5(I)[-2048..2047]	<-	R5(IF)[..10225], CI:4	{}
+0004 ( 194)		BINOP2	R0(I)	<-	R4(I), R0(IF)	{}
+0005 ( 191)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  70)		LOADA1	R8(C)[0..255]	<-	V(-1 '')+53264 	{}
+0001 ( 204)		BINOP18	R6(I)[-2048..2047]	<-	R0(I), CI:4	{}
+0002 (  67)		STOREA1		<-	V(-1 '')+53249 , R6(CF)[-2048..2047]	{V}
+0003 (  68)		STOREA1		<-	V(-1 '')+53248 , R1(C)[0..255]	{V}
+0004 (  70)		CONV37	R6(I)[0..255]	<-	R8(CF)[0..255]	{}
+0005 (  69)		RELOP20	R8(B)[0..1]	<-	R2(I)[0..256], CI:0	{I}
+0006 (  69)		BRANCH		<-	R8(BF)[0..1]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  70)		BINOP8	R6(I)[0..255]	<-	R6(IF)[0..255], CI:1	{}
+0001 (  69)		JUMP		<-		{}
+		==> 11
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  72)		STOREA1		<-	V(-1 '')+53264 , R6(CF)[0..255]	{}
+0001 (  76)		JUMP		<-		{}
+		==> 8
+L8: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  76)		LOADA1	R6(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  76)		CONV37	R6(I)[0..255]	<-	R6(CF)[0..255]	{}
+0002 (  76)		BINOP9	R6(I)[0..128]	<-	R6(IF)[0..255], CI:128	{}
+0003 (  76)		RELOP20	R6(B)[0..1]	<-	R6(IF)[0..128], CI:0	{}
+0004 (  76)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 8
+		==> 9
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  78)		LOADA1	R6(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  78)		CONV37	R6(I)[0..255]	<-	R6(CF)[0..255]	{}
+0002 (  78)		BINOP9	R6(I)[0..128]	<-	R6(IF)[0..255], CI:128	{}
+0003 (  78)		BRANCH		<-	R6(IF)[0..128]	{}
+		==> 1
+		==> 10
+L1: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 182)		RELOP27	R6(B)[0..1]	<-	R7(C)[0..3], CC:0	{}
+0001 ( 182)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 2
+		==> 3
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 207)		RET		<-		{}
+L10: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/c64/vic.c
+0000 (  78)		LOADA1	R6(C)[0..255]	<-	V(-1 '')+53265 	{V}
+0001 (  78)		CONV37	R6(I)[0..255]	<-	R6(CF)[0..255]	{}
+0002 (  78)		BINOP9	R6(I)[0..128]	<-	R6(IF)[0..255], CI:128	{}
+0003 (  78)		BRANCH		<-	R6(IF)[0..128]	{}
+		==> 1
+		==> 10
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/c64/sprites.c
+0000 (  72)		BINOP9	R6(I)[0..254]	<-	R6(IF)[0..255], CI:254	{}
+0001 (  69)		CONST	R2(I)[0..256]	<-	CI:0	{}
+0002 (  69)		JUMP		<-		{}
+		==> 11
+--------------------------------------------------------------------
+board_eval: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:443
+$00 R0(I), $00 R1(I), $00 R2(P), $00 R3(P), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 445)		CONST	R0(I)[0..0]	<-	CI:0	{}
+0001 ( 448)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0002 ( 452)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 452)		CONV37	R1(I)[0..68]	<-	R4(C)[0..68]	{}
+0001 ( 452)		LEAG	R2(P)[0..68]	<-	V(16 'frows' A)+0 , R1(I)[0..68]	{}
+0002 ( 452)		LOADI1	R2(C)[0..54]	<-	R2(PF)+0 {V(16 'frows' A)} [0..68]	{}
+0003 ( 452)		CONV37	R2(I)[0..54]	<-	R2(CF)[0..54]	{}
+0004 ( 452)		LEAG	R2(P)[0..54]	<-	V(19 'board')+0 , R2(IF)[0..48]	{}
+0005 ( 452)		LOADI1	R2(C)[0..124]	<-	R2(PF)+0 {V(19 'board')} [0..54]	{}
+0006 ( 452)		CONV37	R2(I)[0..124]	<-	R2(CF)[0..124]	{}
+0007 ( 453)		LEAG	R3(P)[69..137]	<-	V(16 'frows' A)+69 , R1(I)[0..68]	{}
+0008 ( 453)		LOADI1	R3(C)[0..54]	<-	R3(PF)+0 {V(16 'frows' A)} [69..137]	{}
+0009 ( 453)		CONV37	R3(I)[0..54]	<-	R3(CF)[0..54]	{}
+000a ( 453)		LEAG	R3(P)[0..54]	<-	V(19 'board')+0 , R3(IF)[0..48]	{}
+000b ( 452)		LOADI1	R3(C)[0..124]	<-	R3(PF)+0 {V(19 'board')} [0..54]	{}
+000c ( 452)		CONV37	R3(I)[0..124]	<-	R3(CF)[0..124]	{}
+000d ( 452)		BINOP1	R2(I)[0..124]	<-	R3(IF)[0..124], R2(IF)[0..124]	{}
+000e ( 454)		LEAG	R3(P)[138..206]	<-	V(16 'frows' A)+138 , R1(I)[0..68]	{}
+000f ( 454)		LOADI1	R3(C)[0..54]	<-	R3(PF)+0 {V(16 'frows' A)} [138..206]	{}
+0010 ( 454)		CONV37	R3(I)[0..54]	<-	R3(CF)[0..54]	{}
+0011 ( 454)		LEAG	R3(P)[0..54]	<-	V(19 'board')+0 , R3(IF)[0..48]	{}
+0012 ( 453)		LOADI1	R3(C)[0..124]	<-	R3(PF)+0 {V(19 'board')} [0..54]	{}
+0013 ( 453)		CONV37	R3(I)[0..124]	<-	R3(CF)[0..124]	{}
+0014 ( 453)		BINOP1	R2(I)[0..124]	<-	R3(IF)[0..124], R2(IF)[0..124]	{}
+0015 ( 455)		LEAG	R3(P)[207..275]	<-	V(16 'frows' A)+207 , R1(I)[0..68]	{}
+0016 ( 455)		LOADI1	R3(C)[0..54]	<-	R3(PF)+0 {V(16 'frows' A)} [207..275]	{}
+0017 ( 455)		CONV37	R3(I)[0..54]	<-	R3(CF)[0..54]	{}
+0018 ( 455)		LEAG	R3(P)[0..54]	<-	V(19 'board')+0 , R3(IF)[0..48]	{}
+0019 ( 454)		LOADI1	R3(C)[0..124]	<-	R3(PF)+0 {V(19 'board')} [0..54]	{}
+001a ( 454)		CONV37	R3(I)[0..124]	<-	R3(CF)[0..124]	{}
+001b ( 454)		BINOP1	R2(I)[0..124]	<-	R3(IF)[0..124], R2(IF)[0..124]	{}
+001c ( 456)		LEAG	R1(P)[276..344]	<-	V(16 'frows' A)+276 , R1(IF)[0..68]	{}
+001d ( 455)		LOADI1	R1(C)[0..124]	<-	R1(PF)+0 {V(16 'frows' A)} [276..344]	{}
+001e ( 455)		CONV37	R1(I)[0..124]	<-	R1(CF)[0..124]	{}
+001f ( 455)		BINOP1	R1(I)[0..124]	<-	R1(IF)[0..124], R2(IF)[0..124]	{}
+0020 ( 462)		BINOP16	R1(I)[0..248]	<-	R1(IF)[0..124], CI:1	{}
+0021 ( 462)		LEAG	R1(P)[0..248]	<-	V(14 'fscore' A)+0 , R1(IF)[0..248]	{}
+0022 ( 462)		LOADI2	R1(I)[-32768..32767]	<-	R1(PF)+0 {V(14 'fscore' A)} [0..248]	{}
+0023 ( 462)		BINOP1	R0(I)	<-	R1(IF)[-32768..32767], R0(IF)	{}
+0024 ( 448)		BINOP1	R4(C)[1..69]	<-	R4(CF)[0..68], CI:1	{}
+0025 ( 448)		RELOP28	R1(B)[0..1]	<-	R4(C)[1..69], CC:69	{}
+0026 ( 448)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 475)		LOADZ1	R1(B)[0..1]	<-	V(0 '')+0 	{S}
+0001 ( 468)		RELOP24	R2(B)[0..1]	<-	R0(I), CI:-8192	{}
+0002 ( 468)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 475)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 7
+		==> 8
+L7: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 475)		CONST	R0(I)[-32000..-32000]	<-	CI:-32000	{}
+0001 ( 475)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 475)		RETV		<-	R0(IF)[-32768..32768]	{}
+L8: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 475)		CONST	R0(I)[32000..32000]	<-	CI:32000	{}
+0001 ( 475)		JUMP		<-		{}
+		==> 9
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 470)		RELOP21	R2(B)[0..1]	<-	R0(I), CI:8192	{}
+0001 ( 470)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 6
+		==> 5
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 475)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 8
+		==> 7
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 475)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 9
+		==> 10
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 475)		UNOP11	R0(I)[-8191..32768]	<-	R0(IF)[-32768..8191]	{}
+0001 ( 475)		JUMP		<-		{}
+		==> 9
+--------------------------------------------------------------------
+board_opening: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:570
+$00 R0(P), $02 R1(I), $04 R2(I), $00 R3(I), $00 R4(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 572)		LOADZ1	R0(C)[0..255]	<-	V(0 '')+0 	{S}
+0001 ( 572)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..255], CC:3	{S}
+0002 ( 572)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 5
+		==> 12
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 583)		LOADZ2	R0(P)	<-	V(1 '')+0 	{S}
+0001 ( 584)		LOADI1	R1(C)[0..255]	<-	R0(P)+2	{}
+0002 ( 584)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0003 ( 584)		LOADI1	R2(C)[0..255]	<-	R0(P)+1	{}
+0004 ( 584)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0005 ( 583)		LOADI1	R3(C)[0..255]	<-	R0(PF)+0	{}
+0006 ( 583)		CONV37	R0(I)[0..255]	<-	R3(C)[0..255]	{}
+0007 ( 583)		RELOP28	R3(B)[0..1]	<-	R3(CF)[0..255], CC:4	{}
+0008 ( 583)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 584)		BINOP3	R0(I)[0..147]	<-	R0(IF)[0..3], CI:49	{}
+0001 ( 584)		BINOP3	R2(I)[0..189]	<-	R2(IF)[0..27], CI:7	{}
+0002 ( 584)		BINOP1	R0(I)[0..195]	<-	R2(IF)[0..189], R0(IF)[0..147]	{}
+0003 ( 584)		BINOP1	R0(I)[0..195]	<-	R0(IF)[0..195], R1(IF)[0..195]	{}
+0004 ( 584)		LEAG	R0(P)[0..390]	<-	V(57 'open3')+0 , R0(IF)[0..195]	{}
+0005 ( 584)		LOADI1	R0(C)[0..6]	<-	R0(PF)+0 {V(57 'open3')} [0..390]	{}
+0006 ( 584)		RETV		<-	R0(CF)[0..6]	{}
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 586)		BINOP2	R0(I)[0..2]	<-	CI:6, R0(IF)[4..255]	{}
+0001 ( 586)		BINOP3	R0(I)[-48..98]	<-	R0(IF)[0..2], CI:49	{}
+0002 ( 586)		BINOP2	R2(I)[-14..6]	<-	CI:6, R2(IF)[0..255]	{}
+0003 ( 586)		BINOP3	R2(I)[-104..42]	<-	R2(IF)[-14..6], CI:7	{}
+0004 ( 586)		BINOP1	R0(I)[-6..140]	<-	R2(IF)[-104..42], R0(IF)[-48..98]	{}
+0005 ( 586)		BINOP2	R1(I)[-140..6]	<-	CI:6, R1(IF)[0..255]	{}
+0006 ( 586)		BINOP1	R0(I)[0..146]	<-	R1(IF)[-140..6], R0(IF)[-6..140]	{}
+0007 ( 586)		LEAG	R0(P)[-146..146]	<-	V(57 'open3')+0 , R0(IF)[0..146]	{}
+0008 ( 586)		LOADI1	R0(C)[0..5]	<-	R0(PF)+0 {V(57 'open3')} [-146..146]	{}
+0009 ( 586)		CONV37	R0(I)[0..5]	<-	R0(CF)[0..5]	{}
+000a ( 586)		BINOP2	R0(I)[1..6]	<-	CI:6, R0(IF)[0..5]	{}
+000b ( 586)		RETV		<-	R0(CF)[1..6]	{}
+L12: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 572)		RELOP28	R1(B)[0..1]	<-	R0(C)[0..255], CC:3	{S}
+0001 ( 572)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 14
+		==> 13
+L14: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 572)		RELOP19	R1(B)[0..1]	<-	R0(C)[0..2], CC:1	{S}
+0001 ( 572)		BRANCH		<-	R1(BF)[0..1]	{}
+		==> 1
+		==> 15
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 575)		RETV		<-	CC:3	{}
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 572)		RELOP19	R0(B)[0..1]	<-	R0(CF)[0..2], CC:2	{S}
+0001 ( 572)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 2
+		==> 11
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 577)		LOADZ2	R0(P)	<-	V(1 '')+0 	{S}
+0001 ( 578)		LOADI1	R1(C)[0..255]	<-	R0(P)+1	{}
+0002 ( 578)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0003 ( 577)		LOADI1	R2(C)[0..255]	<-	R0(PF)+0	{}
+0004 ( 577)		CONV37	R0(I)[0..255]	<-	R2(C)[0..255]	{}
+0005 ( 577)		RELOP28	R2(B)[0..1]	<-	R2(CF)[0..255], CC:4	{}
+0006 ( 577)		BRANCH		<-	R2(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 578)		BINOP3	R0(I)[0..21]	<-	R0(IF)[0..3], CI:7	{}
+0001 ( 578)		BINOP1	R0(I)[0..27]	<-	R0(IF)[0..21], R1(IF)[0..27]	{}
+0002 ( 578)		LEAG	R0(P)[0..48]	<-	V(56 'open2')+0 , R0(IF)[0..27]	{}
+0003 ( 578)		LOADI1	R0(C)[2..5]	<-	R0(PF)+0 {V(56 'open2')} [0..48]	{}
+0004 ( 578)		RETV		<-	R0(CF)[2..5]	{}
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 580)		BINOP2	R0(I)[0..2]	<-	CI:6, R0(IF)[4..255]	{}
+0001 ( 580)		BINOP3	R0(I)[-6..14]	<-	R0(IF)[0..2], CI:7	{}
+0002 ( 580)		BINOP2	R1(I)[-14..6]	<-	CI:6, R1(IF)[0..255]	{}
+0003 ( 580)		BINOP1	R0(I)[0..20]	<-	R1(IF)[-14..6], R0(IF)[-6..14]	{}
+0004 ( 580)		LEAG	R0(P)[-20..20]	<-	V(56 'open2')+0 , R0(IF)[0..20]	{}
+0005 ( 580)		LOADI1	R0(C)[2..5]	<-	R0(PF)+0 {V(56 'open2')} [-20..20]	{}
+0006 ( 580)		CONV37	R0(I)[2..5]	<-	R0(CF)[2..5]	{}
+0007 ( 580)		BINOP2	R0(I)[1..4]	<-	CI:6, R0(IF)[2..5]	{}
+0008 ( 580)		RETV		<-	R0(CF)[1..4]	{}
+L11: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 595)		RETV		<-	CC:255	{}
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 572)		RELOP19	R0(B)[0..1]	<-	R0(CF)[3..255], CC:4	{S}
+0001 ( 572)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 11
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 589)		LOADZ2	R0(P)	<-	V(1 '')+0 	{S}
+0001 ( 590)		LOADI1	R1(C)[0..255]	<-	R0(P)+3	{}
+0002 ( 590)		CONV37	R1(I)[0..255]	<-	R1(CF)[0..255]	{}
+0003 ( 590)		LOADI1	R2(C)[0..255]	<-	R0(P)+2	{}
+0004 ( 590)		CONV37	R2(I)[0..255]	<-	R2(CF)[0..255]	{}
+0005 ( 590)		LOADI1	R3(C)[0..255]	<-	R0(P)+1	{}
+0006 ( 590)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..255]	{}
+0007 ( 589)		LOADI1	R4(C)[0..255]	<-	R0(PF)+0	{}
+0008 ( 589)		CONV37	R0(I)[0..255]	<-	R4(C)[0..255]	{}
+0009 ( 589)		RELOP28	R4(B)[0..1]	<-	R4(CF)[0..255], CC:4	{}
+000a ( 589)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 9
+		==> 10
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 590)		BINOP3	R0(I)[0..1029]	<-	R0(IF)[0..3], CI:343	{}
+0001 ( 590)		BINOP3	R3(I)[0..1323]	<-	R3(IF)[0..27], CI:49	{}
+0002 ( 590)		BINOP1	R0(I)[0..1371]	<-	R3(IF)[0..1323], R0(IF)[0..1029]	{}
+0003 ( 590)		BINOP3	R2(I)[0..1365]	<-	R2(IF)[0..195], CI:7	{}
+0004 ( 590)		BINOP1	R0(I)[0..1371]	<-	R2(IF)[0..1365], R0(IF)[0..1371]	{}
+0005 ( 590)		LEAG	R0(P)[0..2736]	<-	V(58 'open4')+0 , R0(IF)[0..1371]	{}
+0006 ( 590)		LEAI	R0(P)+0 {V(58 'open4')} [0..1626]	<-	R0(PF)+0 {V(58 'open4')} [0..2736], R1(IF)[0..255]	{}
+0007 ( 590)		LOADI1	R0(C)[0..6]	<-	R0(PF)+0 {V(58 'open4')} [0..1626]	{}
+0008 ( 590)		RETV		<-	R0(CF)[0..6]	{}
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 592)		BINOP2	R0(I)[0..2]	<-	CI:6, R0(IF)[4..255]	{}
+0001 ( 592)		BINOP3	R0(I)[-342..15564]	<-	R0(IF)[0..2], CI:343	{}
+0002 ( 592)		BINOP2	R3(I)[-249..6]	<-	CI:6, R3(IF)[0..255]	{}
+0003 ( 592)		BINOP3	R3(I)[-12201..294]	<-	R3(IF)[-249..6], CI:49	{}
+0004 ( 592)		BINOP1	R0(I)[-48..3363]	<-	R3(IF)[-12201..294], R0(IF)[-342..15564]	{}
+0005 ( 592)		BINOP2	R2(I)[-249..6]	<-	CI:6, R2(IF)[0..255]	{}
+0006 ( 592)		BINOP3	R2(I)[-1743..42]	<-	R2(IF)[-249..6], CI:7	{}
+0007 ( 592)		BINOP1	R0(I)[-6..1620]	<-	R2(IF)[-1743..42], R0(IF)[-48..3363]	{}
+0008 ( 592)		BINOP2	R1(I)[-249..6]	<-	CI:6, R1(IF)[0..255]	{}
+0009 ( 592)		BINOP1	R0(I)[0..1371]	<-	R1(IF)[-249..6], R0(IF)[-6..1620]	{}
+000a ( 592)		LEAG	R0(P)[-255..1626]	<-	V(58 'open4')+0 , R0(IF)[0..1371]	{}
+000b ( 592)		LOADI1	R0(C)[0..6]	<-	R0(PF)+0 {V(58 'open4')} [-255..1626]	{}
+000c ( 592)		CONV37	R0(I)[0..6]	<-	R0(CF)[0..6]	{}
+000d ( 592)		BINOP2	R0(I)[0..6]	<-	CI:6, R0(IF)[0..6]	{}
+000e ( 592)		RETV		<-	R0(CF)[0..6]	{}
+--------------------------------------------------------------------
+board_check: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:488
+$10 R0(I), $12 R1(I), $14 R2(I), $16 R3(I), $00 R4(I), $00 R5(P), $00 R6(P), $18 R7(P), $19 R8(C), $1a R9(B), $1b R10(B), $1c R11(C), $1d R12(C), $1e R13(C), $1f R14(B), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 494)		LOADP1	R9(B)[0..1]	<-	V(5 '')+0 	{S}
+0001 ( 494)		STOREC1		<-	V(0 '')+0 , R9(B)[0..1]	{}
+0002 ( 494)		CALLN	R0(I)	<-	V(23 'board_eval')+0 	{E}
+0003 ( 494)		LOADP1	R7(C)[0..255]	<-	V(0 '')+0 	{S}
+0004 ( 494)		CONV37	R1(I)[0..255]	<-	R7(C)[0..255]	{S}
+0005 ( 494)		BINOP1	R2(I)	<-	R1(IF)[0..255], R0(IF)	{}
+0006 ( 491)		CONST	R10(B)[0..0]	<-	CI:0	{}
+0007 ( 497)		CONST	R11(C)[0..0]	<-	CI:0	{}
+0008 ( 490)		LOADP2	R3(I)[-32768..32767]	<-	V(1 '')+0 	{}
+0009 ( 500)		RELOP28	R0(B)[0..1]	<-	R7(C)[0..255], CC:5	{S}
+000a ( 500)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 2
+L4: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 500)		RELOP24	R0(B)[0..1]	<-	R2(I), CI:5000	{}
+0001 ( 500)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 3
+		==> 2
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 500)		RELOP23	R0(B)[0..1]	<-	R2(I)[-32768..4999], CI:-5000	{}
+0001 ( 500)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L1: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 512)		CONST	R12(C)[0..0]	<-	CI:0	{}
+0001 ( 503)		RELOP19	R0(B)[0..1]	<-	R7(C)[0..4], CC:3	{S}
+0002 ( 503)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 5
+		==> 18
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 505)		CONST	R0(P)[0..0]	<-	CG12(13:0 'cwt' A)	{S}
+0001 ( 505)		STOREC2		<-	V(6 '')+0 , R0(P)+0 {V(13 'cwt' A)} [0..0]	{}
+0002 ( 505)		CALLN		<-	V(26 'board_draw')+0 	{}
+0003 ( 506)		STOREC2		<-	V(0 '')+0 , R2(I)[-4999..4999]	{}
+0004 ( 506)		STOREC2		<-	V(4 '')+0 , CI:10	{}
+0005 ( 506)		CONST	R1(P)[0..0]	<-	CG20(61:0 'buff' A)	{S}
+0006 ( 506)		STOREC2		<-	V(2 '')+0 , R1(P)+0 {V(61 'buff' A)} [0..0]	{}
+0007 ( 506)		CALLN		<-	V(27 'itoa')+0 	{}
+0008 ( 761)		STOREC2		<-	V(0 '')+0 , R0(P)+0 {V(13 'cwt' A)} [0..0]	{}
+0009 ( 761)		STOREC1		<-	V(2 '')+0 , CC:0	{}
+000a ( 761)		STOREC1		<-	V(3 '')+0 , CC:6	{}
+000b ( 761)		STOREC1		<-	V(4 '')+0 , CC:7	{}
+000c ( 761)		STOREC1		<-	V(5 '')+0 , CC:1	{}
+000d ( 761)		STOREC1		<-	V(7 '')+0 , CC:1	{}
+000e ( 184)		LOADG1	R4(C)[0..255]	<-	V(18 'p2smap' A)+1 	{}
+000f ( 184)		BINOP10	R4(C)[0..255]	<-	R4(CF)[0..255], CC:32	{}
+0010 ( 761)		STOREC1		<-	V(6 '')+0 , R4(CF)[0..255]	{}
+0011 ( 761)		CALLN		<-	V(8 'cwin_fill_rect_raw')+0 	{}
+0012 ( 508)		STOREC2		<-	V(0 '')+0 , R0(PF)+0 {V(13 'cwt' A)} [0..0]	{}
+0013 ( 508)		STOREC1		<-	V(2 '')+0 , CC:0	{}
+0014 ( 508)		STOREC1		<-	V(3 '')+0 , CC:6	{}
+0015 ( 508)		STOREC2		<-	V(4 '')+0 , R1(PF)+0 {V(61 'buff' A)} [0..0]	{}
+0016 ( 508)		STOREC1		<-	V(6 '')+0 , CC:1	{}
+0017 ( 508)		CALLN		<-	V(16 'cwin_putat_string')+0 	{}
+0018 ( 503)		CONST	R7(C)[0..4]	<-	CI:3	{}
+0019 ( 512)		JUMP		<-		{}
+		==> 18
+L18: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 527)		BINOP1	R13(C)[1..5]	<-	R7(C)[0..4], CI:1	{IS}
+0001 ( 517)		JUMP		<-		{}
+		==> 7
+L7: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 517)		CONV37	R0(I)[0..6]	<-	R12(C)[0..6]	{}
+0001 ( 517)		LEAG	R0(P)[0..6]	<-	V(62 'optx')+0 , R0(IF)[0..6]	{}
+0002 ( 517)		LOADI1	R8(C)[0..6]	<-	R0(PF)+0 {V(62 'optx')} [0..6]	{}
+0003 ( 256)		CONV37	R4(I)[0..6]	<-	R8(C)[0..6]	{}
+0004 ( 256)		LEAG	R5(P)[48..54]	<-	V(19 'board')+48 , R4(I)[0..6]	{}
+0005 ( 256)		LOADI1	R1(C)[0..255]	<-	R5(P)+0 {V(19 'board')} [48..54]	{}
+0006 ( 256)		BRANCH		<-	R1(C)[0..255]	{}
+		==> 8
+		==> 6
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 259)		BINOP1	R0(C)[0..6]	<-	R1(C)[1..7], CI:-1	{}
+0001 ( 259)		STOREI1		<-	R5(P)+0 {V(19 'board')} [48..54], R0(CF)[0..6]	{}
+0002 ( 260)		BRANCH		<-	R9(B)[0..1]	{}
+		==> 19
+		==> 20
+L19: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 260)		CONST	R0(I)[5..5]	<-	CI:5	{}
+0001 ( 260)		JUMP		<-		{}
+		==> 21
+L21: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 260)		CONV37	R1(I)[1..7]	<-	R1(CF)[1..7]	{}
+0001 ( 260)		BINOP16	R1(I)[8..56]	<-	R1(IF)[1..7], CI:3	{}
+0002 ( 260)		BINOP1	R1(I)[8..62]	<-	R1(IF)[8..56], R4(I)[0..6]	{}
+0003 ( 260)		LEAG	R1(P)[0..54]	<-	V(19 'board')+-8 , R1(IF)[8..48]	{}
+0004 ( 260)		STOREI1		<-	R1(PF)+0 {V(19 'board')} [0..54], R0(CF)[1..5]	{}
+0005 ( 527)		STOREF1		<-	V(0 '')+0 , R13(C)[1..5]	{}
+0006 ( 527)		LOADP2	R1(I)[-32768..32767]	<-	V(3 '')+0 	{S}
+0007 ( 527)		UNOP11	R0(I)[-32767..32768]	<-	R1(I)[-32768..32767]	{S}
+0008 ( 527)		STOREF2		<-	V(1 '')+0 , R0(IF)[-32767..32768]	{}
+0009 ( 527)		UNOP11	R0(I)	<-	R3(I)	{}
+000a ( 527)		STOREF2		<-	V(3 '')+0 , R0(IF)	{}
+000b ( 527)		RELOP19	R0(B)[0..1]	<-	R9(B)[0..1], CB:0	{IS}
+000c ( 527)		STOREF1		<-	V(5 '')+0 , R0(BF)[0..1]	{}
+000d ( 527)		CALLN	R0(I)	<-	V(25 'board_check')+0 	{}
+000e ( 524)		CONST	R10(B)[1..1]	<-	CI:1	{}
+000f ( 527)		UNOP11	R0(I)	<-	R0(IF)	{}
+0010 ( 530)		RELOP23	R6(B)[0..1]	<-	R0(I), R3(I)	{}
+0011 ( 530)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 9
+		==> 10
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 534)		MOVE	R11(C)[0..6]	<-	R8(CF)[0..6]	{}
+0001 ( 533)		MOVE	R3(I)	<-	R0(I)	{}
+0002 ( 537)		RELOP19	R14(B)[0..1]	<-	R7(C)[0..4], CC:0	{S}
+0003 ( 537)		BRANCH		<-	R14(B)[0..1]	{}
+		==> 11
+		==> 12
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 539)		CONST	R6(P)[0..0]	<-	CG12(12:0 'cw' A)	{S}
+0001 ( 539)		STOREC2		<-	V(6 '')+0 , R6(P)+0 {V(12 'cw' A)} [0..0]	{}
+0002 ( 539)		CALLN		<-	V(26 'board_draw')+0 	{}
+0003 ( 540)		STOREC2		<-	V(0 '')+0 , R0(I)	{}
+0004 ( 540)		STOREC2		<-	V(4 '')+0 , CI:10	{}
+0005 ( 540)		CONST	R7(P)[0..0]	<-	CG20(61:0 'buff' A)	{S}
+0006 ( 540)		STOREC2		<-	V(2 '')+0 , R7(P)+0 {V(61 'buff' A)} [0..0]	{}
+0007 ( 540)		CALLN		<-	V(27 'itoa')+0 	{}
+0008 ( 761)		STOREC2		<-	V(0 '')+0 , R6(P)+0 {V(12 'cw' A)} [0..0]	{}
+0009 ( 761)		STOREC1		<-	V(2 '')+0 , CC:0	{}
+000a ( 761)		STOREC1		<-	V(3 '')+0 , CC:6	{}
+000b ( 761)		STOREC1		<-	V(4 '')+0 , CC:7	{}
+000c ( 761)		STOREC1		<-	V(5 '')+0 , CC:1	{}
+000d ( 761)		STOREC1		<-	V(7 '')+0 , CC:1	{}
+000e ( 184)		LOADG1	R8(C)[0..255]	<-	V(18 'p2smap' A)+1 	{}
+000f ( 184)		BINOP10	R8(C)[0..255]	<-	R8(CF)[0..255], CC:32	{}
+0010 ( 761)		STOREC1		<-	V(6 '')+0 , R8(CF)[0..255]	{}
+0011 ( 761)		CALLN		<-	V(8 'cwin_fill_rect_raw')+0 	{}
+0012 ( 542)		STOREC2		<-	V(0 '')+0 , R6(PF)+0 {V(12 'cw' A)} [0..0]	{}
+0013 ( 542)		STOREC1		<-	V(2 '')+0 , CC:0	{}
+0014 ( 542)		STOREC1		<-	V(3 '')+0 , CC:6	{}
+0015 ( 542)		STOREC2		<-	V(4 '')+0 , R7(PF)+0 {V(61 'buff' A)} [0..0]	{}
+0016 ( 542)		STOREC1		<-	V(6 '')+0 , CC:1	{}
+0017 ( 542)		CALLN		<-	V(16 'cwin_putat_string')+0 	{}
+0018 ( 537)		CONST	R7(C)[0..4]	<-	CI:0	{}
+0019 ( 546)		JUMP		<-		{}
+		==> 12
+L12: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 546)		RELOP23	R0(B)[0..1]	<-	R0(IF), R1(IF)[-32768..32767]	{}
+0001 ( 546)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 13
+		==> 10
+L13: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 273)		LOADI1	R0(C)[0..6]	<-	R5(P)+0 {V(19 'board')} [48..54]	{}
+0001 ( 273)		BINOP1	R1(C)[1..7]	<-	R0(C)[0..6], CI:1	{}
+0002 ( 273)		STOREI1		<-	R5(PF)+0 {V(19 'board')} [48..54], R1(CF)[1..7]	{}
+0003 ( 274)		CONV37	R0(I)[0..6]	<-	R0(CF)[0..6]	{}
+0004 ( 274)		BINOP16	R0(I)[0..48]	<-	R0(IF)[0..6], CI:3	{}
+0005 ( 274)		BINOP1	R0(I)[0..54]	<-	R0(IF)[0..48], R4(IF)[0..6]	{}
+0006 ( 274)		LEAG	R0(P)[0..54]	<-	V(19 'board')+0 , R0(IF)[0..48]	{}
+0007 ( 274)		STOREI1		<-	R0(PF)+0 {V(19 'board')} [0..54], CC:0	{}
+0008 ( 560)		BRANCH		<-	R14(BF)[0..1]	{}
+		==> 14
+		==> 16
+L14: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 561)		CONV37	R0(I)[0..6]	<-	R11(CF)[0..6]	{}
+0001 ( 561)		RETV		<-	R0(IF)[0..6]	{}
+L16: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 563)		RETV		<-	R3(IF)	{}
+L10: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 273)		LOADI1	R0(C)[0..6]	<-	R5(P)+0 {V(19 'board')} [48..54]	{}
+0001 ( 273)		BINOP1	R1(C)[1..7]	<-	R0(C)[0..6], CI:1	{}
+0002 ( 273)		STOREI1		<-	R5(PF)+0 {V(19 'board')} [48..54], R1(CF)[1..7]	{}
+0003 ( 274)		CONV37	R0(I)[0..6]	<-	R0(CF)[0..6]	{}
+0004 ( 274)		BINOP16	R0(I)[0..48]	<-	R0(IF)[0..6], CI:3	{}
+0005 ( 274)		BINOP1	R0(I)[0..54]	<-	R0(IF)[0..48], R4(IF)[0..6]	{}
+0006 ( 274)		LEAG	R0(P)[0..54]	<-	V(19 'board')+0 , R0(IF)[0..48]	{}
+0007 ( 274)		STOREI1		<-	R0(PF)+0 {V(19 'board')} [0..54], CC:0	{}
+0008 ( 512)		JUMP		<-		{}
+		==> 6
+L6: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 512)		BINOP1	R12(C)[1..7]	<-	R12(CF)[0..6], CI:1	{}
+0001 ( 512)		RELOP28	R0(B)[0..1]	<-	R12(C)[1..7], CC:7	{}
+0002 ( 512)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 7
+		==> 2
+L2: <= D-1: (4)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 560)		BRANCH		<-	R7(CF)[0..255]	{}
+		==> 15
+		==> 14
+L15: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 562)		BRANCH		<-	R10(BF)[0..1]	{}
+		==> 16
+		==> 17
+L17: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 565)		RETV		<-	R2(IF)	{}
+L20: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 ( 260)		CONST	R0(I)[1..1]	<-	CI:1	{}
+0001 ( 260)		JUMP		<-		{}
+		==> 21
+--------------------------------------------------------------------
+board_draw: /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c:62
+$00 R0(I), $02 R1(I), $00 R2(P), $03 R3(I), $04 R4(I), $00 R5(B), $05 R6(C), $06 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  64)		CONST	R6(C)[0..0]	<-	CI:0	{}
+0001 (  68)		CONST	R1(I)[0..0]	<-	CI:0	{I}
+0002 (  69)		LOADZ2	R2(P)	<-	V(6 '')+0 	{IS}
+0003 (  68)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  68)		BINOP16	R3(I)[0..40]	<-	R1(I)[0..5], CI:3	{I}
+0001 (  66)		CONST	R7(C)[0..0]	<-	CI:0	{}
+0002 (  68)		CONST	R4(I)[0..0]	<-	CI:0	{}
+0003 (  69)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  69)		STOREC2		<-	V(0 '')+0 , R2(P)	{}
+0001 (  69)		STOREC1		<-	V(4 '')+0 , CC:82	{}
+0002 (  68)		BINOP1	R0(I)[0..46]	<-	R4(I)[0..6], R3(I)[0..40]	{}
+0003 (  68)		LEAG	R0(P)[0..46]	<-	V(19 'board')+0 , R0(IF)[0..46]	{}
+0004 (  68)		LOADI1	R0(C)[0..255]	<-	R0(PF)+0 {V(19 'board')} [0..46]	{}
+0005 (  68)		RELOP19	R5(B)[0..1]	<-	R0(C)[0..255], CC:1	{}
+0006 (  68)		BRANCH		<-	R5(BF)[0..1]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  69)		STOREC1		<-	V(5 '')+0 , CC:10	{}
+0001 (  66)		JUMP		<-		{}
+		==> 3
+L3: <= D-1: (3)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  69)		STOREC1		<-	V(2 '')+0 , R7(C)[0..6]	{}
+0001 (  69)		STOREC1		<-	V(3 '')+0 , R6(C)[0..5]	{}
+0002 (  69)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0003 (  68)		BINOP1	R4(I)[1..7]	<-	R4(IF)[0..6], CI:1	{}
+0004 (  66)		BINOP1	R7(C)[1..7]	<-	R7(CF)[0..6], CI:1	{}
+0005 (  66)		RELOP28	R0(B)[0..1]	<-	R7(C)[1..7], CC:7	{}
+0006 (  66)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 4
+		==> 5
+L5: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  78)		STOREC2		<-	V(0 '')+0 , R2(P)	{}
+0001 (  78)		STOREC1		<-	V(2 '')+0 , CC:7	{}
+0002 (  78)		STOREC1		<-	V(3 '')+0 , R6(C)[0..5]	{}
+0003 (  78)		STOREC1		<-	V(4 '')+0 , CC:83	{}
+0004 (  78)		STOREC1		<-	V(5 '')+0 , CC:8	{}
+0005 (  78)		CALLN		<-	V(11 'cwin_putat_char_raw')+0 	{}
+0006 (  68)		BINOP1	R1(I)[1..6]	<-	R1(IF)[0..5], CI:1	{}
+0007 (  64)		BINOP1	R6(C)[1..6]	<-	R6(CF)[0..5], CI:1	{}
+0008 (  64)		RELOP28	R0(B)[0..1]	<-	R6(C)[1..6], CC:6	{}
+0009 (  64)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  80)		RET		<-		{}
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  70)		RELOP19	R0(B)[0..1]	<-	R0(CF)[0..255], CC:5	{}
+0001 (  70)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  71)		STOREC1		<-	V(5 '')+0 , CC:15	{}
+0001 (  66)		JUMP		<-		{}
+		==> 3
+L9: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/samples/games/connectfour.c
+0000 (  73)		STOREC1		<-	V(5 '')+0 , CC:8	{}
+0001 (  66)		JUMP		<-		{}
+		==> 3
+--------------------------------------------------------------------
+itoa: /home/honza/projects/c64/projects/oscar64/include/stdlib.h:20
+$00 R0(I), $00 R1(P), $00 R2(I), $00 R3(I), $00 R4(I), $00 R5(I), $00 R6(B), $01 R7(C), 
+L0: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (   9)		LOADZ2	R0(I)[-32768..32767]	<-	V(0 '')+0 	{S}
+0001 (   9)		RELOP24	R6(B)[0..1]	<-	R0(I)[-32768..32767], CI:0	{S}
+0002 (  10)		BRANCH		<-	R6(B)[0..1]	{}
+		==> 8
+		==> 9
+L8: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  10)		UNOP11	R0(I)[1..32768]	<-	R0(IF)[-32768..-1]	{}
+0001 (  10)		JUMP		<-		{}
+		==> 9
+L9: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  12)		CONST	R7(C)[0..0]	<-	CI:0	{}
+0001 (  16)		LOADZ2	R1(P)	<-	V(2 '')+0 	{IS}
+0002 (  14)		LOADZ2	R2(I)[0..65535]	<-	V(4 '')+0 	{IS}
+0003 (  14)		JUMP		<-		{}
+		==> 1
+L1: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  14)		BINOP6	R3(I)[0..65534]	<-	R0(I)[0..65535], R2(I)[0..65535]	{}
+0001 (  17)		BINOP4	R0(I)[0..65535]	<-	R0(IF)[0..65535], R2(I)[0..65535]	{}
+0002 (  15)		RELOP28	R4(B)[0..1]	<-	R3(C)[0..65534], CC:10	{}
+0003 (  15)		BRANCH		<-	R4(BF)[0..1]	{}
+		==> 10
+		==> 11
+L10: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  15)		CONST	R4(I)[48..48]	<-	CI:48	{}
+0001 (  15)		JUMP		<-		{}
+		==> 12
+L12: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  16)		CONV37	R5(I)[0..255]	<-	R7(C)[0..]	{}
+0001 (  15)		CONV37	R3(I)[0..255]	<-	R3(CF)[0..65534]	{}
+0002 (  15)		BINOP1	R3(I)[48..310]	<-	R3(IF)[0..255], R4(IF)[48..55]	{}
+0003 (  16)		LEAI	R4(P)+0	<-	R1(P)+0, R5(IF)[0..255]	{}
+0004 (  16)		STOREI1		<-	R4(PF)+0, R3(CF)[48..310]	{}
+0005 (  16)		BINOP1	R7(C)[1..]	<-	R7(CF)[0..], CI:1	{}
+0006 (  17)		RELOP27	R3(B)[0..1]	<-	R0(I)[0..65535], CI:0	{}
+0007 (  17)		BRANCH		<-	R3(BF)[0..1]	{}
+		==> 1
+		==> 2
+L2: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  19)		BRANCH		<-	R6(BF)[0..1]	{}
+		==> 3
+		==> 4
+L3: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  21)		CONV37	R0(I)[0..255]	<-	R7(C)[1..256]	{}
+0001 (  21)		LEAI	R0(P)+0	<-	R1(P)+0, R0(IF)[0..255]	{}
+0002 (  21)		STOREI1		<-	R0(PF)+0, CC:45	{}
+0003 (  21)		BINOP1	R7(C)[2..]	<-	R7(CF)[1..256], CI:1	{}
+0004 (  19)		JUMP		<-		{}
+		==> 4
+L4: <= D-1: (2)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  23)		CONV37	R0(I)[0..255]	<-	R7(C)	{}
+0001 (  23)		LEAI	R0(P)+0	<-	R1(P)+0, R0(IF)[0..255]	{}
+0002 (  23)		STOREI1		<-	R0(PF)+0, CC:0	{}
+0003 (  24)		CONST	R4(C)[0..0]	<-	CI:0	{}
+0004 (  25)		JUMP		<-		{}
+		==> 5
+L5: <= D-1: (2) Head P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  25)		CONV37	R0(I)[0..255]	<-	R7(C)	{}
+0001 (  25)		CONV37	R2(I)[0..255]	<-	R4(C)[0..]	{}
+0002 (  25)		BINOP1	R3(I)[1..256]	<-	R2(I)[0..255], CI:1	{}
+0003 (  25)		RELOP28	R0(B)[0..1]	<-	R3(IF)[1..256], R0(IF)[0..255]	{}
+0004 (  25)		BRANCH		<-	R0(BF)[0..1]	{}
+		==> 6
+		==> 7
+L6: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  27)		LEAI	R0(P)+0	<-	R1(P)+0, R2(IF)[0..255]	{}
+0001 (  27)		LOADI1	R3(C)[0..255]	<-	R0(P)+0	{}
+0002 (  28)		BINOP1	R7(C)	<-	R7(CF), CI:-1	{}
+0003 (  28)		CONV37	R2(I)[0..255]	<-	R7(C)	{}
+0004 (  28)		LEAI	R2(P)+0	<-	R1(P)+0, R2(IF)[0..255]	{}
+0005 (  28)		LOADI1	R5(C)[0..255]	<-	R2(P)+0	{}
+0006 (  28)		STOREI1		<-	R0(PF)+0, R5(CF)[0..255]	{}
+0007 (  29)		STOREI1		<-	R2(PF)+0, R3(CF)[0..255]	{}
+0008 (  28)		BINOP1	R4(C)[1..]	<-	R4(CF)[0..], CI:1	{}
+0009 (  25)		JUMP		<-		{}
+		==> 5
+L7: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  31)		RET		<-		{}
+L11: <= D-1: (1)  P-1 /home/honza/projects/c64/projects/oscar64/include/stdlib.c
+0000 (  15)		CONST	R4(I)[55..55]	<-	CI:55	{}
+0001 (  15)		JUMP		<-		{}
+		==> 12

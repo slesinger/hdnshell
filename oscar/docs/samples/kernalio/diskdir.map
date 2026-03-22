@@ -1,0 +1,137 @@
+sections
+0880 - 1b84 : DATA, code
+1b84 - 1ba2 : DATA, data
+1ba2 - 1bb2 : BSS, bss
+1bb8 - 9000 : HEAP, heap
+9000 - 9f70 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9ff2 - a000 : SSTACK, sstack
+9ff2 - 9ff2 : SSTACK, krnio_setnam@stack
+9ff2 - 9ff2 : SSTACK, krnio_open@stack
+9ff2 - 9ff2 : SSTACK, krnio_chkin@stack
+9ff2 - 9ff2 : SSTACK, krnio_chrin@stack
+9ff2 - 9ff2 : SSTACK, putpch@stack
+9ff2 - 9ff2 : SSTACK, puts@stack
+9fe2 - 9ff2 : SSTACK, nformi@stack
+9fe2 - 9ff2 : SSTACK, nforml@stack
+9ff2 - 9ff2 : SSTACK, isinf@stack
+9fe9 - 9ff2 : SSTACK, nformf@stack
+9fd0 - 9fe2 : SSTACK, sformat@stack
+9f9e - 9fd0 : SSTACK, printf@stack
+9ff2 - 9ff2 : SSTACK, krnio_clrchn@stack
+9ff2 - 9ff2 : SSTACK, krnio_close@stack
+9ff2 - 9ff2 : SSTACK, krnio_status@stack
+9f70 - 9f9e : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 1ba2, 1332, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 093f : main, NATIVE_CODE:code
+093f - 0955 : krnio_setnam, NATIVE_CODE:code
+0955 - 0957 : *, DATA:code
+0957 - 0985 : krnio_open, NATIVE_CODE:code
+0985 - 099a : krnio_chkin, NATIVE_CODE:code
+099a - 09a2 : krnio_chrin, NATIVE_CODE:code
+09a2 - 09ca : printf, NATIVE_CODE:code
+09ca - 0e0b : sformat, NATIVE_CODE:code
+0e0b - 0e1e : puts, NATIVE_CODE:code
+0e1e - 0e81 : putpch, NATIVE_CODE:code
+0e81 - 0f9c : nformi, NATIVE_CODE:code
+0f9c - 10e6 : nforml, NATIVE_CODE:code
+10e6 - 164a : nformf, NATIVE_CODE:code
+164a - 1659 : isinf, NATIVE_CODE:code
+1659 - 1660 : *, DATA:code
+1660 - 1664 : krnio_clrchn, NATIVE_CODE:code
+1664 - 166c : krnio_close, NATIVE_CODE:code
+166c - 167a : *, DATA:code
+167a - 1686 : krnio_status, NATIVE_CODE:code
+1686 - 16cb : freg, NATIVE_CODE:code
+16cb - 17b8 : faddsub, NATIVE_CODE:code
+17b8 - 1852 : crt_fmul, NATIVE_CODE:code
+1852 - 1880 : crt_fmul8, NATIVE_CODE:code
+1880 - 192e : crt_fdiv, NATIVE_CODE:code
+192e - 194c : divs16, NATIVE_CODE:code
+194c - 195a : negaccu, NATIVE_CODE:code
+195a - 1968 : negtmp, NATIVE_CODE:code
+1968 - 19ed : divmod, NATIVE_CODE:code
+19ed - 1a0c : mods16, NATIVE_CODE:code
+1a0c - 1a1a : negtmpb, NATIVE_CODE:code
+1a1a - 1a66 : f32_to_i16, NATIVE_CODE:code
+1a66 - 1a84 : sint16_to_float, NATIVE_CODE:code
+1a84 - 1aad : uint16_to_float, NATIVE_CODE:code
+1aad - 1b84 : divmod32, NATIVE_CODE:code
+1b84 - 1b85 : spentry, DATA:data
+1b85 - 1b86 : giocharmap, DATA:data
+1b86 - 1ba2 : fround5, DATA:data
+1ba2 - 1ba2 : BSSStart, START:bss
+1ba2 - 1bb2 : krnio_pstatus, DATA:bss
+1bb2 - 1bb2 : BSSEnd, END:bss
+9f70 - 9f76 : main@stack, BSS:main@stack
+9f70 - 9f70 : StackEnd, END:stack
+9f76 - 9f9e : buff, BSS:main@stack
+9f9e - 9fd0 : buff, BSS:printf@stack
+9fd0 - 9fda : sformat@stack, BSS:sformat@stack
+9fda - 9fe2 : si, BSS:sformat@stack
+9fe2 - 9ff2 : buffer, BSS:nformi@stack
+9fe2 - 9ff2 : buffer, BSS:nforml@stack
+9fe9 - 9ff2 : nformf@stack, BSS:nformf@stack
+9ff2 - a000 : sstack, STACK:sstack
+
+objects by size
+10e6 (0564) : nformf, NATIVE_CODE:code
+09ca (0441) : sformat, NATIVE_CODE:code
+0f9c (014a) : nforml, NATIVE_CODE:code
+0e81 (011b) : nformi, NATIVE_CODE:code
+16cb (00ed) : faddsub, NATIVE_CODE:code
+1aad (00d7) : divmod32, NATIVE_CODE:code
+0880 (00bf) : main, NATIVE_CODE:code
+1880 (00ae) : crt_fdiv, NATIVE_CODE:code
+17b8 (009a) : crt_fmul, NATIVE_CODE:code
+1968 (0085) : divmod, NATIVE_CODE:code
+0e1e (0063) : putpch, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+1a1a (004c) : f32_to_i16, NATIVE_CODE:code
+1686 (0045) : freg, NATIVE_CODE:code
+9f9e (0032) : buff, BSS:printf@stack
+0957 (002e) : krnio_open, NATIVE_CODE:code
+1852 (002e) : crt_fmul8, NATIVE_CODE:code
+1a84 (0029) : uint16_to_float, NATIVE_CODE:code
+09a2 (0028) : printf, NATIVE_CODE:code
+9f76 (0028) : buff, BSS:main@stack
+19ed (001f) : mods16, NATIVE_CODE:code
+192e (001e) : divs16, NATIVE_CODE:code
+1a66 (001e) : sint16_to_float, NATIVE_CODE:code
+1b86 (001c) : fround5, DATA:data
+093f (0016) : krnio_setnam, NATIVE_CODE:code
+0985 (0015) : krnio_chkin, NATIVE_CODE:code
+0e0b (0013) : puts, NATIVE_CODE:code
+1ba2 (0010) : krnio_pstatus, DATA:bss
+9fe2 (0010) : buffer, BSS:nformi@stack
+9fe2 (0010) : buffer, BSS:nforml@stack
+164a (000f) : isinf, NATIVE_CODE:code
+194c (000e) : negaccu, NATIVE_CODE:code
+195a (000e) : negtmp, NATIVE_CODE:code
+1a0c (000e) : negtmpb, NATIVE_CODE:code
+9ff2 (000e) : sstack, STACK:sstack
+167a (000c) : krnio_status, NATIVE_CODE:code
+9fd0 (000a) : sformat@stack, BSS:sformat@stack
+9fe9 (0009) : nformf@stack, BSS:nformf@stack
+099a (0008) : krnio_chrin, NATIVE_CODE:code
+1664 (0008) : krnio_close, NATIVE_CODE:code
+9fda (0008) : si, BSS:sformat@stack
+9f70 (0006) : main@stack, BSS:main@stack
+1660 (0004) : krnio_clrchn, NATIVE_CODE:code
+1b84 (0001) : spentry, DATA:data
+1b85 (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+1ba2 (0000) : BSSStart, START:bss
+1bb2 (0000) : BSSEnd, END:bss
+9f70 (0000) : StackEnd, END:stack

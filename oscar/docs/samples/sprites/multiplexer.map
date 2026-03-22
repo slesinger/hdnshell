@@ -1,0 +1,136 @@
+sections
+0a00 - 17f6 : DATA, code
+17f6 - 17ff : DATA, data
+2800 - 2b00 : BSS, bss
+2b00 - 9000 : HEAP, heap
+9000 - 9ffc : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+2000 - 2800 : DATA, spriteset
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, sin@stack
+a000 - a000 : SSTACK, rirq_init_tables@stack
+a000 - a000 : SSTACK, rirq_init_kernal@stack
+a000 - a000 : SSTACK, rirq_init_io@stack
+a000 - a000 : SSTACK, rirq_build@stack
+a000 - a000 : SSTACK, vspr_init@stack
+a000 - a000 : SSTACK, vspr_set@stack
+a000 - a000 : SSTACK, vspr_sort@stack
+a000 - a000 : SSTACK, vspr_update@stack
+a000 - a000 : SSTACK, rirq_sort@stack
+a000 - a000 : SSTACK, rirq_start@stack
+a000 - a000 : SSTACK, rirq_wait@stack
+9ffc - a000 : SSTACK, main@stack
+
+regions
+0a00 - 2000 : 17ff, 0dff, lower
+2000 - 2800 : 2800, 0800, spriteset
+2800 - 9000 : 0000, 0300, main
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0a00 - 0b99 : main, NATIVE_CODE:code
+0b99 - 0d30 : sin, NATIVE_CODE:code
+0d30 - 0d51 : rirq_init_kernal, NATIVE_CODE:code
+0d51 - 0d6f : rirq_init_tables, NATIVE_CODE:code
+0d6f - 0dcc : rirq_isr_kernal_io, NATIVE_CODE:code
+0dcc - 0ec0 : vspr_init, NATIVE_CODE:code
+0ec0 - 0f64 : rirq_build, NATIVE_CODE:code
+0f64 - 0f8e : vspr_set, NATIVE_CODE:code
+0f8e - 0fd7 : vspr_sort, NATIVE_CODE:code
+0fd7 - 1314 : vspr_update, NATIVE_CODE:code
+1314 - 13a3 : rirq_sort, NATIVE_CODE:code
+13a3 - 13b5 : rirq_start, NATIVE_CODE:code
+13b5 - 13c1 : rirq_wait, NATIVE_CODE:code
+13c1 - 1406 : freg, NATIVE_CODE:code
+1406 - 14f3 : faddsub, NATIVE_CODE:code
+14f3 - 158d : crt_fmul, NATIVE_CODE:code
+158d - 15bb : crt_fmul8, NATIVE_CODE:code
+15bb - 1669 : crt_fdiv, NATIVE_CODE:code
+1669 - 1763 : fround, NATIVE_CODE:code
+1763 - 17af : f32_to_i16, NATIVE_CODE:code
+17af - 17cd : sint16_to_float, NATIVE_CODE:code
+17cd - 17f6 : uint16_to_float, NATIVE_CODE:code
+17f6 - 17f7 : spentry, DATA:data
+17f7 - 17ff : ubitmask, DATA:data
+2000 - 2800 : spriteset, DATA:spriteset
+2800 - 2900 : sintab, DATA:bss
+2800 - 2800 : BSSStart, START:bss
+2900 - 2911 : rasterIRQRows, DATA:bss
+2911 - 2922 : rasterIRQIndex, DATA:bss
+2922 - 2933 : rasterIRQNext, DATA:bss
+2933 - 2934 : nextIRQ, DATA:bss
+2934 - 2944 : rasterIRQLow, DATA:bss
+2944 - 2954 : rasterIRQHigh, DATA:bss
+2954 - 2955 : rirq_count, DATA:bss
+2955 - 2957 : vspriteScreen, DATA:bss
+2957 - 2977 : synch, DATA:bss
+2977 - 2987 : spriteOrder, DATA:bss
+2987 - 2997 : vspriteYLow, DATA:bss
+2997 - 29a7 : vspriteXLow, DATA:bss
+29a7 - 29b7 : vspriteXHigh, DATA:bss
+29b7 - 29c7 : vspriteImage, DATA:bss
+29c7 - 29d7 : vspriteColor, DATA:bss
+29d7 - 29e8 : spriteYPos, DATA:bss
+29e8 - 29e9 : rirq_pcount, DATA:bss
+2a00 - 2b00 : spirq, DATA:bss
+2b00 - 2b00 : BSSEnd, END:bss
+9ffc - 9ffc : StackEnd, END:stack
+9ffc - a000 : main@stack, BSS:main@stack
+
+objects by size
+2000 (0800) : spriteset, DATA:spriteset
+0fd7 (033d) : vspr_update, NATIVE_CODE:code
+0a00 (0199) : main, NATIVE_CODE:code
+0b99 (0197) : sin, NATIVE_CODE:code
+2800 (0100) : sintab, DATA:bss
+2a00 (0100) : spirq, DATA:bss
+1669 (00fa) : fround, NATIVE_CODE:code
+0dcc (00f4) : vspr_init, NATIVE_CODE:code
+1406 (00ed) : faddsub, NATIVE_CODE:code
+15bb (00ae) : crt_fdiv, NATIVE_CODE:code
+0ec0 (00a4) : rirq_build, NATIVE_CODE:code
+14f3 (009a) : crt_fmul, NATIVE_CODE:code
+1314 (008f) : rirq_sort, NATIVE_CODE:code
+0d6f (005d) : rirq_isr_kernal_io, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+1763 (004c) : f32_to_i16, NATIVE_CODE:code
+0f8e (0049) : vspr_sort, NATIVE_CODE:code
+13c1 (0045) : freg, NATIVE_CODE:code
+158d (002e) : crt_fmul8, NATIVE_CODE:code
+0f64 (002a) : vspr_set, NATIVE_CODE:code
+17cd (0029) : uint16_to_float, NATIVE_CODE:code
+0d30 (0021) : rirq_init_kernal, NATIVE_CODE:code
+2957 (0020) : synch, DATA:bss
+0d51 (001e) : rirq_init_tables, NATIVE_CODE:code
+17af (001e) : sint16_to_float, NATIVE_CODE:code
+13a3 (0012) : rirq_start, NATIVE_CODE:code
+2900 (0011) : rasterIRQRows, DATA:bss
+2911 (0011) : rasterIRQIndex, DATA:bss
+2922 (0011) : rasterIRQNext, DATA:bss
+29d7 (0011) : spriteYPos, DATA:bss
+2934 (0010) : rasterIRQLow, DATA:bss
+2944 (0010) : rasterIRQHigh, DATA:bss
+2977 (0010) : spriteOrder, DATA:bss
+2987 (0010) : vspriteYLow, DATA:bss
+2997 (0010) : vspriteXLow, DATA:bss
+29a7 (0010) : vspriteXHigh, DATA:bss
+29b7 (0010) : vspriteImage, DATA:bss
+29c7 (0010) : vspriteColor, DATA:bss
+13b5 (000c) : rirq_wait, NATIVE_CODE:code
+17f7 (0008) : ubitmask, DATA:data
+9ffc (0004) : main@stack, BSS:main@stack
+2955 (0002) : vspriteScreen, DATA:bss
+17f6 (0001) : spentry, DATA:data
+2933 (0001) : nextIRQ, DATA:bss
+2954 (0001) : rirq_count, DATA:bss
+29e8 (0001) : rirq_pcount, DATA:bss
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+2800 (0000) : BSSStart, START:bss
+2b00 (0000) : BSSEnd, END:bss
+9ffc (0000) : StackEnd, END:stack

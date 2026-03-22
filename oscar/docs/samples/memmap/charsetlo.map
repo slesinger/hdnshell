@@ -1,0 +1,118 @@
+sections
+0a00 - 1c5e : DATA, code
+1c5e - 1c7c : DATA, data
+2800 - 2800 : BSS, bss
+2800 - 9000 : HEAP, heap
+9000 - 9f9c : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+2000 - 2800 : DATA, charset
+0801 - 0853 : DATA, startup
+9ff4 - a000 : SSTACK, sstack
+9ff4 - 9ff4 : SSTACK, vic_setmode@stack
+9ff4 - 9ff4 : SSTACK, putpch@stack
+9ff4 - 9ff4 : SSTACK, puts@stack
+9fe4 - 9ff4 : SSTACK, nformi@stack
+9fe4 - 9ff4 : SSTACK, nforml@stack
+9ff4 - 9ff4 : SSTACK, isinf@stack
+9feb - 9ff4 : SSTACK, nformf@stack
+9fd2 - 9fe4 : SSTACK, sformat@stack
+9fa0 - 9fd2 : SSTACK, printf@stack
+9f9c - 9fa0 : SSTACK, main@stack
+
+regions
+0a00 - 2000 : 1c7c, 127c, lower
+2000 - 2800 : 2800, 0800, charset
+2800 - 9000 : 0000, 0000, main
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0a00 - 0a47 : main, NATIVE_CODE:code
+0a47 - 0a99 : vic_setmode, NATIVE_CODE:code
+0a99 - 0ac1 : printf, NATIVE_CODE:code
+0ac1 - 0f02 : sformat, NATIVE_CODE:code
+0f02 - 0f15 : puts, NATIVE_CODE:code
+0f15 - 0f78 : putpch, NATIVE_CODE:code
+0f78 - 1093 : nformi, NATIVE_CODE:code
+1093 - 11dd : nforml, NATIVE_CODE:code
+11dd - 1741 : nformf, NATIVE_CODE:code
+1741 - 1750 : isinf, NATIVE_CODE:code
+1750 - 1760 : *, DATA:code
+1760 - 17a5 : freg, NATIVE_CODE:code
+17a5 - 1892 : faddsub, NATIVE_CODE:code
+1892 - 192c : crt_fmul, NATIVE_CODE:code
+192c - 195a : crt_fmul8, NATIVE_CODE:code
+195a - 1a08 : crt_fdiv, NATIVE_CODE:code
+1a08 - 1a26 : divs16, NATIVE_CODE:code
+1a26 - 1a34 : negaccu, NATIVE_CODE:code
+1a34 - 1a42 : negtmp, NATIVE_CODE:code
+1a42 - 1ac7 : divmod, NATIVE_CODE:code
+1ac7 - 1ae6 : mods16, NATIVE_CODE:code
+1ae6 - 1af4 : negtmpb, NATIVE_CODE:code
+1af4 - 1b40 : f32_to_i16, NATIVE_CODE:code
+1b40 - 1b5e : sint16_to_float, NATIVE_CODE:code
+1b5e - 1b87 : uint16_to_float, NATIVE_CODE:code
+1b87 - 1c5e : divmod32, NATIVE_CODE:code
+1c5e - 1c5f : spentry, DATA:data
+1c5f - 1c60 : giocharmap, DATA:data
+1c60 - 1c7c : fround5, DATA:data
+2000 - 2800 : charset, DATA:charset
+2800 - 2800 : BSSStart, START:bss
+2800 - 2800 : BSSEnd, END:bss
+9f9c - 9fa0 : main@stack, BSS:main@stack
+9f9c - 9f9c : StackEnd, END:stack
+9fa0 - 9fd2 : buff, BSS:printf@stack
+9fd2 - 9fdc : sformat@stack, BSS:sformat@stack
+9fdc - 9fe4 : si, BSS:sformat@stack
+9fe4 - 9ff4 : buffer, BSS:nformi@stack
+9fe4 - 9ff4 : buffer, BSS:nforml@stack
+9feb - 9ff4 : nformf@stack, BSS:nformf@stack
+9ff4 - a000 : sstack, STACK:sstack
+
+objects by size
+2000 (0800) : charset, DATA:charset
+11dd (0564) : nformf, NATIVE_CODE:code
+0ac1 (0441) : sformat, NATIVE_CODE:code
+1093 (014a) : nforml, NATIVE_CODE:code
+0f78 (011b) : nformi, NATIVE_CODE:code
+17a5 (00ed) : faddsub, NATIVE_CODE:code
+1b87 (00d7) : divmod32, NATIVE_CODE:code
+195a (00ae) : crt_fdiv, NATIVE_CODE:code
+1892 (009a) : crt_fmul, NATIVE_CODE:code
+1a42 (0085) : divmod, NATIVE_CODE:code
+0f15 (0063) : putpch, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0a47 (0052) : vic_setmode, NATIVE_CODE:code
+1af4 (004c) : f32_to_i16, NATIVE_CODE:code
+0a00 (0047) : main, NATIVE_CODE:code
+1760 (0045) : freg, NATIVE_CODE:code
+9fa0 (0032) : buff, BSS:printf@stack
+192c (002e) : crt_fmul8, NATIVE_CODE:code
+1b5e (0029) : uint16_to_float, NATIVE_CODE:code
+0a99 (0028) : printf, NATIVE_CODE:code
+1ac7 (001f) : mods16, NATIVE_CODE:code
+1a08 (001e) : divs16, NATIVE_CODE:code
+1b40 (001e) : sint16_to_float, NATIVE_CODE:code
+1c60 (001c) : fround5, DATA:data
+0f02 (0013) : puts, NATIVE_CODE:code
+9fe4 (0010) : buffer, BSS:nformi@stack
+9fe4 (0010) : buffer, BSS:nforml@stack
+1741 (000f) : isinf, NATIVE_CODE:code
+1a26 (000e) : negaccu, NATIVE_CODE:code
+1a34 (000e) : negtmp, NATIVE_CODE:code
+1ae6 (000e) : negtmpb, NATIVE_CODE:code
+9ff4 (000c) : sstack, STACK:sstack
+9fd2 (000a) : sformat@stack, BSS:sformat@stack
+9feb (0009) : nformf@stack, BSS:nformf@stack
+9fdc (0008) : si, BSS:sformat@stack
+9f9c (0004) : main@stack, BSS:main@stack
+1c5e (0001) : spentry, DATA:data
+1c5f (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+2800 (0000) : BSSStart, START:bss
+2800 (0000) : BSSEnd, END:bss
+9f9c (0000) : StackEnd, END:stack

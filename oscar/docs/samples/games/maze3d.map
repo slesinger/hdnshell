@@ -1,0 +1,170 @@
+sections
+0880 - 2d16 : DATA, code
+2d16 - 3549 : DATA, data
+3549 - 35e7 : BSS, bss
+35e8 - 9000 : HEAP, heap
+9000 - 9fee : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+a000 - a000 : SSTACK, sstack
+a000 - a000 : SSTACK, mmap_trampoline@stack
+a000 - a000 : SSTACK, memcpy@stack
+a000 - a000 : SSTACK, vic_setmode@stack
+a000 - a000 : SSTACK, rirq_init_tables@stack
+a000 - a000 : SSTACK, rirq_init_kernal@stack
+a000 - a000 : SSTACK, rirq_init_io@stack
+a000 - a000 : SSTACK, rirq_build@stack
+a000 - a000 : SSTACK, rirq_sort@stack
+a000 - a000 : SSTACK, rirq_start@stack
+a000 - a000 : SSTACK, screen_flip@stack
+a000 - a000 : SSTACK, color_column@stack
+a000 - a000 : SSTACK, screen_column@stack
+9ff7 - a000 : SSTACK, maze_draw@stack
+a000 - a000 : SSTACK, joy_poll@stack
+a000 - a000 : SSTACK, vic_waitLine@stack
+a000 - a000 : SSTACK, screen_left_0@stack
+a000 - a000 : SSTACK, screen_left_1@stack
+a000 - a000 : SSTACK, screen_left@stack
+a000 - a000 : SSTACK, screen_right_0@stack
+a000 - a000 : SSTACK, screen_right_1@stack
+a000 - a000 : SSTACK, screen_right@stack
+9fee - 9ff7 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 3549, 2d67, main
+
+objects
+00f7 - 00f7 : ZeroEnd, END:zeropage
+00f7 - 00f7 : ZeroStart, START:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0a4a : main, NATIVE_CODE:code
+0a4a - 0a5f : mmap_trampoline, NATIVE_CODE:code
+0a5f - 0a76 : NMITrampoline, NATIVE_CODE:code
+0a76 - 0a7d : DoneTrampoline, NATIVE_CODE:code
+0a7d - 0a94 : IRQTrampoline, NATIVE_CODE:code
+0a94 - 0ac3 : memcpy, NATIVE_CODE:code
+0ac3 - 0b15 : vic_setmode, NATIVE_CODE:code
+0b15 - 0b36 : rirq_init_kernal, NATIVE_CODE:code
+0b36 - 0b54 : rirq_init_tables, NATIVE_CODE:code
+0b54 - 0bb1 : rirq_isr_kernal_io, NATIVE_CODE:code
+0bb1 - 0c55 : rirq_build, NATIVE_CODE:code
+0c55 - 0cde : rirq_sort, NATIVE_CODE:code
+0cde - 0cf0 : rirq_start, NATIVE_CODE:code
+0cf0 - 0d54 : screen_flip, NATIVE_CODE:code
+0d54 - 0fb0 : maze_draw, NATIVE_CODE:code
+0fb0 - 0fc1 : *, DATA:code
+0fc1 - 0fd2 : *, DATA:code
+0fd2 - 0fe3 : *, DATA:code
+0fe3 - 0ff4 : *, DATA:code
+0ff4 - 1005 : *, DATA:code
+1005 - 1016 : *, DATA:code
+1016 - 1027 : *, DATA:code
+1027 - 1038 : *, DATA:code
+1038 - 1049 : *, DATA:code
+1049 - 105a : *, DATA:code
+105a - 106b : *, DATA:code
+106b - 107c : *, DATA:code
+107c - 108d : *, DATA:code
+108d - 109e : *, DATA:code
+109e - 10af : *, DATA:code
+10af - 10c0 : *, DATA:code
+10c0 - 1110 : color_column, NATIVE_CODE:code
+1110 - 11c7 : screen_column, NATIVE_CODE:code
+11c7 - 1207 : joy_poll, NATIVE_CODE:code
+1207 - 1212 : screen_left, NATIVE_CODE:code
+1212 - 18bc : screen_left_0, NATIVE_CODE:code
+18bc - 18d5 : vic_waitLine, NATIVE_CODE:code
+18d5 - 1f7f : screen_left_1, NATIVE_CODE:code
+1f7f - 1f8a : screen_right, NATIVE_CODE:code
+1f8a - 262f : screen_right_0, NATIVE_CODE:code
+262f - 2cd4 : screen_right_1, NATIVE_CODE:code
+2cd4 - 2d16 : mul16, NATIVE_CODE:code
+2d16 - 2d17 : spentry, DATA:data
+2d17 - 3517 : charset, DATA:data
+3517 - 3518 : dx, DATA:data
+3518 - 3519 : dy, DATA:data
+3519 - 351a : px, DATA:data
+351a - 351b : py, DATA:data
+351b - 353b : maze, DATA:data
+353b - 3542 : zxdist0, DATA:data
+3542 - 3549 : zxdist1, DATA:data
+3549 - 355a : rasterIRQRows, DATA:bss
+3549 - 3549 : BSSStart, START:bss
+355a - 356b : rasterIRQIndex, DATA:bss
+356b - 357c : rasterIRQNext, DATA:bss
+357c - 357d : nextIRQ, DATA:bss
+357d - 358d : rasterIRQLow, DATA:bss
+358d - 359d : rasterIRQHigh, DATA:bss
+359d - 359e : rirq_count, DATA:bss
+359e - 35be : center, DATA:bss
+35be - 35de : bottom, DATA:bss
+35de - 35df : FlipIndex, DATA:bss
+35df - 35e1 : DrawScreen, DATA:bss
+35e1 - 35e3 : joyy, DATA:bss
+35e3 - 35e5 : joyx, DATA:bss
+35e5 - 35e7 : joyb, DATA:bss
+35e7 - 35e7 : BSSEnd, END:bss
+9fee - 9ff7 : main@stack, BSS:main@stack
+9fee - 9fee : StackEnd, END:stack
+9ff7 - a000 : maze_draw@stack, BSS:maze_draw@stack
+
+objects by size
+2d17 (0800) : charset, DATA:data
+1212 (06aa) : screen_left_0, NATIVE_CODE:code
+18d5 (06aa) : screen_left_1, NATIVE_CODE:code
+1f8a (06a5) : screen_right_0, NATIVE_CODE:code
+262f (06a5) : screen_right_1, NATIVE_CODE:code
+0d54 (025c) : maze_draw, NATIVE_CODE:code
+0880 (01ca) : main, NATIVE_CODE:code
+1110 (00b7) : screen_column, NATIVE_CODE:code
+0bb1 (00a4) : rirq_build, NATIVE_CODE:code
+0c55 (0089) : rirq_sort, NATIVE_CODE:code
+0cf0 (0064) : screen_flip, NATIVE_CODE:code
+0b54 (005d) : rirq_isr_kernal_io, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0ac3 (0052) : vic_setmode, NATIVE_CODE:code
+10c0 (0050) : color_column, NATIVE_CODE:code
+2cd4 (0042) : mul16, NATIVE_CODE:code
+11c7 (0040) : joy_poll, NATIVE_CODE:code
+0a94 (002f) : memcpy, NATIVE_CODE:code
+0b15 (0021) : rirq_init_kernal, NATIVE_CODE:code
+351b (0020) : maze, DATA:data
+359e (0020) : center, DATA:bss
+35be (0020) : bottom, DATA:bss
+0b36 (001e) : rirq_init_tables, NATIVE_CODE:code
+18bc (0019) : vic_waitLine, NATIVE_CODE:code
+0a5f (0017) : NMITrampoline, NATIVE_CODE:code
+0a7d (0017) : IRQTrampoline, NATIVE_CODE:code
+0a4a (0015) : mmap_trampoline, NATIVE_CODE:code
+0cde (0012) : rirq_start, NATIVE_CODE:code
+3549 (0011) : rasterIRQRows, DATA:bss
+355a (0011) : rasterIRQIndex, DATA:bss
+356b (0011) : rasterIRQNext, DATA:bss
+357d (0010) : rasterIRQLow, DATA:bss
+358d (0010) : rasterIRQHigh, DATA:bss
+1207 (000b) : screen_left, NATIVE_CODE:code
+1f7f (000b) : screen_right, NATIVE_CODE:code
+9fee (0009) : main@stack, BSS:main@stack
+9ff7 (0009) : maze_draw@stack, BSS:maze_draw@stack
+0a76 (0007) : DoneTrampoline, NATIVE_CODE:code
+353b (0007) : zxdist0, DATA:data
+3542 (0007) : zxdist1, DATA:data
+35df (0002) : DrawScreen, DATA:bss
+35e1 (0002) : joyy, DATA:bss
+35e3 (0002) : joyx, DATA:bss
+35e5 (0002) : joyb, DATA:bss
+2d16 (0001) : spentry, DATA:data
+3517 (0001) : dx, DATA:data
+3518 (0001) : dy, DATA:data
+3519 (0001) : px, DATA:data
+351a (0001) : py, DATA:data
+357c (0001) : nextIRQ, DATA:bss
+359d (0001) : rirq_count, DATA:bss
+35de (0001) : FlipIndex, DATA:bss
+00f7 (0000) : ZeroEnd, END:zeropage
+00f7 (0000) : ZeroStart, START:zeropage
+3549 (0000) : BSSStart, START:bss
+35e7 (0000) : BSSEnd, END:bss
+9fee (0000) : StackEnd, END:stack

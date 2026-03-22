@@ -1,0 +1,305 @@
+sections
+0880 - 3fe4 : DATA, code
+28fe - 40c2 : DATA, data
+40c2 - 42e0 : BSS, bss
+42e0 - 9000 : HEAP, heap
+9000 - 9f8a : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+0801 - 0853 : DATA, startup
+9fec - a000 : SSTACK, sstack
+9fec - 9fec : SSTACK, mmap_trampoline@stack
+9fec - 9fec : SSTACK, memcpy@stack
+9fec - 9fec : SSTACK, rirq_init_tables@stack
+9fec - 9fec : SSTACK, rirq_init_kernal@stack
+9fec - 9fec : SSTACK, rirq_init_io@stack
+9fec - 9fec : SSTACK, memset@stack
+9fec - 9fec : SSTACK, vic_setmode@stack
+9fec - 9fec : SSTACK, rirq_build@stack
+9fec - 9fec : SSTACK, rirq_sort@stack
+9fec - 9fec : SSTACK, rirq_start@stack
+9fec - 9fec : SSTACK, bm_init@stack
+9fec - 9fec : SSTACK, builddop_src@stack
+9fec - 9fec : SSTACK, builddop_op@stack
+9fec - 9fec : SSTACK, builddop@stack
+9fe6 - 9fec : SSTACK, bmu_bitblit@stack
+9fec - 9fec : SSTACK, cwin_init@stack
+9fec - 9fec : SSTACK, cwin_fill@stack
+9fec - 9fec : SSTACK, cwin_clear@stack
+9fec - 9fec : SSTACK, cwin_putat_string@stack
+9fec - 9fec : SSTACK, cwin_cursor_move@stack
+9fec - 9fec : SSTACK, cwin_cursor_show@stack
+9fec - 9fec : SSTACK, cwin_getch@stack
+9fec - 9fec : SSTACK, cwin_cursor_down@stack
+9fec - 9fec : SSTACK, cwin_cursor_up@stack
+9fec - 9fec : SSTACK, cwin_cursor_forward@stack
+9fec - 9fec : SSTACK, cwin_cursor_backward@stack
+9fec - 9fec : SSTACK, cwin_delete_char@stack
+9fec - 9fec : SSTACK, cwin_insert_char_raw@stack
+9fec - 9fec : SSTACK, cwin_insert_char@stack
+9fec - 9fec : SSTACK, cwin_edit_char@stack
+9fec - 9fec : SSTACK, cwin_edit@stack
+9fec - 9fec : SSTACK, cwin_read_string@stack
+9fec - 9fec : SSTACK, hexch@stack
+9fec - 9fec : SSTACK, scanpat@stack
+9fec - 9fec : SSTACK, fpscanf@stack
+9fec - 9fec : SSTACK, sscanf_func@stack
+9fec - 9fec : SSTACK, sscanf@stack
+9fec - 9fec : SSTACK, putpch@stack
+9fec - 9fec : SSTACK, puts@stack
+9fdc - 9fec : SSTACK, nformi@stack
+9fdc - 9fec : SSTACK, nforml@stack
+9fec - 9fec : SSTACK, isinf@stack
+9fe3 - 9fec : SSTACK, nformf@stack
+9fca - 9fdc : SSTACK, sformat@stack
+9fc8 - 9fca : SSTACK, sprintf@stack
+9fec - 9fec : SSTACK, bm_usqrt@stack
+9fec - 9fec : SSTACK, bm_scan_fill@stack
+9fe3 - 9fec : SSTACK, bm_circle_fill@stack
+9f8a - 9fc8 : SSTACK, main@stack
+
+regions
+00f7 - 00ff : 0000, 0000, zeropage
+0801 - 0880 : 0853, 0052, startup
+0880 - 9000 : 40c2, 3a60, main
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0880 - 0c61 : main, NATIVE_CODE:code
+0c61 - 0c76 : mmap_trampoline, NATIVE_CODE:code
+0c76 - 0c8d : NMITrampoline, NATIVE_CODE:code
+0c8d - 0c94 : DoneTrampoline, NATIVE_CODE:code
+0c94 - 0cab : IRQTrampoline, NATIVE_CODE:code
+0cab - 0cda : memcpy, NATIVE_CODE:code
+0cda - 0cfb : rirq_init_kernal, NATIVE_CODE:code
+0cfb - 0d19 : rirq_init_tables, NATIVE_CODE:code
+0d19 - 0d76 : rirq_isr_kernal_io, NATIVE_CODE:code
+0d76 - 0d9a : memset, NATIVE_CODE:code
+0d9a - 0dec : vic_setmode, NATIVE_CODE:code
+0dec - 0e90 : rirq_build, NATIVE_CODE:code
+0e90 - 0f19 : rirq_sort, NATIVE_CODE:code
+0f19 - 0f2b : rirq_start, NATIVE_CODE:code
+0f2b - 0f5d : bm_init, NATIVE_CODE:code
+0f5d - 130f : bmu_bitblit, NATIVE_CODE:code
+130f - 1601 : builddop, NATIVE_CODE:code
+1601 - 1741 : builddop_src, NATIVE_CODE:code
+1741 - 1842 : builddop_op, NATIVE_CODE:code
+1842 - 1891 : cwin_init, NATIVE_CODE:code
+1891 - 1899 : *, DATA:code
+1899 - 18ec : cwin_fill, NATIVE_CODE:code
+18ec - 193a : cwin_putat_string, NATIVE_CODE:code
+193a - 195b : *, DATA:code
+195b - 1992 : cwin_edit, NATIVE_CODE:code
+1992 - 19c0 : cwin_cursor_show, NATIVE_CODE:code
+19c0 - 19ce : cwin_getch, NATIVE_CODE:code
+19ce - 1ab7 : cwin_edit_char, NATIVE_CODE:code
+1ab7 - 1ad5 : cwin_cursor_down, NATIVE_CODE:code
+1ad5 - 1ae3 : cwin_cursor_up, NATIVE_CODE:code
+1ae3 - 1b1e : cwin_cursor_forward, NATIVE_CODE:code
+1b1e - 1b42 : cwin_cursor_backward, NATIVE_CODE:code
+1b42 - 1c3d : cwin_delete_char, NATIVE_CODE:code
+1c3d - 1c5b : cwin_insert_char, NATIVE_CODE:code
+1c5b - 1d4f : cwin_insert_char_raw, NATIVE_CODE:code
+1d4f - 1db7 : cwin_read_string, NATIVE_CODE:code
+1db7 - 1ddc : sscanf, NATIVE_CODE:code
+1ddc - 27e6 : fpscanf, NATIVE_CODE:code
+27e6 - 2823 : hexch, NATIVE_CODE:code
+2823 - 28d0 : scanpat, NATIVE_CODE:code
+28d0 - 28d9 : *, DATA:code
+28d9 - 28ec : puts, NATIVE_CODE:code
+28ec - 28fb : isinf, NATIVE_CODE:code
+28fb - 28fe : bcexec, NATIVE_CODE:code
+28fe - 28ff : spentry, DATA:data
+28ff - 2900 : giocharmap, DATA:data
+2900 - 2932 : sscanf_func, NATIVE_CODE:code
+2932 - 2982 : sprintf, NATIVE_CODE:code
+2982 - 2dc3 : sformat, NATIVE_CODE:code
+2dc3 - 2e26 : putpch, NATIVE_CODE:code
+2e26 - 2f41 : nformi, NATIVE_CODE:code
+2f41 - 308b : nforml, NATIVE_CODE:code
+308b - 35ef : nformf, NATIVE_CODE:code
+35ef - 35fd : negaccu, NATIVE_CODE:code
+35fd - 35fe : nextIRQ, DATA:bss
+35fe - 35ff : rirq_count, DATA:bss
+3600 - 361b : *, DATA:code
+361b - 37c2 : bm_circle_fill, NATIVE_CODE:code
+37c2 - 38a1 : bm_usqrt, NATIVE_CODE:code
+38a1 - 3a44 : bm_scan_fill, NATIVE_CODE:code
+3a44 - 3a7c : mul16by8, NATIVE_CODE:code
+3a7c - 3ab2 : mul32by8, NATIVE_CODE:code
+3ab2 - 3af7 : freg, NATIVE_CODE:code
+3af7 - 3be4 : faddsub, NATIVE_CODE:code
+3be4 - 3c7e : crt_fmul, NATIVE_CODE:code
+3c7e - 3cac : crt_fmul8, NATIVE_CODE:code
+3cac - 3d5a : crt_fdiv, NATIVE_CODE:code
+3d5a - 3d9c : mul16, NATIVE_CODE:code
+3d9c - 3dba : divs16, NATIVE_CODE:code
+3dba - 3dc8 : negtmp, NATIVE_CODE:code
+3dc8 - 3e4d : divmod, NATIVE_CODE:code
+3e4d - 3e6c : mods16, NATIVE_CODE:code
+3e6c - 3e7a : negtmpb, NATIVE_CODE:code
+3e7a - 3ec6 : f32_to_i16, NATIVE_CODE:code
+3ec6 - 3ee4 : sint16_to_float, NATIVE_CODE:code
+3ee4 - 3f0d : uint16_to_float, NATIVE_CODE:code
+3f0d - 3fe4 : divmod32, NATIVE_CODE:code
+3fe4 - 3fec : check, DATA:data
+3fec - 3ff4 : lmask, DATA:data
+3ff4 - 3ffc : rmask, DATA:data
+3ffc - 4000 : blitops_op, DATA:data
+4000 - 4032 : mul40, DATA:data
+4032 - 403a : p2smap, DATA:data
+403a - 4042 : s2pmap, DATA:data
+4042 - 405e : tpow10, DATA:data
+405e - 407a : fround5, DATA:data
+407a - 4082 : black, DATA:data
+4082 - 408a : white, DATA:data
+408a - 40c2 : bitshift, DATA:data
+40c2 - 40d3 : rasterIRQRows, DATA:bss
+40c2 - 40c2 : BSSStart, START:bss
+40d3 - 40e4 : rasterIRQIndex, DATA:bss
+40e4 - 40f5 : rasterIRQNext, DATA:bss
+40f5 - 4105 : rasterIRQLow, DATA:bss
+4105 - 4115 : rasterIRQHigh, DATA:bss
+4115 - 411d : Screen, DATA:bss
+4120 - 4140 : rirqtop, DATA:bss
+4140 - 4160 : rirqbottom, DATA:bss
+4160 - 416c : twin, DATA:bss
+416c - 4178 : ewin, DATA:bss
+4200 - 42e0 : BLIT_CODE, DATA:bss
+42e0 - 42e0 : BSSEnd, END:bss
+9f8a - 9f92 : main@stack, BSS:main@stack
+9f8a - 9f8a : StackEnd, END:stack
+9f92 - 9f94 : r, BSS:main@stack
+9f94 - 9f96 : y, BSS:main@stack
+9f96 - 9f98 : x, BSS:main@stack
+9f98 - 9fc0 : str, BSS:main@stack
+9fc0 - 9fc8 : rect, BSS:main@stack
+9fc8 - 9fca : sprintf@stack, BSS:sprintf@stack
+9fca - 9fd4 : sformat@stack, BSS:sformat@stack
+9fd4 - 9fdc : si, BSS:sformat@stack
+9fdc - 9fec : buffer, BSS:nformi@stack
+9fdc - 9fec : buffer, BSS:nforml@stack
+9fe3 - 9fec : nformf@stack, BSS:nformf@stack
+9fe3 - 9fec : bm_circle_fill@stack, BSS:bm_circle_fill@stack
+9fe6 - 9fec : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+9fec - a000 : sstack, STACK:sstack
+
+objects by size
+1ddc (0a0a) : fpscanf, NATIVE_CODE:code
+308b (0564) : nformf, NATIVE_CODE:code
+2982 (0441) : sformat, NATIVE_CODE:code
+0880 (03e1) : main, NATIVE_CODE:code
+0f5d (03b2) : bmu_bitblit, NATIVE_CODE:code
+130f (02f2) : builddop, NATIVE_CODE:code
+361b (01a7) : bm_circle_fill, NATIVE_CODE:code
+38a1 (01a3) : bm_scan_fill, NATIVE_CODE:code
+2f41 (014a) : nforml, NATIVE_CODE:code
+1601 (0140) : builddop_src, NATIVE_CODE:code
+2e26 (011b) : nformi, NATIVE_CODE:code
+1741 (0101) : builddop_op, NATIVE_CODE:code
+1b42 (00fb) : cwin_delete_char, NATIVE_CODE:code
+1c5b (00f4) : cwin_insert_char_raw, NATIVE_CODE:code
+3af7 (00ed) : faddsub, NATIVE_CODE:code
+19ce (00e9) : cwin_edit_char, NATIVE_CODE:code
+4200 (00e0) : BLIT_CODE, DATA:bss
+37c2 (00df) : bm_usqrt, NATIVE_CODE:code
+3f0d (00d7) : divmod32, NATIVE_CODE:code
+3cac (00ae) : crt_fdiv, NATIVE_CODE:code
+2823 (00ad) : scanpat, NATIVE_CODE:code
+0dec (00a4) : rirq_build, NATIVE_CODE:code
+3be4 (009a) : crt_fmul, NATIVE_CODE:code
+0e90 (0089) : rirq_sort, NATIVE_CODE:code
+3dc8 (0085) : divmod, NATIVE_CODE:code
+1d4f (0068) : cwin_read_string, NATIVE_CODE:code
+2dc3 (0063) : putpch, NATIVE_CODE:code
+0d19 (005d) : rirq_isr_kernal_io, NATIVE_CODE:code
+1899 (0053) : cwin_fill, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0d9a (0052) : vic_setmode, NATIVE_CODE:code
+2932 (0050) : sprintf, NATIVE_CODE:code
+1842 (004f) : cwin_init, NATIVE_CODE:code
+18ec (004e) : cwin_putat_string, NATIVE_CODE:code
+3e7a (004c) : f32_to_i16, NATIVE_CODE:code
+3ab2 (0045) : freg, NATIVE_CODE:code
+3d5a (0042) : mul16, NATIVE_CODE:code
+27e6 (003d) : hexch, NATIVE_CODE:code
+1ae3 (003b) : cwin_cursor_forward, NATIVE_CODE:code
+3a44 (0038) : mul16by8, NATIVE_CODE:code
+408a (0038) : bitshift, DATA:data
+195b (0037) : cwin_edit, NATIVE_CODE:code
+3a7c (0036) : mul32by8, NATIVE_CODE:code
+0f2b (0032) : bm_init, NATIVE_CODE:code
+2900 (0032) : sscanf_func, NATIVE_CODE:code
+4000 (0032) : mul40, DATA:data
+0cab (002f) : memcpy, NATIVE_CODE:code
+1992 (002e) : cwin_cursor_show, NATIVE_CODE:code
+3c7e (002e) : crt_fmul8, NATIVE_CODE:code
+3ee4 (0029) : uint16_to_float, NATIVE_CODE:code
+9f98 (0028) : str, BSS:main@stack
+1db7 (0025) : sscanf, NATIVE_CODE:code
+0d76 (0024) : memset, NATIVE_CODE:code
+1b1e (0024) : cwin_cursor_backward, NATIVE_CODE:code
+0cda (0021) : rirq_init_kernal, NATIVE_CODE:code
+4120 (0020) : rirqtop, DATA:bss
+4140 (0020) : rirqbottom, DATA:bss
+3e4d (001f) : mods16, NATIVE_CODE:code
+0cfb (001e) : rirq_init_tables, NATIVE_CODE:code
+1ab7 (001e) : cwin_cursor_down, NATIVE_CODE:code
+1c3d (001e) : cwin_insert_char, NATIVE_CODE:code
+3d9c (001e) : divs16, NATIVE_CODE:code
+3ec6 (001e) : sint16_to_float, NATIVE_CODE:code
+4042 (001c) : tpow10, DATA:data
+405e (001c) : fround5, DATA:data
+0c76 (0017) : NMITrampoline, NATIVE_CODE:code
+0c94 (0017) : IRQTrampoline, NATIVE_CODE:code
+0c61 (0015) : mmap_trampoline, NATIVE_CODE:code
+9fec (0014) : sstack, STACK:sstack
+28d9 (0013) : puts, NATIVE_CODE:code
+0f19 (0012) : rirq_start, NATIVE_CODE:code
+40c2 (0011) : rasterIRQRows, DATA:bss
+40d3 (0011) : rasterIRQIndex, DATA:bss
+40e4 (0011) : rasterIRQNext, DATA:bss
+40f5 (0010) : rasterIRQLow, DATA:bss
+4105 (0010) : rasterIRQHigh, DATA:bss
+9fdc (0010) : buffer, BSS:nformi@stack
+9fdc (0010) : buffer, BSS:nforml@stack
+28ec (000f) : isinf, NATIVE_CODE:code
+19c0 (000e) : cwin_getch, NATIVE_CODE:code
+1ad5 (000e) : cwin_cursor_up, NATIVE_CODE:code
+35ef (000e) : negaccu, NATIVE_CODE:code
+3dba (000e) : negtmp, NATIVE_CODE:code
+3e6c (000e) : negtmpb, NATIVE_CODE:code
+4160 (000c) : twin, DATA:bss
+416c (000c) : ewin, DATA:bss
+9fca (000a) : sformat@stack, BSS:sformat@stack
+9fe3 (0009) : nformf@stack, BSS:nformf@stack
+9fe3 (0009) : bm_circle_fill@stack, BSS:bm_circle_fill@stack
+3fe4 (0008) : check, DATA:data
+3fec (0008) : lmask, DATA:data
+3ff4 (0008) : rmask, DATA:data
+4032 (0008) : p2smap, DATA:data
+403a (0008) : s2pmap, DATA:data
+407a (0008) : black, DATA:data
+4082 (0008) : white, DATA:data
+4115 (0008) : Screen, DATA:bss
+9f8a (0008) : main@stack, BSS:main@stack
+9fc0 (0008) : rect, BSS:main@stack
+9fd4 (0008) : si, BSS:sformat@stack
+0c8d (0007) : DoneTrampoline, NATIVE_CODE:code
+9fe6 (0006) : bmu_bitblit@stack, BSS:bmu_bitblit@stack
+3ffc (0004) : blitops_op, DATA:data
+28fb (0003) : bcexec, NATIVE_CODE:code
+9f92 (0002) : r, BSS:main@stack
+9f94 (0002) : y, BSS:main@stack
+9f96 (0002) : x, BSS:main@stack
+9fc8 (0002) : sprintf@stack, BSS:sprintf@stack
+28fe (0001) : spentry, DATA:data
+28ff (0001) : giocharmap, DATA:data
+35fd (0001) : nextIRQ, DATA:bss
+35fe (0001) : rirq_count, DATA:bss
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+40c2 (0000) : BSSStart, START:bss
+42e0 (0000) : BSSEnd, END:bss
+9f8a (0000) : StackEnd, END:stack

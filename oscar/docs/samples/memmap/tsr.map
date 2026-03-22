@@ -1,0 +1,69 @@
+sections
+0903 - 0e49 : DATA, code
+0e49 - 0e4b : DATA, data
+0e4b - 0e4b : BSS, bss
+0e50 - 1800 : HEAP, heap
+1800 - 18b0 : STACK, stack
+00f7 - 00f7 : ZEROPAGE, zeropage
+10000 - 10000 : DATA, startup
+0870 - 08aa : DATA, rcode
+0801 - 0853 : DATA, startup
+18fa - 1900 : SSTACK, sstack
+18fa - 18fa : SSTACK, putpch@stack
+18fa - 18fa : SSTACK, puts@stack
+18ea - 18fa : SSTACK, nformi@stack
+18e2 - 18ea : SSTACK, sformat@stack
+18b0 - 18e2 : SSTACK, printf@stack
+18b0 - 18b0 : SSTACK, tsr@stack
+18fa - 18fa : SSTACK, main@stack
+
+regions
+0801 - 0870 : 0853, 0052, startup
+0870 - 0900 : 08aa, 003a, rcode
+0903 - 1800 : 0e4b, 0548, main
+00f7 - 00ff : 0000, 0000, zeropage
+
+objects
+00f7 - 00f7 : ZeroStart, START:zeropage
+00f7 - 00f7 : ZeroEnd, END:zeropage
+0801 - 0853 : startup, NATIVE_CODE:startup
+0870 - 08aa : main, NATIVE_CODE:rcode
+0903 - 0918 : tsr, NATIVE_CODE:code
+0918 - 093b : printf, NATIVE_CODE:code
+093b - 0c26 : sformat, NATIVE_CODE:code
+0c26 - 0c39 : puts, NATIVE_CODE:code
+0c39 - 0c9c : putpch, NATIVE_CODE:code
+0c9c - 0db7 : nformi, NATIVE_CODE:code
+0db7 - 0dc4 : *, DATA:code
+0dc4 - 0e49 : divmod, NATIVE_CODE:code
+0e49 - 0e4a : spentry, DATA:data
+0e4a - 0e4b : giocharmap, DATA:data
+0e4b - 0e4b : BSSEnd, END:bss
+0e4b - 0e4b : BSSStart, START:bss
+18b0 - 18b0 : StackEnd, END:stack
+18b0 - 18e2 : buff, BSS:printf@stack
+18e2 - 18ea : si, BSS:sformat@stack
+18ea - 18fa : buffer, BSS:nformi@stack
+18fa - 1900 : sstack, STACK:sstack
+
+objects by size
+093b (02eb) : sformat, NATIVE_CODE:code
+0c9c (011b) : nformi, NATIVE_CODE:code
+0dc4 (0085) : divmod, NATIVE_CODE:code
+0c39 (0063) : putpch, NATIVE_CODE:code
+0801 (0052) : startup, NATIVE_CODE:startup
+0870 (003a) : main, NATIVE_CODE:rcode
+18b0 (0032) : buff, BSS:printf@stack
+0918 (0023) : printf, NATIVE_CODE:code
+0903 (0015) : tsr, NATIVE_CODE:code
+0c26 (0013) : puts, NATIVE_CODE:code
+18ea (0010) : buffer, BSS:nformi@stack
+18e2 (0008) : si, BSS:sformat@stack
+18fa (0006) : sstack, STACK:sstack
+0e49 (0001) : spentry, DATA:data
+0e4a (0001) : giocharmap, DATA:data
+00f7 (0000) : ZeroStart, START:zeropage
+00f7 (0000) : ZeroEnd, END:zeropage
+0e4b (0000) : BSSEnd, END:bss
+0e4b (0000) : BSSStart, START:bss
+18b0 (0000) : StackEnd, END:stack
