@@ -13,7 +13,8 @@ export default function FindC64U({ lastC64Ip }) {
         method: "POST"
       });
       const data = await resp.json();
-      setScanResult(data.found_ips);
+      const ip = data.found_ips;
+      setScanResult(ip ? [ip] : []);
     } catch {
       setScanResult([]);
     }

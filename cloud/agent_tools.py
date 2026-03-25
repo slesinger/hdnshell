@@ -28,7 +28,8 @@ def create_websearch_tool():
     Build and return a LangChain Tool for SerpAPI web search, or None if
     SERPAPI_API_KEY is not set / dependencies are missing.
     """
-    serpapi_key = os.getenv("SERPAPI_API_KEY")
+    from config_manager import read_config
+    serpapi_key = read_config().get("SERPAPI_API_KEY", "")
     if not serpapi_key:
         logger.info("SERPAPI_API_KEY not set, web search disabled")
         return None
@@ -72,8 +73,9 @@ def _context7_request(method: str, params: dict, request_id: int = 1) -> dict:
     Returns the parsed JSON-RPC response dict, or {} on error.
     """
     import requests as _requests
+    from config_manager import read_config
 
-    api_key = os.getenv("CONTEXT7_API_KEY")
+    api_key = read_config().get("CONTEXT7_API_KEY", "")
     if not api_key:
         logger.warning("CONTEXT7_API_KEY not set")
         return {}
@@ -155,7 +157,8 @@ def create_c64ref_tool():
     Build and return a LangChain Tool for C64 reference docs via Context7,
     or None if CONTEXT7_API_KEY is not set / dependencies are missing.
     """
-    api_key = os.getenv("CONTEXT7_API_KEY")
+    from config_manager import read_config
+    api_key = read_config().get("CONTEXT7_API_KEY", "")
     if not api_key:
         logger.info("CONTEXT7_API_KEY not set, context7 tool disabled")
         return None
@@ -345,11 +348,11 @@ def run_prg(project_name: str) -> str:
         return "Error: No C64 IP configured. Run a network scan first."
 
     try:
-        from network_helper import send_dmarun
+        from network_helper import send_dmawrite
         with open(prg_path, "rb") as f:
             prg_data = f.read()
-        send_dmarun(c64_ip, prg_data)
-        return f"Program '{project_name}' sent to C64 and running."
+        send_dmawrite(c64_ip, prg_data)
+        return f"Program '{project_name}' loaded to C64 memory."
     except Exception as e:
         return f"Error sending .prg to C64: {e}"
 
@@ -601,6 +604,282 @@ def create_oscar64_charwin_sprites_input_io_docs_tool():
         logger.error(
             "Error initializing get_oscar64_charwin_sprites_input_io_docs tool: %s", e
         )
+    return None
+
+
+def read_all_sources(working_dir: str, max_bytes: int = 50000) -> str:
+    """
+    Walk *working_dir*, collect all *.c and *.h files, and return their
+    concatenated content with filename headers.
+
+    Caps total output at *max_bytes* to avoid exceeding LLM token limits.
+    """
+    if not working_dir or not os.path.isdir(working_dir):
+        return ""
+    parts: list[str] = []
+    total = 0
+    for root, _dirs, files in os.walk(working_dir):
+        for fname in sorted(files):
+            if not fname.endswith((".c", ".h")):
+                continue
+            rel = os.path.relpath(os.path.join(root, fname), working_dir)
+            try:
+                with open(os.path.join(root, fname), "r", encoding="utf-8", errors="replace") as f:
+                    content = f.read()
+            except OSError:
+                content = "<read error>"
+            section = f"--- file: {rel} ---\n```c\n{content}\n```\n"
+            if total + len(section) > max_bytes:
+                parts.append(f"\n[truncated — {max_bytes} byte limit reached]")
+                break
+            parts.append(section)
+            total += len(section)
+        else:
+            continue
+        break  # break outer loop when truncated
+    return "\n".join(parts) if parts else "(no .c or .h files found)"
+
+
+def list_project_files(working_dir: str) -> str:
+    """List all *.c and *.h files under *working_dir* (recursive)."""
+    if not working_dir or not os.path.isdir(working_dir):
+        return "Error: working directory does not exist."
+    files: list[str] = []
+    for root, _dirs, fnames in os.walk(working_dir):
+        for fname in sorted(fnames):
+            if fname.endswith((".c", ".h")):
+                files.append(os.path.relpath(os.path.join(root, fname), working_dir))
+    if not files:
+        return "(no .c or .h files found)"
+    return "\n".join(files)
+
+
+def _validate_source_filename(filename: str) -> str | None:
+    """Return an error message if *filename* is not a safe .c/.h relative path."""
+    if not filename:
+        return "filename must not be empty."
+    if ".." in filename or filename.startswith("/"):
+        return "filename must be a relative path within the project (no '..' or leading '/')."
+    if not filename.endswith((".c", ".h")):
+        return "Only .c and .h files are allowed."
+    return None
+
+
+def write_project_file(working_dir: str, filename: str, code: str) -> str:
+    """Write *code* to *filename* (relative to *working_dir*)."""
+    err = _validate_source_filename(filename)
+    if err:
+        return f"Error: {err}"
+    path = os.path.join(working_dir, filename)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(code)
+    logger.info("Wrote %d bytes to %s", len(code), path)
+    return f"File written ({len(code)} bytes): {filename}"
+
+
+def read_project_file(working_dir: str, filename: str) -> str:
+    """Read and return the contents of *filename* (relative to *working_dir*)."""
+    err = _validate_source_filename(filename)
+    if err:
+        return f"Error: {err}"
+    path = os.path.join(working_dir, filename)
+    if not os.path.isfile(path):
+        return f"Error: file not found: {filename}"
+    with open(path, "r", encoding="utf-8", errors="replace") as f:
+        return f.read()
+
+
+def create_write_file_tool(working_dir: str):
+    """Factory for a tool that writes a .c/.h file inside *working_dir*."""
+    if not working_dir:
+        return None
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class WriteFileInput(BaseModel):
+            filename: str = Field(description="Relative path (e.g. 'main.c' or 'utils/helpers.h')")
+            code: str = Field(description="COMPLETE file content to write")
+
+        tool = StructuredTool.from_function(
+            func=lambda filename, code: write_project_file(working_dir, filename, code),
+            name="write_file",
+            description=(
+                "Write or overwrite a .c or .h source file in the project directory. "
+                "Input MUST be the COMPLETE file content (not a diff or snippet). "
+                "Provide the filename as a relative path."
+            ),
+            args_schema=WriteFileInput,
+        )
+        logger.info("write_file tool initialized for dir '%s'", working_dir)
+        return tool
+    except Exception as e:
+        logger.error("Error initializing write_file tool: %s", e)
+    return None
+
+
+def create_read_file_tool(working_dir: str):
+    """Factory for a tool that reads a .c/.h file from *working_dir*."""
+    if not working_dir:
+        return None
+    try:
+        tool = Tool(
+            name="read_file",
+            description=(
+                "Read the contents of a .c or .h source file from the project. "
+                "Input is the relative filename (e.g. 'main.c')."
+            ),
+            func=lambda filename: read_project_file(working_dir, filename),
+        )
+        logger.info("read_file tool initialized for dir '%s'", working_dir)
+        return tool
+    except Exception as e:
+        logger.error("Error initializing read_file tool: %s", e)
+    return None
+
+
+def create_list_files_tool(working_dir: str):
+    """Factory for a tool that lists project source files."""
+    if not working_dir:
+        return None
+    try:
+        tool = Tool(
+            name="list_project_files",
+            description=(
+                "List all .c and .h source files in the project directory. "
+                "Takes no meaningful input (pass any string)."
+            ),
+            func=lambda _: list_project_files(working_dir),
+        )
+        logger.info("list_project_files tool initialized for dir '%s'", working_dir)
+        return tool
+    except Exception as e:
+        logger.error("Error initializing list_project_files tool: %s", e)
+    return None
+
+
+def compile_project(working_dir: str, main_file: str = "") -> str:
+    """
+    Compile a project in *working_dir* using oscar64.
+    If *main_file* is empty, finds the first .c file.
+    """
+    if not working_dir or not os.path.isdir(working_dir):
+        return "Error: working directory does not exist."
+
+    oscar_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "oscar"
+    )
+    compiler = os.path.join(oscar_dir, "bin", "oscar64")
+    if not os.path.isfile(compiler):
+        return f"Error: compiler not found at {compiler}"
+
+    # Determine main source file
+    main_file = main_file.strip()
+    if not main_file:
+        # Find first .c file alphabetically
+        c_files = sorted(
+            f for f in os.listdir(working_dir)
+            if f.endswith(".c") and os.path.isfile(os.path.join(working_dir, f))
+        )
+        if not c_files:
+            return "Error: no .c files found in project directory."
+        main_file = c_files[0]
+
+    source_path = os.path.join(working_dir, main_file)
+    if not os.path.isfile(source_path):
+        return f"Error: source file not found: {main_file}"
+
+    try:
+        result = subprocess.run(
+            [compiler, source_path],
+            cwd=working_dir,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        output = (result.stdout + result.stderr).strip()
+        if result.returncode == 0:
+            return f"Compilation successful.\n{output}" if output else "Compilation successful."
+        else:
+            return f"Compilation failed (exit {result.returncode}).\n{output}"
+    except subprocess.TimeoutExpired:
+        return "Error: compiler timed out after 60 seconds."
+    except Exception as e:
+        return f"Error running compiler: {e}"
+
+
+def run_project_prg(working_dir: str, main_file: str = "") -> str:
+    """Upload and run the compiled .prg from *working_dir* on the C64."""
+    if not working_dir or not os.path.isdir(working_dir):
+        return "Error: working directory does not exist."
+
+    main_file = main_file.strip()
+    if not main_file:
+        prg_files = sorted(
+            f for f in os.listdir(working_dir)
+            if f.endswith(".prg") and os.path.isfile(os.path.join(working_dir, f))
+        )
+        if not prg_files:
+            return "Error: no .prg found. Compile first."
+        prg_path = os.path.join(working_dir, prg_files[0])
+    else:
+        prg_path = os.path.join(working_dir, main_file.replace(".c", ".prg"))
+
+    if not os.path.isfile(prg_path):
+        return f"Error: .prg file not found: {prg_path}. Compile first."
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    try:
+        from network_helper import send_dmawrite
+        with open(prg_path, "rb") as f:
+            prg_data = f.read()
+        send_dmawrite(c64_ip, prg_data)
+        return f"Program loaded to C64 memory ({os.path.basename(prg_path)})."
+    except Exception as e:
+        return f"Error sending .prg to C64: {e}"
+
+
+def create_compile_project_tool(working_dir: str):
+    """Factory for a compilation tool scoped to *working_dir*."""
+    if not working_dir:
+        return None
+    try:
+        tool = Tool(
+            name="compile_project",
+            description=(
+                "Compile the C64 project using the Oscar64 compiler. "
+                "Input is the main .c filename (e.g. 'main.c'), or empty to auto-detect."
+            ),
+            func=lambda main_file="": compile_project(working_dir, main_file),
+        )
+        logger.info("compile_project tool initialized for '%s'", working_dir)
+        return tool
+    except Exception as e:
+        logger.error("Error initializing compile_project tool: %s", e)
+    return None
+
+
+def create_run_project_tool(working_dir: str):
+    """Factory for a run tool scoped to *working_dir*."""
+    if not working_dir:
+        return None
+    try:
+        tool = Tool(
+            name="run_project",
+            description=(
+                "Upload and run the compiled .prg on the C64 Ultimate hardware. "
+                "Input is the main .c filename (to find matching .prg), or empty to auto-detect."
+            ),
+            func=lambda main_file="": run_project_prg(working_dir, main_file),
+        )
+        logger.info("run_project tool initialized for '%s'", working_dir)
+        return tool
+    except Exception as e:
+        logger.error("Error initializing run_project tool: %s", e)
     return None
 
 

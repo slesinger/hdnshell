@@ -10,6 +10,12 @@ from agent_tools import (
     create_run_tool,
     create_write_source_tool,
     read_source_file,
+    read_all_sources,
+    create_write_file_tool,
+    create_read_file_tool,
+    create_list_files_tool,
+    create_compile_project_tool,
+    create_run_project_tool,
     create_oscar64_overview_stdlib_docs_tool,
     create_oscar64_vic_sid_cia_reu_docs_tool,
     create_oscar64_charwin_sprites_input_io_docs_tool,
@@ -38,6 +44,38 @@ IMPORTANT — source file workflow:
 - Once it compiles, use `run_code` to run it on the C64 Ultimate and see the results.
 """
 
+MULTI_FILE_SYSTEM_PROMPT = """You are a helpful coding assistant agent available in the C64 Hondani Cloud.
+You work with multi-file C projects for the Commodore 64.
+The user does not see the code directly — they chat with you and run the result on a real C64.
+
+Library documentation: oscar/include and oscar/docs/samples
+C64 Ultimate library: oscar/include/ultimate_lib.h and oscar/docs/ultimate_lib.c
+Commodore Kernal, memory map and other reference documentation: use the c64ref_get_docs tool.
+Use web search to find information. Prefer tools over your own knowledge.
+
+IMPORTANT — multi-file source workflow:
+- All .c and .h files from the project directory are included below.
+  They are refreshed automatically before every request.
+- Use `write_file` to create or update any .c or .h file (COMPLETE content, no diffs).
+- Use `read_file` to read a specific file.
+- Use `list_project_files` to see all source files.
+- Use `compile_project` to compile (pass the main .c filename or leave empty for auto-detect).
+- Use `run_project` to upload the compiled .prg to the C64 Ultimate.
+- Iterate: write -> compile -> fix errors -> compile -> run.
+"""
+
+
+def _build_code_system_prompt(base_prompt: str) -> str:
+    """Append user-name personalization to the given base prompt."""
+    try:
+        from config_manager import read_config
+        user_name = read_config().get("user_name", "").strip()
+    except Exception:
+        user_name = ""
+    if user_name:
+        return base_prompt + f"\nThe user's name is {user_name}."
+    return base_prompt
+
 
 class CodeChatHandler:
 
@@ -62,6 +100,7 @@ class CodeChatAgent:
 
     def __init__(self):
         self.project_name = "untitled"
+        self.working_dir = None  # Multi-file mode when set
         self.messages = []
         self.llm = None
         self.tools = []
@@ -79,8 +118,58 @@ class CodeChatAgent:
 
     def set_project_name(self, project_name: str):
         self.project_name = project_name.strip()
+        self.working_dir = None
         self.messages = [SystemMessage(content=CHAT_SYSTEM_PROMPT)]
+        self._rebuild_tools()
         logger.info(f"Set project name to '{self.project_name}'")
+
+    def set_working_dir(self, path: str):
+        """Switch to multi-file mode for a project directory."""
+        self.working_dir = path
+        self.messages = [SystemMessage(content=MULTI_FILE_SYSTEM_PROMPT)]
+        self._rebuild_tools()
+        logger.info(f"Set working dir to '{self.working_dir}'")
+
+    def clear_history(self):
+        """Reset conversation history, keeping the current mode/tools."""
+        if self.working_dir:
+            self.messages = [SystemMessage(content=MULTI_FILE_SYSTEM_PROMPT)]
+        else:
+            self.messages = [SystemMessage(content=CHAT_SYSTEM_PROMPT)]
+        logger.info("Cleared agent conversation history")
+
+    def _rebuild_tools(self):
+        """Recreate tools list based on current mode (single-file vs multi-file)."""
+        self.tools = []
+        if self.working_dir:
+            tool_list = [
+                create_websearch_tool(),
+                create_c64ref_tool(),
+                create_write_file_tool(self.working_dir),
+                create_read_file_tool(self.working_dir),
+                create_list_files_tool(self.working_dir),
+                create_compile_project_tool(self.working_dir),
+                create_run_project_tool(self.working_dir),
+                create_oscar64_overview_stdlib_docs_tool(),
+                create_oscar64_vic_sid_cia_reu_docs_tool(),
+                create_oscar64_charwin_sprites_input_io_docs_tool(),
+                create_oscar64_graphics_audio_vector_ultimate_docs_tool(),
+            ]
+        else:
+            tool_list = [
+                create_websearch_tool(),
+                create_c64ref_tool(),
+                create_write_source_tool(self.project_name),
+                create_compile_tool(self.project_name),
+                create_run_tool(self.project_name),
+                create_oscar64_overview_stdlib_docs_tool(),
+                create_oscar64_vic_sid_cia_reu_docs_tool(),
+                create_oscar64_charwin_sprites_input_io_docs_tool(),
+                create_oscar64_graphics_audio_vector_ultimate_docs_tool(),
+            ]
+        for tool in tool_list:
+            if tool is not None:
+                self.tools.append(tool)
 
     def handle(self, text: str) -> str:
         """
@@ -107,59 +196,23 @@ class CodeChatAgent:
             return f"Error: {str(e)}"
 
     def _initialize_llm(self):
-        """Initialize LangChain LLM with Azure OpenAI"""
+        """Initialize LLM using configured provider (with backup and legacy fallback)."""
         try:
-            # Check for Azure OpenAI credentials
-            azure_key = os.getenv("AZURE_OPENAI_API_KEY")
-            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-            azure_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-            azure_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+            from llm_factory import create_llm_with_fallback
 
-            if not azure_key or not azure_endpoint or not azure_deployment:
+            self.llm = create_llm_with_fallback("code", temperature=0.7)
+            if self.llm:
+                logger.info("CodeChatAgent LLM initialized from config")
+            else:
                 logger.warning(
-                    "Azure OpenAI credentials not set, ChatHandler will use basic responses"
+                    "No LLM configured for code, CodeChatAgent will use basic responses"
                 )
-                return
-
-            # Import LangChain components
-            try:
-                from langchain_openai import AzureChatOpenAI
-
-                # Initialize LLM (using Azure OpenAI)
-                self.llm = AzureChatOpenAI(
-                    azure_deployment=azure_deployment,
-                    api_version=azure_version,
-                    azure_endpoint=azure_endpoint,
-                    api_key=azure_key,
-                    temperature=0.7,
-                )
-                logger.info(
-                    f"ChatHandler initialized with Azure OpenAI (deployment: {azure_deployment})"
-                )
-
-            except ImportError as e:
-                logger.warning(f"LangChain not installed: {e}")
-                logger.info("Install with: pip install langchain langchain-openai")
-
         except Exception as e:
             logger.error(f"Error initializing LLM: {e}")
 
     def _initialize_tools(self):
-        """Initialize LangChain tools for this agent, including web search and context7 docs"""
-        tool_list = [
-            create_websearch_tool(),
-            create_c64ref_tool(),
-            create_write_source_tool(self.project_name),
-            create_compile_tool(self.project_name),
-            create_run_tool(self.project_name),
-            create_oscar64_overview_stdlib_docs_tool(),
-            create_oscar64_vic_sid_cia_reu_docs_tool(),
-            create_oscar64_charwin_sprites_input_io_docs_tool(),
-            create_oscar64_graphics_audio_vector_ultimate_docs_tool(),
-        ]
-        for tool in tool_list:
-            if tool is not None:
-                self.tools.append(tool)
+        """Initialize LangChain tools for this agent."""
+        self._rebuild_tools()
 
     def _query_llm(self, query: str) -> str:
         """
@@ -173,20 +226,35 @@ class CodeChatAgent:
             LLM response
         """
         try:
-            # Refresh the system message with the current source file
-            source = read_source_file(self.project_name)
-            if source:
-                source_section = (
-                    f"\n\n--- Current source ({self.project_name}.c) ---\n"
-                    f"```c\n{source}\n```"
-                )
+            # Refresh the system message with current source file(s)
+            if self.working_dir:
+                source = read_all_sources(self.working_dir)
+                if source and source != "(no .c or .h files found)":
+                    source_section = (
+                        f"\n\n--- Project files ({self.working_dir}) ---\n{source}"
+                    )
+                else:
+                    source_section = (
+                        f"\n\n--- No .c or .h files in {self.working_dir} yet. "
+                        "Create them by calling write_file. ---"
+                    )
+                base_prompt = _build_code_system_prompt(MULTI_FILE_SYSTEM_PROMPT)
             else:
-                source_section = (
-                    f"\n\n--- {self.project_name}.c does not exist yet. "
-                    "Create it by calling write_source. ---"
-                )
+                source = read_source_file(self.project_name)
+                if source:
+                    source_section = (
+                        f"\n\n--- Current source ({self.project_name}.c) ---\n"
+                        f"```c\n{source}\n```"
+                    )
+                else:
+                    source_section = (
+                        f"\n\n--- {self.project_name}.c does not exist yet. "
+                        "Create it by calling write_source. ---"
+                    )
+                base_prompt = _build_code_system_prompt(CHAT_SYSTEM_PROMPT)
+
             self.messages[0] = SystemMessage(
-                content=CHAT_SYSTEM_PROMPT + source_section
+                content=base_prompt + source_section
             )
 
             self.messages.append(HumanMessage(content=query))
@@ -194,7 +262,7 @@ class CodeChatAgent:
             agent = create_agent(
                 model=self.llm,
                 tools=self.tools,
-                system_prompt=CHAT_SYSTEM_PROMPT + source_section,
+                system_prompt=base_prompt + source_section,
             )
             result = agent.invoke({"messages": self.messages})
             # Last message in the result is the final AI response
@@ -208,9 +276,9 @@ class CodeChatAgent:
 
 
 if __name__ == "__main__":
-    from dotenv import load_dotenv
+    from config_manager import apply_env_overrides
 
-    load_dotenv(override=True)
+    apply_env_overrides()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     agent = CodeChatAgent()
     print("C64 Code Chat (type 'exit' or press Ctrl+C to quit)")

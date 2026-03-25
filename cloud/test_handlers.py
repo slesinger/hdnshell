@@ -3,7 +3,7 @@ Unit tests for request handlers
 """
 
 import pytest
-from dotenv import load_dotenv
+from config_manager import apply_env_overrides
 from base_handler import BaseHandler
 from help_handler import HelpHandler
 from python_eval_handler import PythonEvalHandler
@@ -12,8 +12,8 @@ from chat_handler import ChatHandler
 
 # from generate_pet_asc_table import Petscii
 
-# Load environment variables for testing (override=True to prevent system vars from interfering)
-load_dotenv(override=True)
+# Apply environment overrides from config file
+apply_env_overrides()
 
 
 class TestBaseHandler:

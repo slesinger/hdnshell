@@ -245,6 +245,30 @@ class Document:
             logger.error(f"Failed to save {self.path}: {e}")
             return False
 
+    def reload(self):
+        """Reload file from disk, preserving cursor and scroll position."""
+        if not self.path or not os.path.isfile(self.path):
+            return
+        # Remember position
+        old_cx, old_cy = self.cursor_x, self.cursor_y
+        old_sx, old_sy = self.scroll_x, self.scroll_y
+        try:
+            with open(self.path, "r", errors="replace") as f:
+                text = f.read()
+            text = text.replace("\r\n", "\n").replace("\r", "\n")
+            self.lines = text.split("\n")
+            if not self.lines:
+                self.lines = [""]
+        except Exception as e:
+            logger.error(f"Failed to reload {self.path}: {e}")
+            return
+        self.modified = False
+        # Restore position, clamped to new content bounds
+        self.cursor_y = min(old_cy, len(self.lines) - 1)
+        self.cursor_x = min(old_cx, len(self.cur_line()))
+        self.scroll_y = min(old_sy, max(0, len(self.lines) - 1))
+        self.scroll_x = old_sx
+
     @property
     def line_count(self) -> int:
         return len(self.lines)
@@ -456,6 +480,23 @@ class FileEditorConsole(ServerConsole):
     @property
     def doc(self) -> Document:
         return self.documents[self.active_doc_idx]
+
+    # =================================================================
+    #  LIFECYCLE HOOKS
+    # =================================================================
+
+    def on_activate(self):
+        """Reload open documents that were modified on disk by another console."""
+        for d in self.documents:
+            if d.path and not d.modified:
+                d.reload()
+        self._full_render()
+
+    def on_deactivate(self):
+        """Auto-save modified documents so other consoles see the latest content."""
+        for d in self.documents:
+            if d.path and d.modified:
+                d.save()
 
     # =================================================================
     #  INPUT HANDLER — all C64 input comes through here as key-presses
@@ -1232,6 +1273,11 @@ class FileEditorConsole(ServerConsole):
 
         # Compilation failed — write errors to clog.txt and show in split
         self.status_msg = "Compile FAILED"
+        # Strip absolute path prefixes from file references so lines fit in 40 cols.
+        # oscar64 emits:  /abs/path/to/file.c(12, 1) : error 3006: ...
+        # We keep only:  file.c(12, 1) : error 3006: ...
+        output = re.sub(r"(?:/[^/()\s]+)+/([^/()\s]+(?:\.[^/()\s]+)?)(\(\d+(?:,\s*\d+)?\))",
+                        r"\1\2", output)
         clog_path = os.path.join(os.path.dirname(d.path), "clog.txt")
         try:
             with open(clog_path, "w") as f:
@@ -1281,7 +1327,7 @@ class FileEditorConsole(ServerConsole):
             self._log_run(f"[run] .prg not found: {prg_path}")
             return
 
-        from network_helper import read_last_c64_ip, send_dmarun
+        from network_helper import read_last_c64_ip, send_dmawrite
         c64_ip = read_last_c64_ip()
         if not c64_ip:
             self.status_msg = "No C64 IP configured"
@@ -1304,16 +1350,10 @@ class FileEditorConsole(ServerConsole):
             self._log_run(f"      load=${load_addr:04X}  size={prg_size}B")
             self._log_run(f"      target={c64_ip}")
 
-            # Uses CMD_DMA (load only) + CMD_KEYB ("RUN\r") so the program
-            # runs via the custom BASIC's RUN command, not LOAD.
-            response = send_dmarun(c64_ip, prg_data)
-            if response:
-                self._log_run(f"      fw response: {response.hex()}")
-            else:
-                self._log_run("      fw response: (none)")
+            send_dmawrite(c64_ip, prg_data)
 
-            self.status_msg = "Running on C64"
-            self._log_run("[run] DMA+RUN sent OK")
+            self.status_msg = "Loaded to C64"
+            self._log_run("[run] DMA write sent OK")
         except Exception as e:
             self.status_msg = f"C64 err: {e}"
             self._log_run(f"[run] error: {e}")

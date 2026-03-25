@@ -5,12 +5,14 @@ import StatusExtended from "./StatusExtended.jsx";
 import UpdateChecker from "./UpdateChecker.jsx";
 import DocsPage from "./DocsPage.jsx";
 import ScreenPage from "./ScreenPage.jsx";
+import SettingsPage from "./SettingsPage.jsx";
 
 const NAV_ITEMS = [
   { id: "file-manager", label: "File Manager" },
   { id: "inspector", label: "Inspector" },
   { id: "screen", label: "Screen" },
-  { id: "docs", label: "Docs" }
+  { id: "docs", label: "Docs" },
+  { id: "settings", label: "Settings" }
 ];
 
 export default function App() {
@@ -278,6 +280,8 @@ export default function App() {
           <DocsPage />
         ) : page === "screen" ? (
           <ScreenPage />
+        ) : page === "settings" ? (
+          <SettingsPage lastC64Ip={lastC64Ip} />
         ) : (
           <div className="rounded-4 bg-white border shadow-sm p-4">
             <h1 className="h4 mb-3">Welcome to HDN Cloud</h1>

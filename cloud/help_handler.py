@@ -8,10 +8,6 @@ Processes requests starting with "help"
 import os
 import logging
 from base_handler import BaseHandler
-from dotenv import load_dotenv
-
-# Load environment variables (override=True to prevent system vars from interfering)
-load_dotenv(override=True)
 
 logger = logging.getLogger(__name__)
 
@@ -101,27 +97,13 @@ class HelpHandler(BaseHandler):
         self._initialize_llm()
 
     def _initialize_llm(self):
-        """Initialize LLM for help topic search"""
+        """Initialize LLM for help topic search using configured provider."""
         try:
-            azure_key = os.getenv("AZURE_OPENAI_API_KEY")
-            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-            azure_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-            azure_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+            from llm_factory import create_llm_with_fallback
 
-            if azure_key and azure_endpoint and azure_deployment:
-                try:
-                    from langchain_openai import AzureChatOpenAI
-
-                    self.llm = AzureChatOpenAI(
-                        azure_deployment=azure_deployment,
-                        api_version=azure_version,
-                        azure_endpoint=azure_endpoint,
-                        api_key=azure_key,
-                        temperature=0.3,
-                    )
-                    logger.info("HelpHandler initialized with LLM support")
-                except ImportError:
-                    logger.info("LangChain not available for help search")
+            self.llm = create_llm_with_fallback("chat", temperature=0.3)
+            if self.llm:
+                logger.info("HelpHandler initialized with LLM support")
         except Exception as e:
             logger.error(f"Error initializing help LLM: {e}")
 

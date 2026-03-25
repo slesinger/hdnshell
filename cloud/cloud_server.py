@@ -14,6 +14,7 @@ import os
 import argparse
 from typing import Tuple, Optional
 from code_chat_console import CodeChatConsole
+from coding_agent_console import CodingAgentConsole
 from file_editor_console import FileEditorConsole
 from command_handler import CommandHandler, MAGIC_BYTES, CommandID, ResponseType
 from shared_state import get_session_state
@@ -47,6 +48,7 @@ class C64Server:
         # Register custom server-console factories
         mgr = ConsoleManager.instance()
         mgr.register_factory(2, FileEditorConsole)  # Console 2 → File Editor
+        mgr.register_factory(3, CodingAgentConsole)  # Console 3 → Coding Agent Chat
         mgr.register_factory(10, CodeChatConsole)  # C=+0 → Vibe Coding AI Chat
 
     def start(self):

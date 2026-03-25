@@ -8,7 +8,6 @@ __pycache__/
 *.vs
 binaries/*
 build/
-cloud/.env
 cloud/dist/hdnsh-server-linux
 cloud/hdnsh-server-linux.spec
 data/**

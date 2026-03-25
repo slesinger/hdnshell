@@ -40,6 +40,7 @@ cmd_run:
     jmp !cpyloop-
     // convert decimal string to hex lo-hi address
 !parse_add:
+// jmp *  KOUKNI SE na m 0200  protoze RDVAL vraci nulu co tam vlastne ma za vstup, melo by tam byt +2061
     jsr RDVAL
     ParsingInputsDone() // finish parsing input line
     lda SAVY           // check if high byte is not 0 - indicates no address has been read

@@ -18,6 +18,11 @@ langchain-core==1.2.5
 langchain-openai==1.1.6
 langchain-text-splitters==1.1.0
 
+# Additional LLM providers
+langchain-anthropic>=0.3.0
+langchain-google-genai>=2.1.0
+# langchain-google-vertexai>=2.0.0  # Optional: uncomment if using Vertex AI
+
 # LangGraph (agent orchestration, used by langchain.agents.create_agent)
 langgraph==1.0.5
 langgraph-checkpoint==3.0.1

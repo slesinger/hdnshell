@@ -8,12 +8,8 @@ Processes requests starting with "I:"
 import os
 import logging
 from base_handler import BaseHandler
-from dotenv import load_dotenv
 from shared_state import get_session_state
 from agent_tools import create_websearch_tool, create_c64ref_tool, create_manual_tool
-
-# Load environment variables (override=True to prevent system vars from interfering)
-load_dotenv(override=True)
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +71,18 @@ Be brief.
 Be ASCII-only."""
 
 
+def _build_chat_system_prompt() -> str:
+    """Return CHAT_SYSTEM_PROMPT with optional user-name personalization."""
+    try:
+        from config_manager import read_config
+        user_name = read_config().get("user_name", "").strip()
+    except Exception:
+        user_name = ""
+    if user_name:
+        return CHAT_SYSTEM_PROMPT + f"\n\nThe user's name is {user_name}."
+    return CHAT_SYSTEM_PROMPT
+
+
 class ChatHandler(BaseHandler):
     """Handler for general chat requests using LLM"""
 
@@ -86,40 +94,17 @@ class ChatHandler(BaseHandler):
         self._initialize_tools()
 
     def _initialize_llm(self):
-        """Initialize LangChain LLM with Azure OpenAI"""
+        """Initialize LLM using configured provider (with backup and legacy fallback)."""
         try:
-            # Check for Azure OpenAI credentials
-            azure_key = os.getenv("AZURE_OPENAI_API_KEY")
-            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-            azure_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-            azure_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+            from llm_factory import create_llm_with_fallback
 
-            if not azure_key or not azure_endpoint or not azure_deployment:
+            self.llm = create_llm_with_fallback("chat", temperature=0.7)
+            if self.llm:
+                logger.info("ChatHandler LLM initialized from config")
+            else:
                 logger.warning(
-                    "Azure OpenAI credentials not set, ChatHandler will use basic responses"
+                    "No LLM configured for chat, ChatHandler will use basic responses"
                 )
-                return
-
-            # Import LangChain components
-            try:
-                from langchain_openai import AzureChatOpenAI
-
-                # Initialize LLM (using Azure OpenAI)
-                self.llm = AzureChatOpenAI(
-                    azure_deployment=azure_deployment,
-                    api_version=azure_version,
-                    azure_endpoint=azure_endpoint,
-                    api_key=azure_key,
-                    temperature=0.7,
-                )
-                logger.info(
-                    f"ChatHandler initialized with Azure OpenAI (deployment: {azure_deployment})"
-                )
-
-            except ImportError as e:
-                logger.warning(f"LangChain not installed: {e}")
-                logger.info("Install with: pip install langchain langchain-openai")
-
         except Exception as e:
             logger.error(f"Error initializing LLM: {e}")
 
@@ -261,8 +246,9 @@ class ChatHandler(BaseHandler):
         try:
             from langchain_core.messages import HumanMessage, SystemMessage
 
+            system_prompt = _build_chat_system_prompt()
             messages = [
-                SystemMessage(content=CHAT_SYSTEM_PROMPT),
+                SystemMessage(content=system_prompt),
                 HumanMessage(content=query),
             ]
             print("Tools available to agent:", [tool.name for tool in self.tools])
@@ -272,7 +258,7 @@ class ChatHandler(BaseHandler):
                 agent = create_agent(
                     model=self.llm,
                     tools=self.tools,
-                    system_prompt=CHAT_SYSTEM_PROMPT,
+                    system_prompt=system_prompt,
                 )
                 result = agent.invoke({"messages": [HumanMessage(content=query)]})
                 # Last message in the result is the final AI response

@@ -167,6 +167,26 @@ class ServerConsole:
         return None
 
     # ------------------------------------------------------------------
+    # Lifecycle hooks (called by ConsoleManager on console switch)
+    # ------------------------------------------------------------------
+
+    def on_activate(self):
+        """Called when this console becomes the active console.
+
+        Override in subclasses to refresh stale state (e.g. reload
+        files that may have been modified by another console).
+        """
+        pass
+
+    def on_deactivate(self):
+        """Called when the user switches away from this console.
+
+        Override in subclasses to flush pending state (e.g. auto-save
+        modified files so other consoles see the latest content).
+        """
+        pass
+
+    # ------------------------------------------------------------------
     # Screen data accessors (for SERVER_CMD_GET_SCREEN)
     # ------------------------------------------------------------------
 
@@ -189,17 +209,48 @@ class ServerConsole:
 # Screen-code conversion utilities
 # ======================================================================
 
+# Special ASCII characters whose screen-code doesn't follow the range formula.
+_SPECIAL_ASCII: dict[int, int] = {
+    ord("@"): 0x00,  # @ → $00
+    ord("["): 0x1B,  # [ → $1B
+    ord("]"): 0x1D,  # ] → $1D
+    ord("{"): 0x6B,  # { → $6B
+    ord("}"): 0x73,  # } → $73
+    ord("_"): 0x64,  # _ → $64
+    ord("~"): 0x68,  # ~ → $68
+    ord("|"): 0x5D,  # | → $5D
+    ord("\\"): 0x7F,  # \ → $7F
+}
+
 
 def ascii_to_screencode(ascii_code: int) -> int:
     """
     Convert an ASCII code point to a C64 screen code.
 
     Mapping (uppercase mode):
+        PC @ convert to $00
+        PC [ convert to $1B
+        PC ] convert to $1D
+        PC { convert to $6B
+        PC } convert to $73
+        PC _ convert to $64
+        PC ~ convert to $68
+        PC | convert to $5D
+        PC \ convert to $7f
         $20-$3F  →  $20-$3F   (space, digits, punctuation)
         $40-$5F  →  $00-$1F   (@, A-Z, [, £, ], ↑, ←)
         $60-$7F  →  $00-$1F   (lowercase a-z mapped to uppercase screen codes)
         anything else → $20   (space)
+
+    PC is lacking:
+    pound sign £
+    up arrow
+    left arrow
+    thick minus
+    --- all up to $5a/$da
     """
+    if ascii_code in _SPECIAL_ASCII:
+        return _SPECIAL_ASCII[ascii_code]
     if 0x20 <= ascii_code <= 0x3F:
         return ascii_code
     if 0x40 <= ascii_code <= 0x5F:

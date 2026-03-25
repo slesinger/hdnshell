@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import Optional, List
 from pydantic import BaseModel
 from base_handler import BaseHandler
-from dotenv import load_dotenv
 from shared_state import get_session_state
 from csdb_group_parser import parse_csdb_group_detail
 from csdb_search_parser import parse_csdb_find
@@ -53,10 +52,7 @@ class CSDBEvent(BaseModel):
     end_date: Optional[str] = None
 
 
-# Load environment variables (override=True to prevent system vars from interfering)
 
-
-load_dotenv(override=True)
 
 logger = logging.getLogger(__name__)
 
@@ -138,8 +134,10 @@ class CSDBHandler(BaseHandler):
         self.session.headers.update(CSDB_BROWSER_HEADERS)
 
         # Add authentication if available
-        csdb_user = os.getenv("CSDB_USER")
-        csdb_password = os.getenv("CSDB_PASSWORD")
+        from config_manager import read_config
+        cfg = read_config()
+        csdb_user = cfg.get("CSDB_USER", "")
+        csdb_password = cfg.get("CSDB_PASSWORD", "")
         if csdb_user and csdb_password:
             self.session.auth = (csdb_user, csdb_password)
             logger.info("CSDB authentication enabled.")

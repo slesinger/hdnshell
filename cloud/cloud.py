@@ -17,12 +17,20 @@ from flask_cors import CORS
 from threading import Thread
 from flask import Flask, jsonify, request
 from flask_sock import Sock  # type: ignore[import-untyped]
-import time
 from flask import send_from_directory
 from network_helper import (
     read_last_c64_ip,
     _send_tcp_cmd,
 )
+from config_manager import (
+    read_config,
+    write_config,
+    get_merged_config,
+    migrate_config,
+    apply_env_overrides,
+)
+from cloud_config_template import CONFIG_DEFAULTS, SECRET_KEYS
+from llm_factory import test_llm_completion
 
 
 # Configure logging for the web server
@@ -571,17 +579,77 @@ def find_c64u():
     # Indicate scan started
     logger.info("Scanning network for C64U...")
     found_ip = net_utils.find_port_64_hosts()
-    time.sleep(25)  # Simulate scan duration
     logger.info(f"Scan complete. Found: {found_ip}")
     # Always write config so the file exists; update IP only when found
-    config_path = get_workspace_config_path()
     if found_ip:
-        with open(config_path, "w") as f:
-            f.write(f'last_c64_ip = "{found_ip}"\n')
-    elif not os.path.exists(config_path):
-        with open(config_path, "w") as f:
-            f.write('last_c64_ip = ""\n')
+        cfg = read_config()
+        cfg["last_c64_ip"] = found_ip
+        write_config(cfg)
+    elif not os.path.exists(get_workspace_config_path()):
+        write_config(read_config())
     return jsonify({"found_ips": found_ip})
+
+
+# ─── Settings / Config ─────────────────────────────────────────────────────────
+
+
+@app.route("/settings/config", methods=["GET"])
+def settings_get_config():
+    """Return all configuration (non-secret values + masked secrets)."""
+    return jsonify(get_merged_config())
+
+
+@app.route("/settings/config", methods=["PUT"])
+def settings_put_config():
+    """Save configuration.  Body is a flat JSON object.
+
+    All keys are stored in cloud_config.cfg.
+    Secret values that are all '*' (masked) are left unchanged.
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    # Start from current config so unsubmitted keys are preserved
+    existing = read_config()
+
+    for key in CONFIG_DEFAULTS:
+        if key in data:
+            value = data[key]
+            # If a secret value is all asterisks (masked), keep the existing value
+            if key in SECRET_KEYS and value and all(c == "*" for c in value):
+                continue
+            existing[key] = value
+
+    write_config(existing)
+    apply_env_overrides()
+
+    return jsonify({"status": "ok"})
+
+
+@app.route("/settings/c64_ip", methods=["PUT"])
+def settings_put_c64_ip():
+    """Update just the C64 IP address."""
+    data = request.get_json(force=True, silent=True) or {}
+    ip = data.get("ip", "").strip()
+    cfg = read_config()
+    cfg["last_c64_ip"] = ip
+    write_config(cfg)
+    return jsonify({"status": "ok", "last_c64_ip": ip})
+
+
+@app.route("/settings/test_llm", methods=["POST"])
+def settings_test_llm():
+    """Test an LLM provider by sending a completion prompt.
+
+    Body: {"role": "chat" | "code" | "backup"}
+    """
+    data = request.get_json(force=True, silent=True) or {}
+    role = data.get("role", "chat")
+    if role not in ("chat", "code", "backup"):
+        return jsonify({"error": "Invalid role. Use 'chat', 'code', or 'backup'."}), 400
+    result = test_llm_completion(role)
+    return jsonify(result)
 
 
 @app.route("/clients")
@@ -846,6 +914,12 @@ if __name__ == "__main__":
     # Initialise workspace directory tree (creates dirs + seed files on first run)
     init_workspace()
 
+    # Ensure config file has all current keys (adds new settings on upgrade)
+    migrate_config()
+
+    # Push LANGSMITH_* and GOOGLE_APPLICATION_CREDENTIALS into os.environ
+    apply_env_overrides()
+
     # Config now lives inside workspace/.config/
     config_path = get_workspace_config_path()
 
@@ -862,8 +936,9 @@ if __name__ == "__main__":
         found_ip = net_utils.find_port_64_hosts()
         if found_ip:
             print("Found C64 IP:", found_ip)
-            with open(config_path, "w") as f:
-                f.write(f'last_c64_ip = "{found_ip}"\n')
+            cfg = read_config()
+            cfg["last_c64_ip"] = found_ip
+            write_config(cfg)
         else:
             print("No C64 IPs found on the network.")
 

@@ -45,6 +45,8 @@ class ConsoleManager:
         self._consoles: Dict[Tuple[int, int], ServerConsole] = {}
         # console_id → factory function
         self._factories: Dict[int, ConsoleFactory] = {}
+        # session_id → currently active console_id
+        self._active: Dict[int, int] = {}
 
     # ------------------------------------------------------------------
     # Singleton access
@@ -124,10 +126,38 @@ class ConsoleManager:
     # Convenience: route commands directly
     # ------------------------------------------------------------------
 
+    def _notify_switch(self, console_id: int, session_id: int):
+        """Call on_deactivate / on_activate when the active console changes."""
+        prev_id = self._active.get(session_id)
+        if prev_id == console_id:
+            return
+        # Deactivate old console
+        if prev_id is not None:
+            prev_key = (session_id, prev_id)
+            prev_console = self._consoles.get(prev_key)
+            if prev_console is not None:
+                try:
+                    prev_console.on_deactivate()
+                except Exception:
+                    logger.exception(
+                        f"on_deactivate failed for console {prev_id}"
+                    )
+        # Activate new console
+        self._active[session_id] = console_id
+        new_console = self._consoles.get((session_id, console_id))
+        if new_console is not None:
+            try:
+                new_console.on_activate()
+            except Exception:
+                logger.exception(
+                    f"on_activate failed for console {console_id}"
+                )
+
     def handle_keypress(
         self, console_id: int, session_id: int, petscii_code: int, modifiers: int
     ) -> Optional[bytes]:
         """Route a keypress to the appropriate console."""
+        self._notify_switch(console_id, session_id)
         console = self.get_console(console_id, session_id)
         return console.handle_keypress(petscii_code, modifiers)
 
@@ -135,6 +165,7 @@ class ConsoleManager:
         self, console_id: int, session_id: int, data: bytes
     ) -> Optional[bytes]:
         """Route text input to the appropriate console."""
+        self._notify_switch(console_id, session_id)
         console = self.get_console(console_id, session_id)
         return console.handle_text_input(data)
 
@@ -142,11 +173,13 @@ class ConsoleManager:
         self, console_id: int, session_id: int, data: bytes
     ) -> Optional[bytes]:
         """Route a command to the appropriate console."""
+        self._notify_switch(console_id, session_id)
         console = self.get_console(console_id, session_id)
         return console.handle_command(data)
 
     def get_screen_data(self, console_id: int, session_id: int) -> bytes:
         """Return the screen buffer for a console."""
+        self._notify_switch(console_id, session_id)
         console = self.get_console(console_id, session_id)
         return console.get_screen_data()
 

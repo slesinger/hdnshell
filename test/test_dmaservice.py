@@ -90,5 +90,5 @@ def send(cmd: int, length: int = 0, payload: bytes = b'', read: bool = False):
 # dma_write(0x0400, b'\x31\x38\x39\x00')
 # keyboard_input(b'HELLO WORLD!\n')
 # power_off()
-dma_run('test1.prg')
+dma_run('binaries/hdnsh.bin')
 # identify()
