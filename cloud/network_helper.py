@@ -79,3 +79,17 @@ def send_screen_data(screen_data: bytes, color_data: bytes) -> None:
         SOCKET_CMD_DMAWRITE,
         0xD800.to_bytes(2, "little") + color_data,
     )
+
+
+def send_vic_colors(border: int, background: int) -> None:
+    """DMA-write border ($D020) and background ($D021) colours to the C64."""
+    _send_tcp_cmd(
+        read_last_c64_ip(),
+        SOCKET_CMD_DMAWRITE,
+        0xD020.to_bytes(2, "little") + bytes([border & 0x0F]),
+    )
+    _send_tcp_cmd(
+        read_last_c64_ip(),
+        SOCKET_CMD_DMAWRITE,
+        0xD021.to_bytes(2, "little") + bytes([background & 0x0F]),
+    )

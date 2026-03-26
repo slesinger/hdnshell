@@ -9,6 +9,7 @@ requests>=2.31.0
 python-dotenv>=1.0.0
 
 bs4>=0.0.2
+playwright>=1.40.0
 
 # LLM dependencies (required for chat handler with Azure OpenAI)
 langchain==1.2.0

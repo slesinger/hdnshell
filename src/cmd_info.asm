@@ -82,7 +82,7 @@ cmd_info:
 
 LocalLabel:
     .byte KEY_RETURN
-    .text "My IP address: "
+    .text "IP addr: "
     .byte $00
 
 ServerLabel:

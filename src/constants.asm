@@ -207,6 +207,7 @@
 .const KEY_INSERT = $94
 .const KEY_C_2 = $95
 .const KEY_C_3 = $96
+.const KEY_C_4 = $97
 .const KEY_LEFT = $9D
 .const KEY_SHIFT_U = $75
 

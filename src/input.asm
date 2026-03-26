@@ -28,6 +28,11 @@ HandleInput:
     lda #$30  // console id for server code agent chat, upper 4 bits only !!
     jmp HandleConsoleSwitch
 !:
+    cmp #KEY_C_4  // server web browser
+    bne !+
+    lda #$40  // console id for server web browser, upper 4 bits only !!
+    jmp HandleConsoleSwitch
+!:
 
     // Check if current console is local or server
     ldx console_id

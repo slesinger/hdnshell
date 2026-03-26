@@ -125,10 +125,19 @@ uii_print_ipaddress:
 !no_error:
     jsr wait_not_busy
     // IP_ADDR_LOCAL
+.break
     jsr set_read_to_CHROUT
     jsr uii_readdata  // TODO only print 192 168 A 192 168
     jsr uii_readstatus
     jsr uii_accept
+
+    PrintReturn()
+    inc $d020
+    lda #$00
+    sta TMP0+1  // high byte
+    lda #192
+    sta TMP0    // low byte
+    jsr CVTDEC_tmp2  // convert first byte to decimal string
     rts
 
 
