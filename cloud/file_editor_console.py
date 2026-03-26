@@ -152,6 +152,7 @@ KEY_CBM_B = 0xBF
 KEY_SHIFT_ASTERISK = 0xC0
 KEY_SHIFT_PLUS = 0xDB
 KEY_CBM_MINUS = 0xDC
+KEY_SHIFT_CBM_MINUS = 0xDD
 KEY_SHIFT_UPARROW = 0xDE
 KEY_CBM_ASTERISK = 0xDF
 
@@ -424,7 +425,7 @@ class FileEditorConsole(ServerConsole):
                 ("Cyc split", "ctrl+\x5e"),  # TODO this should be up arrow
                 ("Swap pane", "sh+\x5e"),
                 ("Tabs", "f2"),
-                ("Wrap", "C=+w"),
+                ("Wrap", "C=+p"),
             ],
             "Search": [
                 ("Find", "C=+f"),
@@ -668,7 +669,15 @@ class FileEditorConsole(ServerConsole):
         elif key == KEY_WHITE_CTRL2_CTRLE:  # CTRL+E → compile
             self._cmd_compile()
 
-        elif key == KEY_CBM_W:  # CBM+W → toggle word wrap
+        elif key == KEY_CBM_Q:  # CBM+Q → insert {
+            d.insert_text_at_cursor("{")
+        elif key == KEY_CBM_W:  # CBM+W → insert }
+            d.insert_text_at_cursor("}")
+        elif key == KEY_CBM_POUND:  # CBM+£ → insert ~
+            d.insert_text_at_cursor("~")
+        elif key == KEY_SHIFT_CBM_MINUS:  # SHIFT+CBM+- → insert |
+            d.insert_text_at_cursor("|")
+        elif key == KEY_CBM_P:  # CBM+P → toggle word wrap
             self.word_wrap = not self.word_wrap
             self.status_msg = "wrap ON" if self.word_wrap else "wrap OFF"
             if self.word_wrap:
@@ -829,6 +838,13 @@ class FileEditorConsole(ServerConsole):
                     if new_cwd.startswith(os.path.realpath(WORKSPACE_DIR)):
                         self.browser_cwd = new_cwd
                     self._refresh_browser()
+                    # Clamp cursor to new entry count so it stays visible
+                    if self.browser_entries:
+                        self.browser_sel = min(self.browser_sel, len(self.browser_entries) - 1)
+                    else:
+                        self.browser_sel = 0
+                    if self.browser_sel < self.browser_scroll:
+                        self.browser_scroll = self.browser_sel
                 else:
                     path = os.path.join(self.browser_cwd, name)
                     self._open_file(path)
@@ -1827,7 +1843,13 @@ class FileEditorConsole(ServerConsole):
             " return     new line",
             " del        backspace",
             " ins        insert space",
-            " C=[ ]      (un)indent line"  # TODO fix [ ] PETSCII
+            " C=[ ]      (un)indent line"
+            " arrow left insert underscore",
+            " pound      insert backslash",
+            " C=+q       insert {",
+            " C=+w       insert }",
+            " C=+£       insert ~",
+            " sh+C=-     insert |",
             "",
             " File operations:",
             " f1         file list/tabs",
@@ -1862,7 +1884,7 @@ class FileEditorConsole(ServerConsole):
             " ctrl+uparw cycle split mode",
             " sh+uparrow swap pane focus",
             " RUN/STOP   open menu",
-            " C=+w       toggle wrap",
+            " C=+p       toggle wrap",
             " C=+sh      change lo/up font",
             "",
             " press RUN/STOP to return",
