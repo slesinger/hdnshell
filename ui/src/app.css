@@ -143,3 +143,72 @@
 .docs-content a:hover {
   text-decoration: underline;
 }
+
+/* ── Inspector page ─────────────────────────────────────────────────────── */
+.inspector-canvas {
+  cursor: crosshair;
+  border: 1px solid #dee2e6;
+  image-rendering: pixelated;
+}
+
+.inspector-find-bar {
+  padding: 0.5rem 0.75rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+@font-face {
+  font-family: "C64ProMono";
+  src: url("/fonts/C64_Pro_Mono-STYLE.woff2") format("woff2"),
+       url("/fonts/C64_Pro_Mono-STYLE.woff") format("woff"),
+       url("/fonts/C64_Pro_Mono-STYLE.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.hex-dump {
+  font-family: "C64ProMono", monospace;
+  font-size: 0.624rem;
+  line-height: 1.45;
+  background: #3535b0; /* C64 blue */
+  color: #a0a8e8;      /* C64 light blue — hex bytes */
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  overflow-y: auto;
+  max-height: 520px;
+  white-space: nowrap;
+}
+
+.hex-row {
+  display: flex;
+  gap: 0;
+}
+
+.hex-address {
+  color: #9898e8; /* brighter blue for addresses */
+  margin-right: 1.2ch;
+  user-select: none;
+  min-width: 5ch;
+}
+
+.hex-bytes {
+  display: inline-flex;
+  gap: 0.4ch;
+  margin-right: 1.2ch;
+}
+
+.hex-ascii {
+  color: #9898e8; /* brighter blue for PETSCII column */
+  letter-spacing: 0;
+}
+
+.hex-highlight {
+  background: rgba(160, 168, 232, 0.18); /* light blue tint for selected block */
+}
+
+.hex-match {
+  background: rgba(255, 220, 100, 0.35);
+  color: #ffdc64; /* C64 yellow for search matches */
+  border-radius: 2px;
+}

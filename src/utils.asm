@@ -492,9 +492,8 @@ MSG_HELP:
 
 // TODO move this varaible memory
 // Network
-// host_ip:   .text "192.168.1.2"
-host_ip:   .text "192.168.178.100"
-           .byte 0
+host_ip:   .text "192.168.1.2"  // will be replaced when uploading new version.
+           .byte 0,0,0,0,0  // enough space to hold nnn.nnn.nnn.nnn and null terminator
 
 
 // Message strings

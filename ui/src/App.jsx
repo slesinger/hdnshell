@@ -6,6 +6,7 @@ import UpdateChecker from "./UpdateChecker.jsx";
 import DocsPage from "./DocsPage.jsx";
 import ScreenPage from "./ScreenPage.jsx";
 import SettingsPage from "./SettingsPage.jsx";
+import InspectorPage from "./InspectorPage.jsx";
 
 const NAV_ITEMS = [
   { id: "file-manager", label: "File Manager" },
@@ -278,6 +279,8 @@ export default function App() {
           <FindC64U lastC64Ip={lastC64Ip} />
         ) : page === "docs" ? (
           <DocsPage />
+        ) : page === "inspector" ? (
+          <InspectorPage />
         ) : page === "screen" ? (
           <ScreenPage />
         ) : page === "settings" ? (

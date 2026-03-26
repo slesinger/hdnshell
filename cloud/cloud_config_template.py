@@ -10,6 +10,7 @@ All configuration — including secrets — is stored in this single file.
 CONFIG_DEFAULTS = {
     # ── General ──
     "last_c64_ip": "",
+    "server_ip": "",
     "user_name": "",
     # ── Chat LLM ──
     "chat_llm_provider": "",

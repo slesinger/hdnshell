@@ -182,6 +182,7 @@ export default function SettingsPage({ lastC64Ip }) {
   const [scanResult, setScanResult] = useState(null);
   const [testResults, setTestResults] = useState({});
   const [testLoading, setTestLoading] = useState({});
+  const [detectingIp, setDetectingIp] = useState(false);
 
   // Load config on mount
   useEffect(() => {
@@ -314,6 +315,45 @@ export default function SettingsPage({ lastC64Ip }) {
                 : "No C64U found on the network."}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── Server IP Address ──────────────────────────── */}
+      <div className="card mb-3">
+        <div className="card-body">
+          <h6 className="card-title mb-3">Server IP Address</h6>
+          <div className="row g-2 align-items-end">
+            <div className="col">
+              <label className="form-label">IP Address</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Auto-detected if left empty"
+                value={config.server_ip || ""}
+                onChange={(e) => setConfig((prev) => ({ ...prev, server_ip: e.target.value }))}
+              />
+              <div className="form-text">Embedded into ROM for C64-to-server communication. Auto-detected when empty.</div>
+            </div>
+            <div className="col-auto">
+              <button
+                className="btn btn-outline-secondary"
+                disabled={detectingIp}
+                onClick={async () => {
+                  setDetectingIp(true);
+                  try {
+                    const resp = await fetch(`${API_BASE_URL}/settings/server_ip_detect`);
+                    const data = await resp.json();
+                    if (data.ip) {
+                      setConfig((prev) => ({ ...prev, server_ip: data.ip }));
+                    }
+                  } catch { /* ignore */ }
+                  setDetectingIp(false);
+                }}
+              >
+                {detectingIp ? "Detecting..." : "Auto-detect"}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -173,12 +173,14 @@ def c64_status_extended():
     connected = False
     ultimate_dma_service_enabled = False
     ftp_file_service_enabled = False
+    web_remote_control_enabled = False
     hdnsh_bin_present = False
     hdnsh_cfg_present = False
 
     if last_c64_ip:
         connected = is_port_open(last_c64_ip, 64, timeout=2)
         ultimate_dma_service_enabled = connected
+        web_remote_control_enabled = is_port_open(last_c64_ip, 80, timeout=2)
         (
             ftp_file_service_enabled,
             hdnsh_bin_present,
@@ -190,6 +192,7 @@ def c64_status_extended():
             "connected": connected,
             "ultimate_dma_service_enabled": ultimate_dma_service_enabled,
             "ftp_file_service_enabled": ftp_file_service_enabled,
+            "web_remote_control_enabled": web_remote_control_enabled,
             "hdnsh.bin_present": hdnsh_bin_present,
             "hdnsh.cfg_present": hdnsh_cfg_present,
         }
@@ -257,6 +260,42 @@ def download_latest_cfg(target_dir: str) -> str:
     return local_path
 
 
+# Placeholder IP compiled into hdnsh.bin (see src/utils.asm host_ip label).
+# The label reserves 16 bytes: 11 chars "192.168.1.2" + 5 null-padding bytes.
+_ROM_IP_PLACEHOLDER = b"192.168.1.2"
+_ROM_IP_SLOT_SIZE = 16  # total bytes available for IP + null terminator
+
+
+def patch_server_ip(rom_path: str, server_ip: str) -> None:
+    """Replace the placeholder IP in the ROM binary with *server_ip*.
+
+    The replacement is done byte-by-byte within a fixed-size slot so the
+    binary size never changes.  The new IP string is null-terminated and the
+    remaining bytes in the slot are zeroed out.
+    """
+    ip_bytes = server_ip.encode("ascii")
+    if len(ip_bytes) + 1 > _ROM_IP_SLOT_SIZE:
+        raise ValueError(
+            f"Server IP '{server_ip}' too long for the {_ROM_IP_SLOT_SIZE}-byte ROM slot"
+        )
+
+    with open(rom_path, "rb") as f:
+        data = bytearray(f.read())
+    offset = data.find(_ROM_IP_PLACEHOLDER)
+    if offset == -1:
+        raise RuntimeError(
+            f"Placeholder IP {_ROM_IP_PLACEHOLDER!r} not found in {rom_path}"
+        )
+
+    # Build padded replacement: IP + 0x00 terminator + zero-fill rest of slot
+    replacement = ip_bytes + b"\x00" * (_ROM_IP_SLOT_SIZE - len(ip_bytes))
+    data[offset : offset + _ROM_IP_SLOT_SIZE] = replacement
+
+    with open(rom_path, "wb") as f:
+        f.write(data)
+    logger.info("Patched ROM IP: %s -> %s (at offset 0x%04X)", _ROM_IP_PLACEHOLDER.decode(), server_ip, offset)
+
+
 def upload_rom_via_ftp(host: str, rom_path: str) -> None:
     with ftplib.FTP() as ftp:
         ftp.connect(host, 21, timeout=5)
@@ -272,6 +311,17 @@ def upload_rom_via_ftp(host: str, rom_path: str) -> None:
                 ftp.storbinary("STOR hdnsh.cfg", f)
 
 
+@app.route("/settings/server_ip_detect", methods=["GET"])
+def server_ip_detect():
+    """Return the server's primary LAN IP address."""
+    try:
+        ip = net_utils.get_primary_ip()
+        return jsonify({"ip": ip})
+    except Exception as exc:
+        logger.exception("Failed to detect server IP")
+        return jsonify({"error": str(exc)}), 500
+
+
 @app.route("/settings/ensure_rom")
 def ensure_rom():
     last_c64_ip = read_last_c64_ip()
@@ -282,11 +332,22 @@ def ensure_rom():
         rom_path, asset_name = download_latest_rom("/tmp/hdnshell")
         # Download hdnsh.cfg from GitHub master branch alongside the ROM
         download_latest_cfg(os.path.dirname(rom_path))
+
+        # Determine server IP to patch into the ROM
+        cfg = read_config()
+        server_ip = cfg.get("server_ip", "").strip()
+        if not server_ip:
+            server_ip = net_utils.get_primary_ip()
+        if server_ip == "127.0.0.1":
+            return jsonify({"error": "Server IP resolved to 127.0.0.1 (localhost). "
+                           "Configure a real LAN IP in Settings."}), 400
+
+        patch_server_ip(rom_path, server_ip)
         upload_rom_via_ftp(last_c64_ip, rom_path)
         return jsonify(
             {
                 "status": "ok",
-                "message": f"Uploaded {asset_name} and hdnsh.cfg to ftp://{last_c64_ip}/Flash/roms",
+                "message": f"Uploaded {asset_name} (server IP {server_ip}) and hdnsh.cfg to ftp://{last_c64_ip}/Flash/roms",
             }
         )
     except Exception as exc:
@@ -571,6 +632,37 @@ def c64_power_off():
         return jsonify({"status": "ok", "message": "Power off command sent."})
     except OSError as exc:
         logger.exception("Failed to send power off command")
+        return jsonify({"error": str(exc)}), 502
+
+
+@app.route("/c64/readmem", methods=["GET"])
+def c64_readmem():
+    last_c64_ip = read_last_c64_ip()
+    if not last_c64_ip:
+        return jsonify({"error": "No C64 IP found. Run scan first."}), 400
+    address = request.args.get("address", "0000")
+    length = request.args.get("length", "256")
+    # Validate address is hex, length is decimal
+    try:
+        addr_int = int(address, 16)
+    except ValueError:
+        return jsonify({"error": "Invalid address (must be hex)"}), 400
+    if addr_int < 0 or addr_int > 0xFFFF:
+        return jsonify({"error": "Address out of range (0000-FFFF)"}), 400
+    try:
+        length_int = int(length)
+    except ValueError:
+        return jsonify({"error": "Invalid length (must be decimal)"}), 400
+    if length_int < 1 or length_int > 65536:
+        return jsonify({"error": "Length out of range (1-65536)"}), 400
+    try:
+        url = f"http://{last_c64_ip}/v1/machine:readmem"
+        params = {"address": address, "length": str(length_int)}
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
+        return response.content, 200, {"Content-Type": "application/octet-stream"}
+    except requests.RequestException as exc:
+        logger.exception("Failed to read memory")
         return jsonify({"error": str(exc)}), 502
 
 

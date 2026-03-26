@@ -6,6 +6,7 @@ const normalizeStatus = (payload) => ({
   connected: Boolean(payload?.connected),
   ultimate_dma_service_enabled: Boolean(payload?.ultimate_dma_service_enabled),
   ftp_file_service_enabled: Boolean(payload?.ftp_file_service_enabled),
+  web_remote_control_enabled: Boolean(payload?.web_remote_control_enabled),
   "hdnsh.bin_present": Boolean(payload?.["hdnsh.bin_present"]),
   "hdnsh.cfg_present": Boolean(payload?.["hdnsh.cfg_present"]),
 });
@@ -14,6 +15,7 @@ const EMPTY_STATUS = {
   connected: false,
   ultimate_dma_service_enabled: false,
   ftp_file_service_enabled: false,
+  web_remote_control_enabled: false,
   "hdnsh.bin_present": false,
   "hdnsh.cfg_present": false
 };
@@ -135,13 +137,21 @@ export default function StatusExtended({ lastC64Ip }) {
                   />
                   <span>FTP file service</span>
                 </li>
-                <li className="d-flex align-items-center gap-2">
+                <li className="d-flex align-items-center gap-2 mb-2">
                   <span
                     className={`status-dot ${
                       status.ultimate_dma_service_enabled ? "ok" : "danger"
                     }`}
                   />
                   <span>Ultimate DMA service</span>
+                </li>
+                <li className="d-flex align-items-center gap-2">
+                  <span
+                    className={`status-dot ${
+                      status.web_remote_control_enabled ? "ok" : "warn"
+                    }`}
+                  />
+                  <span>Web Remote Control <span className="text-muted small">(optional)</span></span>
                 </li>
               </ul>
             </div>
@@ -198,6 +208,7 @@ export default function StatusExtended({ lastC64Ip }) {
             <ul>
               <li>Ultimate DMA Service</li>
               <li>FTP File Service</li>
+              <li>Web Remote Control (optional &mdash; required for memory inspector)</li>
             </ul>
             Don't forget to save the settings and reboot your C64 Ultimate after that.
           </p>
