@@ -54,6 +54,10 @@ CONFIG_DEFAULTS = {
     # ── CSDB.dk ──
     "CSDB_USER": "",
     "CSDB_PASSWORD": "",
+    # ── Telegram ──
+    "TELEGRAM_API_ID": "",
+    "TELEGRAM_API_HASH": "",
+    "TELEGRAM_PHONE": "",
 }
 
 # Keys whose values should be masked (last 4 chars shown) in API responses.
@@ -72,6 +76,8 @@ SECRET_KEYS = [
     "SERPAPI_API_KEY",
     "CONTEXT7_API_KEY",
     "CSDB_PASSWORD",
+    "TELEGRAM_API_ID",
+    "TELEGRAM_API_HASH",
 ]
 
 # Keys that must be pushed into os.environ so SDKs pick them up automatically.

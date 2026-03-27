@@ -35,5 +35,8 @@ google-search-results==2.4.2
 
 # Context7 MCP integration (direct HTTP, uses requests which is already listed)
 
+# Telegram client
+telethon>=1.36.0
+
 # Packaging tool
 pyinstaller
