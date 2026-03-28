@@ -136,12 +136,8 @@ def mask_secret(value: str) -> str:
 
 
 def get_merged_config() -> dict:
-    """Return config with secret values masked, for the API."""
-    config = read_config()
-    for key in SECRET_KEYS:
-        if key in config:
-            config[key] = mask_secret(config[key])
-    return config
+    """Return the full config for the API."""
+    return read_config()
 
 
 # ── Environment overrides ────────────────────────────────────────────────────

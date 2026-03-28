@@ -707,11 +707,7 @@ def settings_put_config():
 
     for key in CONFIG_DEFAULTS:
         if key in data:
-            value = data[key]
-            # If a secret value is all asterisks (masked), keep the existing value
-            if key in SECRET_KEYS and value and all(c == "*" for c in value):
-                continue
-            existing[key] = value
+            existing[key] = data[key]
 
     write_config(existing)
     apply_env_overrides()
