@@ -168,7 +168,11 @@ uii_socketread:
 !no_error:
     jsr wait_not_busy  // todle je porad soucast sendcommand
 
-    jsr uii_readdata
+inc $d020
+inc $d021
+    jsr uii_readdata_network
+dec $d020
+dec $d021
     jsr uii_readstatus
     jsr uii_accept
     rts

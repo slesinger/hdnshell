@@ -9,7 +9,12 @@ import os
 import logging
 from base_handler import BaseHandler
 from shared_state import get_session_state
-from agent_tools import create_websearch_tool, create_c64ref_tool, create_manual_tool
+from agent_tools import (
+    create_websearch_tool,
+    create_c64ref_tool,
+    create_manual_tool,
+    create_screen_memory_tool,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -213,7 +218,19 @@ class ChatHandler(BaseHandler):
 
         try:
             # Use LLM to generate response
-            response = self._query_llm(query)
+            # append to per-session history
+            history = state.setdefault("chat_history", [])
+            # store user message as plain text dict for simple reconstruction later
+            history.append({"role": "user", "content": query})
+
+            response = self._query_llm(query, history=history, session_id=session_id)
+
+            # append assistant response to history
+            try:
+                history.append({"role": "assistant", "content": response})
+            except Exception:
+                logger.debug("Could not append response to history")
+
             return response
 
         except Exception as e:
@@ -232,7 +249,7 @@ class ChatHandler(BaseHandler):
         """
         return "Chat service is currently unavailable. Please check API configuration."
 
-    def _query_llm(self, query: str) -> str:
+    def _query_llm(self, query: str, history: list | None = None, session_id: int = 0) -> str:
         """
         Query LLM with the user's request using a LangChain agent.
         If tools are available the agent can invoke them automatically.
@@ -247,20 +264,42 @@ class ChatHandler(BaseHandler):
             from langchain_core.messages import HumanMessage, SystemMessage
 
             system_prompt = _build_chat_system_prompt()
-            messages = [
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=query),
-            ]
-            print("Tools available to agent:", [tool.name for tool in self.tools])
-            if self.tools:
+
+            # Rebuild messages from history if provided, otherwise start fresh
+            messages = [SystemMessage(content=system_prompt)]
+            if history:
+                for entry in history:
+                    role = entry.get("role")
+                    content = entry.get("content", "")
+                    if role == "user":
+                        messages.append(HumanMessage(content=content))
+                    else:
+                        # For assistant messages, reuse HumanMessage as a simple placeholder
+                        # since langchain_core may accept only Human/System roles here.
+                        messages.append(HumanMessage(content=content))
+            # Finally append current user query if it wasn't included
+            if not (history and history and history[-1].get("content") == query):
+                messages.append(HumanMessage(content=query))
+            # Build a per-request tools list and attach a session-bound screen tool
+            local_tools = list(self.tools)
+            try:
+                screen_tool = create_screen_memory_tool(session_id=session_id)
+                if screen_tool is not None:
+                    local_tools.append(screen_tool)
+            except Exception:
+                # Do not fail if screen tool cannot be created
+                pass
+
+            print("Tools available to agent:", [tool.name for tool in local_tools])
+            if local_tools:
                 from langchain.agents import create_agent
 
                 agent = create_agent(
                     model=self.llm,
-                    tools=self.tools,
+                    tools=local_tools,
                     system_prompt=system_prompt,
                 )
-                result = agent.invoke({"messages": [HumanMessage(content=query)]})
+                result = agent.invoke({"messages": messages})
                 # Last message in the result is the final AI response
                 return result["messages"][-1].content
             else:

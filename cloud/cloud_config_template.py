@@ -11,6 +11,7 @@ CONFIG_DEFAULTS = {
     # ── General ──
     "last_c64_ip": "",
     "server_ip": "",
+    "home_page_url": "",
     "user_name": "",
     # ── Chat LLM ──
     "chat_llm_provider": "",

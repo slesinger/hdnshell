@@ -19,6 +19,7 @@ def get_session_state(session_id: int) -> Dict[str, Any]:
             "active_id": None,
             "zip_id": None,
             "zip_files": None,
+            "chat_history": [],
             "clipboard": "",
         }
     return _session_states[session_id]

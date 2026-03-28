@@ -72,12 +72,45 @@ sendcommand:
 // Reads data from Ultimate command interface and calls callback to output each byte in A register
 // Input: callback address in JSR_INDIRECT_ADDR (lo/hi). Options are readdata_CHROUT_callback, readdata_PRG_callback
 // Output: effect depends on what callback pointer is set on input.
-uii_readdata:
-    lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
+uii_readdata_network:
+    // lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
     lda STATUS_REG
     and #STATUS_REG_BIT_DATA_AV
     beq !bleble+
-    lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
+    //  lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
+    // lda STATUS_REG
+    // and #STATUS_REG_BIT_DATA_AV
+    // beq !bleble+
+    // data available
+!read_remaining_data:
+    lda STATUS_REG
+    and #STATUS_REG_BIT_DATA_AV
+    beq !data_not_available+
+    // data available
+// lda STATUS_REG
+// ldx $7000
+// sta $0400,x
+// inc $7000
+    lda RESP_DATA_REG
+    jsr call_indirect  // jsr CHROUT,  Simulate the "JSR (JSR_INDIRECT_ADDR)" instruction
+    jmp !read_remaining_data-
+!data_not_available:
+// inc $d021
+    rts
+!bleble:
+// TODO toto je velmi podezrele. Nevim, proc se musi cist RESP_DATA_REG 2x a ignorovat 
+    rts
+
+
+// Reads data from Ultimate command interface and calls callback to output each byte in A register
+// Input: callback address in JSR_INDIRECT_ADDR (lo/hi). Options are readdata_CHROUT_callback, readdata_PRG_callback
+// Output: effect depends on what callback pointer is set on input.
+uii_readdata:
+    // lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
+    lda STATUS_REG
+    and #STATUS_REG_BIT_DATA_AV
+    beq !bleble+
+    //  lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
     // lda STATUS_REG
     // and #STATUS_REG_BIT_DATA_AV
     // beq !bleble+

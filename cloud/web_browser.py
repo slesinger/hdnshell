@@ -591,6 +591,22 @@ class WebBrowserConsole(ServerConsole):
         self.history_scroll: int = 0
         self._navigating_back: bool = False
         # Initial render
+        # If a home page is configured in server settings, start navigation
+        # in a background thread so initialization isn't blocked.
+        try:
+            from config_manager import read_config
+            cfg = read_config() or {}
+            _homepage = (cfg.get("home_page_url") or "").strip()
+        except Exception:
+            _homepage = ""
+
+        if _homepage:
+            self.mode = MODE_BROWSE
+            # Launch navigation asynchronously
+            threading.Thread(target=lambda: self._navigate(_homepage), daemon=True).start()
+        else:
+            self.mode = MODE_URL_INPUT
+
         self._full_render()
 
     @property
@@ -996,8 +1012,25 @@ class WebBrowserConsole(ServerConsole):
         """Open a new empty tab if under MAX_TABS."""
         if len(self.tabs) >= MAX_TABS:
             return
+        # If a homepage is configured, open the new tab to that URL.
+        try:
+            from config_manager import read_config
+            cfg = read_config() or {}
+            homepage = (cfg.get("home_page_url") or "").strip()
+        except Exception:
+            homepage = ""
+
         self.tabs.append(BrowserTab())
         self.active_tab_idx = len(self.tabs) - 1
+
+        if homepage:
+            # Open directly to the homepage (navigate asynchronously).
+            self.mode = MODE_BROWSE
+            self._send_vic_colors(COL_LIGHT_BLUE, COL_BLUE)
+            threading.Thread(target=lambda: self._navigate(homepage), daemon=True).start()
+            return
+
+        # Default: open URL input field for manual entry
         self.url_input = ""
         self.url_cursor = 0
         self.mode = MODE_URL_INPUT

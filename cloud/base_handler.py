@@ -4,6 +4,7 @@ Base handler class for request processing
 
 from abc import ABC, abstractmethod
 from generate_pet_asc_table import Petscii
+import unicodedata
 
 
 class BaseHandler(ABC):
@@ -62,7 +63,21 @@ class BaseHandler(ABC):
         Returns:
             PETSCII encoded bytes
         """
-        # Convert '\n' (LF, 0x0a) to PETSCII newline (CR, 0x0d)
-        return bytes(
-            [0x0D if c == "\n" else Petscii.ascii2petscii(ord(c)) for c in text]
+        # Convert '\n' (LF, 0x0a) to PETSCII newline (CR, 0x0d).
+        # Normalize Unicode (NFKD) to decompose characters with diacritics,
+        # then transliterate to an ASCII-only string by encoding to ASCII
+        # with 'ignore' (this drops diacritic marks and yields base letters).
+        ascii_text = (
+            unicodedata.normalize("NFKD", text)
+            .encode("ascii", "ignore")
+            .decode("ascii")
         )
+
+        out_bytes = []
+        for c in ascii_text:
+            if c == "\n":
+                out_bytes.append(0x0D)
+                continue
+            out_bytes.append(Petscii.ascii2petscii(ord(c)))
+
+        return bytes(out_bytes)

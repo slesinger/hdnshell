@@ -11,7 +11,6 @@ Provides reusable tool builders for:
 import subprocess
 import os
 import logging
-import requests
 from langchain_core.tools import Tool
 from langchain_community.utilities import SerpAPIWrapper
 
@@ -917,4 +916,122 @@ def create_oscar64_graphics_audio_vector_ultimate_docs_tool():
             "Error initializing get_oscar64_graphics_audio_vector_ultimate_docs tool: %s",
             e,
         )
+    return None
+
+
+# ------------------------------------------------------------------
+# Screen memory -> ASCII rendering tool
+# ------------------------------------------------------------------
+
+_SCREENCODE_TO_ASCII: dict | None = None
+
+
+def _build_screencode_to_ascii_map() -> dict:
+    """
+    Build (and cache) a mapping from C64 screen-code (0-127) -> printable
+    ASCII character. We use the `ascii_to_screencode` helper from
+    `cloud.server_console` to reverse-map common printable ASCII codepoints.
+    """
+    global _SCREENCODE_TO_ASCII
+    if _SCREENCODE_TO_ASCII is not None:
+        return _SCREENCODE_TO_ASCII
+
+    try:
+        from server_console import ascii_to_screencode
+    except Exception:
+        # If server_console can't be imported, fall back to a simple map
+        _SCREENCODE_TO_ASCII = {i: " " for i in range(128)}
+        return _SCREENCODE_TO_ASCII
+
+    mapping: dict[int, str] = {}
+    # Prefer printable ASCII range 32..126
+    for code in range(32, 127):
+        try:
+            sc = ascii_to_screencode(code) & 0x7F
+        except Exception:
+            continue
+        if sc not in mapping:
+            mapping[sc] = chr(code)
+
+    # Ensure every code has at least a space fallback
+    for i in range(128):
+        if i not in mapping:
+            mapping[i] = " "
+
+    _SCREENCODE_TO_ASCII = mapping
+    return mapping
+
+
+def _format_screen_bytes(screen_bytes: bytes) -> str:
+    """
+    Convert a 1000-byte screen buffer (40x25) into a 25-line ASCII string
+    (40 characters per line). Non-printable or unknown codes are rendered
+    as space.
+    """
+    if not screen_bytes:
+        return "(no screen data)"
+
+    mapping = _build_screencode_to_ascii_map()
+    cols = 40
+    rows = 25
+    lines: list[str] = []
+    # Truncate or pad to expected size
+    data = screen_bytes[: cols * rows].ljust(cols * rows, b" ")
+    for r in range(rows):
+        start = r * cols
+        chunk = data[start : start + cols]
+        chars: list[str] = []
+        for b in chunk:
+            sc = b & 0x7F  # drop reverse-video bit
+            ch = mapping.get(sc, " ")
+            chars.append(ch)
+        line = "".join(chars)
+        if len(line) < cols:
+            line = line.ljust(cols)
+        else:
+            line = line[:cols]
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def create_screen_memory_tool(session_id: int | None = None, console_id: int | None = None):
+    """
+    Factory for a LangChain Tool that returns the current 40x25 screen for
+    a server-side console as an ASCII-only block of text (25 lines × 40 chars).
+
+    The tool is session-aware when *session_id* is provided. If *console_id*
+    is omitted the tool will attempt to use the active console for the
+    session (falling back to console 1).
+    """
+    try:
+        from console_manager import ConsoleManager
+
+        def _tool(_input: str = "") -> str:
+            try:
+                mgr = ConsoleManager.instance()
+                sid = session_id or 0
+                cid = console_id
+                if cid is None:
+                    # Use active console for session if available, else default to 1
+                    cid = mgr._active.get(sid) if hasattr(mgr, "_active") else None
+                if cid is None:
+                    cid = 1
+                screen = mgr.get_screen_data(cid, sid)
+                return _format_screen_bytes(screen)
+            except Exception as e:
+                return f"Error: could not retrieve screen: {e}"
+
+        tool = Tool(
+            name="get_screen",
+            description=(
+                "Return a 40x25 ASCII rendering of the server-side console screen. "
+                "Input is ignored. Use when the AI needs to see the user's C64 screen."
+            ),
+            func=_tool,
+        )
+        logger.info("get_screen tool initialized (session=%s, console=%s)", session_id, console_id)
+        return tool
+
+    except Exception as e:
+        logger.error("Error initializing get_screen tool: %s", e)
     return None

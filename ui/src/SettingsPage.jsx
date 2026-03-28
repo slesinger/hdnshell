@@ -441,6 +441,21 @@ export default function SettingsPage({ lastC64Ip }) {
         </div>
       </div>
 
+      {/* ── Web Browser Home Page ───────────────────────── */}
+      <div className="card mb-3">
+        <div className="card-body">
+          <h6 className="card-title mb-3">Web Browser Home Page</h6>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="https://example.com"
+            value={config.home_page_url || ""}
+            onChange={(e) => setConfig((prev) => ({ ...prev, home_page_url: e.target.value }))}
+          />
+          <div className="form-text">When set, new tabs and the browser will open this URL automatically.</div>
+        </div>
+      </div>
+
       {/* ── User Name ──────────────────────────────────── */}
       <div className="card mb-3">
         <div className="card-body">
