@@ -38,6 +38,11 @@ HandleInput:
     lda #$50  // console id for server telegram chat, upper 4 bits only !!
     jmp HandleConsoleSwitch
 !:
+    cmp #KEY_C_6  // server RSS reader
+    bne !+
+    lda #$60  // console id for server RSS reader, upper 4 bits only !!
+    jmp HandleConsoleSwitch
+!:
 
     // Check if current console is local or server
     ldx console_id

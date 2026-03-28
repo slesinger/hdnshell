@@ -16,6 +16,7 @@ import os
 import queue
 import threading
 from dataclasses import dataclass
+from datetime import timezone, timedelta
 from typing import List, Optional
 
 from server_console import (
@@ -89,6 +90,12 @@ KEY_F5 = 0x87
 KEY_F7 = 0x88
 KEY_F8 = 0x8C
 
+# Modifier flags
+MOD_COMMODORE = 0x04
+
+# Input area limits
+MAX_INPUT_LINES = 10
+
 # ── Telegram chat modes ─────────────────────────────────────────────
 MODE_LOGIN = 0
 MODE_CHATS = 1
@@ -129,8 +136,10 @@ HELP_LINES = [
     " UP/DOWN     Scroll messages",
     " F5/F3       Page down/up",
     " Type text   Compose message",
+    " LT/RT       Move input cursor",
+    " CBM+LT/RT   Jump word left/right",
     " RETURN      Send message",
-    " DEL         Backspace",
+    " DEL         Backspace at cursor",
     " STOP        Back to chat list",
     " LEFT ARROW  Back to chat list",
     "",
@@ -164,11 +173,12 @@ HELP_LINES = [
     " cloud password when prompted.",
     "",
     " CONSOLE SWITCHING",
-    " CBM+1       Local shell",
-    " CBM+2       File editor",
-    " CBM+3       Coding agent",
-    " CBM+4       Web browser",
-    " CBM+5       This Telegram chat",
+    " C=+1       Local shell",
+    " C=+2       File editor",
+    " C=+3       Coding agent",
+    " C=+4       Web browser",
+    " C=+5       This Telegram chat",
+    " C=+6       RSS reader (this)",
     "",
     " press F8 or STOP to close help",
 ]
@@ -372,7 +382,7 @@ class _TelethonWorker:
         except Exception as e:
             return f"error:{e}"
 
-    async def _do_get_dialogs(self, limit: int = MAX_DIALOGS) -> List[ChatEntry]:
+    async def _do_get_dialogs(self, limit: int = MAX_DIALOGS, tz_offset_minutes: int = 0) -> List[ChatEntry]:
         """Fetch recent dialogs/chats."""
         if not self._connected:
             return []
@@ -380,6 +390,7 @@ class _TelethonWorker:
             from telethon.tl.types import User
             dialogs = await self._client.get_dialogs(limit=limit)
             result = []
+            tz = timezone(timedelta(minutes=tz_offset_minutes))
             for d in dialogs:
                 name = d.name or "Unknown"
                 is_group = not isinstance(d.entity, User) if d.entity else False
@@ -390,7 +401,7 @@ class _TelethonWorker:
                     if d.message.media and not last_msg:
                         last_msg = _media_placeholder(d.message)
                     if d.message.date:
-                        ts = d.message.date.strftime("%H:%M")
+                        ts = d.message.date.astimezone(tz).strftime("%H:%M")
                 result.append(ChatEntry(
                     id=d.id,
                     name=name[:36],
@@ -404,13 +415,14 @@ class _TelethonWorker:
             logger.error("get_dialogs error: %s", e)
             return []
 
-    async def _do_get_messages(self, chat_id: int = 0, limit: int = MAX_MESSAGES) -> List[MessageEntry]:
+    async def _do_get_messages(self, chat_id: int = 0, limit: int = MAX_MESSAGES, tz_offset_minutes: int = 0) -> List[MessageEntry]:
         """Fetch messages from a chat."""
         if not self._connected or not chat_id:
             return []
         try:
             messages = await self._client.get_messages(chat_id, limit=limit)
             result = []
+            tz = timezone(timedelta(minutes=tz_offset_minutes))
             for m in messages:
                 sender_name = ""
                 if m.sender:
@@ -425,7 +437,7 @@ class _TelethonWorker:
                     text = _media_placeholder(m)
                 ts = ""
                 if m.date:
-                    ts = m.date.strftime("%H:%M")
+                    ts = m.date.astimezone(tz).strftime("%H:%M")
                 result.append(MessageEntry(
                     id=m.id,
                     sender_name=sender_name[:20],
@@ -576,6 +588,8 @@ class TelegramChatConsole(ServerConsole):
         self.messages: List[MessageEntry] = []
         self.msg_scroll: int = 0
         self.msg_input: str = ""
+        self.msg_cursor: int = 0  # cursor position within msg_input
+        self.msg_input_scroll: int = 0  # vertical scroll for input (line offset)
         self._rendered_lines: List[tuple] = []  # (text, color) pre-wrapped
 
         # Contacts state
@@ -820,41 +834,75 @@ class TelegramChatConsole(ServerConsole):
     # ── CHAT VIEW mode ───────────────────────────────────────────────
 
     def _key_chat_view(self, key: int, mod: int):
-        if key == KEY_CRSR_UP:
+        cbm = bool(mod & MOD_COMMODORE)
+
+        if key == KEY_CRSR_UP and not cbm:
+            # Scroll messages up
             if self.msg_scroll > 0:
                 self.msg_scroll -= 1
 
-        elif key == KEY_CRSR_DN:
-            max_scroll = max(0, len(self._rendered_lines) - (CONTENT_ROWS - 1))
+        elif key == KEY_CRSR_DN and not cbm:
+            # Scroll messages down
+            max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
             if self.msg_scroll < max_scroll:
                 self.msg_scroll += 1
 
         elif key == KEY_F5:
-            # Page down
-            max_scroll = max(0, len(self._rendered_lines) - (CONTENT_ROWS - 1))
-            self.msg_scroll = min(max_scroll, self.msg_scroll + (CONTENT_ROWS - 1))
+            max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
+            self.msg_scroll = min(max_scroll, self.msg_scroll + self._msg_display_rows())
 
         elif key == KEY_F3:
-            # Page up
-            self.msg_scroll = max(0, self.msg_scroll - (CONTENT_ROWS - 1))
+            self.msg_scroll = max(0, self.msg_scroll - self._msg_display_rows())
 
         elif key == KEY_RETURN:
             if self.msg_input.strip():
                 self._do_send_message()
 
         elif key == KEY_DEL:
-            if self.msg_input:
-                self.msg_input = self.msg_input[:-1]
+            # Backspace at cursor
+            if self.msg_input and self.msg_cursor > 0:
+                self.msg_input = (
+                    self.msg_input[: self.msg_cursor - 1]
+                    + self.msg_input[self.msg_cursor :]
+                )
+                self.msg_cursor -= 1
+                self._clamp_input_scroll()
+
+        elif key == KEY_CRSR_LT:
+            if cbm:
+                # Word jump left
+                self.msg_cursor = self._word_jump_left(self.msg_input, self.msg_cursor)
+            else:
+                if self.msg_cursor > 0:
+                    self.msg_cursor -= 1
+            self._clamp_input_scroll()
+
+        elif key == KEY_CRSR_RT:
+            if cbm:
+                # Word jump right
+                self.msg_cursor = self._word_jump_right(self.msg_input, self.msg_cursor)
+            else:
+                if self.msg_cursor < len(self.msg_input):
+                    self.msg_cursor += 1
+            self._clamp_input_scroll()
+
+        elif key == KEY_HOME:
+            # Refresh messages
+            self._refresh_messages(self.current_chat_id)
 
         elif key == KEY_RUNSTOP or key == KEY_LEFT_ARROW:
             # Back to chat list
             self.mode = MODE_CHATS
             self.msg_input = ""
+            self.msg_cursor = 0
+            self.msg_input_scroll = 0
             self._refresh_chats()
 
         elif key == KEY_F1:
             self.mode = MODE_CHATS
             self.msg_input = ""
+            self.msg_cursor = 0
+            self.msg_input_scroll = 0
             self._refresh_chats()
 
         elif key == KEY_F8:
@@ -862,14 +910,16 @@ class TelegramChatConsole(ServerConsole):
             self.help_scroll = 0
             self.mode = MODE_HELP
 
-        elif key == KEY_HOME:
-            # Refresh messages
-            self._refresh_messages(self.current_chat_id)
-
         else:
             ch = self._petscii_to_printable(key)
             if ch and len(self.msg_input) < MAX_INPUT_LEN:
-                self.msg_input += ch
+                self.msg_input = (
+                    self.msg_input[: self.msg_cursor]
+                    + ch
+                    + self.msg_input[self.msg_cursor :]
+                )
+                self.msg_cursor += 1
+                self._clamp_input_scroll()
 
     # ── CONTACTS mode (F3) ───────────────────────────────────────────
 
@@ -914,10 +964,10 @@ class TelegramChatConsole(ServerConsole):
 
     # ── SETTINGS mode (F2) ───────────────────────────────────────────
 
-    # Settings fields: 0=Phone, 1=API ID, 2=API Hash, 3=Login, 4=Logout
-    _SETTINGS_FIELDS = ["Phone Number", "API ID", "API Hash", "Login", "Logout"]
-    _SETTINGS_KEYS = ["TELEGRAM_PHONE", "TELEGRAM_API_ID", "TELEGRAM_API_HASH", None, None]
-    _SETTINGS_COUNT = 5
+    # Settings fields: 0=Phone, 1=API ID, 2=API Hash, 3=Timezone, 4=Login, 5=Logout
+    _SETTINGS_FIELDS = ["Phone Number", "API ID", "API Hash", "Timezone", "Login", "Logout"]
+    _SETTINGS_KEYS = ["TELEGRAM_PHONE", "TELEGRAM_API_ID", "TELEGRAM_API_HASH", "TIMEZONE", None, None]
+    _SETTINGS_COUNT = 6
 
     def _key_settings(self, key: int, mod: int):
         if self.settings_editing:
@@ -933,10 +983,10 @@ class TelegramChatConsole(ServerConsole):
                 self.settings_sel += 1
 
         elif key == KEY_RETURN:
-            if self.settings_sel == 3:
+            if self.settings_sel == 4:
                 # Login action
                 self._start_login_from_settings()
-            elif self.settings_sel == 4:
+            elif self.settings_sel == 5:
                 # Logout action
                 self._do_logout()
             else:
@@ -1056,10 +1106,25 @@ class TelegramChatConsole(ServerConsole):
     #  TELEGRAM API WRAPPERS
     # =================================================================
 
+    def _get_tz_offset_minutes(self) -> int:
+        """Return UTC offset in minutes from the configured timezone string."""
+        cfg = self._read_config()
+        tz_name = cfg.get("TIMEZONE", "UTC").strip()
+        try:
+            import zoneinfo
+            zi = zoneinfo.ZoneInfo(tz_name)
+            import datetime
+            now = datetime.datetime.now(datetime.timezone.utc)
+            offset = zi.utcoffset(now)
+            return int(offset.total_seconds() // 60) if offset is not None else 0
+        except Exception:
+            return 0
+
     def _refresh_chats(self):
         """Fetch dialog list from Telegram."""
         try:
-            self.chats = self.worker.call("get_dialogs")
+            tz_minutes = self._get_tz_offset_minutes()
+            self.chats = self.worker.call("get_dialogs", tz_offset_minutes=tz_minutes)
             if self.chat_sel >= len(self.chats):
                 self.chat_sel = max(0, len(self.chats) - 1)
         except Exception as e:
@@ -1068,10 +1133,11 @@ class TelegramChatConsole(ServerConsole):
     def _refresh_messages(self, chat_id: int):
         """Fetch messages for a chat."""
         try:
-            self.messages = self.worker.call("get_messages", chat_id=chat_id)
+            tz_minutes = self._get_tz_offset_minutes()
+            self.messages = self.worker.call("get_messages", chat_id=chat_id, tz_offset_minutes=tz_minutes)
             self._build_rendered_lines()
             # Auto-scroll to bottom
-            max_scroll = max(0, len(self._rendered_lines) - (CONTENT_ROWS - 1))
+            max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
             self.msg_scroll = max_scroll
         except Exception as e:
             logger.error("refresh_messages: %s", e)
@@ -1090,6 +1156,8 @@ class TelegramChatConsole(ServerConsole):
         self.current_chat_id = chat_id
         self.current_chat_name = chat_name
         self.msg_input = ""
+        self.msg_cursor = 0
+        self.msg_input_scroll = 0
         self._refresh_messages(chat_id)
         self.mode = MODE_CHAT_VIEW
 
@@ -1104,9 +1172,66 @@ class TelegramChatConsole(ServerConsole):
             )
             if result == "ok":
                 self.msg_input = ""
+                self.msg_cursor = 0
+                self.msg_input_scroll = 0
                 self._refresh_messages(self.current_chat_id)
         except Exception as e:
             logger.error("send_message: %s", e)
+
+    # =================================================================
+    #  INPUT HELPERS
+    # =================================================================
+
+    def _msg_display_rows(self) -> int:
+        """Number of rows available for messages given current input height."""
+        # SCREEN_ROWS(25) - title(1) - separator(1) - input_lines = 23 - input_lines
+        return SCREEN_ROWS - 2 - self._input_line_count()
+
+    def _input_line_count(self) -> int:
+        """How many rows the input box currently occupies (1-MAX_INPUT_LINES)."""
+        if not self.msg_input:
+            return 1
+        wrapped = self._word_wrap(self.msg_input, SCREEN_COLS - 2)  # 2 for "> "
+        return min(MAX_INPUT_LINES, max(1, len(wrapped)))
+
+    def _clamp_input_scroll(self):
+        """Ensure msg_input_scroll keeps the cursor line visible."""
+        input_width = SCREEN_COLS - 2  # width for "> " prefix
+        cursor_line, _ = self._cursor_wrapped_pos(self.msg_input, self.msg_cursor, input_width)
+
+        if self.msg_input_scroll > cursor_line:
+            self.msg_input_scroll = cursor_line
+        if self.msg_input_scroll + MAX_INPUT_LINES - 1 < cursor_line:
+            self.msg_input_scroll = cursor_line - MAX_INPUT_LINES + 1
+        # Also keep message display scroll valid for new display row count
+        max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
+        if self.msg_scroll > max_scroll:
+            self.msg_scroll = max_scroll
+
+    @staticmethod
+    def _word_jump_left(text: str, pos: int) -> int:
+        """Return new cursor position one word to the left."""
+        p = pos
+        # Skip spaces
+        while p > 0 and text[p - 1] == " ":
+            p -= 1
+        # Skip non-space
+        while p > 0 and text[p - 1] != " ":
+            p -= 1
+        return p
+
+    @staticmethod
+    def _word_jump_right(text: str, pos: int) -> int:
+        """Return new cursor position one word to the right."""
+        p = pos
+        n = len(text)
+        # Skip non-space
+        while p < n and text[p] != " ":
+            p += 1
+        # Skip spaces
+        while p < n and text[p] == " ":
+            p += 1
+        return p
 
     # =================================================================
     #  MESSAGE LINE BUILDING
@@ -1294,9 +1419,18 @@ class TelegramChatConsole(ServerConsole):
         title = self.current_chat_name[:32]
         self._render_title_bar(title)
 
-        # Messages area (rows 1-22)
-        msg_rows = CONTENT_ROWS - 1  # reserve row 23 for input line separator
-        for vi in range(msg_rows):
+        # Calculate how many lines the input occupies (1..MAX_INPUT_LINES)
+        input_lines = self._input_line_count()
+        # Layout: title(row0) | messages | sep_row | input_rows | status(row24)
+        # sep_row = 24 - input_lines - 1 ... but status IS row 24 and is the input area here
+        # We reuse rows from the bottom: row24 is last input line, rows above it for more input
+        # Messages area: rows 1 .. (24 - input_lines - 1)
+        sep_row = SCREEN_ROWS - 1 - input_lines  # separator between messages and input
+        msg_end_row = sep_row - 1  # last row of message display
+        msg_display_rows = msg_end_row - CONTENT_TOP + 1
+
+        # Messages area
+        for vi in range(msg_display_rows):
             li = self.msg_scroll + vi
             if li >= len(self._rendered_lines):
                 break
@@ -1304,30 +1438,70 @@ class TelegramChatConsole(ServerConsole):
             row = CONTENT_TOP + vi
             self._put_text(row, 0, text[:SCREEN_COLS], fg)
 
-        # Input separator line (row 23)
-        sep_row = CONTENT_BOTTOM
+        # Separator line
         for c in range(SCREEN_COLS):
             self.screen[sep_row * SCREEN_COLS + c] = SC_HLINE
             self.color[sep_row * SCREEN_COLS + c] = COL_DARK_GREY
 
-        # Input line (row 24) — "> " prompt + typed text
+        # Input area: word-wrap msg_input into up to MAX_INPUT_LINES lines
         prompt = "> "
-        visible_width = SCREEN_COLS - len(prompt)
-        # Show end of input if it's longer than visible width
-        if len(self.msg_input) > visible_width:
-            visible = self.msg_input[-(visible_width):]
-        else:
-            visible = self.msg_input
+        input_width = SCREEN_COLS - len(prompt)
+        wrapped_input = self._word_wrap(self.msg_input or "", input_width) if self.msg_input else [""]
+        total_input_lines = len(wrapped_input)
 
-        self._put_text(INPUT_ROW, 0, prompt, COL_CYAN)
-        self._put_text(INPUT_ROW, len(prompt), visible, COL_INPUT_FG)
+        # Determine which wrapped line the cursor is on and its column
+        cursor_wrapped_line, cursor_col_in_line = self._cursor_wrapped_pos(
+            self.msg_input, self.msg_cursor, input_width
+        )
 
-        # Cursor
-        cursor_col = len(prompt) + len(visible)
-        if cursor_col < SCREEN_COLS:
-            pos = INPUT_ROW * SCREEN_COLS + cursor_col
-            self.screen[pos] = SC_SPACE | SC_REVERSE_BIT
-            self.color[pos] = COL_INPUT_FG
+        # Scroll so cursor line is visible
+        visible_start = self.msg_input_scroll
+        if cursor_wrapped_line < visible_start:
+            visible_start = cursor_wrapped_line
+            self.msg_input_scroll = visible_start
+        if cursor_wrapped_line >= visible_start + input_lines:
+            visible_start = cursor_wrapped_line - input_lines + 1
+            self.msg_input_scroll = visible_start
+
+        # Render input rows
+        for li in range(input_lines):
+            row = sep_row + 1 + li
+            if row >= SCREEN_ROWS:
+                break
+            wrapped_idx = visible_start + li
+            line_text = wrapped_input[wrapped_idx] if wrapped_idx < total_input_lines else ""
+            # First visible line gets the "> " prompt
+            if li == 0:
+                self._put_text(row, 0, prompt, COL_CYAN)
+                self._put_text(row, len(prompt), line_text[:input_width], COL_INPUT_FG)
+            else:
+                self._put_text(row, 0, "  ", COL_CYAN)  # indent continuation lines
+                self._put_text(row, len(prompt), line_text[:input_width], COL_INPUT_FG)
+
+        # Draw cursor
+        cursor_vis_line = cursor_wrapped_line - visible_start
+        if 0 <= cursor_vis_line < input_lines:
+            cursor_row = sep_row + 1 + cursor_vis_line
+            cursor_screen_col = len(prompt) + cursor_col_in_line
+            if cursor_row < SCREEN_ROWS and cursor_screen_col < SCREEN_COLS:
+                pos = cursor_row * SCREEN_COLS + cursor_screen_col
+                self.screen[pos] = SC_SPACE | SC_REVERSE_BIT
+                self.color[pos] = COL_INPUT_FG
+
+    @staticmethod
+    def _cursor_wrapped_pos(text: str, cursor: int, width: int):
+        """Return (line_index, col_in_line) for the given cursor pos after word-wrap."""
+        if not text:
+            return 0, 0
+        wrapped = TelegramChatConsole._word_wrap(text, width)
+        # Walk wrapped lines to find which one contains cursor position
+        pos = 0
+        for li, line in enumerate(wrapped):
+            line_end = pos + len(line)
+            if cursor <= line_end or li == len(wrapped) - 1:
+                return li, cursor - pos
+            pos = line_end + 1  # +1 for the space separator consumed by wrap
+        return len(wrapped) - 1, len(wrapped[-1])
 
     # ── Contacts ─────────────────────────────────────────────────────
 
@@ -1395,6 +1569,7 @@ class TelegramChatConsole(ServerConsole):
             ("Phone:", cfg.get("TELEGRAM_PHONE", "")),
             ("API ID:", self._mask_value(cfg.get("TELEGRAM_API_ID", ""))),
             ("API Hash:", self._mask_value(cfg.get("TELEGRAM_API_HASH", ""))),
+            ("Timezone:", cfg.get("TIMEZONE", "UTC")),
             ("[Login]", ""),
             ("[Logout]", ""),
         ]
@@ -1440,11 +1615,11 @@ class TelegramChatConsole(ServerConsole):
 
         # Status message
         if self.settings_status:
-            self._put_text(16, 1, self.settings_status[:38], COL_YELLOW)
+            self._put_text(18, 1, self.settings_status[:38], COL_YELLOW)
 
         # Hints
-        self._put_text(19, 1, "RET=Edit/Action  STOP=Back", COL_HELP_FG)
-        self._put_text(20, 1, "UP/DN=Select field", COL_HELP_FG)
+        self._put_text(20, 1, "RET=Edit/Action  STOP=Back", COL_HELP_FG)
+        self._put_text(21, 1, "UP/DN=Select field", COL_HELP_FG)
 
         self._render_status_bar("F1=Chats F3=Contacts F8=Help")
 

@@ -18,6 +18,7 @@ from coding_agent_console import CodingAgentConsole
 from file_editor_console import FileEditorConsole
 from telegram_chat import TelegramChatConsole
 from web_browser import WebBrowserConsole
+from rss_reader import RSSReaderConsole
 from command_handler import CommandHandler, MAGIC_BYTES, CommandID, ResponseType
 from shared_state import get_session_state
 from console_manager import ConsoleManager
@@ -53,6 +54,7 @@ class C64Server:
         mgr.register_factory(3, CodingAgentConsole)  # Console 3 → Coding Agent Chat
         mgr.register_factory(4, WebBrowserConsole)  # Console 4 → Web Browser
         mgr.register_factory(5, TelegramChatConsole)  # Console 5 → Telegram Chat
+        mgr.register_factory(6, RSSReaderConsole)  # Console 6 → RSS Reader
         mgr.register_factory(10, CodeChatConsole)  # C=+0 → Vibe Coding AI Chat
 
     def start(self):

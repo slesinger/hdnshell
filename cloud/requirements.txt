@@ -38,5 +38,8 @@ google-search-results==2.4.2
 # Telegram client
 telethon>=1.36.0
 
+# RSS/Atom feed parser
+feedparser>=6.0.0
+
 # Packaging tool
 pyinstaller

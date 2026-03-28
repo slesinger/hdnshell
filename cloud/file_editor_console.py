@@ -24,6 +24,7 @@ from server_console import (
     ascii_to_screencode,
 )
 from generate_pet_asc_table import Petscii
+from shared_state import get_clipboard, set_clipboard
 from workspace_init import WORKSPACE_DIR
 
 logger = logging.getLogger(__name__)
@@ -392,8 +393,7 @@ class FileEditorConsole(ServerConsole):
         # Open documents (tabs)
         self.documents: List[Document] = [Document()]  # start with one empty doc
         self.active_doc_idx: int = 0
-        # Clipboard
-        self.clipboard: str = ""
+        # Clipboard (shared across consoles via shared_state)
         # Editor mode
         self.mode: int = MODE_EDIT
         self.prev_mode: int = MODE_EDIT
@@ -951,16 +951,17 @@ class FileEditorConsole(ServerConsole):
 
     def _cmd_cut(self, d: Document):
         if d.has_selection():
-            self.clipboard = d.get_selected_text()
+            set_clipboard(self.session_id, d.get_selected_text())
             d.delete_selection()
 
     def _cmd_copy(self, d: Document):
         if d.has_selection():
-            self.clipboard = d.get_selected_text()
+            set_clipboard(self.session_id, d.get_selected_text())
 
     def _cmd_paste(self, d: Document):
-        if self.clipboard:
-            d.insert_text_at_cursor(self.clipboard)
+        cb = get_clipboard(self.session_id)
+        if cb:
+            d.insert_text_at_cursor(cb)
 
     def _cmd_delete_line(self, d: Document):
         if d.line_count > 1:

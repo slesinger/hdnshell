@@ -1,6 +1,90 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "./api.js";
 
+const TIMEZONES = [
+  // UTC
+  { value: "UTC",                       label: "UTC" },
+  // Europe
+  { value: "Europe/London",             label: "Europe/London (GMT/BST)" },
+  { value: "Europe/Dublin",             label: "Europe/Dublin" },
+  { value: "Europe/Lisbon",             label: "Europe/Lisbon" },
+  { value: "Europe/Paris",              label: "Europe/Paris (CET/CEST)" },
+  { value: "Europe/Berlin",             label: "Europe/Berlin" },
+  { value: "Europe/Amsterdam",          label: "Europe/Amsterdam" },
+  { value: "Europe/Brussels",           label: "Europe/Brussels" },
+  { value: "Europe/Rome",               label: "Europe/Rome" },
+  { value: "Europe/Madrid",             label: "Europe/Madrid" },
+  { value: "Europe/Zurich",             label: "Europe/Zurich" },
+  { value: "Europe/Vienna",             label: "Europe/Vienna" },
+  { value: "Europe/Prague",             label: "Europe/Prague" },
+  { value: "Europe/Warsaw",             label: "Europe/Warsaw" },
+  { value: "Europe/Budapest",           label: "Europe/Budapest" },
+  { value: "Europe/Bratislava",         label: "Europe/Bratislava" },
+  { value: "Europe/Stockholm",          label: "Europe/Stockholm" },
+  { value: "Europe/Oslo",               label: "Europe/Oslo" },
+  { value: "Europe/Copenhagen",         label: "Europe/Copenhagen" },
+  { value: "Europe/Helsinki",           label: "Europe/Helsinki (EET/EEST)" },
+  { value: "Europe/Tallinn",            label: "Europe/Tallinn" },
+  { value: "Europe/Riga",               label: "Europe/Riga" },
+  { value: "Europe/Vilnius",            label: "Europe/Vilnius" },
+  { value: "Europe/Athens",             label: "Europe/Athens" },
+  { value: "Europe/Bucharest",          label: "Europe/Bucharest" },
+  { value: "Europe/Sofia",              label: "Europe/Sofia" },
+  { value: "Europe/Kiev",               label: "Europe/Kiev" },
+  { value: "Europe/Minsk",              label: "Europe/Minsk" },
+  { value: "Europe/Moscow",             label: "Europe/Moscow" },
+  { value: "Europe/Istanbul",           label: "Europe/Istanbul" },
+  // Americas
+  { value: "America/New_York",          label: "America/New_York (ET)" },
+  { value: "America/Chicago",           label: "America/Chicago (CT)" },
+  { value: "America/Denver",            label: "America/Denver (MT)" },
+  { value: "America/Phoenix",           label: "America/Phoenix (MST, no DST)" },
+  { value: "America/Los_Angeles",       label: "America/Los_Angeles (PT)" },
+  { value: "America/Anchorage",         label: "America/Anchorage (AKT)" },
+  { value: "Pacific/Honolulu",          label: "Pacific/Honolulu (HST)" },
+  { value: "America/Toronto",           label: "America/Toronto" },
+  { value: "America/Vancouver",         label: "America/Vancouver" },
+  { value: "America/Mexico_City",       label: "America/Mexico_City" },
+  { value: "America/Bogota",            label: "America/Bogota" },
+  { value: "America/Lima",              label: "America/Lima" },
+  { value: "America/Santiago",          label: "America/Santiago" },
+  { value: "America/Sao_Paulo",         label: "America/Sao_Paulo" },
+  { value: "America/Argentina/Buenos_Aires", label: "America/Argentina/Buenos_Aires" },
+  { value: "America/Caracas",           label: "America/Caracas" },
+  // Africa
+  { value: "Africa/Abidjan",            label: "Africa/Abidjan (GMT)" },
+  { value: "Africa/Lagos",              label: "Africa/Lagos (WAT)" },
+  { value: "Africa/Cairo",              label: "Africa/Cairo (EET)" },
+  { value: "Africa/Nairobi",            label: "Africa/Nairobi (EAT)" },
+  { value: "Africa/Johannesburg",       label: "Africa/Johannesburg (SAST)" },
+  // Asia
+  { value: "Asia/Dubai",                label: "Asia/Dubai (GST +4)" },
+  { value: "Asia/Karachi",              label: "Asia/Karachi (PKT +5)" },
+  { value: "Asia/Kolkata",              label: "Asia/Kolkata (IST +5:30)" },
+  { value: "Asia/Dhaka",                label: "Asia/Dhaka (BST +6)" },
+  { value: "Asia/Rangoon",              label: "Asia/Rangoon (MMT +6:30)" },
+  { value: "Asia/Bangkok",              label: "Asia/Bangkok (ICT +7)" },
+  { value: "Asia/Singapore",            label: "Asia/Singapore (SGT +8)" },
+  { value: "Asia/Hong_Kong",            label: "Asia/Hong_Kong (HKT +8)" },
+  { value: "Asia/Shanghai",             label: "Asia/Shanghai (CST +8)" },
+  { value: "Asia/Tokyo",                label: "Asia/Tokyo (JST +9)" },
+  { value: "Asia/Seoul",                label: "Asia/Seoul (KST +9)" },
+  { value: "Asia/Vladivostok",          label: "Asia/Vladivostok (+10)" },
+  { value: "Asia/Taipei",               label: "Asia/Taipei" },
+  { value: "Asia/Yekaterinburg",        label: "Asia/Yekaterinburg (+5)" },
+  { value: "Asia/Novosibirsk",          label: "Asia/Novosibirsk (+7)" },
+  { value: "Asia/Krasnoyarsk",          label: "Asia/Krasnoyarsk (+7)" },
+  // Pacific / Australia
+  { value: "Australia/Perth",           label: "Australia/Perth (AWST +8)" },
+  { value: "Australia/Darwin",          label: "Australia/Darwin (+9:30)" },
+  { value: "Australia/Adelaide",        label: "Australia/Adelaide (ACST +9:30)" },
+  { value: "Australia/Brisbane",        label: "Australia/Brisbane (AEST +10)" },
+  { value: "Australia/Sydney",          label: "Australia/Sydney (AEST/AEDT)" },
+  { value: "Australia/Melbourne",       label: "Australia/Melbourne" },
+  { value: "Pacific/Auckland",          label: "Pacific/Auckland (NZST)" },
+  { value: "Pacific/Fiji",              label: "Pacific/Fiji" },
+];
+
 const PROVIDERS = [
   { value: "", label: "— Not configured —" },
   { value: "openai_compatible", label: "OpenAI Compatible (incl. OpenRouter)" },
@@ -545,6 +629,55 @@ export default function SettingsPage({ lastC64Ip }) {
               value={config.CSDB_PASSWORD || ""}
               onChange={(e) => setConfig((prev) => ({ ...prev, CSDB_PASSWORD: e.target.value }))}
             />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Telegram ───────────────────────────────────── */}
+      <div className="card mb-3">
+        <div className="card-body">
+          <h6 className="card-title mb-3">Telegram</h6>
+          <div className="mb-3">
+            <label className="form-label">Phone Number</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="+1234567890"
+              value={config.TELEGRAM_PHONE || ""}
+              onChange={(e) => setConfig((prev) => ({ ...prev, TELEGRAM_PHONE: e.target.value }))}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">API ID <span className="text-muted fw-normal">(from my.telegram.org)</span></label>
+            <input
+              type="password"
+              className="form-control"
+              placeholder="12345678"
+              value={config.TELEGRAM_API_ID || ""}
+              onChange={(e) => setConfig((prev) => ({ ...prev, TELEGRAM_API_ID: e.target.value }))}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">API Hash <span className="text-muted fw-normal">(from my.telegram.org)</span></label>
+            <input
+              type="password"
+              className="form-control"
+              placeholder="0123456789abcdef0123456789abcdef"
+              value={config.TELEGRAM_API_HASH || ""}
+              onChange={(e) => setConfig((prev) => ({ ...prev, TELEGRAM_API_HASH: e.target.value }))}
+            />
+          </div>
+          <div className="mb-0">
+            <label className="form-label">Timezone</label>
+            <select
+              className="form-select"
+              value={config.TIMEZONE || "UTC"}
+              onChange={(e) => setConfig((prev) => ({ ...prev, TIMEZONE: e.target.value }))}
+            >
+              {TIMEZONES.map((tz) => (
+                <option key={tz.value} value={tz.value}>{tz.label}</option>
+              ))}
+            </select>
           </div>
         </div>
       </div>

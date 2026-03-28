@@ -58,6 +58,10 @@ CONFIG_DEFAULTS = {
     "TELEGRAM_API_ID": "",
     "TELEGRAM_API_HASH": "",
     "TELEGRAM_PHONE": "",
+    "TIMEZONE": "UTC",
+    # ── RSS Reader ──
+    "rss_max_articles": "100",
+    "rss_refresh_minutes": "5",
 }
 
 # Keys whose values should be masked (last 4 chars shown) in API responses.

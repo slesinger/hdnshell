@@ -19,5 +19,18 @@ def get_session_state(session_id: int) -> Dict[str, Any]:
             "active_id": None,
             "zip_id": None,
             "zip_files": None,
+            "clipboard": "",
         }
     return _session_states[session_id]
+
+
+def get_clipboard(session_id: int) -> str:
+    """Return the shared clipboard text for the given session."""
+    state = get_session_state(session_id)
+    return state.get("clipboard", "")
+
+
+def set_clipboard(session_id: int, text: str) -> None:
+    """Set the shared clipboard text for the given session."""
+    state = get_session_state(session_id)
+    state["clipboard"] = text
