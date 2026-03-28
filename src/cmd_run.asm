@@ -45,8 +45,7 @@ cmd_run:
     ParsingInputsDone() // finish parsing input line
     lda SAVY           // check if high byte is not 0 - indicates no address has been read
     bne !+
-    lda #$05
-    sta $d020         // TODO address in zero page not allowed, print error message
+    lda #$05  // TODO address in zero page not allowed, print error message
     CommandDone()    // jump to parser completion handler in parser.asm
 !:
     // all good, lets run

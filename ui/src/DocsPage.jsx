@@ -12,9 +12,21 @@ const CHAPTERS = [
   { slug: "memory-operations",  title: "Memory & ML Monitor" },
   { slug: "pysic",              title: "PySIC / BASIC Programming" },
   { slug: "cloud-integration",  title: "Cloud Integration" },
+  { slug: "cloud-apps",         title: "Cloud Apps" },
   { slug: "ai-assistance",      title: "AI Assistance" },
   { slug: "csdb",               title: "CSDB Scene Database" },
 ];
+
+// Sub-pages reachable via internal links but not shown in the sidebar nav.
+const SUB_PAGES = [
+  { slug: "server-file-editor", title: "File Editor" },
+  { slug: "coding-agent",       title: "Coding Agent" },
+  { slug: "web-browser",        title: "Web Browser" },
+  { slug: "telegram-chat",      title: "Telegram Chat" },
+  { slug: "rss-reader",         title: "RSS Reader" },
+];
+
+const ALL_PAGES = [...CHAPTERS, ...SUB_PAGES];
 
 export default function DocsPage() {
   const [activeSlug, setActiveSlug] = useState("user_manual");
@@ -99,7 +111,7 @@ export default function DocsPage() {
                 a: ({ href, children, ...props }) => {
                   if (href?.endsWith(".md") && !href.startsWith("http")) {
                     const slug = href.replace(/^.*\//, "").replace(/\.md$/, "");
-                    const known = CHAPTERS.find((c) => c.slug === slug);
+                    const known = ALL_PAGES.find((c) => c.slug === slug);
                     if (known) {
                       return (
                         <button

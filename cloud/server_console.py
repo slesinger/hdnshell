@@ -11,6 +11,7 @@ helpers that advance the cursor and scroll automatically.
 """
 
 import logging
+import time
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,9 @@ class ServerConsole:
         current_color: Colour used for the next character written.
     """
 
+    # Row used for toaster overlay (one row above the status/input bar).
+    TOASTER_ROW = 22
+
     def __init__(self, console_id: int, session_id: int):
         self.console_id = console_id
         self.session_id = session_id
@@ -48,6 +52,10 @@ class ServerConsole:
         self.cursor_col: int = 0
         self.cursor_row: int = 0
         self.current_color: int = DEFAULT_FG_COLOR
+        # Toaster notification state
+        self._toaster_text: Optional[str] = None
+        self._toaster_expires: float = 0.0
+        self._toaster_color: int = 7  # COL_YELLOW
         self.clear()
 
     # ------------------------------------------------------------------
@@ -187,16 +195,62 @@ class ServerConsole:
         pass
 
     # ------------------------------------------------------------------
+    # Toaster notifications (generic — available to all consoles)
+    # ------------------------------------------------------------------
+
+    # Screen-code reverse-video bit (same value used in subclasses).
+    _SC_REVERSE_BIT = 0x80
+    _SC_SPACE = 0x20
+
+    def show_toaster(self, text: str, duration_sec: float = 8.0, color: int = 7):
+        """Display a temporary banner on TOASTER_ROW.
+
+        The banner is overlaid on top of the rendered screen without
+        touching the internal screen/color buffers, so the next normal
+        render will restore the row automatically.
+
+        Args:
+            text:         Message to display (truncated to 40 chars).
+            duration_sec: How long the toaster stays visible.
+            color:        C64 colour nybble (default 7 = yellow).
+        """
+        self._toaster_text = text[:SCREEN_COLS]
+        self._toaster_expires = time.monotonic() + duration_sec
+        self._toaster_color = color & 0x0F
+
+    def clear_toaster(self):
+        """Dismiss the toaster immediately."""
+        self._toaster_text = None
+
+    def _toaster_active(self) -> bool:
+        """Return True if a toaster is currently visible."""
+        return bool(self._toaster_text) and time.monotonic() < self._toaster_expires
+
+    # ------------------------------------------------------------------
     # Screen data accessors (for SERVER_CMD_GET_SCREEN)
     # ------------------------------------------------------------------
 
     def get_screen_data(self) -> bytes:
-        """Return the 1000-byte screen-code buffer."""
-        return bytes(self.screen)
+        """Return the 1000-byte screen-code buffer, with toaster overlay if active."""
+        if not self._toaster_active():
+            return bytes(self.screen)
+        scr = bytearray(self.screen)
+        row_start = self.TOASTER_ROW * SCREEN_COLS
+        text = (self._toaster_text or "").ljust(SCREEN_COLS)[:SCREEN_COLS]
+        for i, ch in enumerate(text):
+            sc = ascii_to_screencode(ord(ch)) | self._SC_REVERSE_BIT
+            scr[row_start + i] = sc
+        return bytes(scr)
 
     def get_color_data(self) -> bytes:
-        """Return the 1000-byte colour buffer."""
-        return bytes(self.color)
+        """Return the 1000-byte colour buffer, with toaster overlay if active."""
+        if not self._toaster_active():
+            return bytes(self.color)
+        col = bytearray(self.color)
+        row_start = self.TOASTER_ROW * SCREEN_COLS
+        for i in range(SCREEN_COLS):
+            col[row_start + i] = self._toaster_color
+        return bytes(col)
 
     def __repr__(self):
         return (

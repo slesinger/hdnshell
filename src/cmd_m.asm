@@ -23,7 +23,6 @@ cmd_m:
     bcc !+
     // Error parsing filename, handle error
     lda #$03  // TODO error parsing address, print error message
-    sta $d020
     jmp DSPLYM  // jump to parser completion handler in parser.asm
 !:
     cmp #$00

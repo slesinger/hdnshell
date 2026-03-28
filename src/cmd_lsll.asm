@@ -69,7 +69,6 @@ cmd_dir:
     bcc !load_success+
     // Load failed, indicate error
     lda #PURPLE  // TODO load error, print error message
-    sta $d020
     jmp end_of_dir
 !load_success:
 

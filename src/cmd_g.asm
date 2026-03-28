@@ -16,19 +16,16 @@ cmd_g:
     bcc !+
     // Error parsing filename, handle error
     lda #$03  // TODO error parsing address, print error message
-    sta $d020
     CommandDone()  // jump to parser completion handler in parser.asm
 !:
     bne !+
     // No address provided, handle error
     lda #$04  // TODO no address provided, print error message
-    sta $d020
     CommandDone()  // jump to parser completion handler in parser.asm
 !:
     lda SAVY           // check if high byte is not 0 - indicates no address has been read
     bne !+
-    lda #$05
-    sta $d020         // TODO address in zero page not allowed, print error message
+    lda #$05  // TODO address in zero page not allowed, print error message
     CommandDone()    // jump to parser completion handler in parser.asm
 !:
     ParsingInputsDone() // finish parsing input line

@@ -25,7 +25,6 @@ cmd_cd:  // TODO for mounting d64 image on c64 ultimate maybe MOUNT instead of C
     bcc !dir_name_parsed_ok+
     // Error parsing filename, handle error
     lda #RED  // TODO wrong filename, print error message
-    sta $d020
     CommandDone()  // jump to parser completion handler in parser.asm
 !dir_name_parsed_ok:
     ParsingInputsDone() // finish parsing input line
@@ -98,8 +97,7 @@ cmd_cd:  // TODO for mounting d64 image on c64 ultimate maybe MOUNT instead of C
     CommandDone()
 
 !error:
-    // Handle error
+    // TODO Handle error
     lda #RED
-    sta $d020
     CommandDone()
 

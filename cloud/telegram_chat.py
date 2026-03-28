@@ -15,10 +15,12 @@ import logging
 import os
 import queue
 import threading
+import time
 from dataclasses import dataclass
 from datetime import timezone, timedelta
 from typing import List, Optional
 
+from network_helper import send_screen_data
 from server_console import (
     ServerConsole,
     SCREEN_COLS,
@@ -607,6 +609,22 @@ class TelegramChatConsole(ServerConsole):
         # Help scroll
         self.help_scroll: int = 0
 
+        # Transient status shown in the chat-list status bar (e.g. "Refreshing...")
+        self._chat_status: str = ""
+
+        # Background polling state
+        self._is_active: bool = False
+        self._last_unread_total: int = 0
+        self._last_poll_time: float = 0.0
+        self._poll_stop = threading.Event()
+        # Lock to prevent the BG thread and main thread from calling
+        # _full_render() concurrently on the shared screen/color buffers.
+        self._render_lock = threading.Lock()
+        self._poll_thread = threading.Thread(
+            target=self._bg_poll_loop, name="tg-poller", daemon=True
+        )
+        self._poll_thread.start()
+
         # Try to connect on creation
         self._try_auto_connect()
 
@@ -670,13 +688,16 @@ class TelegramChatConsole(ServerConsole):
 
     def on_activate(self):
         """Re-render and refresh data when switching to this console."""
+        self._is_active = True
         self._send_vic_colors(COL_LIGHT_BLUE, COL_BLUE)
-        if self.worker.connected and self.mode == MODE_CHATS:
-            self._refresh_chats()
-        self._full_render()
+        with self._render_lock:
+            if self.worker.connected and self.mode == MODE_CHATS:
+                self._refresh_chats()
+            self._full_render()
+            self._push_screen()
 
     def on_deactivate(self):
-        pass
+        self._is_active = False
 
     # =================================================================
     #  INPUT HANDLER
@@ -684,17 +705,19 @@ class TelegramChatConsole(ServerConsole):
 
     def handle_keypress(self, petscii_code: int, modifiers: int) -> Optional[bytes]:
         """Route keypress based on current mode."""
-        handlers = {
-            MODE_LOGIN: self._key_login,
-            MODE_CHATS: self._key_chats,
-            MODE_CHAT_VIEW: self._key_chat_view,
-            MODE_CONTACTS: self._key_contacts,
-            MODE_SETTINGS: self._key_settings,
-            MODE_HELP: self._key_help,
-        }
-        handler = handlers.get(self.mode, self._key_chats)
-        handler(petscii_code, modifiers)
-        self._full_render()
+        with self._render_lock:
+            handlers = {
+                MODE_LOGIN: self._key_login,
+                MODE_CHATS: self._key_chats,
+                MODE_CHAT_VIEW: self._key_chat_view,
+                MODE_CONTACTS: self._key_contacts,
+                MODE_SETTINGS: self._key_settings,
+                MODE_HELP: self._key_help,
+            }
+            handler = handlers.get(self.mode, self._key_chats)
+            handler(petscii_code, modifiers)
+            self._full_render()
+            self._push_screen()
         return None
 
     def handle_text_input(self, data: bytes) -> Optional[bytes]:
@@ -829,6 +852,10 @@ class TelegramChatConsole(ServerConsole):
             self.mode = MODE_HELP
 
         elif key == KEY_HOME:
+            self._chat_status = "Refreshing..."
+            self._full_render()
+            self._push_screen()
+            self._chat_status = ""
             self._refresh_chats()
 
     # ── CHAT VIEW mode ───────────────────────────────────────────────
@@ -887,7 +914,11 @@ class TelegramChatConsole(ServerConsole):
             self._clamp_input_scroll()
 
         elif key == KEY_HOME:
-            # Refresh messages
+            # Refresh messages — show feedback immediately before blocking call
+            self._chat_status = "Refreshing..."
+            self._full_render()
+            self._push_screen()
+            self._chat_status = ""
             self._refresh_messages(self.current_chat_id)
 
         elif key == KEY_RUNSTOP or key == KEY_LEFT_ARROW:
@@ -1410,7 +1441,8 @@ class TelegramChatConsole(ServerConsole):
         # Status bar
         total = len(self.chats)
         pos = self.chat_sel + 1
-        self._render_status_bar(f"{pos}/{total} RET=Open HOME=Refresh")
+        status_text = self._chat_status if self._chat_status else f"{pos}/{total} RET=Open HOME=Refresh"
+        self._render_status_bar(status_text)
 
     # ── Chat view ────────────────────────────────────────────────────
 
@@ -1711,6 +1743,13 @@ class TelegramChatConsole(ServerConsole):
             self.screen[pos] = sc
             self.color[pos] = fg
 
+    def _push_screen(self):
+        """DMA-push the current screen/color buffers to the C64."""
+        try:
+            send_screen_data(bytes(self.screen), bytes(self.color))
+        except Exception:
+            logger.debug("Screen push failed (no C64 connected?)", exc_info=True)
+
     def _send_vic_colors(self, border: int, background: int):
         """DMA-write border ($D020) and background ($D021) colours to C64."""
         try:
@@ -1733,3 +1772,111 @@ class TelegramChatConsole(ServerConsole):
         if not value or len(value) <= 4:
             return "*" * len(value) if value else ""
         return "*" * (len(value) - 4) + value[-4:]
+
+    # =================================================================
+    #  BACKGROUND POLLING
+    # =================================================================
+
+    def _bg_poll_loop(self):
+        """Daemon thread: periodically poll Telegram for new messages.
+
+        Polling interval:
+          - MODE_CHAT_VIEW : 5 seconds  (user is in an active conversation)
+          - MODE_CHATS     : 60 seconds (user is browsing the chat list)
+          - anything else  : skip (login / settings / help / not connected)
+        """
+        while not self._poll_stop.wait(timeout=1.0):
+            if not self.worker.connected:
+                continue
+            if self.mode == MODE_CHAT_VIEW:
+                interval = 5
+            elif self.mode == MODE_CHATS:
+                interval = 60
+            else:
+                continue
+            now = time.monotonic()
+            if now - self._last_poll_time < interval:
+                continue
+            self._last_poll_time = now
+            self._poll_once()
+
+    def _poll_once(self):
+        """Fetch fresh data from Telegram and push updates to the C64.
+
+        All rendering and screen-pushing uses the single canonical
+        self.screen / self.color buffer under _render_lock, so there
+        is never a second buffer or a stale copy.
+        """
+        try:
+            old_unread = self._last_unread_total
+
+            # ── Slow network calls OUTSIDE the lock ──────────────────────
+            try:
+                tz_minutes = self._get_tz_offset_minutes()
+                new_chats = self.worker.call(
+                    "get_dialogs", tz_offset_minutes=tz_minutes
+                )
+            except Exception as e:
+                logger.error("poll get_dialogs: %s", e)
+                return
+
+            new_messages: Optional[List[MessageEntry]] = None
+            if self.mode == MODE_CHAT_VIEW and self.current_chat_id:
+                try:
+                    new_messages = self.worker.call(
+                        "get_messages",
+                        chat_id=self.current_chat_id,
+                        tz_offset_minutes=tz_minutes,
+                    )
+                except Exception as e:
+                    logger.error("poll get_messages: %s", e)
+
+            new_unread = sum(c.unread_count for c in (new_chats or []))
+
+            # ── Apply data + render + push UNDER the lock ────────────────
+            from console_manager import ConsoleManager
+            mgr = ConsoleManager.instance()
+            active_console_id = mgr._active.get(self.session_id)
+
+            if active_console_id == self.console_id:
+                # Telegram IS the active console — update the single
+                # screen buffer and push it to the C64.
+                with self._render_lock:
+                    if new_chats:
+                        self.chats = new_chats
+                        if self.chat_sel >= len(self.chats):
+                            self.chat_sel = max(0, len(self.chats) - 1)
+
+                    if new_messages is not None:
+                        self.messages = new_messages
+                        self._build_rendered_lines()
+                        max_scroll = max(
+                            0,
+                            len(self._rendered_lines)
+                            - self._msg_display_rows(),
+                        )
+                        self.msg_scroll = max_scroll
+
+                    self._full_render()
+                    self._push_screen()
+
+            elif new_unread > old_unread:
+                # Telegram is in the background — overlay a toaster on
+                # whichever console is currently shown.
+                delta = new_unread - old_unread
+                msg = f"TELEGRAM: {delta} new message{'s' if delta > 1 else ''}"
+                key = (self.session_id, active_console_id)
+                other = mgr._consoles.get(key)
+                if other is not None:
+                    other.show_toaster(msg, duration_sec=10.0, color=7)
+                    try:
+                        send_screen_data(
+                            other.get_screen_data(), other.get_color_data()
+                        )
+                    except Exception:
+                        logger.debug("Toaster push failed", exc_info=True)
+
+            self._last_unread_total = new_unread
+
+        except Exception:
+            logger.warning("Telegram background poll error", exc_info=True)

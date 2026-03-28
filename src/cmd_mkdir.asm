@@ -16,7 +16,6 @@ cmd_mkdir:
     bcc !dir_name_parsed_ok+
     // Error parsing filename, handle error
     lda #RED  // TODO wrong filename, print error message
-    sta $d020
     CommandDone()  // jump to parser completion handler in parser.asm
 !dir_name_parsed_ok:
     ParsingInputsDone() // finish parsing input line

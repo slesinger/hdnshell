@@ -159,6 +159,8 @@ class ConsoleManager:
         """Route a keypress to the appropriate console."""
         self._notify_switch(console_id, session_id)
         console = self.get_console(console_id, session_id)
+        # Any keypress dismisses a pending toaster on this console.
+        console.clear_toaster()
         return console.handle_keypress(petscii_code, modifiers)
 
     def handle_text_input(

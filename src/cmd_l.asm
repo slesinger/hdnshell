@@ -23,7 +23,6 @@ cmd_l:  // TODO support also LOAD"*",8,1
     bcc !+
     // Error parsing filename, handle error
     lda #RED  // TODO wrong filename, print error message
-    sta $d020
     CommandDone()  // jump to parser completion handler in parser.asm
 
 !:
@@ -34,7 +33,6 @@ cmd_l:  // TODO support also LOAD"*",8,1
     bcc !+
     // Error parsing load address, handle error
     lda #CYAN  // TODO error parsing address, print error message
-    sta $d020
 !:
     ParsingInputsDone() // finish parsing input line
 
@@ -86,6 +84,5 @@ ultimate_read_file:
     bcc !load_success+
     // Load failed, indicate error
     lda #PURPLE  // TODO load error, print error message
-    sta $d020
 !load_success:
     CommandDone()  // jump to parser completion handler in parser.asm

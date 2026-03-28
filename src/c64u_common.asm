@@ -82,7 +82,6 @@ uii_readdata:
     // and #STATUS_REG_BIT_DATA_AV
     // beq !bleble+
     // data available
-// dec $d020
 !read_remaining_data:
     lda STATUS_REG
     and #STATUS_REG_BIT_DATA_AV
@@ -277,7 +276,6 @@ wait_not_busy:
 
 // TODO vracet chyby zpet do OS
 status_error:
-    lda #RED
-    sta $d020
-    jmp *
+    inc $0400
+    jmp *-3
     rts
