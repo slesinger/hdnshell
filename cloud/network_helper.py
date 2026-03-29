@@ -108,3 +108,15 @@ def send_vic_colors(border: int, background: int) -> None:
         SOCKET_CMD_DMAWRITE,
         0xD021.to_bytes(2, "little") + bytes([background & 0x0F]),
     )
+
+
+def send_c64_keyboard_input(data: bytes, host: str = None) -> None:
+    """
+    Send PETSCII key strokes to the C64 via the DMA service (SOCKET_CMD_KEYB).
+    If host is not provided, uses the last known C64 IP from config.
+    """
+    if host is None:
+        host = read_last_c64_ip()
+    if not host:
+        raise ValueError("C64 host IP address is not set.")
+    _send_tcp_cmd(host, SOCKET_CMD_KEYB, data)

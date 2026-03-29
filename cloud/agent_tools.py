@@ -1039,3 +1039,72 @@ def create_screen_memory_tool(session_id: int | None = None, console_id: int | N
     except Exception as e:
         logger.error("Error initializing get_screen tool: %s", e)
     return None
+
+
+# ------------------------------------------------------------------
+# C64 keyboard input tool
+# ------------------------------------------------------------------
+
+
+def send_keys_to_c64(text: str) -> str:
+    """
+    Send a sequence of key strokes to the C64 via the DMA keyboard service.
+
+    *text* is a plain ASCII string. Use '\\n' to send RETURN (e.g. to submit
+    a BASIC command). Each character is converted to PETSCII before sending.
+
+    Returns a confirmation message or an error string.
+    """
+    from network_helper import send_c64_keyboard_input
+    from generate_pet_asc_table import Petscii
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    petscii_bytes = bytearray()
+    for ch in text:
+        if ch == "\n":
+            petscii_bytes.append(0x0D)  # RETURN
+        else:
+            code = Petscii.ascii2petscii(ord(ch))
+            petscii_bytes.append(code)
+
+    if not petscii_bytes:
+        return "Error: no text to send."
+
+    try:
+        send_c64_keyboard_input(bytes(petscii_bytes), host=c64_ip)
+        preview = text[:40].replace("\n", "<RETURN>")
+        return f"Sent {len(petscii_bytes)} key(s) to C64: {preview}"
+    except Exception as e:
+        logger.error("send_keys_to_c64: error: %s", e)
+        return f"Error sending keys to C64: {e}"
+
+
+def create_c64_keyboard_tool():
+    """
+    Factory for a LangChain Tool that injects key strokes into the C64 keyboard
+    buffer via the Ultimate cartridge DMA service (SOCKET_CMD_KEYB).
+
+    The agent can use this tool to type commands or text on the C64, effectively
+    automating the keyboard. Combine with get_screen to observe the result.
+    """
+    try:
+        tool = Tool(
+            name="type_on_c64",
+            description=(
+                "Inject key strokes into the C64 keyboard buffer via the Ultimate cartridge "
+                "DMA service. Input is a plain ASCII string to type. Use '\\n' to press RETURN "
+                "(e.g. to submit a BASIC command or confirm a prompt). "
+                "Example: 'LOAD\"*\",8,1\\n' types a LOAD command and presses RETURN. "
+                "Use get_screen first to see what is on the screen, then use this tool to "
+                "interact with the C64. The AI can guide or automate the user this way."
+            ),
+            func=send_keys_to_c64,
+        )
+        logger.info("type_on_c64 tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing type_on_c64 tool: %s", e)
+    return None

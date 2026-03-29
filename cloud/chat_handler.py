@@ -14,6 +14,7 @@ from agent_tools import (
     create_c64ref_tool,
     create_manual_tool,
     create_screen_memory_tool,
+    create_c64_keyboard_tool,
 )
 
 logger = logging.getLogger(__name__)
@@ -286,8 +287,11 @@ class ChatHandler(BaseHandler):
                 screen_tool = create_screen_memory_tool(session_id=session_id)
                 if screen_tool is not None:
                     local_tools.append(screen_tool)
+                keyboard_tool = create_c64_keyboard_tool()
+                if keyboard_tool is not None:
+                    local_tools.append(keyboard_tool)
             except Exception:
-                # Do not fail if screen tool cannot be created
+                # Do not fail if screen/keyboard tools cannot be created
                 pass
 
             print("Tools available to agent:", [tool.name for tool in local_tools])
