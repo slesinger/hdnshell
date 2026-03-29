@@ -222,7 +222,9 @@ uii_socketwrite:
     jsr status_error
 !no_error:
     jsr wait_not_busy
-    jsr uii_readdata  // TODO muze to nahodne zapisovat do pameti
+    jsr uii_readdata_null
     jsr uii_readstatus
     jsr uii_accept
+    lda #SOCKET_WRITTEN  // next expected byte is $13, but we set status to SOCKET_WRITTEN to distinguish from normal reading state, where we also expect $13 as first byte
+    sta socket_status
     rts

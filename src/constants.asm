@@ -76,6 +76,7 @@
 .const screen_history_read_ptr = $034e  // and $034f When navigating history, this index is pointing to the last fetched history line
 .const socket_id = $03fc           // socket id for network connection
 .const console_id = $03fd          // current console id (upper 4 bits only) for HDN Cloud communication // switched by C= + 1234567890, left arrow will bring default local console. // left arrow:$00, 1:$10, 2:$20, 3:$30, 4:$40, 5:$50, 6:$60, 7:$70, 8:$80, 9:$90, 0:$a0
+.const socket_status = $03fe       // SOCKET_IDLE, SOCKET_WRITTEN, SOCKET_AFTER_13, SOCKET_READING
 
 // Read-only system constants
 .const CURSOR_DISABLE = $cc        // 0: cursor enabled, $cc: cursor disabled
@@ -322,6 +323,10 @@
 .const PARSER_WHITESPACE = $20 // ASCII space character used as whitespace in parser
 .const PARSER_END_OF_TABLE = $FF // Special marker indicating end of parser token table
 
+// Network
+.const SOCKET_WRITTEN = $01  // Data has been written to socket, will expect response byte $13
+.const SOCKET_AFTER_13 = $02 // After receiving expected byte $13, will ignore all $5e bytes until next other byte
+.const SOCKET_READING = $03  // after receiving the other byte (see above), actual response data are coming
 
 // MACROS
 

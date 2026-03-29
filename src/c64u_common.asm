@@ -76,29 +76,54 @@ uii_readdata_network:
     // lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
     lda STATUS_REG
     and #STATUS_REG_BIT_DATA_AV
-    beq !bleble+
-    //  lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
-    // lda STATUS_REG
-    // and #STATUS_REG_BIT_DATA_AV
-    // beq !bleble+
-    // data available
+    beq !data_not_available+
+    lda socket_status
+    cmp #SOCKET_READING  // if true just read and output data, else wait for response byte $13
+    beq !outpt+
+    cmp #SOCKET_WRITTEN  // expect to read $13
+    bne !+
+    lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
+    lda #SOCKET_AFTER_13
+    sta socket_status
+    rts
+!:  cmp #SOCKET_AFTER_13  // ignore $5e bytes after $13, they are just noise
+    bne !outpt+  // unknown socket status, just read data normally, maybe it is not even network response
+    lda RESP_DATA_REG
+    cmp #$ff  // ignore $ff bytes  (It thought it is $5e, wrong!)
+    bne !outpt3+
+    rts
+!outpt3:
+    ldx #SOCKET_READING
+    stx socket_status
+    jmp !outpt2+
+!read_remaining_data:
+    lda STATUS_REG
+    and #STATUS_REG_BIT_DATA_AV
+    beq !data_not_available+
+!outpt:  // data available
+    lda RESP_DATA_REG
+!outpt2:
+    jsr call_indirect  // jsr CHROUT,  Simulate the "JSR (JSR_INDIRECT_ADDR)" instruction
+    jmp !read_remaining_data-
+!data_not_available:
+    rts
+
+
+// like uii_readdata but suppresses output
+uii_readdata_null:
+    // lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
+    lda STATUS_REG
+    and #STATUS_REG_BIT_DATA_AV
+    beq !data_not_available+
 !read_remaining_data:
     lda STATUS_REG
     and #STATUS_REG_BIT_DATA_AV
     beq !data_not_available+
     // data available
-// lda STATUS_REG
-// ldx $7000
-// sta $0400,x
-// inc $7000
     lda RESP_DATA_REG
-    jsr call_indirect  // jsr CHROUT,  Simulate the "JSR (JSR_INDIRECT_ADDR)" instruction
+sta $0408
     jmp !read_remaining_data-
 !data_not_available:
-// inc $d021
-    rts
-!bleble:
-// TODO toto je velmi podezrele. Nevim, proc se musi cist RESP_DATA_REG 2x a ignorovat 
     rts
 
 
@@ -109,29 +134,16 @@ uii_readdata:
     // lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
     lda STATUS_REG
     and #STATUS_REG_BIT_DATA_AV
-    beq !bleble+
-    //  lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
-    // lda STATUS_REG
-    // and #STATUS_REG_BIT_DATA_AV
-    // beq !bleble+
-    // data available
+    beq !data_not_available+
 !read_remaining_data:
     lda STATUS_REG
     and #STATUS_REG_BIT_DATA_AV
     beq !data_not_available+
     // data available
-// lda STATUS_REG
-// ldx $7000
-// sta $0400,x
-// inc $7000
     lda RESP_DATA_REG
     jsr call_indirect  // jsr CHROUT,  Simulate the "JSR (JSR_INDIRECT_ADDR)" instruction
     jmp !read_remaining_data-
 !data_not_available:
-// inc $d021
-    rts
-!bleble:
-// TODO toto je velmi podezrele. Nevim, proc se musi cist RESP_DATA_REG 2x a ignorovat 
     rts
 
 call_indirect:

@@ -1011,13 +1011,77 @@ def create_screen_memory_tool(session_id: int | None = None, console_id: int | N
                 mgr = ConsoleManager.instance()
                 sid = session_id or 0
                 cid = console_id
+                # Determine initial console id
                 if cid is None:
-                    # Use active console for session if available, else default to 1
                     cid = mgr._active.get(sid) if hasattr(mgr, "_active") else None
                 if cid is None:
                     cid = 1
-                screen = mgr.get_screen_data(cid, sid)
-                return _format_screen_bytes(screen)
+
+                def _is_empty(buf: bytes) -> bool:
+                    if not buf:
+                        return True
+                    # Consider screen empty when all visible codes are space ($20)
+                    return all(((b & 0x7F) == 0x20) for b in buf)
+
+                # Handle debug request
+                if isinstance(_input, str) and _input.strip().lower().startswith("debug"):
+                    lines = []
+                    lines.append(f"session_query={sid} chosen_console={cid}")
+                    # List known consoles
+                    if hasattr(mgr, "_consoles"):
+                        for (sess, cons_id), console in sorted(mgr._consoles.items()):
+                            try:
+                                buf = console.get_screen_data()
+                                empty = _is_empty(buf)
+                                summary = "empty" if empty else "has-content"
+                            except Exception:
+                                summary = "error"
+                            lines.append(f"session={sess} console={cons_id} -> {summary}")
+                    else:
+                        lines.append("(no console registry available)")
+                    return "\n".join(lines)
+
+                # Try initial console
+                try:
+                    screen = mgr.get_screen_data(cid, sid)
+                except Exception:
+                    screen = b""
+
+                if screen and not _is_empty(screen):
+                    return _format_screen_bytes(screen)
+
+                # If empty, search for other consoles in the same session first
+                chosen = None
+                if hasattr(mgr, "_consoles"):
+                    # look for same-session non-empty consoles
+                    for (sess, cons_id), console in sorted(mgr._consoles.items()):
+                        if sess != sid:
+                            continue
+                        try:
+                            buf = console.get_screen_data()
+                            if buf and not _is_empty(buf):
+                                chosen = (sess, cons_id, buf)
+                                break
+                        except Exception:
+                            continue
+
+                    # if none found, look across all sessions (fallback)
+                    if not chosen:
+                        for (sess, cons_id), console in sorted(mgr._consoles.items()):
+                            try:
+                                buf = console.get_screen_data()
+                                if buf and not _is_empty(buf):
+                                    chosen = (sess, cons_id, buf)
+                                    break
+                            except Exception:
+                                continue
+
+                if chosen:
+                    sess, cons_id, buf = chosen
+                    header = f"(showing console {cons_id} for session {sess})\n"
+                    return header + _format_screen_bytes(buf)
+
+                return f"(screen appears empty for session {sid}, console {cid})"
             except Exception as e:
                 return f"Error: could not retrieve screen: {e}"
 

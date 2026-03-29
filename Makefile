@@ -48,6 +48,8 @@ run-hdn-vice: build-basic
 run-c64u: build-basic
 	curl -T binaries/hdnsh.bin ftp://192.168.1.65/Flash/roms/
 	python test/test_dmaservice.py
+	sleep 5
+	curl -X PUT http://192.168.1.65/v1/machine:reboot
 
 run-std-vice:
 	x64sc -basic /usr/local/share/vice/C64/basic-901226-01.bin $(VICE_OPTS) $(ARG)

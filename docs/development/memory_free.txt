@@ -66,7 +66,7 @@ Chapter 2: Low Memory
 | $0314-$0333    !| 32     | Interrupt vectors and Kernal indirect vectors (preserve if Kernal present)  |
 | $0334-$033B     | 8      | Eight free bytes for user vectors or other data                             |
 | $033C-$03FB     | 192    | Cassette: Cassette I/O Buffer (TBUFFER)                                     |
-| $03FC-$03FF    1| 4      | Four more free bytes                                                        |
+| $03FC-$03FF    3| 4      | Four more free bytes                                                        |
 Legend:
 * used
 @ can be reused
