@@ -43,6 +43,11 @@ HandleInput:
     lda #$60  // console id for server RSS reader, upper 4 bits only !!
     jmp HandleConsoleSwitch
 !:
+    cmp #KEY_C_7  // server Wikipedia browser
+    bne !+
+    lda #$70  // console id for server Wikipedia browser, upper 4 bits only !!
+    jmp HandleConsoleSwitch
+!:
 
     // Check if current console is local or server
     ldx console_id
