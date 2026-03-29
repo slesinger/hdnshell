@@ -996,104 +996,44 @@ def _format_screen_bytes(screen_bytes: bytes) -> str:
 
 def create_screen_memory_tool(session_id: int | None = None, console_id: int | None = None):
     """
-    Factory for a LangChain Tool that returns the current 40x25 screen for
-    a server-side console as an ASCII-only block of text (25 lines × 40 chars).
+    Factory for a LangChain Tool that returns the current 40x25 screen by
+    reading C64 screen RAM ($0400-$07E7, 1000 bytes) directly from the hardware
+    via the Ultimate cartridge REST API.
 
-    The tool is session-aware when *session_id* is provided. If *console_id*
-    is omitted the tool will attempt to use the active console for the
-    session (falling back to console 1).
+    *session_id* and *console_id* are accepted for API compatibility but ignored.
     """
     try:
-        from console_manager import ConsoleManager
-
         def _tool(_input: str = "") -> str:
+            from network_helper import dma_read_memory
+
+            c64_ip = _read_last_c64_ip()
+            if not c64_ip:
+                return "Error: No C64 IP configured. Run a network scan first."
+
+            # Debug mode: report connection target
+            if isinstance(_input, str) and _input.strip().lower().startswith("debug"):
+                return f"get_screen: reading $0400-$07E7 (1000 bytes) from C64 at {c64_ip}"
+
             try:
-                mgr = ConsoleManager.instance()
-                sid = session_id or 0
-                cid = console_id
-                # Determine initial console id
-                if cid is None:
-                    cid = mgr._active.get(sid) if hasattr(mgr, "_active") else None
-                if cid is None:
-                    cid = 1
-
-                def _is_empty(buf: bytes) -> bool:
-                    if not buf:
-                        return True
-                    # Consider screen empty when all visible codes are space ($20)
-                    return all(((b & 0x7F) == 0x20) for b in buf)
-
-                # Handle debug request
-                if isinstance(_input, str) and _input.strip().lower().startswith("debug"):
-                    lines = []
-                    lines.append(f"session_query={sid} chosen_console={cid}")
-                    # List known consoles
-                    if hasattr(mgr, "_consoles"):
-                        for (sess, cons_id), console in sorted(mgr._consoles.items()):
-                            try:
-                                buf = console.get_screen_data()
-                                empty = _is_empty(buf)
-                                summary = "empty" if empty else "has-content"
-                            except Exception:
-                                summary = "error"
-                            lines.append(f"session={sess} console={cons_id} -> {summary}")
-                    else:
-                        lines.append("(no console registry available)")
-                    return "\n".join(lines)
-
-                # Try initial console
-                try:
-                    screen = mgr.get_screen_data(cid, sid)
-                except Exception:
-                    screen = b""
-
-                if screen and not _is_empty(screen):
-                    return _format_screen_bytes(screen)
-
-                # If empty, search for other consoles in the same session first
-                chosen = None
-                if hasattr(mgr, "_consoles"):
-                    # look for same-session non-empty consoles
-                    for (sess, cons_id), console in sorted(mgr._consoles.items()):
-                        if sess != sid:
-                            continue
-                        try:
-                            buf = console.get_screen_data()
-                            if buf and not _is_empty(buf):
-                                chosen = (sess, cons_id, buf)
-                                break
-                        except Exception:
-                            continue
-
-                    # if none found, look across all sessions (fallback)
-                    if not chosen:
-                        for (sess, cons_id), console in sorted(mgr._consoles.items()):
-                            try:
-                                buf = console.get_screen_data()
-                                if buf and not _is_empty(buf):
-                                    chosen = (sess, cons_id, buf)
-                                    break
-                            except Exception:
-                                continue
-
-                if chosen:
-                    sess, cons_id, buf = chosen
-                    header = f"(showing console {cons_id} for session {sess})\n"
-                    return header + _format_screen_bytes(buf)
-
-                return f"(screen appears empty for session {sid}, console {cid})"
+                screen = dma_read_memory(c64_ip, 0x0400, 1000)
             except Exception as e:
-                return f"Error: could not retrieve screen: {e}"
+                logger.exception(
+                    "get_screen: failed to read C64 screen memory from %s", c64_ip
+                )
+                return f"Error: could not read C64 screen memory: {e}"
+
+            return _format_screen_bytes(screen)
 
         tool = Tool(
             name="get_screen",
             description=(
-                "Return a 40x25 ASCII rendering of the server-side console screen. "
-                "Input is ignored. Use when the AI needs to see the user's C64 screen."
+                "Return a 40x25 ASCII rendering of the C64 screen by reading screen RAM "
+                "($0400-$07E7) directly from the hardware via the Ultimate cartridge REST API. "
+                "Input is ignored. Use when the AI needs to see what is currently on the C64 screen."
             ),
             func=_tool,
         )
-        logger.info("get_screen tool initialized (session=%s, console=%s)", session_id, console_id)
+        logger.info("get_screen tool initialized (live C64 screen read from $0400)")
         return tool
 
     except Exception as e:

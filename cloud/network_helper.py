@@ -67,6 +67,21 @@ def send_dmawrite(host: str, prg_data: bytes) -> None:
     _send_tcp_cmd(host, SOCKET_CMD_DMAWRITE, prg_data)
 
 
+def dma_read_memory(host: str, address: int, length: int) -> bytes:
+    """
+    Read *length* bytes of C64 memory starting at *address* via the
+    Ultimate cartridge REST API (GET /v1/machine:readmem).
+
+    Returns the raw memory bytes on success, raises on error.
+    """
+    import requests as _requests
+    url = f"http://{host}/v1/machine:readmem"
+    params = {"address": f"{address:04x}", "length": str(length)}
+    resp = _requests.get(url, params=params, timeout=5)
+    resp.raise_for_status()
+    return resp.content
+
+
 def send_screen_data(screen_data: bytes, color_data: bytes) -> None:
     """Send screen + color data to Ultimate64 for DMA display."""
     _send_tcp_cmd(
