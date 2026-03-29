@@ -211,6 +211,7 @@
 .const KEY_C_4 = $97
 .const KEY_C_5 = $98
 .const KEY_C_6 = $99
+.const KEY_C_7 = $9a
 .const KEY_LEFT = $9D
 .const KEY_SHIFT_U = $75
 
