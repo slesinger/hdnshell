@@ -78,53 +78,19 @@ uii_readdata_network:
     and #STATUS_REG_BIT_DATA_AV
     beq !data_not_available+
     lda socket_status
-    cmp #SOCKET_READING  // if true just read and output data, else wait for response byte $13
+    cmp #SOCKET_READING  // if true just read and output data, else wait for length of response
     beq !outpt+
-    cmp #SOCKET_WRITTEN  // expect to read $13
-    bne !+
-    lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
-    lda #SOCKET_AFTER_13
+    lda RESP_DATA_REG  // expecting to receive length first
+    cmp #$ff  // if length is $ff, it means the actual length is longer than 255 bytes and we need to read one more byte
+    bne !socket_reading+
+    lda RESP_DATA_REG // read second length byte
+    cmp #$ff
+    bne !socket_reading+
+    rts
+!socket_reading:
+    lda #SOCKET_READING
     sta socket_status
-    rts
-!:  cmp #SOCKET_AFTER_13  // ignore $5e bytes after $13, they are just noise
-    bne !outpt+  // unknown socket status, just read data normally, maybe it is not even network response
-    lda RESP_DATA_REG
-    cmp #$ff  // ignore $ff bytes  (It thought it is $5e, wrong!)
-    bne !outpt3+
-    rts
-!outpt3:
-    ldx #SOCKET_READING
-    stx socket_status
-    jmp !outpt2+
-!read_remaining_data:
-    lda STATUS_REG
-    and #STATUS_REG_BIT_DATA_AV
-    beq !data_not_available+
-!outpt:  // data available
-    lda RESP_DATA_REG
-!outpt2:
-    jsr call_indirect  // jsr CHROUT,  Simulate the "JSR (JSR_INDIRECT_ADDR)" instruction
-    jmp !read_remaining_data-
-!data_not_available:
-    rts
-
-
-// like uii_readdata but suppresses output
-uii_readdata_null:
-    // lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
-    lda STATUS_REG
-    and #STATUS_REG_BIT_DATA_AV
-    beq !data_not_available+
-!read_remaining_data:
-    lda STATUS_REG
-    and #STATUS_REG_BIT_DATA_AV
-    beq !data_not_available+
-    // data available
-    lda RESP_DATA_REG
-sta $0408
-    jmp !read_remaining_data-
-!data_not_available:
-    rts
+    jmp !read_remaining_data+
 
 
 // Reads data from Ultimate command interface and calls callback to output each byte in A register
@@ -139,7 +105,7 @@ uii_readdata:
     lda STATUS_REG
     and #STATUS_REG_BIT_DATA_AV
     beq !data_not_available+
-    // data available
+!outpt:  // data available
     lda RESP_DATA_REG
     jsr call_indirect  // jsr CHROUT,  Simulate the "JSR (JSR_INDIRECT_ADDR)" instruction
     jmp !read_remaining_data-
@@ -148,6 +114,23 @@ uii_readdata:
 
 call_indirect:
     jmp (JSR_INDIRECT_ADDR)  // This performs the jump; RTS from the target; will return to the 'jsr' above.
+
+
+// like uii_readdata but suppresses output
+uii_readdata_null:
+    // lda RESP_DATA_REG  // read some initial byte $13, what is it? Do not print
+    lda STATUS_REG
+    and #STATUS_REG_BIT_DATA_AV
+    beq !data_not_available+
+!read_remaining_data:
+    lda STATUS_REG
+    and #STATUS_REG_BIT_DATA_AV
+    beq !data_not_available+
+    // data available
+    lda RESP_DATA_REG
+    jmp !read_remaining_data-
+!data_not_available:
+    rts
 
 
 // User readdata_CHROUT_callback as funtion to output data
