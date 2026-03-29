@@ -543,6 +543,9 @@ export default function ScreenPage() {
             <p style={{ fontSize: "0.8rem", color: "#666", marginBottom: "0.5rem" }}>
               Click the area below then type to send keys to C64.
             </p>
+            <p style={{ fontSize: "0.8rem", color: "#666", marginBottom: "0.5rem" }}>
+               To deactivate key capture, click outside the field.
+            </p>
 
             {/* Clickable capture zone */}
             <div

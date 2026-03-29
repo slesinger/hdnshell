@@ -1833,49 +1833,42 @@ class TelegramChatConsole(ServerConsole):
 
             new_unread = sum(c.unread_count for c in (new_chats or []))
 
-            # ── Apply data + render + push UNDER the lock ────────────────
+            # ── Apply data + render UNDER the lock; only DMA-push when
+            # the Telegram console is both the active console for the
+            # session AND the user is viewing a chat (MODE_CHAT_VIEW).
             from console_manager import ConsoleManager
             mgr = ConsoleManager.instance()
             active_console_id = mgr._active.get(self.session_id)
 
-            if active_console_id == self.console_id:
-                # Telegram IS the active console — update the single
-                # screen buffer and push it to the C64.
-                with self._render_lock:
-                    if new_chats:
-                        self.chats = new_chats
-                        if self.chat_sel >= len(self.chats):
-                            self.chat_sel = max(0, len(self.chats) - 1)
+            allow_bg_push = (
+                active_console_id == self.console_id and self.mode == MODE_CHAT_VIEW
+            )
 
-                    if new_messages is not None:
-                        self.messages = new_messages
-                        self._build_rendered_lines()
-                        max_scroll = max(
-                            0,
-                            len(self._rendered_lines)
-                            - self._msg_display_rows(),
-                        )
-                        self.msg_scroll = max_scroll
+            # Update internal state and prepare rendered lines under lock
+            # to avoid races with the main thread. Do not push to other
+            # consoles from this background thread.
+            with self._render_lock:
+                if new_chats:
+                    self.chats = new_chats
+                    if self.chat_sel >= len(self.chats):
+                        self.chat_sel = max(0, len(self.chats) - 1)
 
-                    self._full_render()
-                    self._push_screen()
+                if new_messages is not None:
+                    self.messages = new_messages
+                    self._build_rendered_lines()
+                    max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
+                    self.msg_scroll = max_scroll
 
-            elif new_unread > old_unread:
-                # Telegram is in the background — overlay a toaster on
-                # whichever console is currently shown.
-                delta = new_unread - old_unread
-                msg = f"TELEGRAM: {delta} new message{'s' if delta > 1 else ''}"
-                key = (self.session_id, active_console_id)
-                other = mgr._consoles.get(key)
-                if other is not None:
-                    other.show_toaster(msg, duration_sec=10.0, color=7)
+                # Always re-render the internal screen buffer, but only
+                # DMA-push when allowed (active + in chat view).
+                self._full_render()
+                if allow_bg_push:
                     try:
-                        send_screen_data(
-                            other.get_screen_data(), other.get_color_data()
-                        )
+                        self._push_screen()
                     except Exception:
-                        logger.debug("Toaster push failed", exc_info=True)
+                        logger.debug("Background push failed", exc_info=True)
 
+            # Do not perform toaster pushes from background polling.
             self._last_unread_total = new_unread
 
         except Exception:

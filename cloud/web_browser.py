@@ -1117,7 +1117,7 @@ class WebBrowserConsole(ServerConsole):
         # Show loading state immediately
         tab.content_lines = []
         loading_line = ContentLine()
-        msg = "Loading..."
+        msg = "Loading... (takes time on first load)"
         for i, ch in enumerate(msg):
             if i < SCREEN_COLS:
                 loading_line.chars[i] = ascii_to_screencode(ord(ch))

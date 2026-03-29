@@ -328,7 +328,7 @@ export default function InspectorPage() {
   return (
     <div className="rounded-4 bg-white border shadow-sm p-4">
       <div className="d-flex align-items-center justify-content-between mb-3">
-        <h1 className="h4 mb-0">Inspector</h1>
+        <h1 className="h4 mb-0">Memory Inspector</h1>
         <button
           className="btn btn-primary btn-sm"
           onClick={readMemory}

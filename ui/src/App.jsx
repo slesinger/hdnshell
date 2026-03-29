@@ -10,10 +10,11 @@ import InspectorPage from "./InspectorPage.jsx";
 
 const NAV_ITEMS = [
   { id: "file-manager", label: "File Manager" },
-  { id: "inspector", label: "Inspector" },
+  { id: "inspector", label: "Memory Inspector" },
   { id: "screen", label: "Screen" },
   { id: "docs", label: "Docs" },
-  { id: "settings", label: "Settings" }
+  { id: "settings", label: "Settings" },
+  { id: "report", label: "Report an Issue", href: "https://github.com/slesinger/hdnshell/issues" }
 ];
 
 export default function App() {
@@ -190,20 +191,50 @@ export default function App() {
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               {NAV_ITEMS.map((item) => (
                 <li className="nav-item" key={item.id}>
-                  <button
-                    type="button"
-                    className={`nav-link btn btn-link p-0 px-2 text-decoration-none${
-                      page === item.id ? " active fw-semibold" : ""
-                    }`}
-                    style={{ color: page === item.id ? "#fff" : "rgba(255,255,255,0.75)" }}
-                    onClick={() => setPage(item.id)}
-                  >
-                    {item.label}
-                  </button>
+                  {item.href ? (
+                    <a
+                      className={`nav-link btn btn-link p-0 px-2 text-decoration-none${
+                        page === item.id ? " active fw-semibold" : ""
+                      }`}
+                      style={{ color: page === item.id ? "#fff" : "rgba(255,255,255,0.75)" }}
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      className={`nav-link btn btn-link p-0 px-2 text-decoration-none${
+                        page === item.id ? " active fw-semibold" : ""
+                      }`}
+                      style={{ color: page === item.id ? "#fff" : "rgba(255,255,255,0.75)" }}
+                      onClick={() => setPage(item.id)}
+                    >
+                      {item.label}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
             <div className="d-flex align-items-center gap-3 ms-auto">
+              <button
+                type="button"
+                className="btn btn-sm btn-success"
+                onClick={handleBasicEnable}
+                disabled={enableButtonDisabled}
+              >
+                Enable HDN Shell
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-danger"
+                onClick={handleBasicDisable}
+                disabled={disableButtonDisabled}
+              >
+                Disable HDN Shell
+              </button>
               <button
                 type="button"
                 className="btn btn-sm btn-outline-light"
@@ -214,19 +245,11 @@ export default function App() {
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-success"
-                onClick={handleBasicEnable}
-                disabled={enableButtonDisabled}
+                className="btn btn-sm btn-secondary"
+                onClick={handleReset}
+                disabled={resetLoading}
               >
-                Enable
-              </button>
-              <button
-                type="button"
-                className="btn btn-sm btn-danger"
-                onClick={handleBasicDisable}
-                disabled={disableButtonDisabled}
-              >
-                Disable
+                {resetLoading ? "…" : "Reset"}
               </button>
               <button
                 type="button"
@@ -235,14 +258,6 @@ export default function App() {
                 disabled={rebootButtonDisabled}
               >
                 {rebootLoading ? "…" : "Reboot"}
-              </button>
-              <button
-                type="button"
-                className="btn btn-sm btn-secondary"
-                onClick={handleReset}
-                disabled={resetLoading}
-              >
-                {resetLoading ? "…" : "Reset"}
               </button>
               <button
                 type="button"
