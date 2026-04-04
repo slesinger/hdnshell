@@ -8,7 +8,7 @@ Processes requests starting with "?"
 import logging
 import math
 from typing import Any
-from base_handler import BaseHandler
+from sdk import BaseHandler
 
 logger = logging.getLogger(__name__)
 

@@ -16,11 +16,20 @@ function devDocsPlugin() {
       server.middlewares.use((req, res, next) => {
         if (req.url?.startsWith("/docs/") && req.url.endsWith(".md")) {
           const filename = path.basename(req.url);
-          const filePath = path.resolve(__dirname, "../docs/user_manual", filename);
+          let filePath = path.resolve(__dirname, "../docs/user_manual", filename);
           if (fs.existsSync(filePath)) {
             res.setHeader("Content-Type", "text/markdown; charset=utf-8");
             res.end(fs.readFileSync(filePath, "utf-8"));
             return;
+          }
+          // Special case: serve README.md from project root
+          if (filename === "README.md") {
+            filePath = path.resolve(__dirname, "../README.md");
+            if (fs.existsSync(filePath)) {
+              res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+              res.end(fs.readFileSync(filePath, "utf-8"));
+              return;
+            }
           }
         }
         next();
@@ -37,6 +46,10 @@ export default defineConfig({
       targets: [
         {
           src: "../docs/user_manual/*.md",
+          dest: "docs",
+        },
+        {
+          src: "../README.md",
           dest: "docs",
         },
       ],

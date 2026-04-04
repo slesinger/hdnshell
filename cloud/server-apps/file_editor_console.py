@@ -1263,6 +1263,7 @@ class FileEditorConsole(ServerConsole):
 
         if not os.path.isfile(compiler):
             self.status_msg = "oscar64 not found"
+            print(f"Error: oscar64 compiler not found at {compiler}")
             return False
 
         try:

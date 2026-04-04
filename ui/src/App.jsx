@@ -7,6 +7,7 @@ import DocsPage from "./DocsPage.jsx";
 import ScreenPage from "./ScreenPage.jsx";
 import SettingsPage from "./SettingsPage.jsx";
 import InspectorPage from "./InspectorPage.jsx";
+import FileManagerPage from "./FileManagerPage.jsx";
 
 const NAV_ITEMS = [
   { id: "file-manager", label: "File Manager" },
@@ -14,7 +15,7 @@ const NAV_ITEMS = [
   { id: "screen", label: "Screen" },
   { id: "docs", label: "Docs" },
   { id: "settings", label: "Settings" },
-  { id: "report", label: "Report an Issue", href: "https://github.com/slesinger/hdnshell/issues" }
+  { id: "report", label: "Report Issue", href: "https://github.com/slesinger/hdnshell/issues" }
 ];
 
 export default function App() {
@@ -225,7 +226,7 @@ export default function App() {
                 onClick={handleBasicEnable}
                 disabled={enableButtonDisabled}
               >
-                Enable HDN Shell
+                Enable Shell
               </button>
               <button
                 type="button"
@@ -233,7 +234,7 @@ export default function App() {
                 onClick={handleBasicDisable}
                 disabled={disableButtonDisabled}
               >
-                Disable HDN Shell
+                Disable Shell
               </button>
               <button
                 type="button"
@@ -292,6 +293,8 @@ export default function App() {
           </div>
         ) : page === "find" ? (
           <FindC64U lastC64Ip={lastC64Ip} />
+        ) : page === "file-manager" ? (
+          <FileManagerPage lastC64Ip={lastC64Ip} />
         ) : page === "docs" ? (
           <DocsPage />
         ) : page === "inspector" ? (

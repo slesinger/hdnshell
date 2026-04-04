@@ -9,15 +9,17 @@ It also includes parts of SMON, which is one of the best (if not the best) machi
 - [About the project](../README.md)
 - [Getting Started](installation.md)
 - [Using the Shell](using-the-shell.md)
+- [AI Assistance](ai-assistance.md)
 - [Navigating Disk Drives and Directories](dos.md)
 - [Executing Programs](executing_programs.md)
 - [File Operations](file-operations.md)
 - [Memory Operations, Machine Language Monitor](memory-operations.md)
 - [PySIC Alternative to BASIC Programming](pysic.md)
 - [Networking, Cloud Integration](cloud-integration.md)
+- [File Manager](file-manager.md)
 - [Server-Side File Editor](server-file-editor.md)
-- [AI Assistance](ai-assistance.md)
 - [CSDB.dk Commodore 64 Scene Database](csdb.md)
+- [AI Assistance](help.md)
 
 ## Getting Help
 

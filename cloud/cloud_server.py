@@ -12,17 +12,33 @@ import logging
 import sys
 import os
 import argparse
+import importlib
 from typing import Tuple, Optional
-from code_chat_console import CodeChatConsole
-from coding_agent_console import CodingAgentConsole
-from file_editor_console import FileEditorConsole
-from telegram_chat import TelegramChatConsole
-from web_browser import WebBrowserConsole
-from rss_reader import RSSReaderConsole
-from wiki_browser import WikiBrowserConsole
-from command_handler import CommandHandler, MAGIC_BYTES, CommandID, ResponseType
-from shared_state import get_session_state
-from console_manager import ConsoleManager
+
+# Add app and SDK directories to module search path.
+_CLOUD_DIR = os.path.dirname(os.path.abspath(__file__))
+_SERVER_APPS_DIR = os.path.join(_CLOUD_DIR, "server-apps")
+_HANDLERS_DIR = os.path.join(_CLOUD_DIR, "handlers")
+for _p in (_SERVER_APPS_DIR, _HANDLERS_DIR):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
+CodeChatConsole = importlib.import_module("code_chat_console").CodeChatConsole
+CodingAgentConsole = importlib.import_module("coding_agent_console").CodingAgentConsole
+FileEditorConsole = importlib.import_module("file_editor_console").FileEditorConsole
+TelegramChatConsole = importlib.import_module("telegram_chat").TelegramChatConsole
+WebBrowserConsole = importlib.import_module("web_browser").WebBrowserConsole
+RSSReaderConsole = importlib.import_module("rss_reader").RSSReaderConsole
+WikiBrowserConsole = importlib.import_module("wiki_browser").WikiBrowserConsole
+
+_cmd = importlib.import_module("command_handler")
+CommandHandler = _cmd.CommandHandler
+MAGIC_BYTES = _cmd.MAGIC_BYTES
+CommandID = _cmd.CommandID
+ResponseType = _cmd.ResponseType
+
+get_session_state = importlib.import_module("shared_state").get_session_state
+ConsoleManager = importlib.import_module("console_manager").ConsoleManager
 
 # Configure logging
 logging.basicConfig(

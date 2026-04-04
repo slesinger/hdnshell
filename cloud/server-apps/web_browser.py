@@ -1180,6 +1180,15 @@ class WebBrowserConsole(ServerConsole):
 
         self._send_vic_colors(tab.border_color, tab.bg_color)
 
+        # Push the completed page immediately so the C64 sees it without
+        # waiting for the next keypress to trigger handle_keypress re-render.
+        self._full_render()
+        try:
+            from network_helper import send_screen_data
+            send_screen_data(self.get_screen_data(), self.get_color_data())
+        except Exception:
+            pass
+
     # =================================================================
     #  PAGE FETCHING (delegates to module-level _PlaywrightWorker)
     # =================================================================

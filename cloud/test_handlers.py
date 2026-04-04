@@ -3,6 +3,14 @@ Unit tests for request handlers
 """
 
 import pytest
+import os
+import sys
+
+_CLOUD_DIR = os.path.dirname(os.path.abspath(__file__))
+_HANDLERS_DIR = os.path.join(_CLOUD_DIR, "handlers")
+if _HANDLERS_DIR not in sys.path:
+    sys.path.insert(0, _HANDLERS_DIR)
+
 from config_manager import apply_env_overrides
 from base_handler import BaseHandler
 from help_handler import HelpHandler

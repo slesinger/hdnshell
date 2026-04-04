@@ -17,6 +17,18 @@ from langchain_community.utilities import SerpAPIWrapper
 logger = logging.getLogger(__name__)
 
 
+def _wrap_with_logging(tool_name: str, func):
+    """Wrap a tool function with DEBUG logging of input and output."""
+    def wrapped(*args, **kwargs):
+        inp = args[0] if len(args) == 1 and not kwargs else (args, kwargs)
+        logger.debug("[TOOL] %s | input: %r", tool_name, inp)
+        result = func(*args, **kwargs)
+        out = result[:200] if isinstance(result, str) else result
+        logger.debug("[TOOL] %s | output: %r", tool_name, out)
+        return result
+    return wrapped
+
+
 # ------------------------------------------------------------------
 # Web search
 # ------------------------------------------------------------------
@@ -44,7 +56,7 @@ def create_websearch_tool():
                 "Do NOT use for shell usage questions, CSDB browsing, "
                 "listing releases, or any feature of the Hondani Shell."
             ),
-            func=search.run,
+            func=_wrap_with_logging("web_search", search.run),
         )
         logger.info("SerpAPI search tool initialized")
         return tool
@@ -172,7 +184,7 @@ def create_c64ref_tool():
                 "Input is the topic or keyword to look up, e.g. 'SID registers', "
                 "'6502 opcodes', 'memory map', 'KERNAL vectors'."
             ),
-            func=c64ref_get_docs,
+            func=_wrap_with_logging("c64_reference_docs", c64ref_get_docs),
         )
         logger.info(
             "context7 c64_reference_docs tool initialized (library: %s)",
@@ -250,7 +262,7 @@ def create_manual_tool(manual_content: dict):
                 "'file operations', 'memory', 'cloud', 'installation', 'commands'. "
                 "Use 'all' to retrieve the complete manual."
             ),
-            func=lambda topic: search_manual(topic, manual_content),
+            func=_wrap_with_logging("hondani_shell_manual", lambda topic: search_manual(topic, manual_content)),
         )
         logger.info(
             "hondani_shell_manual tool initialized (%d files)", len(manual_content)
@@ -279,12 +291,13 @@ def compile_code(program_name: str) -> str:
         return "Error: program_name must not be empty."
 
     oscar_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "oscar"
+        os.path.dirname(os.path.abspath(__file__)), "cloud", "oscar"
     )
     compiler = os.path.join(oscar_dir, "bin", "oscar64")
     source_file = os.path.join("projects", program_name, f"{program_name}.c")
 
     if not os.path.isfile(compiler):
+        print(f"Error: oscar64 compiler not found at {compiler}")
         return f"Error: compiler not found at {compiler}"
 
     try:
@@ -370,7 +383,7 @@ def create_run_tool(project_name: str):
                 "Upload and run the compiled .prg program on the real C64 Ultimate "
                 "hardware via its REST API. Call this after a successful compilation."
             ),
-            func=lambda _: run_prg(project_name),
+            func=_wrap_with_logging("run_prg", lambda _: run_prg(project_name)),
         )
         logger.info("run_prg tool initialized")
         return tool
@@ -437,7 +450,7 @@ def create_write_source_tool(project_name: str):
                 "(not a diff, patch, or partial snippet). "
                 "Always call this tool after making any code changes."
             ),
-            func=lambda code: write_source_file(project_name, code),
+            func=_wrap_with_logging("write_source", lambda code: write_source_file(project_name, code)),
         )
         logger.info("write_source tool initialized for project '%s'", project_name)
         return tool
@@ -478,7 +491,7 @@ def create_compile_tool(project_name: str):
         tool = Tool(
             name="compile_code",
             description="Compile a C64 program using the Oscar64 compiler.",
-            func=lambda _: compile_code(project_name),
+            func=_wrap_with_logging("compile_code", lambda _: compile_code(project_name)),
         )
         logger.info("compile_code tool initialized")
         return tool
@@ -533,7 +546,7 @@ def create_oscar64_overview_stdlib_docs_tool():
                 "when needing string/memory/math operations, or when unsure about basic "
                 "types and compiler usage."
             ),
-            func=lambda _: content,
+            func=_wrap_with_logging("get_oscar64_overview_stdlib_docs", lambda _: content),
         )
         logger.info("get_oscar64_overview_stdlib_docs tool initialized")
         return tool
@@ -563,7 +576,7 @@ def create_oscar64_vic_sid_cia_reu_docs_tool():
                 "accessing hardware registers directly, switching memory banks, or using "
                 "REU expansion memory."
             ),
-            func=lambda _: content,
+            func=_wrap_with_logging("get_oscar64_vic_sid_cia_reu_docs", lambda _: content),
         )
         logger.info("get_oscar64_vic_sid_cia_reu_docs tool initialized")
         return tool
@@ -595,7 +608,7 @@ def create_oscar64_charwin_sprites_input_io_docs_tool():
                 "code generation (asm6502.h). Use this when implementing text UI, sprites, "
                 "game input, raster effects (color bars, split screen), or disk file access."
             ),
-            func=lambda _: content,
+            func=_wrap_with_logging("get_oscar64_charwin_sprites_input_io_docs", lambda _: content),
         )
         logger.info("get_oscar64_charwin_sprites_input_io_docs tool initialized")
         return tool
@@ -702,7 +715,7 @@ def create_write_file_tool(working_dir: str):
             code: str = Field(description="COMPLETE file content to write")
 
         tool = StructuredTool.from_function(
-            func=lambda filename, code: write_project_file(working_dir, filename, code),
+            func=_wrap_with_logging("write_file", lambda filename, code: write_project_file(working_dir, filename, code)),
             name="write_file",
             description=(
                 "Write or overwrite a .c or .h source file in the project directory. "
@@ -729,7 +742,7 @@ def create_read_file_tool(working_dir: str):
                 "Read the contents of a .c or .h source file from the project. "
                 "Input is the relative filename (e.g. 'main.c')."
             ),
-            func=lambda filename: read_project_file(working_dir, filename),
+            func=_wrap_with_logging("read_file", lambda filename: read_project_file(working_dir, filename)),
         )
         logger.info("read_file tool initialized for dir '%s'", working_dir)
         return tool
@@ -749,7 +762,7 @@ def create_list_files_tool(working_dir: str):
                 "List all .c and .h source files in the project directory. "
                 "Takes no meaningful input (pass any string)."
             ),
-            func=lambda _: list_project_files(working_dir),
+            func=_wrap_with_logging("list_project_files", lambda _: list_project_files(working_dir)),
         )
         logger.info("list_project_files tool initialized for dir '%s'", working_dir)
         return tool
@@ -767,10 +780,11 @@ def compile_project(working_dir: str, main_file: str = "") -> str:
         return "Error: working directory does not exist."
 
     oscar_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "oscar"
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cloud", "oscar"
     )
     compiler = os.path.join(oscar_dir, "bin", "oscar64")
     if not os.path.isfile(compiler):
+        print(f"Error: oscar64 compiler not found at {compiler}")
         return f"Error: compiler not found at {compiler}"
 
     # Determine main source file
@@ -853,7 +867,7 @@ def create_compile_project_tool(working_dir: str):
                 "Compile the C64 project using the Oscar64 compiler. "
                 "Input is the main .c filename (e.g. 'main.c'), or empty to auto-detect."
             ),
-            func=lambda main_file="": compile_project(working_dir, main_file),
+            func=_wrap_with_logging("compile_project", lambda main_file="": compile_project(working_dir, main_file)),
         )
         logger.info("compile_project tool initialized for '%s'", working_dir)
         return tool
@@ -873,7 +887,7 @@ def create_run_project_tool(working_dir: str):
                 "Upload and run the compiled .prg on the C64 Ultimate hardware. "
                 "Input is the main .c filename (to find matching .prg), or empty to auto-detect."
             ),
-            func=lambda main_file="": run_project_prg(working_dir, main_file),
+            func=_wrap_with_logging("run_project", lambda main_file="": run_project_prg(working_dir, main_file)),
         )
         logger.info("run_project tool initialized for '%s'", working_dir)
         return tool
@@ -907,7 +921,7 @@ def create_oscar64_graphics_audio_vector_ultimate_docs_tool():
                 "doing 3D math, playing sound effects, or communicating with the Ultimate "
                 "cartridge hardware."
             ),
-            func=lambda _: content,
+            func=_wrap_with_logging("get_oscar64_graphics_audio_vector_ultimate_docs", lambda _: content),
         )
         logger.info("get_oscar64_graphics_audio_vector_ultimate_docs tool initialized")
         return tool
@@ -1031,7 +1045,7 @@ def create_screen_memory_tool(session_id: int | None = None, console_id: int | N
                 "($0400-$07E7) directly from the hardware via the Ultimate cartridge REST API. "
                 "Input is ignored. Use when the AI needs to see what is currently on the C64 screen."
             ),
-            func=_tool,
+            func=_wrap_with_logging("get_screen", _tool),
         )
         logger.info("get_screen tool initialized (live C64 screen read from $0400)")
         return tool
@@ -1101,7 +1115,7 @@ def create_c64_keyboard_tool():
                 "Use get_screen first to see what is on the screen, then use this tool to "
                 "interact with the C64. The AI can guide or automate the user this way."
             ),
-            func=send_keys_to_c64,
+            func=_wrap_with_logging("type_on_c64", send_keys_to_c64),
         )
         logger.info("type_on_c64 tool initialized")
         return tool

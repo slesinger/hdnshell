@@ -14,6 +14,9 @@ import logging
 import time
 from typing import Optional
 
+# Import PETSCII conversion functions from sdk.petscii
+from .petscii import ascii_to_screencode, petscii_to_screencode
+
 logger = logging.getLogger(__name__)
 
 # Lazy import to avoid circular dependency
@@ -21,7 +24,7 @@ _network_helper = None
 def _get_network_helper():
     global _network_helper
     if _network_helper is None:
-        import network_helper as nh
+        from . import network_helper as nh
         _network_helper = nh
     return _network_helper
 
@@ -416,90 +419,6 @@ class ServerConsole:
 
 
 # ======================================================================
-# Screen-code conversion utilities
+# Screen-code conversion utilities are now imported from sdk.petscii
+# See: petscii module for ascii_to_screencode, petscii_to_screencode
 # ======================================================================
-
-# Special ASCII characters whose screen-code doesn't follow the range formula.
-_SPECIAL_ASCII: dict[int, int] = {
-    ord("@"): 0x00,  # @ → $00
-    ord("["): 0x1B,  # [ → $1B
-    ord("]"): 0x1D,  # ] → $1D
-    ord("{"): 0x6B,  # { → $6B
-    ord("}"): 0x73,  # } → $73
-    ord("_"): 0x64,  # _ → $64
-    ord("~"): 0x68,  # ~ → $68
-    ord("|"): 0x5D,  # | → $5D
-    ord("\\"): 0x7F,  # \ → $7F
-}
-
-
-def ascii_to_screencode(ascii_code: int) -> int:
-    """
-    Convert an ASCII code point to a C64 screen code.
-
-    Mapping (uppercase mode):
-        PC @ convert to $00
-        PC [ convert to $1B
-        PC ] convert to $1D
-        PC { convert to $6B
-        PC } convert to $73
-        PC _ convert to $64
-        PC ~ convert to $68
-        PC | convert to $5D
-        PC \ convert to $7f
-        $20-$3F  →  $20-$3F   (space, digits, punctuation)
-        $40-$5F  →  $00-$1F   (@, A-Z, [, £, ], ↑, ←)
-        $60-$7F  →  $00-$1F   (lowercase a-z mapped to uppercase screen codes)
-        anything else → $20   (space)
-
-    PC is lacking:
-    pound sign £
-    up arrow
-    left arrow
-    thick minus
-    --- all up to $5a/$da
-    """
-    if ascii_code in _SPECIAL_ASCII:
-        return _SPECIAL_ASCII[ascii_code]
-    if 0x20 <= ascii_code <= 0x3F:
-        return ascii_code
-    if 0x40 <= ascii_code <= 0x5F:
-        return ascii_code
-    if 0x60 <= ascii_code <= 0x7F:
-        return ascii_code - 0x60
-    return DEFAULT_SCREEN_CODE
-
-
-def petscii_to_screencode(petscii: int) -> int:
-    """
-    Convert a PETSCII byte to a C64 screen code.
-
-    Standard mapping:
-        $20-$3F  →  $20-$3F
-        $40-$5F  →  $00-$1F
-        $60-$7F  →  $40-$5F
-        $A0-$BF  →  $60-$7F
-        $C0-$DF  →  $40-$5F
-        $E0-$FE  →  $60-$7E
-        $FF      →  $5E
-        $00-$1F  →  $80-$9F  (reverse video)
-        $80-$9F  →  set colour / control, not screen-printable → $20
-    """
-    if 0x20 <= petscii <= 0x3F:
-        return petscii
-    if 0x40 <= petscii <= 0x5F:
-        return petscii - 0x40
-    if 0x60 <= petscii <= 0x7F:
-        return petscii - 0x20
-    if 0xA0 <= petscii <= 0xBF:
-        return petscii - 0x40
-    if 0xC0 <= petscii <= 0xDF:
-        return petscii - 0x80
-    if 0xE0 <= petscii <= 0xFE:
-        return petscii - 0x80
-    if petscii == 0xFF:
-        return 0x5E
-    if 0x00 <= petscii <= 0x1F:
-        return petscii + 0x80  # reverse chars
-    # $80-$9F (colour / control) – not directly printable
-    return DEFAULT_SCREEN_CODE

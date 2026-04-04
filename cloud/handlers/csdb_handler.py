@@ -15,8 +15,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional, List
 from pydantic import BaseModel
-from base_handler import BaseHandler
-from shared_state import get_session_state
+from sdk import BaseHandler, get_session_state
 from csdb_group_parser import parse_csdb_group_detail
 from csdb_search_parser import parse_csdb_find
 from csdb_latest_releases_parser import parse_latest_releases

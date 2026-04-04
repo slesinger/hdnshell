@@ -5,14 +5,23 @@ Dispatches text input requests to the appropriate handler.
 """
 
 import logging
+import os
+import sys
+import importlib
 from typing import List
 
 from base_handler import BaseHandler
-from chat_handler import ChatHandler
-from help_handler import HelpHandler
-from python_eval_handler import PythonEvalHandler
-from csdb_handler import CSDBHandler
 from shared_state import get_session_state
+
+_CLOUD_DIR = os.path.dirname(os.path.abspath(__file__))
+_HANDLERS_DIR = os.path.join(_CLOUD_DIR, "handlers")
+if _HANDLERS_DIR not in sys.path:
+    sys.path.insert(0, _HANDLERS_DIR)
+
+ChatHandler = importlib.import_module("chat_handler").ChatHandler
+HelpHandler = importlib.import_module("help_handler").HelpHandler
+PythonEvalHandler = importlib.import_module("python_eval_handler").PythonEvalHandler
+CSDBHandler = importlib.import_module("csdb_handler").CSDBHandler
 
 logger = logging.getLogger(__name__)
 

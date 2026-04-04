@@ -10,6 +10,13 @@ import ftplib
 import requests
 import queue
 import threading
+import zipfile
+import tempfile
+import io
+import json
+import re
+from pathlib import Path
+from urllib.parse import unquote, urlparse
 from version import __version__
 from cloud_server import C64Server
 from workspace_init import init_workspace, get_workspace_config_path
@@ -21,6 +28,11 @@ from flask import send_from_directory
 from network_helper import (
     read_last_c64_ip,
     _send_tcp_cmd,
+    send_dmawrite,
+    send_c64_keyboard_input,
+    SOCKET_CMD_MOUNT_IMG,
+    SOCKET_CMD_RUN_IMG,
+    SOCKET_CMD_RUN_CRT,
 )
 from config_manager import (
     read_config,
@@ -29,8 +41,15 @@ from config_manager import (
     migrate_config,
     apply_env_overrides,
 )
-from cloud_config_template import CONFIG_DEFAULTS, SECRET_KEYS
+from cloud_config_template import CONFIG_DEFAULTS
 from llm_factory import test_llm_completion
+
+_CLOUD_DIR = os.path.dirname(os.path.abspath(__file__))
+_HANDLERS_DIR = os.path.join(_CLOUD_DIR, "handlers")
+if _HANDLERS_DIR not in sys.path:
+    sys.path.insert(0, _HANDLERS_DIR)
+
+from csdb_handler import CSDBHandler
 
 
 # Configure logging for the web server
@@ -289,7 +308,7 @@ def patch_server_ip(rom_path: str, server_ip: str) -> None:
 
     # Build padded replacement: IP + 0x00 terminator + zero-fill rest of slot
     replacement = ip_bytes + b"\x00" * (_ROM_IP_SLOT_SIZE - len(ip_bytes))
-    data[offset : offset + _ROM_IP_SLOT_SIZE] = replacement
+    data[offset:offset + _ROM_IP_SLOT_SIZE] = replacement
 
     with open(rom_path, "wb") as f:
         f.write(data)
@@ -964,6 +983,984 @@ def ws_audio(ws):
             if q in _audio_clients:
                 _audio_clients.remove(q)
         logger.info("WebSocket audio client disconnected")
+
+
+# ─── File Manager Endpoints ────────────────────────────────────────────────────
+
+# Simple in-memory operation tracking for progress endpoints
+_file_operations = {}
+
+_D64_SECTORS_PER_TRACK = [
+    21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+    19, 19, 19, 19, 19, 19, 19,
+    18, 18, 18, 18, 18, 18,
+    17, 17, 17, 17, 17,
+]
+
+
+def _d64_track_sector_offset(track: int, sector: int) -> int:
+    """Return byte offset in a D64 image for track/sector."""
+    if track < 1 or track > len(_D64_SECTORS_PER_TRACK):
+        raise ValueError(f"Invalid D64 track {track}")
+
+    max_sector = _D64_SECTORS_PER_TRACK[track - 1]
+    if sector < 0 or sector >= max_sector:
+        raise ValueError(f"Invalid D64 sector {sector} for track {track}")
+
+    sector_index = sum(_D64_SECTORS_PER_TRACK[: track - 1]) + sector
+    return sector_index * 256
+
+
+def _decode_petscii_filename(raw_name: bytes) -> str:
+    """Decode a 16-byte PETSCII filename to ASCII-ish text."""
+    chars = []
+    for b in raw_name:
+        if b in (0x00, 0xA0):
+            chars.append(" ")
+            continue
+
+        if 0x41 <= b <= 0x5A or 0x30 <= b <= 0x39:
+            chars.append(chr(b))
+            continue
+
+        if 0xC1 <= b <= 0xDA:
+            chars.append(chr(b - 0x80))
+            continue
+
+        if b in (0x2D, 0x2E, 0x5F, 0x24):
+            chars.append(chr(b))
+            continue
+
+        chars.append("?")
+
+    return "".join(chars).rstrip()
+
+
+def _read_d64_directory_entries(d64_bytes: bytes) -> list[dict]:
+    """Parse D64 directory and return entries with metadata."""
+    entries: list[dict] = []
+    track, sector = 18, 1
+    visited: set[tuple[int, int]] = set()
+
+    while track != 0:
+        if (track, sector) in visited:
+            break
+        visited.add((track, sector))
+
+        block_offset = _d64_track_sector_offset(track, sector)
+        block = d64_bytes[block_offset:block_offset + 256]
+        if len(block) != 256:
+            break
+
+        next_track = block[0]
+        next_sector = block[1]
+
+        for i in range(8):
+            entry_offset = 2 + i * 32
+            entry = block[entry_offset:entry_offset + 32]
+            if len(entry) != 32:
+                continue
+
+            file_type = entry[2] & 0x07
+            if file_type == 0:
+                continue
+
+            start_track = entry[3]
+            start_sector = entry[4]
+            raw_name = entry[5:21]
+            file_sectors = entry[30] | (entry[31] << 8)
+            name = _decode_petscii_filename(raw_name)
+
+            if not name:
+                continue
+
+            file_ext = ""
+            if file_type == 2:
+                file_ext = ".prg"
+            elif file_type == 1:
+                file_ext = ".seq"
+            elif file_type == 3:
+                file_ext = ".usr"
+            elif file_type == 4:
+                file_ext = ".rel"
+
+            visible_name = f"{name}{file_ext}" if file_ext and not name.lower().endswith(file_ext) else name
+
+            entries.append({
+                "name": visible_name,
+                "disk_name": name,
+                "type": "file",
+                "size": file_sectors * 254,
+                "date": "",
+                "file_type": file_type,
+                "start_track": start_track,
+                "start_sector": start_sector,
+                "source": "disk_image",
+            })
+
+        track, sector = next_track, next_sector
+
+    return entries
+
+
+def _extract_prg_from_d64(d64_bytes: bytes, disk_name: str) -> bytes:
+    """Extract PRG file by disk filename from D64 image bytes."""
+    entries = _read_d64_directory_entries(d64_bytes)
+    target = next(
+        (
+            e
+            for e in entries
+            if e.get("file_type") == 2 and e.get("disk_name", "").strip().upper() == disk_name.strip().upper()
+        ),
+        None,
+    )
+
+    if not target:
+        raise ValueError(f"PRG entry '{disk_name}' not found in image")
+
+    track = int(target["start_track"])
+    sector = int(target["start_sector"])
+    visited: set[tuple[int, int]] = set()
+    chunks: list[bytes] = []
+
+    while track != 0:
+        if (track, sector) in visited:
+            raise ValueError("Invalid PRG chain in D64 (loop detected)")
+        visited.add((track, sector))
+
+        block_offset = _d64_track_sector_offset(track, sector)
+        block = d64_bytes[block_offset:block_offset + 256]
+        if len(block) != 256:
+            raise ValueError("Unexpected end of D64 while reading PRG")
+
+        next_track = block[0]
+        next_sector = block[1]
+
+        if next_track == 0:
+            used_bytes = next_sector
+            if used_bytes < 1 or used_bytes > 255:
+                used_bytes = 255
+            chunks.append(block[2:2 + max(0, used_bytes - 1)])
+            break
+
+        chunks.append(block[2:256])
+        track, sector = next_track, next_sector
+
+    return b"".join(chunks)
+
+
+def _download_file_from_ftp(c64_ip: str, path: str) -> bytes:
+    """Download a file from FTP and return bytes."""
+    ftp = _check_ftp_connection(c64_ip)
+    try:
+        file_data = io.BytesIO()
+        ftp.retrbinary(f"RETR {path}", file_data.write)
+        return file_data.getvalue()
+    finally:
+        ftp.quit()
+
+
+def _mount_disk_image(c64_ip: str, path: str) -> tuple[bool, str]:
+    """Mount an image on drive 8. Returns (ok, message)."""
+    try:
+        _send_tcp_cmd(c64_ip, SOCKET_CMD_MOUNT_IMG, path.encode())
+        return True, f"Mounted {Path(path).name} on drive 8"
+    except Exception as dma_err:
+        logger.warning(f"DMA mount failed, trying HTTP mount: {dma_err}")
+
+    try:
+        url = f"http://{c64_ip}/v1/mounts:mount"
+        response = requests.put(url, params={"path": path, "device": "8", "force": "true"}, timeout=5)
+        response.raise_for_status()
+        return True, f"Mounted {Path(path).name} on drive 8"
+    except requests.RequestException as http_err:
+        return False, f"Failed to mount image: {http_err}"
+
+
+def _validate_path(path_str: str) -> tuple[bool, str]:
+    """Validate file path for safety. Return (is_valid, error_msg)."""
+    if not path_str:
+        return False, "Path cannot be empty"
+    if ".." in path_str:
+        return False, "Path traversal (..) not allowed"
+    if path_str.startswith("/"):
+        # Allow absolute paths
+        path = Path(path_str)
+    else:
+        # Relative paths go under /Flash/ by default
+        path = Path("/Flash") / path_str
+
+    # Ensure normalized path
+    try:
+        path.resolve()
+    except (OSError, ValueError):
+        return False, "Invalid path"
+
+    return True, ""
+
+
+def _get_c64_ip_from_request():
+    """Extract c64_ip from query params or use last known IP."""
+    c64_ip = request.args.get("c64_ip")
+    if not c64_ip:
+        c64_ip = read_last_c64_ip()
+    if not c64_ip:
+        raise ValueError("C64 IP not found. Scan network first or provide c64_ip parameter.")
+    return c64_ip
+
+
+def _check_ftp_connection(host: str):
+    """Check if FTP is available and return FTP connection or raise error."""
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(host, 21, timeout=3)
+        ftp.login()
+        return ftp
+    except Exception as e:
+        raise RuntimeError(f"FTP connection failed to {host}: {e}")
+
+
+def _ftp_list_directory(ftp: ftplib.FTP, path: str) -> list:
+    """List files and directories via FTP. Return list of (name, type, size)."""
+    try:
+        ftp.cwd(path)
+    except ftplib.all_errors as e:
+        raise ValueError(f"Cannot change to directory {path}: {e}")
+
+    entries = []
+    try:
+        # Use MLSD for better file information if available
+        try:
+            for name, facts in ftp.mlsd():
+                if name in (".", ".."):
+                    continue
+                entry_type = facts.get("type", "file")
+                size = int(facts.get("size", 0))
+                modify = facts.get("modify", "")
+                entries.append({
+                    "name": name,
+                    "type": "dir" if entry_type == "dir" else "file",
+                    "size": size,
+                    "date": modify
+                })
+        except Exception:
+            # Fallback to LIST if MLSD not available
+            lines = []
+            ftp.retrlines("LIST", lines.append)
+            for line in lines:
+                if line.startswith("d"):
+                    parts = line.split()
+                    name = " ".join(parts[8:])
+                    entries.append({"name": name, "type": "dir", "size": 0, "date": ""})
+                else:
+                    parts = line.split()
+                    size = int(parts[4]) if len(parts) > 4 else 0
+                    name = " ".join(parts[8:])
+                    entries.append({"name": name, "type": "file", "size": size, "date": ""})
+    except Exception as e:
+        logger.warning(f"Failed to list directory {path}: {e}")
+        entries = []
+
+    return entries
+
+
+def _extract_csdb_file_id_from_url(url: str) -> int:
+    """Extract file ID from CSDB URL. Returns file ID or raises ValueError."""
+    # Expected format: https://csdb.dk/release/download.php?id=305029
+    match = re.search(r'[?&]id=(\d+)', url)
+    if not match:
+        raise ValueError("Invalid CSDB URL format. Expected: https://csdb.dk/release/download.php?id=<number>")
+    return int(match.group(1))
+
+
+def _extract_csdb_download_filename(content_disposition: str) -> str | None:
+    """Extract a safe filename from a Content-Disposition header."""
+    match = re.search(r"filename\*=UTF-8''([^;]+)", content_disposition, re.IGNORECASE)
+    if match:
+        return Path(unquote(match.group(1))).name
+
+    match = re.search(r'filename="?([^";]+)"?', content_disposition, re.IGNORECASE)
+    if match:
+        return Path(match.group(1)).name
+
+    return None
+
+
+def _download_csdb_file(file_id: int, target_dir: Path) -> Path:
+    """Download a file from CSDB by file ID and return the downloaded path."""
+    handler = CSDBHandler()
+    download_url = f"https://csdb.dk/release/download.php?id={file_id}"
+
+    try:
+        response = handler.session.get(
+            download_url,
+            timeout=20,
+            allow_redirects=True,
+            stream=True,
+        )
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Failed to download file_{file_id}: {e}") from e
+
+    content_type = response.headers.get("Content-Type", "")
+    if "text/html" in content_type.lower():
+        raise RuntimeError(f"Failed to download file_{file_id}: received HTML instead of file")
+
+    filename = _extract_csdb_download_filename(response.headers.get("Content-Disposition", ""))
+    if not filename:
+        response_name = Path(unquote(urlparse(response.url).path)).name
+        if response_name and response_name != "download.php":
+            filename = response_name
+
+    if not filename:
+        filename = f"file_{file_id}"
+
+    target_path = target_dir / filename
+    try:
+        with open(target_path, "wb") as out_file:
+            for chunk in response.iter_content(chunk_size=1024 * 64):
+                if chunk:
+                    out_file.write(chunk)
+    except OSError as e:
+        raise RuntimeError(f"Failed to write {target_path.name}: {e}") from e
+
+    with open(target_path, "rb") as fh:
+        magic = fh.read(4)
+
+    if not target_path.suffix and magic in {b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08"}:
+        zipped_path = target_path.with_suffix(".zip")
+        target_path.rename(zipped_path)
+        target_path = zipped_path
+
+    if target_path.suffix.lower() == ".zip" and magic not in {b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08"}:
+        raise RuntimeError(f"Downloaded file is not a valid zip archive: {target_path.name}")
+
+    return target_path
+
+
+@app.route("/files/list", methods=["GET"])
+def files_list():
+    """List files and directories on C64 Ultimate."""
+    try:
+        c64_ip = _get_c64_ip_from_request()
+        path = request.args.get("path", "/Flash/roms")
+        disk_image = request.args.get("disk_image")
+
+        if disk_image:
+            valid, msg = _validate_path(disk_image)
+            if not valid:
+                return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+            if Path(disk_image).suffix.lower() != ".d64":
+                return jsonify({"error": "Virtual browsing is currently supported only for .d64 images", "code": "UNSUPPORTED_ACTION"}), 400
+
+            d64_bytes = _download_file_from_ftp(c64_ip, disk_image)
+            entries = _read_d64_directory_entries(d64_bytes)
+            return jsonify({
+                "status": "ok",
+                "data": {
+                    "path": disk_image,
+                    "entries": entries,
+                    "virtual": {
+                        "type": "disk_image",
+                        "image_path": disk_image,
+                    },
+                },
+            })
+
+        valid, msg = _validate_path(path)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        ftp = _check_ftp_connection(c64_ip)
+        try:
+            entries = _ftp_list_directory(ftp, path)
+            current_path = path
+        finally:
+            ftp.quit()
+
+        return jsonify({
+            "status": "ok",
+            "data": {
+                "path": current_path,
+                "entries": entries
+            }
+        })
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except Exception as e:
+        logger.exception("Error in /files/list")
+        return jsonify({"error": str(e), "code": "DEVICE_ERROR"}), 500
+
+
+@app.route("/files/mkdir", methods=["POST"])
+def files_mkdir():
+    """Create a directory on C64 Ultimate."""
+    try:
+        c64_ip = _get_c64_ip_from_request()
+        path = request.args.get("path")
+        if not path:
+            return jsonify({"error": "path parameter required"}), 400
+
+        valid, msg = _validate_path(path)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        ftp = _check_ftp_connection(c64_ip)
+        try:
+            ftp.mkd(path)
+        finally:
+            ftp.quit()
+
+        return jsonify({"status": "ok", "message": f"Created directory {path}"})
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except ftplib.all_errors as e:
+        return jsonify({"error": f"FTP error: {e}", "code": "FTP_FAILED"}), 400
+    except Exception as e:
+        logger.exception("Error in /files/mkdir")
+        return jsonify({"error": str(e), "code": "DEVICE_ERROR"}), 500
+
+
+@app.route("/files/upload", methods=["POST"])
+def files_upload():
+    """Upload files to C64 Ultimate."""
+    try:
+        c64_ip = _get_c64_ip_from_request()
+        dest_path = request.args.get("dest_path", "/temp")
+
+        valid, msg = _validate_path(dest_path)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        files = request.files.getlist("files")
+        if not files:
+            return jsonify({"error": "No files provided"}), 400
+
+        ftp = _check_ftp_connection(c64_ip)
+        uploaded = []
+        try:
+            ftp.cwd(dest_path)
+            for file in files:
+                if file.filename:
+                    ftp.storbinary(f"STOR {file.filename}", file.stream)
+                    uploaded.append(file.filename)
+        finally:
+            ftp.quit()
+
+        return jsonify({
+            "status": "ok",
+            "data": {
+                "uploaded": uploaded,
+                "operation_id": "upload-simple",
+                "state": "done"
+            }
+        })
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except Exception as e:
+        logger.exception("Error in /files/upload")
+        return jsonify({"error": str(e), "code": "UPLOAD_FAILED"}), 500
+
+
+@app.route("/files/csdb-import", methods=["POST"])
+def files_csdb_import():
+    """Download from CSDB URL, extract if zip, upload to C64."""
+    try:
+        body = request.get_json()
+        csdb_url = body.get("csdb_url", "")
+        c64_ip = body.get("c64_ip") or _get_c64_ip_from_request()
+        dest_path = body.get("dest_path", "/temp")
+
+        # Validate CSDB URL
+        try:
+            file_id = _extract_csdb_file_id_from_url(csdb_url)
+        except ValueError as e:
+            return jsonify({"error": str(e), "code": "CSDB_URL_INVALID"}), 400
+
+        valid, msg = _validate_path(dest_path)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        # Download from CSDB
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+
+            try:
+                file_path = _download_csdb_file(file_id, tmp_path)
+            except Exception as e:
+                return jsonify({"error": f"Failed to download from CSDB: {e}", "code": "CSDB_DOWNLOAD_FAILED"}), 400
+
+            # Extract if zip
+            allowed_exts = {".prg", ".d64", ".d71", ".d81", ".tap", ".sid", ".crt", ".reu", ".dnp", ".mod", ".txt", ".cfg", ".bin"}
+            files_to_upload = []
+
+            if file_path.suffix.lower() == ".zip":
+                try:
+                    with zipfile.ZipFile(file_path, 'r') as z:
+                        for member in z.namelist():
+                            member_path = Path(member)
+                            if member_path.suffix.lower() in allowed_exts:
+                                z.extract(member, path=tmp_path)
+                                files_to_upload.append(tmp_path / member)
+                except zipfile.BadZipFile as e:
+                    return jsonify({"error": f"Invalid zip file: {e}", "code": "EXTRACTION_FAILED"}), 400
+            else:
+                if file_path.suffix.lower() in allowed_exts:
+                    files_to_upload.append(file_path)
+
+            if not files_to_upload:
+                return jsonify({"error": "No supported files found in download", "code": "EXTRACTION_FAILED"}), 400
+
+            # Upload via FTP
+            ftp = _check_ftp_connection(c64_ip)
+            uploaded = []
+            try:
+                ftp.cwd(dest_path)
+                for fpath in files_to_upload:
+                    with open(fpath, "rb") as fh:
+                        ftp.storbinary(f"STOR {fpath.name}", fh)
+                    uploaded.append(fpath.name)
+            finally:
+                ftp.quit()
+
+            return jsonify({
+                "status": "ok",
+                "data": {
+                    "operation_id": f"csdb-{file_id}",
+                    "state": "done",
+                    "files": uploaded
+                }
+            })
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except Exception as e:
+        logger.exception("Error in /files/csdb-import")
+        return jsonify({"error": str(e), "code": "DEVICE_ERROR"}), 500
+
+
+@app.route("/files/move", methods=["POST"])
+def files_move():
+    """Move/rename a file on C64 Ultimate."""
+    try:
+        body = request.get_json()
+        c64_ip = body.get("c64_ip") or _get_c64_ip_from_request()
+        source = body.get("source")
+        dest = body.get("dest")
+
+        if not source or not dest:
+            return jsonify({"error": "source and dest parameters required"}), 400
+
+        valid, msg = _validate_path(source)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        valid, msg = _validate_path(dest)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        ftp = _check_ftp_connection(c64_ip)
+        try:
+            ftp.rename(source, dest)
+        finally:
+            ftp.quit()
+
+        return jsonify({"status": "ok", "message": f"Moved {source} to {dest}"})
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except ftplib.all_errors as e:
+        return jsonify({"error": f"FTP error: {e}", "code": "FTP_FAILED"}), 400
+    except Exception as e:
+        logger.exception("Error in /files/move")
+        return jsonify({"error": str(e), "code": "DEVICE_ERROR"}), 500
+
+
+@app.route("/files/copy", methods=["POST"])
+def files_copy():
+    """Copy a file on C64 Ultimate."""
+    try:
+        body = request.get_json()
+        c64_ip = body.get("c64_ip") or _get_c64_ip_from_request()
+        source = body.get("source")
+        dest = body.get("dest")
+
+        if not source or not dest:
+            return jsonify({"error": "source and dest parameters required"}), 400
+
+        valid, msg = _validate_path(source)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        valid, msg = _validate_path(dest)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        # FTP doesn't have a built-in copy, so we download and re-upload
+        ftp = _check_ftp_connection(c64_ip)
+        try:
+            with tempfile.NamedTemporaryFile() as tmp:
+                ftp.retrbinary(f"RETR {source}", tmp.write)
+                tmp.seek(0)
+                ftp.storbinary(f"STOR {dest}", tmp)
+        finally:
+            ftp.quit()
+
+        return jsonify({"status": "ok", "message": f"Copied {source} to {dest}"})
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except ftplib.all_errors as e:
+        return jsonify({"error": f"FTP error: {e}", "code": "FTP_FAILED"}), 400
+    except Exception as e:
+        logger.exception("Error in /files/copy")
+        return jsonify({"error": str(e), "code": "DEVICE_ERROR"}), 500
+
+
+@app.route("/files/delete", methods=["DELETE"])
+def files_delete():
+    """Delete file(s) from C64 Ultimate."""
+    try:
+        c64_ip = request.args.get("c64_ip") or read_last_c64_ip()
+        if not c64_ip:
+            raise ValueError("C64 IP not found")
+
+        paths = request.args.getlist("path")
+        if not paths:
+            paths_json = request.args.get("paths")
+            if paths_json:
+                paths = json.loads(paths_json)
+
+        if not paths:
+            return jsonify({"error": "path or paths parameter required"}), 400
+
+        for path in paths:
+            valid, msg = _validate_path(path)
+            if not valid:
+                return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        ftp = _check_ftp_connection(c64_ip)
+        deleted = []
+        try:
+            for path in paths:
+                try:
+                    ftp.delete(path)
+                    deleted.append(path)
+                except ftplib.all_errors as e:
+                    logger.warning(f"Failed to delete {path}: {e}")
+        finally:
+            ftp.quit()
+
+        return jsonify({"status": "ok", "message": f"Deleted {len(deleted)} file(s)", "deleted": deleted})
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except Exception as e:
+        logger.exception("Error in /files/delete")
+        return jsonify({"error": str(e), "code": "DEVICE_ERROR"}), 500
+
+
+@app.route("/files/download", methods=["GET"])
+def files_download():
+    """Download file from C64 Ultimate to local machine."""
+    try:
+        c64_ip = _get_c64_ip_from_request()
+        path = request.args.get("path")
+        if not path:
+            return jsonify({"error": "path parameter required"}), 400
+
+        valid, msg = _validate_path(path)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        ftp = _check_ftp_connection(c64_ip)
+        try:
+            file_data = io.BytesIO()
+            ftp.retrbinary(f"RETR {path}", file_data.write)
+            file_data.seek(0)
+        finally:
+            ftp.quit()
+
+        filename = Path(path).name
+        return app.response_class(
+            response=file_data.getvalue(),
+            status=200,
+            mimetype="application/octet-stream",
+            headers={"Content-Disposition": f"attachment; filename=\"{filename}\""}
+        )
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except ftplib.all_errors as e:
+        return jsonify({"error": f"Failed to download: {e}", "code": "FILE_NOT_FOUND"}), 404
+    except Exception as e:
+        logger.exception("Error in /files/download")
+        return jsonify({"error": str(e), "code": "DEVICE_ERROR"}), 500
+
+
+@app.route("/files/read", methods=["GET"])
+def files_read():
+    """Read text file from C64 Ultimate."""
+    try:
+        c64_ip = _get_c64_ip_from_request()
+        path = request.args.get("path")
+        if not path:
+            return jsonify({"error": "path parameter required"}), 400
+
+        valid, msg = _validate_path(path)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        # Check file extension
+        allowed_read = {".txt", ".cfg", ".prg", ".c", ".h", ".bas", ".asm"}
+        file_ext = Path(path).suffix.lower()
+        if file_ext not in allowed_read:
+            return jsonify({"error": f"Cannot read files with extension {file_ext}", "code": "UNSUPPORTED_ACTION"}), 400
+
+        ftp = _check_ftp_connection(c64_ip)
+        try:
+            file_data = io.BytesIO()
+            ftp.retrbinary(f"RETR {path}", file_data.write)
+            content = file_data.getvalue()
+
+            # Check size (max 1MB for text files)
+            if len(content) > 1024 * 1024:
+                return jsonify({"error": "File too large (max 1MB)", "code": "FILE_TOO_LARGE"}), 413
+
+            # Try to decode as text
+            try:
+                text_content = content.decode("utf-8", errors="replace")
+            except Exception:
+                text_content = content.decode("latin-1", errors="replace")
+        finally:
+            ftp.quit()
+
+        return jsonify({
+            "status": "ok",
+            "data": {
+                "path": path,
+                "content": text_content,
+                "size": len(content)
+            }
+        })
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except ftplib.all_errors as e:
+        return jsonify({"error": f"Failed to read: {e}", "code": "FILE_NOT_FOUND"}), 404
+    except Exception as e:
+        logger.exception("Error in /files/read")
+        return jsonify({"error": str(e), "code": "DEVICE_ERROR"}), 500
+
+
+@app.route("/files/save", methods=["PUT"])
+def files_save():
+    """Save text file on C64 Ultimate."""
+    try:
+        body = request.get_json()
+        c64_ip = body.get("c64_ip") or _get_c64_ip_from_request()
+        path = body.get("path")
+        content = body.get("content", "")
+
+        if not path:
+            return jsonify({"error": "path parameter required"}), 400
+
+        valid, msg = _validate_path(path)
+        if not valid:
+            return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+        # Check file extension
+        allowed_edit = {".txt", ".cfg", ".c", ".h", ".bas", ".asm"}
+        file_ext = Path(path).suffix.lower()
+        if file_ext not in allowed_edit:
+            return jsonify({"error": f"Cannot edit files with extension {file_ext}", "code": "UNSUPPORTED_ACTION"}), 400
+
+        # Check size
+        content_bytes = content.encode("utf-8")
+        if len(content_bytes) > 1024 * 1024:
+            return jsonify({"error": "File too large (max 1MB)", "code": "FILE_TOO_LARGE"}), 413
+
+        ftp = _check_ftp_connection(c64_ip)
+        try:
+            file_io = io.BytesIO(content_bytes)
+            ftp.storbinary(f"STOR {path}", file_io)
+        finally:
+            ftp.quit()
+
+        return jsonify({"status": "ok", "message": f"Saved {path}"})
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except Exception as e:
+        logger.exception("Error in /files/save")
+        return jsonify({"error": str(e), "code": "DEVICE_ERROR"}), 500
+
+
+@app.route("/files/run", methods=["POST"])
+def files_run():
+    """Execute file on C64 (via DMA or device action)."""
+    try:
+        body = request.get_json()
+        c64_ip = body.get("c64_ip") or _get_c64_ip_from_request()
+        path = body.get("path")
+        action = body.get("action", "default")
+        image_path = body.get("image_path")
+        image_entry = body.get("image_entry")
+
+        if image_path and image_entry:
+            valid, msg = _validate_path(image_path)
+            if not valid:
+                return jsonify({"error": msg, "code": "INVALID_PATH"}), 400
+
+            if Path(image_path).suffix.lower() != ".d64":
+                return jsonify({"error": "Only .d64 virtual entries are currently supported", "code": "UNSUPPORTED_ACTION"}), 400
+
+            if action not in {"default", "load_and_run", "dma_load"}:
+                return jsonify({"error": "Virtual PRG files only support load_and_run and dma_load actions", "code": "UNSUPPORTED_ACTION"}), 400
+
+            d64_bytes = _download_file_from_ftp(c64_ip, image_path)
+            prg_bytes = _extract_prg_from_d64(d64_bytes, image_entry)
+
+            if len(prg_bytes) < 3:
+                return jsonify({"error": "Extracted PRG is too small or invalid", "code": "DEVICE_ERROR"}), 400
+
+            try:
+                send_dmawrite(c64_ip, prg_bytes)
+                if action in {"default", "load_and_run"}:
+                    send_c64_keyboard_input(bytes([0x0F]), host=c64_ip)
+                    return jsonify({"status": "ok", "message": f"Loaded {image_entry} from {Path(image_path).name} and running"})
+
+                return jsonify({"status": "ok", "message": f"Loaded {image_entry} from {Path(image_path).name} into memory via DMA"})
+            except Exception as e:
+                return jsonify({"error": f"Failed to execute virtual PRG via DMA: {e}", "code": "DEVICE_ERROR"}), 500
+
+        if not path:
+            return jsonify({"error": "path parameter required"}), 400
+
+        file_ext = Path(path).suffix.lower()
+
+        # PRG: load via DMA and run
+        if file_ext == ".prg":
+            if action not in {"default", "load_and_run", "dma_load"}:
+                return jsonify({"error": "PRG files only support load_and_run and dma_load actions"}), 400
+
+            # Download PRG via FTP and load via DMA
+            ftp = _check_ftp_connection(c64_ip)
+            try:
+                prg_data = io.BytesIO()
+                ftp.retrbinary(f"RETR {path}", prg_data.write)
+                prg_bytes = prg_data.getvalue()
+            finally:
+                ftp.quit()
+
+            try:
+                send_dmawrite(c64_ip, prg_bytes)
+                if action in {"default", "load_and_run"}:
+                    send_c64_keyboard_input(bytes([0x0F]), host=c64_ip)
+                    return jsonify({"status": "ok", "message": f"Loaded {Path(path).name} and running"})
+
+                return jsonify({"status": "ok", "message": f"Loaded {Path(path).name} into memory via DMA"})
+            except Exception as e:
+                return jsonify({"error": f"Failed to run via DMA: {e}", "code": "DEVICE_ERROR"}), 500
+
+        # D64/D71/D81: mount disk image
+        elif file_ext in {".d64", ".d71", ".d81"}:
+            if action in {"default", "mount"}:
+                ok, message = _mount_disk_image(c64_ip, path)
+                if not ok:
+                    return jsonify({"error": message, "code": "DEVICE_ERROR"}), 500
+                return jsonify({"status": "ok", "message": message})
+            if action == "load_star":
+                try:
+                    _send_tcp_cmd(c64_ip, SOCKET_CMD_RUN_IMG, path.encode())
+                    return jsonify({"status": "ok", "message": f"Mounted {Path(path).name} and executed LOAD *"})
+                except Exception as e:
+                    return jsonify({"error": f"Failed to mount and run image: {e}", "code": "DEVICE_ERROR"}), 500
+            else:
+                return jsonify({"error": "Disk images only support mount and load_star actions", "code": "UNSUPPORTED_ACTION"}), 400
+
+        # CRT: mount cartridge
+        elif file_ext == ".crt":
+            if action in {"default", "mount", "attach_cartridge"}:
+                try:
+                    _send_tcp_cmd(c64_ip, SOCKET_CMD_RUN_CRT, path.encode())
+                    return jsonify({"status": "ok", "message": f"Attached cartridge {Path(path).name}"})
+                except Exception as e:
+                    return jsonify({"error": f"Failed to load cartridge: {e}", "code": "DEVICE_ERROR"}), 500
+            else:
+                return jsonify({"error": "CRT files only support attach_cartridge/default action", "code": "UNSUPPORTED_ACTION"}), 400
+
+        # BIN: configure as BASIC ROM
+        elif file_ext == ".bin":
+            if action != "load_basic_rom":
+                return jsonify({"error": "BIN files only support load_basic_rom action", "code": "UNSUPPORTED_ACTION"}), 400
+
+            if not path.lower().startswith("/flash/roms/"):
+                return jsonify({
+                    "error": "BASIC ROM files must be stored in /Flash/roms before they can be activated",
+                    "code": "INVALID_PATH"
+                }), 400
+
+            try:
+                url = f"http://{c64_ip}/v1/configs/C64%20and%20Cartridge%20Settings/Basic%20ROM"
+                response = requests.put(url, params={"value": Path(path).name}, timeout=5)
+                response.raise_for_status()
+                return jsonify({"status": "ok", "message": f"Set {Path(path).name} as BASIC ROM"})
+            except requests.RequestException as e:
+                return jsonify({"error": f"Failed to set BASIC ROM: {e}", "code": "DEVICE_ERROR"}), 502
+
+        # TAP/SID/MOD: device default behavior
+        elif file_ext in {".tap", ".sid", ".mod"}:
+            if action == "default":
+                # Return info that device should handle this
+                return jsonify({"status": "ok", "message": f"File {Path(path).name} can be opened with device default player"}), 200
+            else:
+                return jsonify({"error": f"Files with extension {file_ext} have limited support", "code": "UNSUPPORTED_ACTION"}), 400
+
+        # Other: unsupported
+        else:
+            return jsonify({"error": f"Cannot run files with extension {file_ext}", "code": "UNSUPPORTED_ACTION"}), 400
+
+    except ValueError as e:
+        return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
+    except RuntimeError as e:
+        return jsonify({"error": str(e), "code": "FTP_UNAVAILABLE"}), 503
+    except Exception as e:
+        logger.exception("Error in /files/run")
+        return jsonify({"error": str(e), "code": "DEVICE_ERROR"}), 500
+
+
+@app.route("/files/progress/<operation_id>", methods=["GET"])
+def files_progress(operation_id: str):
+    """Poll progress of long-running operation."""
+    # Simple stub for v1 - operations complete synchronously
+    op_data = _file_operations.get(operation_id, {"state": "unknown"})
+
+    return jsonify({
+        "status": "ok",
+        "operation_id": operation_id,
+        "state": op_data.get("state", "done"),
+        "message": op_data.get("message", "Operation completed"),
+        "progress": {
+            "percent": 100,
+            "current_file": None,
+            "step": None
+        }
+    })
 
 
 def get_external_ips():

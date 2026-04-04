@@ -8,7 +8,7 @@ ConsoleManager framework while keeping the same LLM-agent logic.
 import logging
 from typing import Optional
 
-from server_console import ServerConsole
+from sdk import ServerConsole
 from code_chat_handler import CodeChatHandler
 
 logger = logging.getLogger(__name__)

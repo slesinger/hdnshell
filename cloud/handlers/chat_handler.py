@@ -7,8 +7,7 @@ Processes requests starting with "I:"
 
 import os
 import logging
-from base_handler import BaseHandler
-from shared_state import get_session_state
+from sdk import BaseHandler, get_session_state
 from agent_tools import (
     create_websearch_tool,
     create_c64ref_tool,

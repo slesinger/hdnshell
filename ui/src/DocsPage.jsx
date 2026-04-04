@@ -9,6 +9,7 @@ const CHAPTERS = [
   { slug: "dos",                title: "Disk Drives & Directories" },
   { slug: "executing_programs", title: "Executing Programs" },
   { slug: "file-operations",    title: "File Operations" },
+  { slug: "file-manager",       title: "File Manager" },
   { slug: "memory-operations",  title: "Memory & ML Monitor" },
   { slug: "pysic",              title: "PySIC / BASIC Programming" },
   { slug: "cloud-integration",  title: "Cloud Integration" },
@@ -19,6 +20,7 @@ const CHAPTERS = [
 
 // Sub-pages reachable via internal links but not shown in the sidebar nav.
 const SUB_PAGES = [
+  { slug: "file-manager",        title: "File Manager" },
   { slug: "server-file-editor", title: "File Editor" },
   { slug: "coding-agent",       title: "Coding Agent" },
   { slug: "web-browser",        title: "Web Browser" },
@@ -127,8 +129,12 @@ export default function DocsPage() {
                         </button>
                       );
                     }
-                    // .md link outside the manual (e.g. ../README.md) — render as plain text
-                    return <span>{children}</span>;
+                    // .md link outside the manual (e.g. ../README.md) — render as external anchor
+                    return (
+                      <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+                        {children}
+                      </a>
+                    );
                   }
                   const isExternal = href?.startsWith("http");
                   return (

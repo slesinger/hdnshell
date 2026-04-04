@@ -7,7 +7,7 @@ Processes requests starting with "help"
 
 import os
 import logging
-from base_handler import BaseHandler
+from sdk import BaseHandler
 
 logger = logging.getLogger(__name__)
 
