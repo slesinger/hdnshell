@@ -98,7 +98,7 @@ MODE_HELP = 2
 CONTENT_TOP = 1
 CONTENT_BOTTOM = 23
 CONTENT_ROWS = CONTENT_BOTTOM - CONTENT_TOP + 1  # 23
-TOC_WIDTH = 20  # columns for the TOC overlay
+TOC_WIDTH = 24  # columns for the TOC overlay
 
 # Modifier flags (from command_handler.py)
 MOD_CTRL = 0x02
@@ -130,7 +130,7 @@ HELP_LINES = [
     "",
     " OTHER",
     " CTRL+T      Toggle table of contents",
-    "             Press 1-9 to jump",
+    "             UP/DOWN + RETURN to jump",
     " F1          Go to wikipedia.org",
     " F8          This help screen",
     "",
@@ -199,6 +199,7 @@ class WikiBrowserConsole(ServerConsole):
         # TOC overlay state
         self.toc_entries: List[TocEntry] = []
         self.toc_visible: bool = False
+        self.toc_selected: int = 0
         # Show welcome screen
         self._show_welcome()
         self._full_render()
@@ -240,21 +241,31 @@ class WikiBrowserConsole(ServerConsole):
         # --- TOC overlay handling (Ctrl+T = PETSCII 0x14) ---
         if key == KEY_DEL_CTRLT and self.toc_entries:
             self.toc_visible = not self.toc_visible
+            if self.toc_visible:
+                self.toc_selected = 0
             return
 
         if self.toc_visible:
-            # Digit 1-9 → jump to section
-            if 0x31 <= key <= 0x39:  # PETSCII '1'..'9'
-                idx = key - 0x31
-                if idx < len(self.toc_entries):
-                    self.scroll_y = self.toc_entries[idx].line_idx
+            if key == KEY_CRSR_UP:
+                if self.toc_selected > 0:
+                    self.toc_selected -= 1
+                return
+            elif key == KEY_CRSR_DN:
+                if self.toc_selected < len(self.toc_entries) - 1:
+                    self.toc_selected += 1
+                return
+            elif key == KEY_RETURN:
+                if 0 <= self.toc_selected < len(self.toc_entries):
+                    self.scroll_y = self.toc_entries[self.toc_selected].line_idx
                     max_scroll = max(0, len(self.content_lines) - CONTENT_ROWS)
                     self.scroll_y = min(self.scroll_y, max_scroll)
                     self.active_link_idx = -1
                 self.toc_visible = False
                 return
-            # Any other key closes the TOC
-            self.toc_visible = False
+            elif key == KEY_RUNSTOP:
+                self.toc_visible = False
+                return
+            # Other keys ignored while TOC is open
             return
 
         # --- Normal browse keys ---
@@ -845,6 +856,11 @@ class WikiBrowserConsole(ServerConsole):
 
         def write_text(text: str, fg: int, reverse: bool = False):
             nonlocal col
+            # If text starts with punctuation, consume trailing space from a
+            # preceding link so we get "[link]." not "[link] ."
+            if text and text[0] in '.,:;!?)' and col > 0:
+                if current_line.chars[col - 1] == SC_SPACE:
+                    col -= 1
             # If the raw text starts with whitespace and we're mid-line, emit a
             # separating space (preserves the natural gap between inline elements
             # such as text nodes surrounding a link).
@@ -915,6 +931,11 @@ class WikiBrowserConsole(ServerConsole):
             current_line.chars[col] = SC_RBRACKET
             current_line.colors[col] = fg
             col += 1
+            # Trailing space after link (consumed by write_text if next char is punctuation)
+            if col < SCREEN_COLS:
+                current_line.chars[col] = SC_SPACE
+                current_line.colors[col] = fg
+                col += 1
 
             links.append(LinkInfo(
                 url=href or "", text=text,
@@ -941,7 +962,7 @@ class WikiBrowserConsole(ServerConsole):
                 # Record TOC entry (up to 9 entries for digit keys 1-9)
                 if len(toc) < 9:
                     toc.append(TocEntry(
-                        text=text[:TOC_WIDTH - 3],  # leave room for "N "
+                        text=text[:TOC_WIDTH - 2],  # leave room for indent
                         line_idx=len(lines),
                         level=heading_level,
                     ))
@@ -1116,12 +1137,9 @@ class WikiBrowserConsole(ServerConsole):
         """Overlay the table of contents on the left side of the content area."""
         if not self.toc_entries:
             return
-        # Draw a bordered panel over the left TOC_WIDTH columns of the
-        # content rows.  Each entry: "N HEADING" where N is 1-9.
         num_entries = len(self.toc_entries)
         # Panel height = entries + 2 (top/bottom border)
         panel_rows = min(num_entries + 2, CONTENT_ROWS)
-        bg_color = COL_DARK_GREY
 
         for vi in range(panel_rows):
             screen_row = CONTENT_TOP + vi
@@ -1138,35 +1156,34 @@ class WikiBrowserConsole(ServerConsole):
                 if entry_idx < num_entries:
                     entry = self.toc_entries[entry_idx]
                     indent = " " if entry.level <= 2 else "  "
-                    label = f"{entry_idx + 1}{indent}{entry.text}"
+                    label = f"{indent}{entry.text}"
                 else:
                     label = ""
                 label = label[:TOC_WIDTH]
+                is_selected = entry_idx == self.toc_selected
                 # Fill the overlay columns
                 for c in range(TOC_WIDTH):
                     if c < len(label):
                         sc = _char_to_screencode(label[c])
-                        fg = COL_YELLOW if c == 0 else COL_WHITE
                     else:
                         sc = SC_SPACE
-                        fg = bg_color
+                    if is_selected:
+                        sc |= SC_REVERSE_BIT
+                        fg = COL_WHITE
+                    else:
+                        fg = COL_LIGHT_GREY
                     self.screen[row_base + c] = sc
                     self.color[row_base + c] = fg
 
     def _render_status_bar(self):
         row_base = STATUS_ROW * SCREEN_COLS
-        # Build status
-        total = len(self.content_lines)
-        if total > 0:
-            pct = min(100, (self.scroll_y + CONTENT_ROWS) * 100 // total)
+        if self.toc_visible:
+            status = "UP/DN=Navigate RETURN=Jump"
         else:
-            pct = 100
-        link_count = len(self.links)
-        status = f"F7=Search F1=Home {pct}%"
-        if link_count > 0:
-            status += f" {link_count}L"
-        if self.toc_entries:
-            status += " CT=TOC"
+            status = "SPACE=Links RETURN=Follow"
+            if self.toc_entries:
+                status += " CT=TOC"
+            status += " F7=Search"
         status = status[:SCREEN_COLS]
         for i, ch in enumerate(status):
             sc = ascii_to_screencode(ord(ch)) | SC_REVERSE_BIT
