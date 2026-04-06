@@ -22,12 +22,9 @@ This process is simplified and automated using the server process.
 
 > Make sure the file is executable (on Linux/Mac you may need to run:
 
-<div style="position: relative; display: inline-block; width: 100%; margin-bottom: 1em;">
-    <button onclick="navigator.clipboard.writeText('chmod +x hdnsh-server-linux')" style="position: absolute; top: 4px; right: 4px; z-index: 1; background: #eee; border: none; border-radius: 4px; cursor: pointer; padding: 2px 6px;">
-        📋
-    </button>
-    <pre style="margin-top: 0; padding-top: 2em;"><code>chmod +x hdnsh-server-linux</code></pre>
-</div>
+```
+chmod +x hdnsh-server-linux
+```
 
 It is better to run the server from terminal to see the logs and any potential errors.
 
@@ -39,12 +36,9 @@ The process will scan your local network and look for your C64 Ultimate. It is _
 
 Open your browser and navigate to 
 
-<div style="position: relative; display: inline-block; width: 100%; margin-bottom: 1em;">
-    <button onclick="navigator.clipboard.writeText('http://localhost:8064')" style="position: absolute; top: 4px; right: 4px; z-index: 1; background: #eee; border: none; border-radius: 4px; cursor: pointer; padding: 2px 6px;">
-        📋
-    </button>
-    <pre style="margin-top: 0; padding-top: 2em;"><code>http://localhost:8064</code></pre>
-</div>
+```
+http://localhost:8064
+```
 
 You should see the HDN Shell Web UI.
 

@@ -98,6 +98,10 @@ MODE_HELP = 2
 CONTENT_TOP = 1
 CONTENT_BOTTOM = 23
 CONTENT_ROWS = CONTENT_BOTTOM - CONTENT_TOP + 1  # 23
+TOC_WIDTH = 20  # columns for the TOC overlay
+
+# Modifier flags (from command_handler.py)
+MOD_CTRL = 0x02
 STATUS_ROW = 24
 MAX_SEARCH_LEN = 200
 
@@ -125,6 +129,8 @@ HELP_LINES = [
     " STOP        Cancel search",
     "",
     " OTHER",
+    " CTRL        Toggle table of contents",
+    "             Press 1-9 to jump",
     " F1          Go to wikipedia.org",
     " F8          This help screen",
     "",
@@ -160,6 +166,16 @@ class LinkInfo:
 
 
 # =====================================================================
+#  TocEntry — one heading in the table of contents
+# =====================================================================
+@dataclass
+class TocEntry:
+    text: str           # heading text (already cleaned)
+    line_idx: int       # index in content_lines where this heading lives
+    level: int          # heading level (2=H2, 3=H3, etc.)
+
+
+# =====================================================================
 #  WikiBrowserConsole — main Wikipedia browser console class
 # =====================================================================
 class WikiBrowserConsole(ServerConsole):
@@ -180,6 +196,9 @@ class WikiBrowserConsole(ServerConsole):
         self.search_input: str = ""
         self.search_cursor: int = 0
         self.search_lang: str = "en"
+        # TOC overlay state
+        self.toc_entries: List[TocEntry] = []
+        self.toc_visible: bool = False
         # Show welcome screen
         self._show_welcome()
         self._full_render()
@@ -218,6 +237,27 @@ class WikiBrowserConsole(ServerConsole):
     # =================================================================
 
     def _key_browse(self, key: int, mod: int):
+        # --- TOC overlay handling ---
+        if mod & MOD_CTRL and self.toc_entries:
+            self.toc_visible = not self.toc_visible
+            return
+
+        if self.toc_visible:
+            # Digit 1-9 → jump to section
+            if 0x31 <= key <= 0x39:  # PETSCII '1'..'9'
+                idx = key - 0x31
+                if idx < len(self.toc_entries):
+                    self.scroll_y = self.toc_entries[idx].line_idx
+                    max_scroll = max(0, len(self.content_lines) - CONTENT_ROWS)
+                    self.scroll_y = min(self.scroll_y, max_scroll)
+                    self.active_link_idx = -1
+                self.toc_visible = False
+                return
+            # Any other key closes the TOC
+            self.toc_visible = False
+            return
+
+        # --- Normal browse keys ---
         if key == KEY_CRSR_UP:
             if self.scroll_y > 0:
                 self.scroll_y -= 1
@@ -406,6 +446,7 @@ class WikiBrowserConsole(ServerConsole):
         self.current_url = url
         self.active_link_idx = -1
         self.scroll_y = 0
+        self.toc_visible = False
 
         # Show loading
         self.content_lines = [self._make_text_line("Loading...", COL_WHITE)]
@@ -423,8 +464,9 @@ class WikiBrowserConsole(ServerConsole):
             # Detect page type and extract accordingly
             if _WIKI_MAIN_RE.match(url):
                 self.content_lines, self.links = self._extract_portal(page_data, url)
+                self.toc_entries = []
             else:
-                self.content_lines, self.links = self._extract_article(page_data, url)
+                self.content_lines, self.links, self.toc_entries = self._extract_article(page_data, url)
 
             self.scroll_y = 0
             self.active_link_idx = -1
@@ -752,7 +794,7 @@ class WikiBrowserConsole(ServerConsole):
     #  WIKIPEDIA ARTICLE EXTRACTION
     # =================================================================
 
-    def _extract_article(self, page_data: dict, url: str) -> Tuple[List[ContentLine], List[LinkInfo]]:
+    def _extract_article(self, page_data: dict, url: str) -> Tuple[List[ContentLine], List[LinkInfo], List[TocEntry]]:
         """Extract essential content from a Wikipedia article page.
 
         Structure-based rules:
@@ -764,16 +806,8 @@ class WikiBrowserConsole(ServerConsole):
         """
         elements = page_data.get("elements", [])
         lines: List[ContentLine] = []
+        toc: List[TocEntry] = []
         links: List[LinkInfo] = []
-
-        # Title line
-        title = page_data.get("title", "")
-        # Wikipedia titles are usually "Article - Wikipedia" — strip suffix
-        if " - " in title:
-            title = title.rsplit(" - ", 1)[0]
-        if title:
-            lines.append(self._make_text_line(title[:SCREEN_COLS], COL_WHITE, reverse=True))
-            lines.append(self._make_empty_line())
 
         col = 0
         current_line = ContentLine(
@@ -811,6 +845,16 @@ class WikiBrowserConsole(ServerConsole):
 
         def write_text(text: str, fg: int, reverse: bool = False):
             nonlocal col
+            # If the raw text starts with whitespace and we're mid-line, emit a
+            # separating space (preserves the natural gap between inline elements
+            # such as text nodes surrounding a link).
+            if text and text[0].isspace() and col > 0:
+                if col < SCREEN_COLS:
+                    current_line.chars[col] = SC_SPACE
+                    current_line.colors[col] = fg
+                    col += 1
+                else:
+                    flush_line()
             # Normalise all whitespace (tabs, multi-spaces, embedded newlines)
             # to single spaces so word-boundary detection works correctly.
             text = " ".join(text.split())
@@ -843,9 +887,16 @@ class WikiBrowserConsole(ServerConsole):
             nonlocal col
             if not text:
                 return
-            total_len = len(text) + 2
+            # +1 for leading space when mid-line, +2 for brackets
+            leading_space = col > 0
+            total_len = len(text) + 2 + (1 if leading_space else 0)
             if col > 0 and col + total_len > SCREEN_COLS:
                 flush_line()
+                leading_space = False
+            if leading_space and col < SCREEN_COLS:
+                current_line.chars[col] = SC_SPACE
+                current_line.colors[col] = fg
+                col += 1
             link_col_start = col
             link_row_start = len(lines)
 
@@ -886,6 +937,14 @@ class WikiBrowserConsole(ServerConsole):
                 if skip_section:
                     continue
                 blank_line()
+                heading_level = int(tag[1])
+                # Record TOC entry (up to 9 entries for digit keys 1-9)
+                if len(toc) < 9:
+                    toc.append(TocEntry(
+                        text=text[:TOC_WIDTH - 3],  # leave room for "N "
+                        line_idx=len(lines),
+                        level=heading_level,
+                    ))
                 write_text(text, COL_HEADING_FG, reverse=True)
                 flush_line()
                 continue
@@ -973,7 +1032,7 @@ class WikiBrowserConsole(ServerConsole):
         if not lines:
             lines.append(self._make_text_line("(no content found)", COL_LIGHT_GREY))
 
-        return lines, links
+        return lines, links, toc
 
     # =================================================================
     #  WELCOME SCREEN
@@ -1005,6 +1064,8 @@ class WikiBrowserConsole(ServerConsole):
         if self.mode == MODE_BROWSE:
             self._render_header()
             self._render_content()
+            if self.toc_visible:
+                self._render_toc()
             self._render_status_bar()
         elif self.mode == MODE_SEARCH:
             self._render_search()
@@ -1051,6 +1112,47 @@ class WikiBrowserConsole(ServerConsole):
                 self.screen[row_base + c] = sc
                 self.color[row_base + c] = color
 
+    def _render_toc(self):
+        """Overlay the table of contents on the left side of the content area."""
+        if not self.toc_entries:
+            return
+        # Draw a bordered panel over the left TOC_WIDTH columns of the
+        # content rows.  Each entry: "N HEADING" where N is 1-9.
+        num_entries = len(self.toc_entries)
+        # Panel height = entries + 2 (top/bottom border)
+        panel_rows = min(num_entries + 2, CONTENT_ROWS)
+        bg_color = COL_DARK_GREY
+
+        for vi in range(panel_rows):
+            screen_row = CONTENT_TOP + vi
+            row_base = screen_row * SCREEN_COLS
+
+            if vi == 0 or vi == panel_rows - 1:
+                # Top/bottom border
+                for c in range(TOC_WIDTH):
+                    self.screen[row_base + c] = SC_HLINE | SC_REVERSE_BIT
+                    self.color[row_base + c] = COL_LIGHT_GREY
+            else:
+                # Entry row
+                entry_idx = vi - 1
+                if entry_idx < num_entries:
+                    entry = self.toc_entries[entry_idx]
+                    indent = " " if entry.level <= 2 else "  "
+                    label = f"{entry_idx + 1}{indent}{entry.text}"
+                else:
+                    label = ""
+                label = label[:TOC_WIDTH]
+                # Fill the overlay columns
+                for c in range(TOC_WIDTH):
+                    if c < len(label):
+                        sc = _char_to_screencode(label[c])
+                        fg = COL_YELLOW if c == 0 else COL_WHITE
+                    else:
+                        sc = SC_SPACE
+                        fg = bg_color
+                    self.screen[row_base + c] = sc
+                    self.color[row_base + c] = fg
+
     def _render_status_bar(self):
         row_base = STATUS_ROW * SCREEN_COLS
         # Build status
@@ -1063,6 +1165,8 @@ class WikiBrowserConsole(ServerConsole):
         status = f"F7=Search F1=Home {pct}%"
         if link_count > 0:
             status += f" {link_count}L"
+        if self.toc_entries:
+            status += " C=TOC"
         status = status[:SCREEN_COLS]
         for i, ch in enumerate(status):
             sc = ascii_to_screencode(ord(ch)) | SC_REVERSE_BIT
