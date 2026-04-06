@@ -10,7 +10,6 @@ binaries/*
 build/
 cloud/cloud_config.cfg
 cloud/dist/hdnsh-server-linux
-cloud/hdnsh-server-linux.spec
 cloud/static/assets/*.bkp
 cloud/workspace/
 data/**
