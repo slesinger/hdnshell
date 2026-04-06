@@ -16,6 +16,7 @@ creates the canonical directory tree and seed files:
 """
 
 import os
+import sys
 import glob
 import shutil
 import logging
@@ -24,8 +25,13 @@ from .cloud_config_template import CLOUD_CONFIG_TEMPLATE
 
 logger = logging.getLogger(__name__)
 
-# The workspace lives next to the cloud/ package directory.
-WORKSPACE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "workspace")
+# In a PyInstaller one-file bundle __file__ resolves to sys._MEIPASS (a temp dir
+# deleted on exit). Anchor the workspace to the binary instead so it persists.
+if getattr(sys, "frozen", False):
+    _base_dir = os.path.dirname(sys.executable)
+else:
+    _base_dir = os.path.dirname(os.path.abspath(__file__))
+WORKSPACE_DIR = os.path.join(_base_dir, "workspace")
 
 HELLO_C64_C = """\
 int main() {

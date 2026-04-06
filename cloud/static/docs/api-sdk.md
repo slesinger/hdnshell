@@ -1,5 +1,9 @@
 # Internal API SDK for C64 Cloud Server
 
+## Server Applications
+
+Server Applications are written in python, they run on the C64 HDN Cloud Server, that means on your PC, yet you can use them directly from your C64. They can render custom interfaces on the C64 screen, handle keypresses, and maintain state. They are ideal for building rich interactive applications that can use power of power of modern processing and internet connectivity, while providing the real user experience on the C64.
+
 ## Purpose
 
 This SDK defines a reusable internal Python API for building server applications for the C64 HDN Cloud Server.
@@ -12,6 +16,12 @@ It standardizes:
 - server app lifecycle patterns
 
 It is intentionally an internal SDK (not a REST API).
+
+## Development Cycle
+
+For developping a Server Application, you need to checkout Hondani Shell source code from [github](https://github.com/hondani/hdnsh) and run the server locally. This allows you to add or change a Server Application and run the Cloud Server directly without releasing a new version. This implies that the release downloaded from [github](https://github.com/hondani/hdnsh/releases) will not be used in this process.
+
+You can find the Server Apps sources under `cloud/server-apps/`. Play with the code there and then use `make run-server` to start the server and test your changes from the C64. When you are happy with the result, you can decide to prepare a pull request should you want to publish it for all the other users.
 
 ## Current Structure
 
@@ -253,24 +263,3 @@ This is abstracted by:
 - `sdk.console_manager`
 - `sdk.network_helper`
 - `sdk.server_console`
-
-## Migration Notes
-
-Implemented in this phase:
-- SDK package scaffolded under `cloud/sdk/`
-- shared color, PETSCII, and text utility modules added
-- core infrastructure copied to SDK package
-- server apps moved to `cloud/server-apps/`
-- handlers moved to `cloud/handlers/`
-- `cloud_server.py` and `request_dispatcher.py` updated to resolve moved modules
-
-Further incremental migration can continue app-by-app by replacing local duplicated helper methods with `sdk` utilities.
-
-## Out-of-Scope Recommendations
-
-1. Add auto-discovery registry for consoles/handlers.
-2. Replace dict-based session state with typed dataclasses.
-3. Persist session state to SQLite for restart recovery.
-4. Add unit tests for `sdk.petscii`, `sdk.text_utils`, and `sdk.server_console`.
-5. Add failure isolation middleware to prevent single app crashes from affecting session loop.
-6. Add differential screen updates (dirty rectangles) instead of full 1000-byte pushes each update.

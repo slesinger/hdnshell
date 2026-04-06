@@ -33,6 +33,24 @@ const SUB_PAGES = [
 
 const ALL_PAGES = [...CHAPTERS, ...SUB_PAGES];
 
+// Generate GitHub-compatible anchor IDs from heading children.
+// Handles plain strings and inline elements (e.g. <code>).
+function headingId(children) {
+  const text = (Array.isArray(children) ? children : [children])
+    .map((child) => {
+      if (typeof child === "string") return child;
+      if (child?.props?.children) return String(child.props.children);
+      return "";
+    })
+    .join("");
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")   // strip punctuation / special chars
+    .replace(/\s+/g, "-")       // spaces → hyphens
+    .replace(/-+/g, "-")        // collapse consecutive hyphens
+    .trim();
+}
+
 export default function DocsPage() {
   const [activeSlug, setActiveSlug] = useState("user_manual");
   const [content, setContent] = useState("");
@@ -111,6 +129,10 @@ export default function DocsPage() {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
+                h1: ({ children }) => <h1 id={headingId(children)}>{children}</h1>,
+                h2: ({ children }) => <h2 id={headingId(children)}>{children}</h2>,
+                h3: ({ children }) => <h3 id={headingId(children)}>{children}</h3>,
+                h4: ({ children }) => <h4 id={headingId(children)}>{children}</h4>,
                 // Handle links: inter-doc .md links navigate within the app;
                 // external links open in a new tab; anchors are followed normally.
                 a: ({ href, children, ...props }) => {

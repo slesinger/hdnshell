@@ -6,6 +6,7 @@ All configuration (including secrets) is stored in a single file:
 """
 
 import os
+import sys
 import re
 import logging
 
@@ -15,7 +16,10 @@ from workspace_init import get_workspace_config_path
 logger = logging.getLogger(__name__)
 
 # Path where the old .env file used to live (used only for one-time migration)
-_OLD_ENV_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+_OLD_ENV_PATH = os.path.join(
+    os.path.dirname(sys.executable) if getattr(sys, "frozen", False)
+    else os.path.dirname(os.path.abspath(__file__)),
+    ".env")
 
 # Boolean-valued keys stored without quotes
 _BOOLEAN_KEYS = {"code_llm_same_as_chat", "LANGSMITH_TRACING"}

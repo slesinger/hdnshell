@@ -10,6 +10,7 @@ Provides reusable tool builders for:
 
 import subprocess
 import os
+import sys
 import logging
 from langchain_core.tools import Tool
 from langchain_community.utilities import SerpAPIWrapper
@@ -348,7 +349,9 @@ def run_prg(project_name: str) -> str:
         return "Error: project_name must not be empty."
 
     oscar_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "oscar"
+        os.path.dirname(sys.executable) if getattr(sys, "frozen", False)
+        else os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "oscar"
     )
     prg_path = os.path.join(oscar_dir, "projects", project_name, f"{project_name}.prg")
 
@@ -400,7 +403,9 @@ def create_run_tool(project_name: str):
 def _source_file_path(project_name: str) -> str:
     """Return the absolute path to the project's C source file."""
     oscar_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "oscar"
+        os.path.dirname(sys.executable) if getattr(sys, "frozen", False)
+        else os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "oscar"
     )
     return os.path.join(oscar_dir, "projects", project_name, f"{project_name}.c")
 
@@ -471,7 +476,9 @@ def create_compile_tool(project_name: str):
 
     project_name = project_name.strip()
     oscar_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "oscar"
+        os.path.dirname(sys.executable) if getattr(sys, "frozen", False)
+        else os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "oscar"
     )
     project_dir = os.path.join(oscar_dir, "projects", project_name)
     source_file = os.path.join(project_dir, f"{project_name}.c")
@@ -507,7 +514,8 @@ def create_compile_tool(project_name: str):
 # ------------------------------------------------------------------
 
 _OSCAR_DOCS_BASE = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    sys._MEIPASS if getattr(sys, "frozen", False)
+    else os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "oscar",
     "docs",
 )
@@ -780,7 +788,9 @@ def compile_project(working_dir: str, main_file: str = "") -> str:
         return "Error: working directory does not exist."
 
     oscar_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cloud", "oscar"
+        sys._MEIPASS if getattr(sys, "frozen", False)
+        else os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cloud"),
+        "oscar"
     )
     compiler = os.path.join(oscar_dir, "bin", "oscar64")
     if not os.path.isfile(compiler):
