@@ -32,6 +32,7 @@ from workspace_init import WORKSPACE_DIR
 from code_chat_handler import CodeChatAgent
 from agent_tools import list_project_files
 from network_helper import send_screen_data
+from text_utils import word_wrap as _word_wrap
 
 logger = logging.getLogger(__name__)
 
@@ -454,7 +455,7 @@ class CodingAgentConsole(ServerConsole):
         for role, text in self.chat_history:
             color = self._color_for_role(role)
             prefix = "> " if role == "user" else ""
-            wrapped = self._word_wrap(prefix + text, SCREEN_COLS)
+            wrapped = _word_wrap(prefix + text, SCREEN_COLS)
             for wl in wrapped:
                 lines.append((wl, color))
             # Blank line between messages
@@ -470,24 +471,6 @@ class CodingAgentConsole(ServerConsole):
             "action": COL_ACTION_FG,
             "error": COL_ERROR_FG,
         }.get(role, COL_AGENT_FG)
-
-    @staticmethod
-    def _word_wrap(text: str, width: int) -> List[str]:
-        """Wrap text to lines of at most *width* characters."""
-        result: List[str] = []
-        for raw_line in text.split("\n"):
-            if not raw_line:
-                result.append("")
-                continue
-            while len(raw_line) > width:
-                # Try to break at a space
-                brk = raw_line.rfind(" ", 0, width)
-                if brk <= 0:
-                    brk = width
-                result.append(raw_line[:brk])
-                raw_line = raw_line[brk:].lstrip()
-            result.append(raw_line)
-        return result
 
     def _input_rows(self, buf_len: int = -1) -> int:
         """How many screen rows the current input buffer needs."""

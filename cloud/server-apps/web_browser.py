@@ -31,6 +31,7 @@ from server_console import (
     ascii_to_screencode,
 )
 from generate_pet_asc_table import Petscii
+from text_utils import word_wrap
 
 logger = logging.getLogger(__name__)
 
@@ -1242,6 +1243,11 @@ class WebBrowserConsole(ServerConsole):
         def write_text(text: str, fg: int, reverse: bool = False):
             """Write text with word-wrap at SCREEN_COLS."""
             nonlocal col
+            # Normalise all whitespace (tabs, multi-spaces, embedded newlines)
+            # to single spaces so word-boundary detection works correctly.
+            text = " ".join(text.split())
+            if not text:
+                return
             words = text.split(" ")
             for wi, word in enumerate(words):
                 # Add space between words (not before first)
@@ -1256,7 +1262,7 @@ class WebBrowserConsole(ServerConsole):
                 if not word:
                     continue
 
-                # Word wrap: if word doesn't fit and we're not at start of line
+                # Word wrap: move the whole word to the next line if it doesn't fit
                 if col > 0 and col + len(word) > SCREEN_COLS:
                     flush_line()
 
@@ -1838,47 +1844,15 @@ class WebBrowserConsole(ServerConsole):
     ) -> List[ContentLine]:
         """Convert plain text to ContentLine list with word-wrap."""
         lines: List[ContentLine] = []
-        for paragraph in text.split("\n"):
-            col = 0
-            current = ContentLine(
+        for line_str in word_wrap(text, SCREEN_COLS):
+            cl = ContentLine(
                 chars=[SC_SPACE] * SCREEN_COLS,
                 colors=[fg] * SCREEN_COLS,
             )
-            words = paragraph.split(" ")
-            for wi, word in enumerate(words):
-                if wi > 0 and col > 0:
-                    if col < SCREEN_COLS:
-                        current.chars[col] = SC_SPACE
-                        current.colors[col] = fg
-                        col += 1
-                    else:
-                        lines.append(current)
-                        current = ContentLine(
-                            chars=[SC_SPACE] * SCREEN_COLS,
-                            colors=[fg] * SCREEN_COLS,
-                        )
-                        col = 0
-                if not word:
-                    continue
-                if col > 0 and col + len(word) > SCREEN_COLS:
-                    lines.append(current)
-                    current = ContentLine(
-                        chars=[SC_SPACE] * SCREEN_COLS,
-                        colors=[fg] * SCREEN_COLS,
-                    )
-                    col = 0
-                for ch in word:
-                    if col >= SCREEN_COLS:
-                        lines.append(current)
-                        current = ContentLine(
-                            chars=[SC_SPACE] * SCREEN_COLS,
-                            colors=[fg] * SCREEN_COLS,
-                        )
-                        col = 0
-                    current.chars[col] = _char_to_screencode(ch)
-                    current.colors[col] = fg
-                    col += 1
-            lines.append(current)
+            for i, ch in enumerate(line_str[:SCREEN_COLS]):
+                cl.chars[i] = _char_to_screencode(ch)
+                cl.colors[i] = fg
+            lines.append(cl)
         return lines if lines else [ContentLine(
             chars=[SC_SPACE] * SCREEN_COLS,
             colors=[fg] * SCREEN_COLS,

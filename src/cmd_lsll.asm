@@ -18,6 +18,7 @@
 // <ls_command> ::= "ls" [ <ws> ( <file_or_path> ) ]  ; command code 12
 // <ll_command> ::= "ll" [ <ws> ( <file_or_path> ) ]  ; command code 25
 
+cmd_ls:
 cmd_ll:
 cmd_dir:
     ParsingInputsDone() // finish parsing input line
@@ -121,7 +122,4 @@ line_done:
     sta ZP_INDIRECT_ADDR + 1
     jmp line_loop
 end_of_dir:
-    CommandDone()  // jump to parser completion handler in parser.asm
-
-cmd_ls:
     CommandDone()  // jump to parser completion handler in parser.asm

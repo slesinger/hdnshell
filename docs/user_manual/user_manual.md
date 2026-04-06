@@ -9,6 +9,7 @@ It also includes parts of SMON, which is one of the best (if not the best) machi
 - [About the project](../README.md)
 - [Getting Started](installation.md)
 - [Using the Shell](using-the-shell.md)
+- [Help](help.md)
 - [Navigating Disk Drives and Directories](dos.md)
 - [Executing Programs](executing_programs.md)
 - [File Operations](file-operations.md)
@@ -22,28 +23,8 @@ It also includes parts of SMON, which is one of the best (if not the best) machi
 
 ## Getting Help
 
-As it is quite imprtant to see if your C64U has connection to the cloud server, you can use `info` command to see detailed status of your system. Depending on the connection state, you will get different help screens when you type `help`:
+As it is quite important to see if your C64U has connection to the cloud server, you can use `info` command to see detailed status of your system. Depending on the connection state, you will get different help screens when you type `help`.
 
-Working without connection, you will get a local help screen with basic information
+See the [Help](help.md) and [AI Assistance](ai-assistance.md) chapters for more details on how to use the help system and AI assistant.
 
-# TODO - add screenshots of help screens
-
-If connection is available, you have few options.
-
-`help` - a directory of available help topics
-
-# TODO - add screenshots of help screens
-
-`help <topic>` - printout of detailed help on a specific topic that is recognized by the server help system.
-
-`help <whatever questions you have about the HDN Shell>` - will give you AI generated answer based on the user guide. It is like a search on steroids.
-
-# TODO - add screenshots of help screens
-
-## Help Topics
-
-- `help` - General help
-- `help chat` - Chat/AI help
-- `help python` - Python eval help
-- `help csdb` - CSDB query help
-- `help commands` - Command list
+> When the Hondani Shell is in early development, the help system may give you wrong information. 😊 Stay alert❗

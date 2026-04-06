@@ -14,6 +14,14 @@ function devDocsPlugin() {
     apply: "serve",
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
+        if (req.url?.startsWith("/assets/")) {
+          const filename = path.basename(req.url);
+          const filePath = path.resolve(__dirname, "../docs/assets", filename);
+          if (fs.existsSync(filePath)) {
+            res.end(fs.readFileSync(filePath));
+            return;
+          }
+        }
         if (req.url?.startsWith("/docs/") && req.url.endsWith(".md")) {
           const filename = path.basename(req.url);
           let filePath = path.resolve(__dirname, "../docs/user_manual", filename);
@@ -51,6 +59,10 @@ export default defineConfig({
         {
           src: "../README.md",
           dest: "docs",
+        },
+        {
+          src: "../docs/assets/*",
+          dest: "assets",
         },
       ],
     }),

@@ -1,6 +1,6 @@
 # Navigating Disk Drives and Directories
 
-This guide explains how to navigate disk drives and directories in the HDN Shell. It is inspired by modern command-line environments but tailored for the Commodore 64.
+This guide explains how to navigate disk drives and directories in the HDN Shell. It is inspired by modern command-line environments but tailored for the Commodore 64. Commands are in lowercase.
 
 There are following devices available:
 

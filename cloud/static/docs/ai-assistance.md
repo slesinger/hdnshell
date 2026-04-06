@@ -16,9 +16,28 @@ If you ask AI to do things, it can send key strokes to your C64U and do things f
 
 ## Example
 
+### Asking a general question:
+
 ```
 i:how much is 96-32?
 96 - 32 = 64
 ```
 
-```
+### Using AI Web Search
+
+![AI Web Search](../assets/ai-websearch.png)
+
+
+### Screen Reading
+
+Utilize the `Web Remote Control` to let AI read your screen and help you with it.
+
+The following screenshot is using listing memory at $0800 just asn an example content that AI can read from the screen and work with it. You can ask AI to explain what is on the screen, or how to fix an error, or even ask it to modify the content for you and send the modified content back to your C64U.
+
+![AI Screen](../assets/ai-screen.png)
+
+### Keyboard typing
+
+You can ask AI to do things for you. For example, if you ask `How do I list files on disk?`, it can send the command `LL` for you.
+
+![AI Screen](../assets/ai-typekeys.png)

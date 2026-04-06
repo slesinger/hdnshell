@@ -34,6 +34,7 @@ from server_console import (
 from generate_pet_asc_table import Petscii
 from shared_state import get_clipboard, set_clipboard
 from workspace_init import WORKSPACE_DIR
+from text_utils import word_wrap as _word_wrap
 
 logger = logging.getLogger(__name__)
 
@@ -241,32 +242,6 @@ def _char_to_screencode(ch: str) -> int:
         if 32 <= c_code < 127:
             return ascii_to_screencode(c_code)
     return SC_SPACE
-
-
-# =====================================================================
-#  Helper: word-wrap a plain-text string into 40-char lines
-# =====================================================================
-
-def _word_wrap(text: str, width: int = SCREEN_COLS) -> List[str]:
-    """Word-wrap *text* to the given *width*.  Respects existing newlines."""
-    result: List[str] = []
-    for paragraph in text.split("\n"):
-        if not paragraph.strip():
-            result.append("")
-            continue
-        words = paragraph.split()
-        line = ""
-        for word in words:
-            if not line:
-                line = word[:width]
-            elif len(line) + 1 + len(word) <= width:
-                line += " " + word
-            else:
-                result.append(line)
-                line = word[:width]
-        if line:
-            result.append(line)
-    return result
 
 
 # =====================================================================

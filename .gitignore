@@ -8,8 +8,11 @@ __pycache__/
 *.vs
 binaries/*
 build/
+cloud/cloud_config.cfg
 cloud/dist/hdnsh-server-linux
 cloud/hdnsh-server-linux.spec
+cloud/static/assets/*.bkp
+cloud/workspace/
 data/**
 docs/assets/*.bkp
 docs/c64os/**
@@ -19,11 +22,8 @@ docs/inspiration/*
 docs/ramdos.zip
 hdnsh.bin
 msbasic/
+reu.img
+robik-d2d55-02522689b916.json
 ui/dist/*
 ui/node_modules/
 venv/
-robik-d2d55-02522689b916.json
-reu.img
-
-cloud/cloud_config.cfg
-cloud/workspace/

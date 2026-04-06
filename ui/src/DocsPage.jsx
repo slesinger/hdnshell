@@ -4,18 +4,19 @@ import remarkGfm from "remark-gfm";
 
 const CHAPTERS = [
   { slug: "user_manual",        title: "Overview" },
-  { slug: "installation",       title: "Installation" },
+  { slug: "installation",       title: "Getting Started" },
   { slug: "using-the-shell",    title: "Using the Shell" },
-  { slug: "dos",                title: "Disk Drives & Directories" },
+  { slug: "help",               title: "Help" },
+  { slug: "dos",                title: "Navigating Disk Drives and Directories" },
   { slug: "executing_programs", title: "Executing Programs" },
   { slug: "file-operations",    title: "File Operations" },
+  { slug: "memory-operations",  title: "Memory Operations, Machine Language Monitor" },
+  { slug: "pysic",              title: "PySIC Alternative to BASIC Programming" },
+  { slug: "cloud-integration",  title: "Networking, Cloud Integration" },
   { slug: "file-manager",       title: "File Manager" },
-  { slug: "memory-operations",  title: "Memory & ML Monitor" },
-  { slug: "pysic",              title: "PySIC / BASIC Programming" },
-  { slug: "cloud-integration",  title: "Cloud Integration" },
-  { slug: "cloud-apps",         title: "Cloud Apps" },
+  { slug: "server-file-editor", title: "Server-Side File Editor" },
   { slug: "ai-assistance",      title: "AI Assistance" },
-  { slug: "csdb",               title: "CSDB Scene Database" },
+  { slug: "csdb",               title: "CSDB.dk Commodore 64 Scene Database" },
 ];
 
 // Sub-pages reachable via internal links but not shown in the sidebar nav.

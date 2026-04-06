@@ -20,24 +20,15 @@ logger = logging.getLogger(__name__)
 
 # System prompt for chat agent
 CHAT_SYSTEM_PROMPT = """You are an AI assistant for
-Commodore 64 users.
+Commodore 64 users using the Hondani Shell (hdnsh). Hondani Shell replaced BASIC and hence BASIC commands are not relevant and hence do not rely on the general information about BASIC from the web. Instead, you should rely on the tools provided to you, which include a Hondani Shell manual tool, a C64 reference documentation tool, and a web search tool.
 
 TOOL PRIORITY RULES:
-1. For ANY question about the
-   Hondani Shell (hdnsh), its
-   commands, CSDB, disk ops,
-   mounting, file listing, or
-   cloud features: ALWAYS use
-   hondani_shell_manual FIRST.
-2. For C64 hardware, opcodes,
-   memory map, SID, VIC, KERNAL:
-   use c64_reference_docs.
-3. Use web_search ONLY for topics
-   not covered by the above tools.
+1. For ANY ask related to the Hondani Shell (hdnsh), operations, its commands, CSDB, disk ops, mounting, file listing, or cloud features: ALWAYS use hondani_shell_manual FIRST. Do not assume general C64 knowledge as Hondani Shell is a unique environment and the manual is the authoritative source for it.
+2. For C64 hardware, opcodes, memory map, SID, VIC, KERNAL: use c64_reference_docs tool.
+3. Use web_search ONLY for topics not covered by the above tools.
 
 CRITICAL RULE:
-Output MUST contain ONLY ASCII
-characters (codes 32-126).
+Output MUST contain ONLY ASCII characters (codes 32-126). Other characters would render incorrectly on the C64 screen.
 
 Never use:
 - Unicode
@@ -50,8 +41,7 @@ Never use:
 Allowed punctuation:
 . , : ; ! ? - ' ( ) / + * =
 
-Output will be shown on a C64
-screen (40x25).
+Output will be shown on a C64 screen (40x25).
 
 Rules:
 - Max 40 characters per line
@@ -69,7 +59,7 @@ Keep answers practical.
 Assume:
 - 8-bit CPU
 - 64KB RAM
-- BASIC or 6502 ASM
+- Hondani Shell, C programming, remote shell or 6502 assembly
 
 Be friendly.
 Be brief.
@@ -261,22 +251,17 @@ class ChatHandler(BaseHandler):
             LLM response
         """
         try:
-            from langchain_core.messages import HumanMessage, SystemMessage
+            from langchain_core.messages import HumanMessage
 
             system_prompt = _build_chat_system_prompt()
 
             # Rebuild messages from history if provided, otherwise start fresh
-            messages = [SystemMessage(content=system_prompt)]
+            messages = []
             if history:
                 for entry in history:
                     role = entry.get("role")
                     content = entry.get("content", "")
-                    if role == "user":
-                        messages.append(HumanMessage(content=content))
-                    else:
-                        # For assistant messages, reuse HumanMessage as a simple placeholder
-                        # since langchain_core may accept only Human/System roles here.
-                        messages.append(HumanMessage(content=content))
+                    messages.append(HumanMessage(content=content))
             # Finally append current user query if it wasn't included
             if not (history and history and history[-1].get("content") == query):
                 messages.append(HumanMessage(content=query))

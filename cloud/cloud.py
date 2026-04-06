@@ -54,6 +54,7 @@ from csdb_handler import CSDBHandler
 
 # Configure logging for the web server
 logging.basicConfig(level=logging.INFO)
+logging.getLogger("agent_tools").setLevel(logging.DEBUG)
 logger = logging.getLogger("webserver")
 
 
