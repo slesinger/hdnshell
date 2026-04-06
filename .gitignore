@@ -26,3 +26,5 @@ robik-d2d55-02522689b916.json
 ui/dist/*
 ui/node_modules/
 venv/
+release/**
+release/hdnsh-server-linux
