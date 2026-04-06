@@ -15,6 +15,8 @@ It also includes parts of SMON, which is one of the best (if not the best) machi
 - [File Operations](file-operations.md)
 - [Memory Operations, Machine Language Monitor](memory-operations.md)
 - [PySIC Alternative to BASIC Programming](pysic.md)
+- [Programming in C on the C64](c-programming.md)
+- [Programming Server Apps](api-sdk.md)
 - [Networking, Cloud Integration](cloud-integration.md)
 - [File Manager](file-manager.md)
 - [Server-Side File Editor](server-file-editor.md)

@@ -12,6 +12,8 @@ const CHAPTERS = [
   { slug: "file-operations",    title: "File Operations" },
   { slug: "memory-operations",  title: "Memory Operations, Machine Language Monitor" },
   { slug: "pysic",              title: "PySIC Alternative to BASIC Programming" },
+  { slug: "c-programming",      title: "Programming in C on the C64" },
+  { slug: "api-sdk",            title: "Programming Server Apps" },
   { slug: "cloud-integration",  title: "Networking, Cloud Integration" },
   { slug: "file-manager",       title: "File Manager" },
   { slug: "server-file-editor", title: "Server-Side File Editor" },
