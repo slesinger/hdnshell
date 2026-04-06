@@ -766,15 +766,6 @@ class WikiBrowserConsole(ServerConsole):
         lines: List[ContentLine] = []
         links: List[LinkInfo] = []
 
-        # Title line
-        title = page_data.get("title", "")
-        # Wikipedia titles are usually "Article - Wikipedia" — strip suffix
-        if " - " in title:
-            title = title.rsplit(" - ", 1)[0]
-        if title:
-            lines.append(self._make_text_line(title[:SCREEN_COLS], COL_WHITE, reverse=True))
-            lines.append(self._make_empty_line())
-
         col = 0
         current_line = ContentLine(
             chars=[SC_SPACE] * SCREEN_COLS,
@@ -811,6 +802,16 @@ class WikiBrowserConsole(ServerConsole):
 
         def write_text(text: str, fg: int, reverse: bool = False):
             nonlocal col
+            # If the raw text starts with whitespace and we're mid-line, emit a
+            # separating space (preserves the natural gap between inline elements
+            # such as text nodes surrounding a link).
+            if text and text[0].isspace() and col > 0:
+                if col < SCREEN_COLS:
+                    current_line.chars[col] = SC_SPACE
+                    current_line.colors[col] = fg
+                    col += 1
+                else:
+                    flush_line()
             # Normalise all whitespace (tabs, multi-spaces, embedded newlines)
             # to single spaces so word-boundary detection works correctly.
             text = " ".join(text.split())
@@ -843,9 +844,16 @@ class WikiBrowserConsole(ServerConsole):
             nonlocal col
             if not text:
                 return
-            total_len = len(text) + 2
+            # +1 for leading space when mid-line, +2 for brackets
+            leading_space = col > 0
+            total_len = len(text) + 2 + (1 if leading_space else 0)
             if col > 0 and col + total_len > SCREEN_COLS:
                 flush_line()
+                leading_space = False
+            if leading_space and col < SCREEN_COLS:
+                current_line.chars[col] = SC_SPACE
+                current_line.colors[col] = fg
+                col += 1
             link_col_start = col
             link_row_start = len(lines)
 

@@ -168,7 +168,7 @@ class _PlaywrightWorker:
                             if (t && t.trim()) {
                                 results.push({
                                     tag: '#text',
-                                    text: t.trim(),
+                                    text: t.replace(/\s+/g, ' '),
                                     href: null,
                                     alt: null,
                                     list_index: -1
