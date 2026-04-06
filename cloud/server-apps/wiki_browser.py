@@ -129,7 +129,7 @@ HELP_LINES = [
     " STOP        Cancel search",
     "",
     " OTHER",
-    " CTRL        Toggle table of contents",
+    " CTRL+T      Toggle table of contents",
     "             Press 1-9 to jump",
     " F1          Go to wikipedia.org",
     " F8          This help screen",
@@ -237,8 +237,8 @@ class WikiBrowserConsole(ServerConsole):
     # =================================================================
 
     def _key_browse(self, key: int, mod: int):
-        # --- TOC overlay handling ---
-        if mod & MOD_CTRL and self.toc_entries:
+        # --- TOC overlay handling (Ctrl+T = PETSCII 0x14) ---
+        if key == KEY_DEL_CTRLT and self.toc_entries:
             self.toc_visible = not self.toc_visible
             return
 
@@ -1166,7 +1166,7 @@ class WikiBrowserConsole(ServerConsole):
         if link_count > 0:
             status += f" {link_count}L"
         if self.toc_entries:
-            status += " C=TOC"
+            status += " CT=TOC"
         status = status[:SCREEN_COLS]
         for i, ch in enumerate(status):
             sc = ascii_to_screencode(ord(ch)) | SC_REVERSE_BIT
