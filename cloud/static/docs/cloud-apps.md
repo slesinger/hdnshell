@@ -20,6 +20,7 @@ Press the **C= (Commodore)** key together with the digit to switch consoles at a
 | `C=+4`   | [Web Browser](web-browser.md) | PETSCII web browser with JavaScript rendering |
 | `C=+5`   | [Telegram Chat](telegram-chat.md) | Telegram client — chat list, messages, contacts |
 | `C=+6`   | [RSS Reader](rss-reader.md) | RSS/Atom feed reader with article view |
+| `C=+7`   | [Wikipedia Browser](wikipedia-browser.md) | PETSCII Wikipedia reader with TOC navigation |
 
 Switching is instantaneous. The server keeps each console's state alive so you can freely jump between them and return to exactly where you left off.
 
@@ -64,3 +65,11 @@ A Telegram client that connects to the Telegram network using the MTProto protoc
 An RSS/Atom feed reader that fetches, parses, and displays news articles in a clean 40-column layout. Comes pre-loaded with Hacker News, BBC News, and CSDb Releases feeds. You can add, remove, and enable/disable feeds from the built-in feed directory.
 
 → [Full documentation](rss-reader.md)
+
+---
+
+### Wikipedia Browser — `C=+7`
+
+A dedicated Wikipedia reader that strips pages down to essential text and links for the 40×25 PETSCII display. Supports multi-language search, link navigation, page history, and a table of contents overlay (Ctrl+T) for quick section jumping.
+
+→ [Full documentation](wikipedia-browser.md)

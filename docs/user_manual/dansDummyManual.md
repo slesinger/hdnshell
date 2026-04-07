@@ -9,6 +9,9 @@
   python -m playwright install chromium
 
   2. Start the server:
+cd ..
+  make build-ui
+  make run-server
 
   python cloud.py
 

@@ -1068,6 +1068,8 @@ class WikiBrowserConsole(ServerConsole):
         self.content_lines.append(self._make_text_line("F7  Search Wikipedia", COL_HELP_FG))
         self.content_lines.append(self._make_text_line("F8  Help", COL_HELP_FG))
         self.content_lines.append(self._make_empty_line())
+        self.content_lines.append(self._make_text_line("CTRL+T in article = open TOC", COL_HELP_FG))
+        self.content_lines.append(self._make_empty_line())
         self.content_lines.append(self._make_text_line("Press F1 or F7 to start.", COL_LIGHT_GREY))
 
     # =================================================================
@@ -1182,7 +1184,7 @@ class WikiBrowserConsole(ServerConsole):
         else:
             status = "SPACE=Links RETURN=Follow"
             if self.toc_entries:
-                status += " CT=TOC"
+                status += " CTRL+T=TOC"
             status += " F7=Search"
         status = status[:SCREEN_COLS]
         for i, ch in enumerate(status):
