@@ -9,11 +9,10 @@
   python -m playwright install chromium
 
   2. Start the server:
-  ```
-  cd ..
+cd ..
   make build-ui
   make run-server
-  ```
+
   python cloud.py
 
   This starts both the TCP server (port 6464 for the C64) and the Flask web server. 

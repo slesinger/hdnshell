@@ -432,11 +432,16 @@ function FileManagerPage({ lastC64Ip }) {
 
       {/* Navigation & Actions Bar */}
       <div className="d-flex gap-2 mb-3 flex-wrap">
+        <div className="w-100">
+          <a href="https://csdb.dk/latestreleases.php" target="_blank" rel="noreferrer" className="link-primary">
+            Get games and demo releases from CSDB
+          </a>
+        </div>
         <div className="input-group flex-grow-1" style={{ maxWidth: "600px" }}>
           <input
             type="text"
             className="form-control"
-            placeholder="CSDB URL (e.g., https://csdb.dk/release/download.php?id=305029)"
+            placeholder="Paste CSDB URL here (e.g., https://csdb.dk/release/download.php?id=305029)"
             value={csdbUrl}
             onChange={(e) => setCsdbUrl(e.target.value)}
             disabled={csdbImporting}
