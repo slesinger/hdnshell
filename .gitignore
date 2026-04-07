@@ -22,6 +22,8 @@ docs/ramdos.zip
 hdnsh.bin
 msbasic/
 reu.img
+binaries/*
+.DS_Store
 robik-d2d55-02522689b916.json
 ui/dist/*
 ui/node_modules/
