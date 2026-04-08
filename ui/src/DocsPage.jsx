@@ -20,6 +20,8 @@ const CHAPTERS = [
   { slug: "server-file-editor", title: "Server-Side File Editor" },
   { slug: "ai-assistance",      title: "AI Assistance" },
   { slug: "csdb",               title: "CSDB.dk Commodore 64 Scene Database" },
+  { slug: "wikipedia-browser",  title: "Wikipedia Browser" },
+  { slug: "installation_alternative", title: "Alternative Installation" },
 ];
 
 // Sub-pages reachable via internal links but not shown in the sidebar nav.
