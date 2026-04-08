@@ -1,4 +1,5 @@
 <!-- MIRROR: This file is duplicated at cloud/static/docs/user_manual.md (served by the cloud server). Any changes here must also be applied there. -->
+<!-- NAV: When adding a new doc file, also add it to cloud/static/docs/docs-manifest.json (drives the web UI sidebar and link resolution). -->
 
 # HDN Shell User Manual
 

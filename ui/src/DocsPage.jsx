@@ -2,39 +2,9 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-const CHAPTERS = [
-  { slug: "user_manual",        title: "Overview" },
-  { slug: "installation",       title: "Getting Started" },
-  { slug: "using-the-shell",    title: "Using the Shell" },
-  { slug: "help",               title: "Help" },
-  { slug: "dos",                title: "Navigating Disk Drives and Directories" },
-  { slug: "executing_programs", title: "Executing Programs" },
-  { slug: "file-operations",    title: "File Operations" },
-  { slug: "memory-operations",  title: "Memory Operations, Machine Language Monitor" },
-  { slug: "cloud-apps",         title: "Cloud Apps" },
-  { slug: "pysic",              title: "PySIC Alternative to BASIC Programming" },
-  { slug: "c-programming",      title: "Programming in C on the C64" },
-  { slug: "api-sdk",            title: "Programming Server Apps" },
-  { slug: "cloud-integration",  title: "Networking, Cloud Integration" },
-  { slug: "file-manager",       title: "File Manager" },
-  { slug: "server-file-editor", title: "Server-Side File Editor" },
-  { slug: "ai-assistance",      title: "AI Assistance" },
-  { slug: "csdb",               title: "CSDB.dk Commodore 64 Scene Database" },
-  { slug: "wikipedia-browser",  title: "Wikipedia Browser" },
-  { slug: "installation_alternative", title: "Alternative Installation" },
-];
-
-// Sub-pages reachable via internal links but not shown in the sidebar nav.
-const SUB_PAGES = [
-  { slug: "file-manager",        title: "File Manager" },
-  { slug: "server-file-editor", title: "File Editor" },
-  { slug: "coding-agent",       title: "Coding Agent" },
-  { slug: "web-browser",        title: "Web Browser" },
-  { slug: "telegram-chat",      title: "Telegram Chat" },
-  { slug: "rss-reader",         title: "RSS Reader" },
-];
-
-const ALL_PAGES = [...CHAPTERS, ...SUB_PAGES];
+// Page list is loaded from /docs/docs-manifest.json at runtime.
+// To add a new doc page: add an entry there — no JSX changes needed.
+// nav:false entries are reachable via links but not shown in the sidebar.
 
 // Generate GitHub-compatible anchor IDs from heading children.
 // Handles plain strings and inline elements (e.g. <code>).
@@ -59,6 +29,18 @@ export default function DocsPage() {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [allPages, setAllPages] = useState([]);
+  const [chapters, setChapters] = useState([]);
+
+  useEffect(() => {
+    fetch("/docs/docs-manifest.json")
+      .then((r) => r.json())
+      .then((pages) => {
+        setAllPages(pages);
+        setChapters(pages.filter((p) => p.nav !== false));
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,7 +77,7 @@ export default function DocsPage() {
           User Manual
         </p>
         <ul className="nav flex-column">
-          {CHAPTERS.map((ch) => (
+          {chapters.map((ch) => (
             <li className="nav-item" key={ch.slug}>
               <button
                 type="button"
@@ -141,7 +123,7 @@ export default function DocsPage() {
                 a: ({ href, children, ...props }) => {
                   if (href?.endsWith(".md") && !href.startsWith("http")) {
                     const slug = href.replace(/^.*\//, "").replace(/\.md$/, "");
-                    const known = ALL_PAGES.find((c) => c.slug === slug);
+                    const known = allPages.find((c) => c.slug === slug);
                     if (known) {
                       return (
                         <button

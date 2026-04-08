@@ -1,0 +1,26 @@
+[
+  { "slug": "user_manual",              "title": "Overview" },
+  { "slug": "installation",             "title": "Getting Started" },
+  { "slug": "installation_alternative", "title": "Alternative Installation" },
+  { "slug": "using-the-shell",          "title": "Using the Shell" },
+  { "slug": "help",                     "title": "Help" },
+  { "slug": "dos",                      "title": "Navigating Disk Drives and Directories" },
+  { "slug": "executing_programs",       "title": "Executing Programs" },
+  { "slug": "file-operations",          "title": "File Operations" },
+  { "slug": "memory-operations",        "title": "Memory Operations, Machine Language Monitor" },
+  { "slug": "cloud-apps",               "title": "Cloud Apps" },
+  { "slug": "pysic",                    "title": "PySIC Alternative to BASIC Programming" },
+  { "slug": "c-programming",            "title": "Programming in C on the C64" },
+  { "slug": "api-sdk",                  "title": "Programming Server Apps" },
+  { "slug": "cloud-integration",        "title": "Networking, Cloud Integration" },
+  { "slug": "file-manager",             "title": "File Manager" },
+  { "slug": "server-file-editor",       "title": "Server-Side File Editor" },
+  { "slug": "ai-assistance",            "title": "AI Assistance" },
+  { "slug": "csdb",                     "title": "CSDB.dk Commodore 64 Scene Database" },
+  { "slug": "wikipedia-browser",        "title": "Wikipedia Browser" },
+
+  { "slug": "coding-agent",    "title": "Coding Agent",    "nav": false },
+  { "slug": "web-browser",     "title": "Web Browser",     "nav": false },
+  { "slug": "telegram-chat",   "title": "Telegram Chat",   "nav": false },
+  { "slug": "rss-reader",      "title": "RSS Reader",      "nav": false }
+]
