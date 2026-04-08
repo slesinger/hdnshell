@@ -35,7 +35,8 @@ export default function DocsPage() {
   useEffect(() => {
     fetch("/docs/docs-manifest.json")
       .then((r) => r.json())
-      .then((pages) => {
+      .then((data) => {
+        const pages = data.pages || [];
         setAllPages(pages);
         setChapters(pages.filter((p) => p.nav !== false));
       })

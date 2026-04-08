@@ -1,6 +1,3 @@
-<!-- MIRROR: This file is duplicated at cloud/static/docs/user_manual.md (served by the cloud server). Any changes here must also be applied there. -->
-<!-- NAV: When adding a new doc file, also add it to cloud/static/docs/docs-manifest.json (drives the web UI sidebar and link resolution). -->
-
 # HDN Shell User Manual
 
 HDN Shell is a replacement to C64 BASIC. The aim is to strip of mostly unused parts of BASIC, viewed as a DOS, and replace them with a mostly used features, viewed from modern perspective, while fitting into the same 8KB ROM space. The blueprint is Linux-like terminal user experience, AI enabled, utilizing C64 Ultimate and cloud computing services.

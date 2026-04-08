@@ -1,5 +1,3 @@
-<!-- MIRROR: This file is duplicated at docs/user_manual/cloud-apps.md (source of truth). Any changes here must also be applied there. -->
-
 # Cloud Server Apps
 
 HDN Shell includes five server-side console applications that run on your PC and render their output directly to the Commodore 64 screen via the DMA service. Each app occupies its own virtual console and is instantly accessible using the **C= (Commodore) key** combined with a number key.

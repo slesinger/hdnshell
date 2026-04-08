@@ -22,11 +22,15 @@ function devDocsPlugin() {
             return;
           }
         }
-        if (req.url?.startsWith("/docs/") && req.url.endsWith(".md")) {
+        if (req.url?.startsWith("/docs/") && (req.url.endsWith(".md") || req.url.endsWith(".json"))) {
           const filename = path.basename(req.url);
           let filePath = path.resolve(__dirname, "../docs/user_manual", filename);
           if (fs.existsSync(filePath)) {
-            res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+            const isJson = filename.endsWith(".json");
+            res.setHeader(
+              "Content-Type",
+              isJson ? "application/json; charset=utf-8" : "text/markdown; charset=utf-8"
+            );
             res.end(fs.readFileSync(filePath, "utf-8"));
             return;
           }
@@ -54,6 +58,10 @@ export default defineConfig({
       targets: [
         {
           src: "../docs/user_manual/*.md",
+          dest: "docs",
+        },
+        {
+          src: "../docs/user_manual/docs-manifest.json",
           dest: "docs",
         },
         {
