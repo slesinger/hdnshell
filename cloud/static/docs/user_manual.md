@@ -1,4 +1,4 @@
-<!-- MIRROR: This file is duplicated at docs/user_manual/user_manual.md (source of truth). Any changes here must also be applied there. -->
+<!-- MIRROR: This file is duplicated at cloud/static/docs/user_manual.md (served by the cloud server). Any changes here must also be applied there. -->
 
 # HDN Shell User Manual
 
@@ -26,6 +26,7 @@ It also includes parts of SMON, which is one of the best (if not the best) machi
 - [AI Assistance](ai-assistance.md)
 - [CSDB.dk Commodore 64 Scene Database](csdb.md)
 - [Wikipedia Browser](wikipedia-browser.md)
+- [Alternative Installation](installation_alternative.md)
 
 ## Getting Help
 

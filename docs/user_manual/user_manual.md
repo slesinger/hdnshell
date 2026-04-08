@@ -26,6 +26,7 @@ It also includes parts of SMON, which is one of the best (if not the best) machi
 - [AI Assistance](ai-assistance.md)
 - [CSDB.dk Commodore 64 Scene Database](csdb.md)
 - [Wikipedia Browser](wikipedia-browser.md)
+- [Alternative Installation](installation_alternative.md)
 
 ## Getting Help
 
