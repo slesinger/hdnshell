@@ -1,5 +1,5 @@
 
-# Alternative Installation Using C64 Ultimate or 1541 Ultimate
+# Alternative Installation
 
 ## BASIC ROM Replacement (manual install with Ultimate)
 

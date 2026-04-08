@@ -23,6 +23,12 @@ export default function App() {
   const [lastC64Ip, setLastC64Ip] = useState("");
   const [backendReachable, setBackendReachable] = useState(true);
   const [page, setPage] = useState("home");
+  const [docsSlug, setDocsSlug] = useState(null);
+
+  const openDocs = (slug) => {
+    setDocsSlug(slug);
+    setPage("docs");
+  };
   const [basicStatus, setBasicStatus] = useState(null);
   const [basicAvailable, setBasicAvailable] = useState(false);
   const [basicActionLoading, setBasicActionLoading] = useState(false);
@@ -296,7 +302,7 @@ export default function App() {
         ) : page === "file-manager" ? (
           <FileManagerPage lastC64Ip={lastC64Ip} />
         ) : page === "docs" ? (
-          <DocsPage />
+          <DocsPage initialSlug={docsSlug} />
         ) : page === "inspector" ? (
           <InspectorPage />
         ) : page === "screen" ? (
@@ -312,6 +318,47 @@ export default function App() {
             </p>
             <StatusExtended lastC64Ip={lastC64Ip} />
             <UpdateChecker />
+            <div className="row g-3 mt-2">
+              <div className="col-12 col-lg-4">
+                <button
+                  type="button"
+                  className="border rounded-4 p-3 h-100 w-100 text-start bg-white"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => openDocs("installation")}
+                >
+                  <h3 className="h6 mb-2">Getting Started</h3>
+                  <p className="text-muted small mb-0">
+                    Easy install guide to get HDN Shell running on your C64 Ultimate.
+                  </p>
+                </button>
+              </div>
+              <div className="col-12 col-lg-4">
+                <button
+                  type="button"
+                  className="border rounded-4 p-3 h-100 w-100 text-start bg-white"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => openDocs("cloud-apps")}
+                >
+                  <h3 className="h6 mb-2">Cloud Apps</h3>
+                  <p className="text-muted small mb-0">
+                    Browse cloud-powered apps: web browser, RSS, Wikipedia, chat and more.
+                  </p>
+                </button>
+              </div>
+              <div className="col-12 col-lg-4">
+                <button
+                  type="button"
+                  className="border rounded-4 p-3 h-100 w-100 text-start bg-white"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => openDocs("user_manual")}
+                >
+                  <h3 className="h6 mb-2">Docs</h3>
+                  <p className="text-muted small mb-0">
+                    Full user manual covering shell, filesystem, programming and more.
+                  </p>
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </main>

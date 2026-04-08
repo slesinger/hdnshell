@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 // Page list is loaded from /docs/docs-manifest.json at runtime.
 // To add a new doc page: add an entry there — no JSX changes needed.
 // nav:false entries are reachable via links but not shown in the sidebar.
+// level:2 entries are shown indented (sub-pages, e.g. apps under Cloud Apps).
 
 // Generate GitHub-compatible anchor IDs from heading children.
 // Handles plain strings and inline elements (e.g. <code>).
@@ -24,8 +25,8 @@ function headingId(children) {
     .trim();
 }
 
-export default function DocsPage() {
-  const [activeSlug, setActiveSlug] = useState("user_manual");
+export default function DocsPage({ initialSlug }) {
+  const [activeSlug, setActiveSlug] = useState(initialSlug || "user_manual");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -78,27 +79,32 @@ export default function DocsPage() {
           User Manual
         </p>
         <ul className="nav flex-column">
-          {chapters.map((ch) => (
-            <li className="nav-item" key={ch.slug}>
-              <button
-                type="button"
-                onClick={() => setActiveSlug(ch.slug)}
-                className="nav-link text-start w-100 px-3 py-1"
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  borderRadius: 0,
-                  color: activeSlug === ch.slug ? "#0d6efd" : "#212529",
-                  fontWeight: activeSlug === ch.slug ? 600 : 400,
-                  borderLeft: activeSlug === ch.slug ? "3px solid #0d6efd" : "3px solid transparent",
-                }}
-              >
-                {ch.title}
-              </button>
-            </li>
-          ))}
+          {chapters.map((ch) => {
+            const isSub = ch.level === 2;
+            return (
+              <li className="nav-item" key={ch.slug}>
+                <button
+                  type="button"
+                  onClick={() => setActiveSlug(ch.slug)}
+                  className="nav-link text-start w-100 py-1"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: isSub ? "0.8rem" : "0.875rem",
+                    borderRadius: 0,
+                    paddingLeft: isSub ? "2rem" : "1rem",
+                    paddingRight: "1rem",
+                    color: activeSlug === ch.slug ? "#0d6efd" : "#212529",
+                    fontWeight: activeSlug === ch.slug ? 600 : 400,
+                    borderLeft: activeSlug === ch.slug ? "3px solid #0d6efd" : "3px solid transparent",
+                  }}
+                >
+                  {ch.title}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
@@ -158,10 +164,28 @@ export default function DocsPage() {
                     </a>
                   );
                 },
-                // Render images with a max-width so they don't overflow
-                img: ({ src, alt, ...props }) => (
-                  <img src={src} alt={alt} style={{ maxWidth: "100%", borderRadius: "6px" }} {...props} />
-                ),
+                // Render images with a max-width so they don't overflow.
+                // Supports "|width" suffix in alt text, e.g. ![caption|50%](src)
+                // or ![caption|320px](src), to scale individual images.
+                img: ({ src, alt, ...props }) => {
+                  let width;
+                  let cleanAlt = alt;
+                  if (typeof alt === "string") {
+                    const m = alt.match(/^(.*)\|\s*(\d+(?:px|%)?)\s*$/);
+                    if (m) {
+                      cleanAlt = m[1].trim();
+                      width = /^\d+$/.test(m[2]) ? `${m[2]}px` : m[2];
+                    }
+                  }
+                  return (
+                    <img
+                      src={src}
+                      alt={cleanAlt}
+                      style={{ maxWidth: "100%", width, borderRadius: "6px" }}
+                      {...props}
+                    />
+                  );
+                },
               }}
             >
               {content}

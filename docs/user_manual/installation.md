@@ -1,15 +1,4 @@
-# Getting Started - How to Install
-
-1. Set BASIC ROM in the Ultimate menu.
-2. Enable REU (recommended size 16MB) in the Ultimate menu.
-3. Connect your Ultimate to the network (Ethernet or WiFi).
-4. Run the HDN Shell server on your PC (optional yet very recommended for extended features).
-
-If you do no have the C64 Ultimate or 1541 Ultimate cartridge with networking capabilities, see [Alternative installation](installation_alternative.md).
-
-## Easy Install
-
-This process is simplified and automated using the server process.
+# Getting Started - Easy Install
 
 ### 1. Download the latest `hdnsh-server` from the [Releases](https://github.com/slesinger/hdnshell/releases/latest) page.
 - [Linux](https://github.com/slesinger/hdnshell/releases/latest/download/hdnsh-server-linux)
@@ -26,7 +15,7 @@ chmod +x hdnsh-server-linux
 
 It is better to run the server from terminal to see the logs and any potential errors.
 
-![hdnsh-server-start.png](../assets/hdnsh-server-start.png)
+![hdnsh-server-start.png|58%](../assets/hdnsh-server-start.png)
 
 The process will scan your local network and look for your C64 Ultimate. It is __perfectly fine__ if you see `No C64 IPs found on the network.` message. It just means that your C64U is not connected, is powered off, or is not configured to connect to the network. You can proceed with the next steps and repeat the scan comfortably later.
 
@@ -40,7 +29,7 @@ http://localhost:8064
 
 You should see the HDN Shell Web UI.
 
-![ui-start1.png](../assets/ui-start1.png)
+![ui-start1.png|58%](../assets/ui-start1.png)
 
 
 ### 4. Follow instructions in the web UI to set up your C64 Ultimate
@@ -55,7 +44,7 @@ At this stage IP address should be discoverable. Use the `Find you C64U` button 
 
 At least `FTP file service` and `Ultimate DMA Service` should be enabled. The former allows you to transfer files between your PC and C64, while the latter enables to control the C64U.
 
-![network-services.png](../assets/network-services.png)
+![network-services.png|58%](../assets/network-services.png)
 
 - Set HDN Shell as BASIC ROM
 
