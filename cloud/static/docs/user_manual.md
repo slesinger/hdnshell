@@ -1,3 +1,5 @@
+<!-- MIRROR: This file is duplicated at docs/user_manual/user_manual.md (source of truth). Any changes here must also be applied there. -->
+
 # HDN Shell User Manual
 
 HDN Shell is a replacement to C64 BASIC. The aim is to strip of mostly unused parts of BASIC, viewed as a DOS, and replace them with a mostly used features, viewed from modern perspective, while fitting into the same 8KB ROM space. The blueprint is Linux-like terminal user experience, AI enabled, utilizing C64 Ultimate and cloud computing services.
@@ -23,6 +25,7 @@ It also includes parts of SMON, which is one of the best (if not the best) machi
 - [Server-Side File Editor](server-file-editor.md)
 - [AI Assistance](ai-assistance.md)
 - [CSDB.dk Commodore 64 Scene Database](csdb.md)
+- [Wikipedia Browser](wikipedia-browser.md)
 
 ## Getting Help
 
