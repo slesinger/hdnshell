@@ -4,6 +4,7 @@
     { "slug": "user_manual",              "title": "Overview & Help" },
     { "slug": "installation",             "title": "Getting Started - Easy Install" },
     { "slug": "using-the-shell",          "title": "Using the Shell" },
+    { "slug": "ai-assistance",            "title": "AI Assistance" },
     { "slug": "filesystem",               "title": "Filesystem" },
     { "slug": "dos",                      "title": "Navigating Disk Drives and Directories", "level": 2 },
     { "slug": "executing_programs",       "title": "Executing Programs",                      "level": 2 },
@@ -20,8 +21,8 @@
     { "slug": "programming",              "title": "Programming" },
     { "slug": "pysic",                    "title": "PySIC Alternative to BASIC Programming", "level": 2 },
     { "slug": "c-programming",            "title": "Programming in C on the C64",            "level": 2 },
+    { "slug": "coding-agent",             "title": "Coding Agent",                           "level": 2 },
     { "slug": "api-sdk",                  "title": "Programming Server Apps",                "level": 2 },
-    { "slug": "ai-assistance",            "title": "AI Assistance",                          "level": 2 },
     { "slug": "cloud-integration",        "title": "Networking, Cloud Integration" },
     { "slug": "csdb",                     "title": "CSDB.dk Commodore 64 Scene Database" },
     { "slug": "installation_alternative", "title": "Alternative Installation" }

@@ -1,7 +1,5 @@
 # Getting Started - Easy Install
 
-This process is simplified and automated using the server process.
-
 ### 1. Download the latest `hdnsh-server` from the [Releases](https://github.com/slesinger/hdnshell/releases/latest) page.
 - [Linux](https://github.com/slesinger/hdnshell/releases/latest/download/hdnsh-server-linux)
 - [Mac](https://github.com/slesinger/hdnshell/releases/latest/download/hdnsh-server-mac)
