@@ -1163,17 +1163,28 @@ def _download_file_from_ftp(c64_ip: str, path: str) -> bytes:
 
 def _mount_disk_image(c64_ip: str, path: str) -> tuple[bool, str]:
     """Mount an image on drive 8. Returns (ok, message)."""
-    try:
-        _send_tcp_cmd(c64_ip, SOCKET_CMD_MOUNT_IMG, path.encode())
-        return True, f"Mounted {Path(path).name} on drive 8"
-    except Exception as dma_err:
-        logger.warning(f"DMA mount failed, trying HTTP mount: {dma_err}")
+    # try:
+    #     _send_tcp_cmd(c64_ip, SOCKET_CMD_MOUNT_IMG, path.encode())
+    #     return True, f"Mounted {Path(path).name} on drive 8"
+    # except Exception as dma_err:
+    #     logger.warning(f"DMA mount failed, trying HTTP mount: {dma_err}")
 
     try:
-        url = f"http://{c64_ip}/v1/mounts:mount"
-        response = requests.put(url, params={"path": path, "device": "8", "force": "true"}, timeout=5)
+        drive = "a"  # Default drive  a:9, b:9
+        image_path = path
+        # Determine image type from extension
+        ext = Path(image_path).suffix.lower().lstrip('.')
+        valid_types = {"d64", "g64", "d71", "g71", "d81"}
+        image_type = ext if ext in valid_types else None
+        # Default mode: readwrite
+        mode = "readwrite"
+        url = f"http://{c64_ip}/v1/drives/{drive}:mount"
+        params = {"image": image_path, "mode": mode}
+        if image_type:
+            params["type"] = image_type
+        response = requests.put(url, params=params, timeout=5)
         response.raise_for_status()
-        return True, f"Mounted {Path(path).name} on drive 8"
+        return True, f"Mounted {Path(image_path).name} on drive {drive}"
     except requests.RequestException as http_err:
         return False, f"Failed to mount image: {http_err}"
 
