@@ -109,7 +109,7 @@ export default function UpdateChecker() {
         >
           <div>
             <div className="fw-semibold mb-1">
-              Update available — v{versionInfo.latest_version}{" "}
+              Update available — {versionInfo.latest_version}{" "}
               {versionInfo.published_at && (
                 <span className="fw-normal text-muted small">
                   released {formatDate(versionInfo.published_at)}
