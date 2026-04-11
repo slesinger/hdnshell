@@ -719,6 +719,7 @@ class TelegramChatConsole(ServerConsole):
         self._rendered_lines: List[tuple] = []  # (text, color) pre-wrapped
         self._typing_until_by_chat: dict = {}  # chat_id -> monotonic deadline
         self._typing_ttl_sec: float = 5.0
+        self._typing_anim_frame: int = 0  # incremented every _full_render call
 
         # Contacts state
         self.contacts: List[ContactEntry] = []
@@ -827,8 +828,29 @@ class TelegramChatConsole(ServerConsole):
         self._is_active = True
         self._send_vic_colors(COL_LIGHT_BLUE, COL_BLUE)
         with self._render_lock:
-            if self.worker.connected and self.mode == MODE_CHATS:
-                self._refresh_chats()
+            if self.worker.connected:
+                if self.mode == MODE_CHATS:
+                    self._refresh_chats()
+                elif self.mode == MODE_CHAT_VIEW and self.current_chat_id:
+                    # Refresh messages that may have arrived while we were inactive
+                    self._refresh_messages(self.current_chat_id)
+                    # Drain any queued Telegram events (typing, edits, new messages)
+                    # that the background thread skipped while console was inactive.
+                    pending = self.worker.get_pending_updates()
+                    for upd in pending:
+                        try:
+                            event_type = upd.get('type')
+                            event_chat_id = upd.get('chat_id')
+                            action_name = upd.get('action_name') or ""
+                            if event_type in ('chat_action', 'typing'):
+                                if event_type == 'typing' and not action_name:
+                                    self._set_typing_active(event_chat_id)
+                                elif self._is_typing_action_name(action_name):
+                                    self._set_typing_active(event_chat_id)
+                                elif "cancel" in action_name.lower():
+                                    self._clear_typing_active(event_chat_id)
+                        except Exception:
+                            pass
             self._full_render()
             self._push_screen()
 
@@ -1652,6 +1674,7 @@ class TelegramChatConsole(ServerConsole):
 
     def _full_render(self):
         """Re-render the entire 40x25 screen."""
+        self._typing_anim_frame = (self._typing_anim_frame + 1) % 30
         for i in range(SCREEN_SIZE):
             self.screen[i] = SC_SPACE
             self.color[i] = COL_TEXT_FG
@@ -1805,9 +1828,12 @@ class TelegramChatConsole(ServerConsole):
             self.screen[sep_row * SCREEN_COLS + c] = SC_HLINE
             self.color[sep_row * SCREEN_COLS + c] = COL_DARK_GREY
 
-        # Minimal typing marker near the separator right edge.
+        # Animated typing marker near the separator right edge.
+        # Cycles through '.', '+', '*' – one char every 10 render frames (~0.5-1s).
         if self._is_typing_active(self.current_chat_id):
-            self._put_text(sep_row, SCREEN_COLS - 3, "...", COL_YELLOW)
+            _TYPING_CHARS = ".+*"
+            glyph = _TYPING_CHARS[(self._typing_anim_frame // 10) % 3]
+            self._put_text(sep_row, SCREEN_COLS - 2, glyph, COL_YELLOW)
 
         # Input area: word-wrap msg_input into up to MAX_INPUT_LINES lines
         prompt = "> "
