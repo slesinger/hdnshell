@@ -40,7 +40,28 @@ Push-Location $CLOUD_DIR
 Set-Content "version.py" "__version__ = `"$VERSION`""
 # Cleanup old build artifacts
 Remove-Item -Recurse -Force build, dist, *.spec -ErrorAction SilentlyContinue
-python -m PyInstaller --clean --onefile --name hdnsh-server-win --add-data "static;static" --add-data "./oscar/bin/oscar64;oscar/bin" --add-data "./oscar/include;oscar/include" --add-data "./oscar/docs/C_0*.md;oscar/docs" cloud.py
+python -m PyInstaller --clean --onefile --name hdnsh-server-win `
+    --paths "server-apps" `
+    --paths "handlers" `
+    --hidden-import "code_chat_console" `
+    --hidden-import "coding_agent_console" `
+    --hidden-import "file_editor_console" `
+    --hidden-import "rss_reader" `
+    --hidden-import "telegram_chat" `
+    --hidden-import "web_browser" `
+    --hidden-import "wiki_browser" `
+    --hidden-import "command_handler" `
+    --hidden-import "shared_state" `
+    --hidden-import "console_manager" `
+    --hidden-import "chat_handler" `
+    --hidden-import "help_handler" `
+    --hidden-import "python_eval_handler" `
+    --hidden-import "csdb_handler" `
+    --add-data "static;static" `
+    --add-data "./oscar/bin/oscar64;oscar/bin" `
+    --add-data "./oscar/include;oscar/include" `
+    --add-data "./oscar/docs/C_0*.md;oscar/docs" `
+    cloud.py
 Pop-Location
 
 # Ensure Release Dir exists
