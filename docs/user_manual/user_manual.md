@@ -15,5 +15,6 @@ You can get various types of help:
 - `help <your question>` will show detailed help on a specific topic.
 - `help topics` will show you a list of available help topics.
 - AI assistance is a knowledge agent to help you in given situations, see [AI Assistance](ai-assistance.md) chapter for more details.
+- The source code is available at <https://github.com/slesinger/hdnshell>. If you need more help than the manual or built-in help can provide, read the code.
 
 > Since the Hondani Shell is in development, the help system may contain outdated information.

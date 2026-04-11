@@ -241,6 +241,8 @@ class _TelethonWorker:
         self._client = None  # TelegramClient
         self._phone_code_hash: Optional[str] = None
         self._connected = False
+        # Event queue for real-time Telegram updates (Phase B: event-driven)
+        self._update_queue: queue.Queue = queue.Queue()
         self._thread = threading.Thread(
             target=self._run, name="telethon-worker", daemon=True
         )
@@ -269,6 +271,16 @@ class _TelethonWorker:
 
     def shutdown(self):
         self._job_queue.put(self._SENTINEL)
+
+    def get_pending_updates(self) -> list:
+        """Get all pending Telegram updates from queue (non-blocking)."""
+        updates = []
+        try:
+            while True:
+                updates.append(self._update_queue.get_nowait())
+        except queue.Empty:
+            pass
+        return updates
 
     # ------------------------------------------------------------------
     #  Worker thread body
@@ -343,6 +355,8 @@ class _TelethonWorker:
             await self._client.connect()
             if await self._client.is_user_authorized():
                 self._connected = True
+                # Register event handlers for real-time updates (Phase B)
+                self._register_event_handlers()
                 return "authorized"
             return "need_login"
         except Exception as e:
@@ -486,6 +500,25 @@ class _TelethonWorker:
             logger.error("get_contacts error: %s", e)
             return []
 
+    async def _do_mark_read(self, chat_id: int = 0, max_id: int = 0) -> str:
+        """Mark messages as read in a chat (Phase A: read state sync).
+
+        Args:
+            chat_id: the chat/dialog ID to mark as read
+            max_id: mark up to this message ID (0 = all)
+
+        Returns: 'ok' or 'error:...' string
+        """
+        if not self._connected or not chat_id:
+            return "error:Not connected or missing chat_id"
+        try:
+            # Send read receipt for the chat/dialog
+            await self._client.send_read_acknowledge(chat_id, clear_mentions=False)
+            return "ok"
+        except Exception as e:
+            logger.debug("mark_read error for chat %d: %s", chat_id, e)
+            return f"error:{e}"
+
     async def _do_logout(self) -> str:
         """Log out and destroy the session."""
         try:
@@ -508,6 +541,97 @@ class _TelethonWorker:
     async def _do_is_connected(self) -> bool:
         """Check current connection status."""
         return self._connected
+
+    def _register_event_handlers(self):
+        """Register Telethon event handlers for real-time updates (Phase B).
+        Must be called after _client is created and authorized.
+        """
+        if not self._client:
+            return
+        try:
+            from telethon import events
+            from telethon.tl.types import (
+                PeerChannel,
+                PeerChat,
+                PeerUser,
+                UpdateChannelUserTyping,
+                UpdateChatUserTyping,
+                UpdateUserTyping,
+            )
+            from telethon.utils import get_peer_id
+
+            @self._client.on(events.NewMessage())
+            async def on_new_message(event):
+                """Queue incoming messages."""
+                try:
+                    self._update_queue.put_nowait({
+                        'type': 'new_message',
+                        'chat_id': event.chat_id,
+                        'message': event.message,
+                    })
+                except queue.Full:
+                    logger.debug("Update queue full, dropping message event")
+
+            @self._client.on(events.MessageEdited())
+            async def on_message_edited(event):
+                """Queue edited messages."""
+                try:
+                    self._update_queue.put_nowait({
+                        'type': 'message_edited',
+                        'chat_id': event.chat_id,
+                        'message': event.message,
+                    })
+                except queue.Full:
+                    logger.debug("Update queue full, dropping edited event")
+
+            @self._client.on(events.ChatAction())
+            async def on_chat_action(event):
+                """Queue chat updates (typing, etc)."""
+                try:
+                    action_name = ""
+                    action_obj = getattr(event, "action", None)
+                    if action_obj is not None:
+                        action_name = type(action_obj).__name__
+                    self._update_queue.put_nowait({
+                        'type': 'chat_action',
+                        'chat_id': event.chat_id,
+                        'action_name': action_name,
+                    })
+                except queue.Full:
+                    logger.debug("Update queue full, dropping chat action")
+
+            @self._client.on(events.Raw)
+            async def on_raw_update(event):
+                """Queue low-level typing updates used by Telegram clients."""
+                try:
+                    update = getattr(event, "update", None) or event
+                    chat_id = None
+                    action_name = ""
+
+                    if isinstance(update, UpdateUserTyping):
+                        chat_id = get_peer_id(PeerUser(update.user_id))
+                        action_name = type(update.action).__name__ if update.action is not None else ""
+                    elif isinstance(update, UpdateChatUserTyping):
+                        chat_id = get_peer_id(PeerChat(update.chat_id))
+                        action_name = type(update.action).__name__ if update.action is not None else ""
+                    elif isinstance(update, UpdateChannelUserTyping):
+                        chat_id = get_peer_id(PeerChannel(update.channel_id))
+                        action_name = type(update.action).__name__ if update.action is not None else ""
+
+                    if chat_id is not None:
+                        self._update_queue.put_nowait({
+                            'type': 'typing',
+                            'chat_id': chat_id,
+                            'action_name': action_name,
+                        })
+                except queue.Full:
+                    logger.debug("Update queue full, dropping typing update")
+                except Exception as e:
+                    logger.debug("raw typing update parse failed: %s", e)
+
+            logger.debug("Telethon event handlers registered")
+        except Exception as e:
+            logger.warning("Failed to register Telethon event handlers: %s", e)
 
     @staticmethod
     def _get_session_path() -> str:
@@ -593,6 +717,8 @@ class TelegramChatConsole(ServerConsole):
         self.msg_cursor: int = 0  # cursor position within msg_input
         self.msg_input_scroll: int = 0  # vertical scroll for input (line offset)
         self._rendered_lines: List[tuple] = []  # (text, color) pre-wrapped
+        self._typing_until_by_chat: dict = {}  # chat_id -> monotonic deadline
+        self._typing_ttl_sec: float = 5.0
 
         # Contacts state
         self.contacts: List[ContactEntry] = []
@@ -611,6 +737,16 @@ class TelegramChatConsole(ServerConsole):
 
         # Transient status shown in the chat-list status bar (e.g. "Refreshing...")
         self._chat_status: str = ""
+
+        # Phase A: Read state sync — track last acknowledged message per chat
+        self._last_read_by_chat: dict = {}  # chat_id -> message_id
+
+        # Phase B: Event-driven updates — background thread processes Telegram events
+        self._event_stop = threading.Event()
+        self._event_thread = threading.Thread(
+            target=self._bg_event_loop, name="tg-events", daemon=True
+        )
+        self._event_thread.start()
 
         # Background polling state
         self._is_active: bool = False
@@ -889,8 +1025,8 @@ class TelegramChatConsole(ServerConsole):
             # Backspace at cursor
             if self.msg_input and self.msg_cursor > 0:
                 self.msg_input = (
-                    self.msg_input[: self.msg_cursor - 1]
-                    + self.msg_input[self.msg_cursor :]
+                    self.msg_input[:self.msg_cursor - 1]
+                    + self.msg_input[self.msg_cursor:]
                 )
                 self.msg_cursor -= 1
                 self._clamp_input_scroll()
@@ -923,6 +1059,7 @@ class TelegramChatConsole(ServerConsole):
 
         elif key == KEY_RUNSTOP or key == KEY_LEFT_ARROW:
             # Back to chat list
+            self._clear_typing_active(self.current_chat_id)
             self.mode = MODE_CHATS
             self.msg_input = ""
             self.msg_cursor = 0
@@ -930,6 +1067,7 @@ class TelegramChatConsole(ServerConsole):
             self._refresh_chats()
 
         elif key == KEY_F1:
+            self._clear_typing_active(self.current_chat_id)
             self.mode = MODE_CHATS
             self.msg_input = ""
             self.msg_cursor = 0
@@ -945,9 +1083,9 @@ class TelegramChatConsole(ServerConsole):
             ch = self._petscii_to_printable(key)
             if ch and len(self.msg_input) < MAX_INPUT_LEN:
                 self.msg_input = (
-                    self.msg_input[: self.msg_cursor]
+                    self.msg_input[:self.msg_cursor]
                     + ch
-                    + self.msg_input[self.msg_cursor :]
+                    + self.msg_input[self.msg_cursor:]
                 )
                 self.msg_cursor += 1
                 self._clamp_input_scroll()
@@ -1190,7 +1328,44 @@ class TelegramChatConsole(ServerConsole):
         self.msg_cursor = 0
         self.msg_input_scroll = 0
         self._refresh_messages(chat_id)
+        # Phase A: Mark chat as read when opened
+        self._mark_chat_read_if_needed(chat_id)
         self.mode = MODE_CHAT_VIEW
+
+    def _set_typing_active(self, chat_id: int):
+        """Mark typing indicator active for a chat with short TTL."""
+        if chat_id:
+            self._typing_until_by_chat[chat_id] = time.monotonic() + self._typing_ttl_sec
+
+    def _clear_typing_active(self, chat_id: int):
+        """Clear typing indicator for a chat."""
+        if chat_id:
+            self._typing_until_by_chat.pop(chat_id, None)
+
+    def _is_typing_active(self, chat_id: int) -> bool:
+        """Return True when typing indicator is currently active for this chat."""
+        if not chat_id:
+            return False
+        until = self._typing_until_by_chat.get(chat_id, 0.0)
+        if until <= time.monotonic():
+            self._typing_until_by_chat.pop(chat_id, None)
+            return False
+        return True
+
+    @staticmethod
+    def _is_typing_action_name(action_name: str) -> bool:
+        """Return True when action name represents active composing."""
+        if not action_name:
+            return False
+        name = action_name.lower()
+        if "cancel" in name:
+            return False
+        return (
+            "typing" in name
+            or "record" in name
+            or "upload" in name
+            or "gameplay" in name
+        )
 
     def _do_send_message(self):
         """Send the composed message."""
@@ -1208,6 +1383,161 @@ class TelegramChatConsole(ServerConsole):
                 self._refresh_messages(self.current_chat_id)
         except Exception as e:
             logger.error("send_message: %s", e)
+
+    # =================================================================
+    #  PHASE A: READ STATE SYNC
+    # =================================================================
+
+    def _mark_chat_read_if_needed(self, chat_id: int):
+        """Mark a chat as read if we have new unread messages (Phase A).
+
+        Deduplicates by tracking last acknowledged message per chat.
+        Calls worker.mark_read asynchronously; failures are logged but non-fatal.
+        """
+        if not chat_id or not self.messages:
+            return
+
+        # Get newest message ID
+        newest_msg_id = self.messages[-1].id if self.messages else 0
+        if not newest_msg_id:
+            return
+
+        # Check if we've already acknowledged up to this message
+        last_ack = self._last_read_by_chat.get(chat_id, 0)
+        if newest_msg_id <= last_ack:
+            return  # Already acknowledged, skip
+
+        # Mark as read asynchronously (don't block on network)
+        try:
+            result = self.worker.call("mark_read", chat_id=chat_id, max_id=newest_msg_id)
+            if result == "ok":
+                self._last_read_by_chat[chat_id] = newest_msg_id
+            else:
+                logger.debug("mark_read failed for chat %d: %s", chat_id, result)
+        except Exception as e:
+            logger.debug("mark_read exception for chat %d: %s", chat_id, e)
+
+    # =================================================================
+    #  PHASE B: EVENT-DRIVEN UPDATES
+    # =================================================================
+
+    def _bg_event_loop(self):
+        """Daemon thread: consume Telegram events and push updates to C64 (Phase B).
+
+        When console is active and in relevant mode, push screen immediately
+        instead of waiting for polling interval. Runs until _event_stop is set.
+        """
+        while not self._event_stop.wait(timeout=0.5):
+            try:
+                updates = self.worker.get_pending_updates()
+                if not updates:
+                    continue
+
+                for update in updates:
+                    self._process_telegram_event(update)
+            except Exception as e:
+                logger.debug("Event loop error: %s", e)
+
+    def _process_telegram_event(self, event: dict):
+        """Process a single Telegram event: update state and push to C64 if active (Phase B).
+
+        Event dict structure:
+            {
+                'type': 'new_message' | 'message_edited' | 'chat_action' | 'typing',
+                'chat_id': <chat_id>,
+                'message': <message object or None>,
+            }
+        """
+        if not event:
+            return
+
+        event_type = event.get('type')
+        event_chat_id = event.get('chat_id')
+
+        # Hold lock during state updates and rendering
+        with self._render_lock:
+            # Check if console is active and in a mode where events are relevant
+            from console_manager import ConsoleManager
+            mgr = ConsoleManager.instance()
+            active_console_id = mgr._active.get(self.session_id)
+            is_active = active_console_id == self.console_id
+
+            if event_type == 'new_message':
+                # New message arrived: refresh if viewing that chat or chat list
+                if is_active and self.mode == MODE_CHAT_VIEW and event_chat_id == self.current_chat_id:
+                    # Fetch latest messages for this chat
+                    try:
+                        tz_minutes = self._get_tz_offset_minutes()
+                        new_messages = self.worker.call(
+                            "get_messages",
+                            chat_id=event_chat_id,
+                            tz_offset_minutes=tz_minutes,
+                        )
+                        if new_messages:
+                            self.messages = new_messages
+                            self._build_rendered_lines()
+                            # Auto-scroll to bottom for new messages
+                            max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
+                            self.msg_scroll = max_scroll
+                            # Mark as read
+                            self._mark_chat_read_if_needed(event_chat_id)
+                            # New content arrived, clear stale typing marker.
+                            self._clear_typing_active(event_chat_id)
+                    except Exception as e:
+                        logger.debug("Event: error fetching messages: %s", e)
+
+                elif is_active and self.mode == MODE_CHATS:
+                    # In chat list: refresh dialogs to update unread badges
+                    try:
+                        tz_minutes = self._get_tz_offset_minutes()
+                        new_chats = self.worker.call(
+                            "get_dialogs", tz_offset_minutes=tz_minutes
+                        )
+                        if new_chats:
+                            self.chats = new_chats
+                            if self.chat_sel >= len(self.chats):
+                                self.chat_sel = max(0, len(self.chats) - 1)
+                    except Exception as e:
+                        logger.debug("Event: error fetching dialogs: %s", e)
+
+            elif event_type == 'message_edited':
+                # Message was edited: refresh if viewing that chat
+                if is_active and self.mode == MODE_CHAT_VIEW and event_chat_id == self.current_chat_id:
+                    try:
+                        tz_minutes = self._get_tz_offset_minutes()
+                        new_messages = self.worker.call(
+                            "get_messages",
+                            chat_id=event_chat_id,
+                            tz_offset_minutes=tz_minutes,
+                        )
+                        if new_messages:
+                            self.messages = new_messages
+                            self._build_rendered_lines()
+                    except Exception as e:
+                        logger.debug("Event: error refreshing edited messages: %s", e)
+
+            elif event_type in ('chat_action', 'typing'):
+                action_name = event.get('action_name') or ""
+                if event_type == 'typing' and not action_name:
+                    self._set_typing_active(event_chat_id)
+                elif self._is_typing_action_name(action_name):
+                    self._set_typing_active(event_chat_id)
+                elif "cancel" in action_name.lower():
+                    self._clear_typing_active(event_chat_id)
+
+                logger.debug(
+                    "Event: chat_action in chat %d (%s)",
+                    event_chat_id,
+                    action_name or "unknown",
+                )
+
+            # Always re-render and conditionally push if active
+            self._full_render()
+            if is_active:
+                try:
+                    self._push_screen()
+                except Exception:
+                    logger.debug("Event: screen push failed", exc_info=True)
 
     # =================================================================
     #  INPUT HELPERS
@@ -1474,6 +1804,10 @@ class TelegramChatConsole(ServerConsole):
         for c in range(SCREEN_COLS):
             self.screen[sep_row * SCREEN_COLS + c] = SC_HLINE
             self.color[sep_row * SCREEN_COLS + c] = COL_DARK_GREY
+
+        # Minimal typing marker near the separator right edge.
+        if self._is_typing_active(self.current_chat_id):
+            self._put_text(sep_row, SCREEN_COLS - 3, "...", COL_YELLOW)
 
         # Input area: word-wrap msg_input into up to MAX_INPUT_LINES lines
         prompt = "> "
@@ -1778,20 +2112,21 @@ class TelegramChatConsole(ServerConsole):
     # =================================================================
 
     def _bg_poll_loop(self):
-        """Daemon thread: periodically poll Telegram for new messages.
+        """Daemon thread: periodically poll Telegram as fallback (Phase B).
 
-        Polling interval:
-          - MODE_CHAT_VIEW : 5 seconds  (user is in an active conversation)
-          - MODE_CHATS     : 60 seconds (user is browsing the chat list)
+        With event-driven updates active, polling is now a fallback mechanism
+        with much longer intervals to catch any missed events:
+          - MODE_CHAT_VIEW : 5 minutes  (was 5 seconds)
+          - MODE_CHATS     : 10 minutes (was 60 seconds)
           - anything else  : skip (login / settings / help / not connected)
         """
         while not self._poll_stop.wait(timeout=1.0):
             if not self.worker.connected:
                 continue
             if self.mode == MODE_CHAT_VIEW:
-                interval = 5
+                interval = 300  # 5 minutes fallback
             elif self.mode == MODE_CHATS:
-                interval = 60
+                interval = 600  # 10 minutes fallback
             else:
                 continue
             now = time.monotonic()
@@ -1808,8 +2143,6 @@ class TelegramChatConsole(ServerConsole):
         is never a second buffer or a stale copy.
         """
         try:
-            old_unread = self._last_unread_total
-
             # ── Slow network calls OUTSIDE the lock ──────────────────────
             try:
                 tz_minutes = self._get_tz_offset_minutes()
@@ -1858,6 +2191,8 @@ class TelegramChatConsole(ServerConsole):
                     self._build_rendered_lines()
                     max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
                     self.msg_scroll = max_scroll
+                    # Phase A: Mark messages as read during polling
+                    self._mark_chat_read_if_needed(self.current_chat_id)
 
                 # Always re-render the internal screen buffer, but only
                 # DMA-push when allowed (active + in chat view).
