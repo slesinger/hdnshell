@@ -1,0 +1,6 @@
+{
+  "group_url": "https://www.facebook.com/groups/REPLACE_WITH_GROUP_ID_OR_SLUG",
+  "max_scrolls": 8,
+  "scroll_pause_seconds": 2.5,
+  "output_path": "facebook/output/group_capture.json"
+}
