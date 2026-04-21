@@ -15,6 +15,7 @@ import tempfile
 import io
 import json
 import re
+import posixpath
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 from version import __version__
@@ -1276,6 +1277,72 @@ def _ftp_list_directory(ftp: ftplib.FTP, path: str) -> list:
     return entries
 
 
+def _ftp_is_directory(ftp: ftplib.FTP, path: str) -> bool:
+    """Return True if *path* is a directory on the FTP server."""
+    try:
+        current = ftp.pwd()
+    except ftplib.all_errors:
+        current = None
+
+    try:
+        ftp.cwd(path)
+        return True
+    except ftplib.all_errors:
+        return False
+    finally:
+        if current is not None:
+            try:
+                ftp.cwd(current)
+            except ftplib.all_errors:
+                pass
+
+
+def _ftp_join(parent: str, child: str) -> str:
+    """Join FTP paths using POSIX separators."""
+    if parent == "/":
+        return "/" + child
+    return posixpath.join(parent.rstrip("/"), child)
+
+
+def _ftp_delete_directory_recursive(ftp: ftplib.FTP, path: str) -> tuple[list[str], list[dict]]:
+    """Recursively delete a directory tree.
+
+    Returns:
+        deleted_paths: list of successfully deleted file/dir paths
+        failed_items: list of {"path": ..., "error": ...}
+    """
+    deleted_paths: list[str] = []
+    failed_items: list[dict] = []
+
+    try:
+        entries = _ftp_list_directory(ftp, path)
+    except Exception as e:
+        return deleted_paths, [{"path": path, "error": str(e)}]
+
+    for entry in entries:
+        child_path = _ftp_join(path, entry.get("name", ""))
+        if not entry.get("name"):
+            continue
+        if entry.get("type") == "dir":
+            child_deleted, child_failed = _ftp_delete_directory_recursive(ftp, child_path)
+            deleted_paths.extend(child_deleted)
+            failed_items.extend(child_failed)
+        else:
+            try:
+                ftp.delete(child_path)
+                deleted_paths.append(child_path)
+            except ftplib.all_errors as e:
+                failed_items.append({"path": child_path, "error": str(e)})
+
+    try:
+        ftp.rmd(path)
+        deleted_paths.append(path)
+    except ftplib.all_errors as e:
+        failed_items.append({"path": path, "error": str(e)})
+
+    return deleted_paths, failed_items
+
+
 def _extract_csdb_file_id_from_url(url: str) -> int:
     """Extract file ID from CSDB URL. Returns file ID or raises ValueError."""
     # Expected format: https://csdb.dk/release/download.php?id=305029
@@ -1641,7 +1708,7 @@ def files_copy():
 
 @app.route("/files/delete", methods=["DELETE"])
 def files_delete():
-    """Delete file(s) from C64 Ultimate."""
+    """Delete file(s) and/or directories from C64 Ultimate."""
     try:
         c64_ip = request.args.get("c64_ip") or read_last_c64_ip()
         if not c64_ip:
@@ -1663,17 +1730,32 @@ def files_delete():
 
         ftp = _check_ftp_connection(c64_ip)
         deleted = []
+        failed = []
         try:
             for path in paths:
-                try:
-                    ftp.delete(path)
-                    deleted.append(path)
-                except ftplib.all_errors as e:
-                    logger.warning(f"Failed to delete {path}: {e}")
+                if _ftp_is_directory(ftp, path):
+                    dir_deleted, dir_failed = _ftp_delete_directory_recursive(ftp, path)
+                    deleted.extend(dir_deleted)
+                    failed.extend(dir_failed)
+                else:
+                    try:
+                        ftp.delete(path)
+                        deleted.append(path)
+                    except ftplib.all_errors as e:
+                        failed.append({"path": path, "error": str(e)})
         finally:
             ftp.quit()
 
-        return jsonify({"status": "ok", "message": f"Deleted {len(deleted)} file(s)", "deleted": deleted})
+        if failed:
+            logger.warning("Delete failures: %s", failed)
+            return jsonify({
+                "error": "Failed to delete one or more paths",
+                "code": "DELETE_PARTIAL" if deleted else "DELETE_FAILED",
+                "deleted": deleted,
+                "failed": failed,
+            }), 400
+
+        return jsonify({"status": "ok", "message": f"Deleted {len(deleted)} item(s)", "deleted": deleted})
     except ValueError as e:
         return jsonify({"error": str(e), "code": "INVALID_PATH"}), 400
     except RuntimeError as e:

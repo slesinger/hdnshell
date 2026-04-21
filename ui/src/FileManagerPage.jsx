@@ -4,6 +4,8 @@ import { API_BASE_URL } from "./api.js";
 const TEXT_FILE_EXTENSIONS = new Set([".txt", ".cfg", ".c", ".h", ".bas", ".asm"]);
 const DISK_IMAGE_EXTENSIONS = new Set([".d64", ".d71", ".d81"]);
 const DEFAULT_OPEN_EXTENSIONS = new Set([".tap", ".sid", ".mod"]);
+const FILE_MANAGER_LAST_PATH_KEY = "hdnsh.fileManager.lastPath";
+const DEFAULT_FILE_MANAGER_PATH = "/Flash/roms";
 
 function getFileExtension(filename) {
   const lastDot = filename.lastIndexOf(".");
@@ -37,9 +39,21 @@ function formatFileSize(bytes) {
 }
 
 function FileManagerPage({ lastC64Ip }) {
+  const getInitialPath = () => {
+    try {
+      const saved = localStorage.getItem(FILE_MANAGER_LAST_PATH_KEY);
+      if (saved && saved.startsWith("/")) {
+        return saved;
+      }
+    } catch (_err) {
+      // Ignore storage errors and fall back to default path.
+    }
+    return DEFAULT_FILE_MANAGER_PATH;
+  };
+
   // State
   const [c64Ip, setC64Ip] = useState(lastC64Ip || "");
-  const [currentPath, setCurrentPath] = useState("/Flash/roms");
+  const [currentPath, setCurrentPath] = useState(getInitialPath);
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [creatingDirectory, setCreatingDirectory] = useState(false);
@@ -59,6 +73,14 @@ function FileManagerPage({ lastC64Ip }) {
       loadDirectory();
     }
   }, [c64Ip, currentPath, virtualDiskImage]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(FILE_MANAGER_LAST_PATH_KEY, currentPath);
+    } catch (_err) {
+      // Ignore storage errors.
+    }
+  }, [currentPath]);
 
   // Load directory from C64
   const loadDirectory = async () => {
@@ -313,9 +335,13 @@ function FileManagerPage({ lastC64Ip }) {
     }
   };
 
-  // Delete file
-  const handleDeleteFile = async (filename) => {
-    if (!confirm(`Delete ${filename}?`)) return;
+  // Delete file or directory
+  const handleDeleteItem = async (filename, isDir = false) => {
+    const label = isDir ? "folder" : "file";
+    const message = isDir
+      ? `Delete folder ${filename} and all contents?`
+      : `Delete file ${filename}?`;
+    if (!confirm(message)) return;
 
     if (!c64Ip) {
       showToast("C64 IP not set", "error");
@@ -331,7 +357,7 @@ function FileManagerPage({ lastC64Ip }) {
       if (!resp.ok) {
         showToast(`Delete failed: ${data.error}`, "error");
       } else {
-        showToast("File deleted", "success");
+        showToast(`${label} deleted`, "success");
         loadDirectory();
       }
     } catch (err) {
@@ -448,12 +474,19 @@ function FileManagerPage({ lastC64Ip }) {
     }
   };
 
-  // Breadcrumbs component
-  const pathParts = currentPath.split("/").filter((part) => part);
-  const breadcrumbs = [{ label: "/", path: "/" }, ...pathParts.map((part, index) => ({
-    label: part,
-    path: `/${pathParts.slice(0, index + 1).join("/")}`
-  }))];
+  // Breadcrumbs
+  const buildPathBreadcrumbs = (path) => {
+    const segments = path.split("/").filter(Boolean);
+    const items = [{ label: "/", path: "/" }];
+    let partial = "";
+    for (const segment of segments) {
+      partial += `/${segment}`;
+      items.push({ label: segment, path: partial });
+    }
+    return items;
+  };
+
+  const breadcrumbs = buildPathBreadcrumbs(currentPath);
   if (virtualDiskImage) {
     breadcrumbs.push({ label: PathLabel(virtualDiskImage), path: virtualDiskImage, virtual: true });
   }
@@ -512,29 +545,33 @@ function FileManagerPage({ lastC64Ip }) {
 
       {/* Breadcrumbs */}
       <nav className="mb-3">
-        <ol className="breadcrumb mb-0">
-          {breadcrumbs.map((crumb, idx) => (
-            <li key={crumb.path} className={`breadcrumb-item ${idx === breadcrumbs.length - 1 ? "active" : ""}`}>
-              {idx === breadcrumbs.length - 1 ? (
-                crumb.label
-              ) : (
-                <button
-                  type="button"
-                  className="btn btn-link p-0 text-decoration-none align-baseline"
-                  onClick={() => {
-                    if (crumb.virtual) {
-                      setVirtualDiskImage(crumb.path);
-                      return;
-                    }
-                    handleBreadcrumbClick(crumb.path);
-                  }}
-                >
-                  {crumb.label}
-                </button>
-              )}
-            </li>
-          ))}
-        </ol>
+        <div className="d-flex flex-wrap align-items-center gap-1">
+          {breadcrumbs.map((crumb, idx) => {
+            const isLast = idx === breadcrumbs.length - 1;
+            return (
+              <span key={`${crumb.path}-${idx}`} className="d-inline-flex align-items-center">
+                {!isLast ? (
+                  <button
+                    type="button"
+                    className="btn btn-link p-0 text-decoration-none align-baseline"
+                    onClick={() => {
+                      if (crumb.virtual) {
+                        setVirtualDiskImage(crumb.path);
+                        return;
+                      }
+                      handleBreadcrumbClick(crumb.path);
+                    }}
+                  >
+                    {crumb.label}
+                  </button>
+                ) : (
+                  <span className="text-body-secondary">{crumb.label}</span>
+                )}
+                {!isLast && idx > 0 && <span className="mx-1 text-body-secondary">/</span>}
+              </span>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Drag and drop zone */}
@@ -759,14 +796,14 @@ function FileManagerPage({ lastC64Ip }) {
                           ⬇️
                         </button>
                       )}
-                      {!isDir && !isVirtualEntry && (
+                      {!isVirtualEntry && (
                         <button
                           className="btn btn-outline-danger btn-sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteFile(entry.name);
+                            handleDeleteItem(entry.name, isDir);
                           }}
-                          title="Delete"
+                          title={isDir ? "Delete folder (recursive)" : "Delete file"}
                         >
                           🗑️
                         </button>
