@@ -42,6 +42,7 @@ function FileManagerPage({ lastC64Ip }) {
   const [currentPath, setCurrentPath] = useState("/Flash/roms");
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [creatingDirectory, setCreatingDirectory] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState("");
   const [csdbUrl, setCsdbUrl] = useState("");
@@ -338,6 +339,56 @@ function FileManagerPage({ lastC64Ip }) {
     }
   };
 
+  const handleCreateDirectory = async () => {
+    if (!c64Ip) {
+      showToast("C64 IP not set", "error");
+      return;
+    }
+
+    if (virtualDiskImage) {
+      showToast("Cannot create folders inside a disk image view", "error");
+      return;
+    }
+
+    const folderName = window.prompt("New folder name:", "");
+    if (folderName === null) {
+      return;
+    }
+
+    const trimmedName = folderName.trim();
+    if (!trimmedName) {
+      showToast("Folder name is required", "error");
+      return;
+    }
+
+    if (trimmedName.includes("/") || trimmedName.includes("\\")) {
+      showToast("Folder name cannot contain path separators", "error");
+      return;
+    }
+
+    const path = currentPath === "/" ? `/${trimmedName}` : `${currentPath}/${trimmedName}`;
+
+    setCreatingDirectory(true);
+    try {
+      const url = `${API_BASE_URL}/files/mkdir?c64_ip=${encodeURIComponent(c64Ip)}&path=${encodeURIComponent(path)}`;
+      const resp = await fetch(url, { method: "POST" });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        showToast(`Create folder failed: ${data.error}`, "error");
+        return;
+      }
+
+      showToast(`Created folder ${trimmedName}`, "success");
+      setSelectedFile(null);
+      loadDirectory();
+    } catch (err) {
+      showToast(`Create folder error: ${err.message}`, "error");
+    } finally {
+      setCreatingDirectory(false);
+    }
+  };
+
   // Run file
   const handleRunFile = async (filename, action = "default") => {
     if (!c64Ip) {
@@ -419,15 +470,8 @@ function FileManagerPage({ lastC64Ip }) {
       <h2>File Manager</h2>
 
       {/* C64 IP Bar */}
-      <div className="alert alert-info d-flex align-items-center justify-content-between mb-3">
+      <div className="alert alert-info mb-3">
         <span>C64 IP: <strong>{c64Ip || "Not connected"}</strong></span>
-        <div>
-          {c64Ip && (
-            <button className="btn btn-sm btn-secondary" onClick={loadDirectory} disabled={loading}>
-              {loading ? "Loading..." : "Refresh"}
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Navigation & Actions Bar */}
@@ -513,6 +557,33 @@ function FileManagerPage({ lastC64Ip }) {
 
       {uploadProgress && (
         <div className="alert alert-info mb-3">{uploadProgress}</div>
+      )}
+
+      {c64Ip && (
+        <div className="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">
+          <div className="text-muted small">
+            {virtualDiskImage ? "Disk image contents" : `Directory: ${currentPath}`}
+          </div>
+          <div className="btn-group" role="group" aria-label="Directory actions">
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary"
+              onClick={handleCreateDirectory}
+              disabled={loading || creatingDirectory || Boolean(virtualDiskImage)}
+              title={virtualDiskImage ? "Folder creation is unavailable inside disk images" : "Create a directory"}
+            >
+              {creatingDirectory ? "Creating..." : "New Folder"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-secondary"
+              onClick={loadDirectory}
+              disabled={loading || creatingDirectory}
+            >
+              {loading ? "Loading..." : "Refresh"}
+            </button>
+          </div>
+        </div>
       )}
 
       {/* File Browser Table */}

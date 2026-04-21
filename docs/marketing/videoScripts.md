@@ -13,6 +13,25 @@
 
 ### I want to load my favorite game!
  - from online source
+ Hi folks,
+ this is Honza of Hondani,
+ with another video, show and tell 
+ about the Hondani Shell.
+ In this video I want to show
+ - I have not played Outrun for a long time
+ - open UI
+ - find it in csdb  Outrun NEJKRATSI
+ - copy link
+ - where to put it
+ - upload
+ - to je zip
+ - mount
+ - screen
+ - ll
+ - aha to neni hra
+ - find it in csdb  Outrun 93 prg
+ - mam business
+
 
 ### Who are the cool guys behind Hondani? Are they insane?
 
