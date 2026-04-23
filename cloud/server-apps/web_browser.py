@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from typing import Optional, List, Tuple
 from urllib.parse import urljoin
 
+from version import __version__
 from server_console import (
     ServerConsole,
     SCREEN_COLS,
@@ -99,8 +100,8 @@ class _PlaywrightWorker:
             browser_context = browser.new_context(
                 viewport={"width": 800, "height": 600},
                 user_agent=(
-                    "Mozilla/5.0 (compatible; C64-PETSCII-Browser/1.0; "
-                    "+https://github.com/example/hdnsh)"
+                    f"HondaniShell/{__version__} "
+                    "(C64; PETSCII; 40x25) Chromium/headless"
                 ),
             )
 
