@@ -59,12 +59,11 @@ logging.getLogger("agent_tools").setLevel(logging.DEBUG)
 logger = logging.getLogger("webserver")
 
 
-app = Flask(__name__, static_folder="static", static_url_path="")
+app = Flask(__name__, static_folder=None)
 if getattr(sys, "frozen", False):
-    static_folder = os.path.join(sys._MEIPASS, "static")
+    _static_dir = os.path.join(sys._MEIPASS, "static")
 else:
-    static_folder = os.path.join(os.path.dirname(__file__), "static")
-app.static_folder = static_folder
+    _static_dir = os.path.join(os.path.dirname(__file__), "static")
 CORS(app)
 sock = Sock(app)
 
@@ -130,16 +129,15 @@ def _get_outbound_ip() -> str:
 
 @app.route("/")
 def root():
-    return send_from_directory(app.static_folder or "static", "index.html")
+    return send_from_directory(_static_dir, "index.html")
 
 
 @app.route("/<path:filepath>")
 def static_files(filepath: str):
-    static_dir = app.static_folder or "static"
-    full_path = os.path.join(static_dir, filepath)
+    full_path = os.path.join(_static_dir, filepath)
     if os.path.isfile(full_path):
-        return send_from_directory(static_dir, filepath)
-    return send_from_directory(static_dir, "index.html")
+        return send_from_directory(_static_dir, filepath)
+    return send_from_directory(_static_dir, "index.html")
 
 
 @app.route("/status")
