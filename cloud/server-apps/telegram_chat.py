@@ -91,6 +91,7 @@ KEY_F4 = 0x8A
 KEY_F5 = 0x87
 KEY_F7 = 0x88
 KEY_F8 = 0x8C
+KEY_POUND = 0x5C  # £ key — used for debug toast test
 
 # Modifier flags
 MOD_COMMODORE = 0x04
@@ -1038,6 +1039,13 @@ class TelegramChatConsole(ServerConsole):
             self._chat_status = ""
             self._refresh_chats()
 
+        elif key == KEY_POUND:
+            # Test: show a toast notification
+            from console_manager import ConsoleManager
+            ConsoleManager.instance().show_session_toast(
+                self.session_id, "Hello world"
+            )
+
     # ── CHAT VIEW mode ───────────────────────────────────────────────
 
     def _key_chat_view(self, key: int, mod: int):
@@ -1508,7 +1516,12 @@ class TelegramChatConsole(ServerConsole):
 
             if event_type == 'new_message':
                 # New message arrived: refresh if viewing that chat or chat list
-                if is_active and self.mode == MODE_CHAT_VIEW and event_chat_id == self.current_chat_id:
+                viewing_this_chat = (
+                    is_active
+                    and self.mode == MODE_CHAT_VIEW
+                    and event_chat_id == self.current_chat_id
+                )
+                if viewing_this_chat:
                     # Fetch latest messages for this chat
                     try:
                         tz_minutes = self._get_tz_offset_minutes()
@@ -1529,20 +1542,23 @@ class TelegramChatConsole(ServerConsole):
                             self._clear_typing_active(event_chat_id)
                     except Exception as e:
                         logger.debug("Event: error fetching messages: %s", e)
+                else:
+                    # User is NOT viewing this conversation — show a toast notification.
+                    self._show_new_message_toast(mgr, event)
 
-                elif is_active and self.mode == MODE_CHATS:
-                    # In chat list: refresh dialogs to update unread badges
-                    try:
-                        tz_minutes = self._get_tz_offset_minutes()
-                        new_chats = self.worker.call(
-                            "get_dialogs", tz_offset_minutes=tz_minutes
-                        )
-                        if new_chats:
-                            self.chats = new_chats
-                            if self.chat_sel >= len(self.chats):
-                                self.chat_sel = max(0, len(self.chats) - 1)
-                    except Exception as e:
-                        logger.debug("Event: error fetching dialogs: %s", e)
+                    if is_active and self.mode == MODE_CHATS:
+                        # In chat list: refresh dialogs to update unread badges
+                        try:
+                            tz_minutes = self._get_tz_offset_minutes()
+                            new_chats = self.worker.call(
+                                "get_dialogs", tz_offset_minutes=tz_minutes
+                            )
+                            if new_chats:
+                                self.chats = new_chats
+                                if self.chat_sel >= len(self.chats):
+                                    self.chat_sel = max(0, len(self.chats) - 1)
+                        except Exception as e:
+                            logger.debug("Event: error fetching dialogs: %s", e)
 
             elif event_type == 'message_edited':
                 # Message was edited: refresh if viewing that chat
@@ -2125,10 +2141,78 @@ class TelegramChatConsole(ServerConsole):
             self.screen[pos] = sc
             self.color[pos] = fg
 
-    def _push_screen(self):
-        """DMA-push the current screen/color buffers to the C64."""
+    def _chat_name_by_id(self, chat_id: int) -> str:
+        """Return the display name for a chat_id by searching self.chats.
+
+        Falls back to "Telegram" if the chat is not found in the local list.
+        """
+        for chat in self.chats:
+            if chat.id == chat_id:
+                return chat.name
+        return "Telegram"
+
+    def _show_new_message_toast(self, mgr, event: dict) -> None:
+        """Show a session-level toast for an incoming message the user is not viewing.
+
+        Extracts the sender name and a short preview from the Telethon message
+        object in *event* and calls ``mgr.show_session_toast()``.  Safe to call
+        from within the render lock (no blocking I/O is performed).
+        """
         try:
-            send_screen_data(bytes(self.screen), bytes(self.color))
+            msg = event.get("message")
+            chat_id = event.get("chat_id", 0)
+            # Skip outgoing messages — no need to toast your own messages.
+            if msg and getattr(msg, "out", False):
+                return
+            # Resolve sender name: prefer resolved entity, fall back to chat name.
+            sender_name = ""
+            if msg:
+                sender = getattr(msg, "sender", None)
+                if sender is not None:
+                    first = getattr(sender, "first_name", None) or ""
+                    last = getattr(sender, "last_name", None) or ""
+                    title = getattr(sender, "title", None) or ""
+                    if first or last:
+                        sender_name = (first + " " + last).strip()
+                    elif title:
+                        sender_name = title
+            if not sender_name:
+                sender_name = self._chat_name_by_id(chat_id)
+            # Build preview text (strip newlines, truncate).
+            preview = ""
+            if msg:
+                raw_text = getattr(msg, "message", "") or ""
+                preview = raw_text.replace("\n", " ").replace("\r", "").strip()
+            if not preview and msg:
+                # Media-only message — use a placeholder.
+                preview = "[media]"
+            # Format: "SenderName: preview..." capped at 40 chars total.
+            label = sender_name[:18]
+            if preview:
+                available = SCREEN_COLS - len(label) - 2  # ": "
+                if available > 0:
+                    toast_text = f"{label}: {preview[:available]}"
+                else:
+                    toast_text = label[:SCREEN_COLS]
+            else:
+                toast_text = label[:SCREEN_COLS]
+            mgr.show_session_toast(
+                self.session_id,
+                toast_text,
+                duration_sec=3.0,
+                color=7,  # yellow
+            )
+        except Exception:
+            logger.debug("_show_new_message_toast: failed", exc_info=True)
+
+    def _push_screen(self):
+        """DMA-push the current screen/color buffers to the C64.
+
+        Uses get_screen_data()/get_color_data() so any active toaster overlay
+        (per-console or session-level) is included in the push.
+        """
+        try:
+            send_screen_data(self.get_screen_data(), self.get_color_data())
         except Exception:
             logger.debug("Screen push failed (no C64 connected?)", exc_info=True)
 

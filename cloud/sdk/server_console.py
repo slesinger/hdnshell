@@ -33,6 +33,19 @@ SCREEN_COLS = 40
 SCREEN_ROWS = 25
 SCREEN_SIZE = SCREEN_COLS * SCREEN_ROWS  # 1000 bytes
 
+# Toast box rendering constants (top-right corner popup)
+_TOAST_MAX_CONTENT_WIDTH = 26  # max text width per line (box outer width ≤ 30)
+_TOAST_PADDING = 1              # blank cells on each side of text inside box
+_TOAST_SC_TL    = 0x70          # top-left corner
+_TOAST_SC_TR    = 0x6E          # top-right corner
+_TOAST_SC_BL    = 0x6D          # bottom-left corner
+_TOAST_SC_BR    = 0x7D          # bottom-right corner
+_TOAST_SC_VERT  = 0x5D          # vertical border line
+_TOAST_SC_HORIZ = 0x40          # horizontal border line
+_TOAST_SC_FILL  = 0xA0          # reverse space = solid background fill
+_TOAST_COL_BG   = 11            # dark gray background
+_TOAST_COL_TEXT = 1             # white text
+
 # Defaults
 DEFAULT_SCREEN_CODE = 0x20  # Space
 DEFAULT_FG_COLOR = 14  # Light blue
@@ -215,18 +228,18 @@ class ServerConsole:
     _SC_SPACE = 0x20
 
     def show_toaster(self, text: str, duration_sec: float = 8.0, color: int = 7):
-        """Display a temporary banner on TOASTER_ROW.
+        """Display a temporary toast notification box in the top-right corner.
 
-        The banner is overlaid on top of the rendered screen without
-        touching the internal screen/color buffers, so the next normal
-        render will restore the row automatically.
+        The box is overlaid on top of the rendered screen without touching the
+        internal screen/color buffers, so the next normal render restores it.
+        Text is word-wrapped to fit the box (max 26 chars per line).
 
         Args:
-            text:         Message to display (truncated to 40 chars).
+            text:         Message to display.
             duration_sec: How long the toaster stays visible.
-            color:        C64 colour nybble (default 7 = yellow).
+            color:        Ignored (box always uses dark gray background / white text).
         """
-        self._toaster_text = text[:SCREEN_COLS]
+        self._toaster_text = text
         self._toaster_expires = time.monotonic() + duration_sec
         self._toaster_color = color & 0x0F
 
@@ -353,10 +366,11 @@ class ServerConsole:
         
         Called after rendering screen updates to transmit them to all connected C64 clients.
         Internally uses network_helper.send_screen_data() to push via DMA writes.
+        Toaster overlays are included automatically via get_screen_data()/get_color_data().
         """
         try:
             nh = _get_network_helper()
-            nh.send_screen_data(bytes(self.screen), bytes(self.color))
+            nh.send_screen_data(self.get_screen_data(), self.get_color_data())
         except Exception as e:
             logger.warning(f"Failed to push screen data: {e}")
 
@@ -390,25 +404,27 @@ class ServerConsole:
     # ------------------------------------------------------------------
 
     def get_screen_data(self) -> bytes:
-        """Return the 1000-byte screen-code buffer, with toaster overlay if active."""
-        if not self._toaster_active():
-            return bytes(self.screen)
+        """Return the 1000-byte screen-code buffer, with toast box overlay if active."""
+        from . import _session_toasts
         scr = bytearray(self.screen)
-        row_start = self.TOASTER_ROW * SCREEN_COLS
-        text = (self._toaster_text or "").ljust(SCREEN_COLS)[:SCREEN_COLS]
-        for i, ch in enumerate(text):
-            sc = ascii_to_screencode(ord(ch)) | self._SC_REVERSE_BIT
-            scr[row_start + i] = sc
+        col = bytearray(self.color)
+        if self._toaster_active():
+            _render_toast_box(scr, col, self._toaster_text or "")
+        session_toast = _session_toasts.get(self.session_id)
+        if session_toast and time.monotonic() < session_toast["expires"]:
+            _render_toast_box(scr, col, session_toast["text"])
         return bytes(scr)
 
     def get_color_data(self) -> bytes:
-        """Return the 1000-byte colour buffer, with toaster overlay if active."""
-        if not self._toaster_active():
-            return bytes(self.color)
+        """Return the 1000-byte colour buffer, with toast box overlay if active."""
+        from . import _session_toasts
+        scr = bytearray(self.screen)
         col = bytearray(self.color)
-        row_start = self.TOASTER_ROW * SCREEN_COLS
-        for i in range(SCREEN_COLS):
-            col[row_start + i] = self._toaster_color
+        if self._toaster_active():
+            _render_toast_box(scr, col, self._toaster_text or "")
+        session_toast = _session_toasts.get(self.session_id)
+        if session_toast and time.monotonic() < session_toast["expires"]:
+            _render_toast_box(scr, col, session_toast["text"])
         return bytes(col)
 
     def __repr__(self):
@@ -422,3 +438,75 @@ class ServerConsole:
 # Screen-code conversion utilities are now imported from sdk.petscii
 # See: petscii module for ascii_to_screencode, petscii_to_screencode
 # ======================================================================
+
+
+# ======================================================================
+# Toast box rendering helpers
+# ======================================================================
+
+def _toast_word_wrap(text: str, width: int) -> list:
+    """Wrap *text* so that each line fits within *width* characters."""
+    if not text.strip():
+        return []
+    lines = []
+    for word in text.split():
+        word = word[:width]  # never let a single word exceed width
+        if not lines:
+            lines.append(word)
+        elif len(lines[-1]) + 1 + len(word) <= width:
+            lines[-1] += " " + word
+        else:
+            lines.append(word)
+    return lines
+
+
+def _render_toast_box(scr: bytearray, col: bytearray, text: str) -> None:
+    """Overlay a toast notification box in the top-right corner of *scr*/*col*.
+
+    Box uses dark gray (11) borders + fill and white (1) text.
+    Max outer width is 30 columns; height scales to the word-wrapped content.
+    """
+    lines = _toast_word_wrap(text, _TOAST_MAX_CONTENT_WIDTH)
+    if not lines:
+        return
+
+    content_w = max(len(l) for l in lines)
+    inner_w   = content_w + _TOAST_PADDING * 2   # text + left/right padding
+    box_w     = inner_w + 2                        # + left/right border columns
+
+    col_start = SCREEN_COLS - box_w
+    if col_start < 0:
+        col_start = 0
+    row_start = 0
+
+    def _put(r: int, c: int, sc: int, color: int) -> None:
+        if 0 <= r < SCREEN_ROWS and 0 <= c < SCREEN_COLS:
+            pos = r * SCREEN_COLS + c
+            scr[pos] = sc
+            col[pos] = color
+
+    # Top border
+    _put(row_start, col_start, _TOAST_SC_TL, _TOAST_COL_BG)
+    for i in range(inner_w):
+        _put(row_start, col_start + 1 + i, _TOAST_SC_HORIZ, _TOAST_COL_BG)
+    _put(row_start, col_start + 1 + inner_w, _TOAST_SC_TR, _TOAST_COL_BG)
+
+    # Text rows
+    for li, line in enumerate(lines):
+        row = row_start + 1 + li
+        c   = col_start
+        _put(row, c, _TOAST_SC_VERT, _TOAST_COL_BG);  c += 1
+        for _ in range(_TOAST_PADDING):
+            _put(row, c, _TOAST_SC_FILL, _TOAST_COL_BG);  c += 1
+        for ch in line:
+            _put(row, c, ascii_to_screencode(ord(ch)), _TOAST_COL_TEXT);  c += 1
+        for _ in range(content_w - len(line) + _TOAST_PADDING):
+            _put(row, c, _TOAST_SC_FILL, _TOAST_COL_BG);  c += 1
+        _put(row, c, _TOAST_SC_VERT, _TOAST_COL_BG)
+
+    # Bottom border
+    bot = row_start + 1 + len(lines)
+    _put(bot, col_start, _TOAST_SC_BL, _TOAST_COL_BG)
+    for i in range(inner_w):
+        _put(bot, col_start + 1 + i, _TOAST_SC_HORIZ, _TOAST_COL_BG)
+    _put(bot, col_start + 1 + inner_w, _TOAST_SC_BR, _TOAST_COL_BG)

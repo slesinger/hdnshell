@@ -17,6 +17,7 @@ Usage from command_handler / cloud_server:
 import logging
 from typing import Callable, Dict, Optional, Tuple
 
+from . import _session_toasts
 from .server_console import ServerConsole
 
 logger = logging.getLogger(__name__)
@@ -159,8 +160,9 @@ class ConsoleManager:
         """Route a keypress to the appropriate console."""
         self._notify_switch(console_id, session_id)
         console = self.get_console(console_id, session_id)
-        # Any keypress dismisses a pending toaster on this console.
+        # Any keypress dismisses both the per-console and session-level toaster.
         console.clear_toaster()
+        _session_toasts.remove(session_id)
         return console.handle_keypress(petscii_code, modifiers)
 
     def handle_text_input(
@@ -180,12 +182,63 @@ class ConsoleManager:
         return console.handle_command(data)
 
     def get_screen_data(self, console_id: int, session_id: int) -> bytes:
-        """Return the screen buffer for a console."""
+        """Return the screen buffer for a console (session toast included automatically)."""
         self._notify_switch(console_id, session_id)
         console = self.get_console(console_id, session_id)
         return console.get_screen_data()
 
     def get_color_data(self, console_id: int, session_id: int) -> bytes:
-        """Return the colour buffer for a console."""
+        """Return the colour buffer for a console (session toast included automatically)."""
         console = self.get_console(console_id, session_id)
         return console.get_color_data()
+
+    # ------------------------------------------------------------------
+    # Session-level toast API (cross-app notifications)
+    # ------------------------------------------------------------------
+
+    def show_session_toast(
+        self,
+        session_id: int,
+        text: str,
+        duration_sec: float = 3.0,
+        color: int = 7,
+        push: bool = True,
+    ) -> None:
+        """Display a temporary toast notification on the currently active console.
+
+        The notification is overlaid on TOASTER_ROW (row 22) without modifying
+        any console's internal buffers.  It auto-expires after ``duration_sec``
+        seconds and is dismissed immediately by any keypress.
+
+        This method is safe to call from background threads.
+
+        Args:
+            session_id:   Target session.
+            text:         Message to display (truncated to 40 chars).
+            duration_sec: Visible duration in seconds (default 5).
+            color:        C64 colour nybble (default 7 = yellow).
+            push:         If True, immediately push the updated screen to the C64.
+        """
+        import time
+        _session_toasts.put(session_id, text, time.monotonic() + duration_sec, color & 0x0F)
+        if push:
+            self._push_session_toast(session_id)
+
+    def clear_session_toast(self, session_id: int) -> None:
+        """Dismiss the session-level toast for a session immediately."""
+        _session_toasts.remove(session_id)
+
+    def _push_session_toast(self, session_id: int) -> None:
+        """Push the currently active console's screen (with session toast overlay) to the C64."""
+        active_console_id = self._active.get(session_id)
+        if active_console_id is None:
+            return
+        console = self._consoles.get((session_id, active_console_id))
+        if console is None:
+            return
+        try:
+            from . import network_helper as nh
+            # get_screen_data()/get_color_data() already include the session toast overlay.
+            nh.send_screen_data(console.get_screen_data(), console.get_color_data())
+        except Exception:
+            logger.debug("Session toast push failed", exc_info=True)
