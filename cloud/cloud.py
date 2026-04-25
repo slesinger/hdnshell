@@ -60,7 +60,10 @@ logger = logging.getLogger("webserver")
 
 
 app = Flask(__name__, static_folder="static", static_url_path="")
-static_folder = os.path.join(os.path.dirname(__file__), "static")
+if getattr(sys, "frozen", False):
+    static_folder = os.path.join(sys._MEIPASS, "static")
+else:
+    static_folder = os.path.join(os.path.dirname(__file__), "static")
 app.static_folder = static_folder
 CORS(app)
 sock = Sock(app)

@@ -21,17 +21,12 @@ if (Test-Path $RELEASE_DIR) {
                       "$RELEASE_DIR/hdnsh-server-mac" -ErrorAction SilentlyContinue
 }
 
-# 2. UI Build
+# 2. UI Build (Vite outputs directly to cloud/static via outDir config)
 Write-Host "--- Building UI ---" -ForegroundColor Cyan
 Push-Location $UI_DIR
 npm install
 npm run build
 Pop-Location
-
-# 3. UI Copy
-Write-Host "--- Copying UI Assets ---" -ForegroundColor Cyan
-if (Test-Path $CLOUD_STATIC_DIR) { Remove-Item -Recurse -Force $CLOUD_STATIC_DIR }
-Copy-Item -Path $UI_DIST -Destination $CLOUD_STATIC_DIR -Recurse
 
 # 4. Backend Package - Windows
 Write-Host "--- Packaging Windows Backend ---" -ForegroundColor Cyan
