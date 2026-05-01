@@ -17,6 +17,7 @@ Invoked from C64 by pressing CBM+7.
 
 import logging
 import re
+import threading
 import unicodedata
 from dataclasses import dataclass, field
 from typing import Optional, List, Tuple
@@ -203,6 +204,9 @@ class WikiBrowserConsole(ServerConsole):
         # Show welcome screen
         self._show_welcome()
         self._full_render()
+        # Pre-warm Playwright in background so the first search doesn't pay
+        # Chromium's cold-start cost while the user is still typing.
+        threading.Thread(target=self._warmup_playwright, daemon=True).start()
 
     # =================================================================
     #  LIFECYCLE HOOKS
@@ -214,6 +218,14 @@ class WikiBrowserConsole(ServerConsole):
 
     def on_deactivate(self):
         pass
+
+    def _warmup_playwright(self):
+        try:
+            from web_browser import _pw_worker
+            _pw_worker.warmup()
+            logger.info("Wiki browser: Playwright pre-warm complete")
+        except Exception as e:
+            logger.warning(f"Wiki browser: Playwright pre-warm failed: {e}")
 
     # =================================================================
     #  INPUT HANDLER

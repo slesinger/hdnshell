@@ -55,11 +55,23 @@ class _PlaywrightWorker:
     """
 
     _SENTINEL = object()  # poison-pill to shut down the worker
+    _WARMUP   = object()  # warm-up job: launch browser, don't fetch anything
 
     def __init__(self):
         self._job_queue: queue.Queue = queue.Queue()
         self._thread = threading.Thread(target=self._run, name="playwright-worker", daemon=True)
         self._thread.start()
+
+    def warmup(self) -> None:
+        """Pre-launch Chromium so the first real fetch doesn't pay the startup cost.
+
+        Blocks until the browser context is ready; safe to call from any thread.
+        """
+        result_q: queue.Queue = queue.Queue()
+        self._job_queue.put((self._WARMUP, result_q))
+        result = result_q.get()
+        if isinstance(result, Exception):
+            logger.warning(f"Playwright warmup failed: {result}")
 
     def fetch_page(self, url: str) -> dict:
         """Fetch *url* and return extracted page data.
@@ -112,6 +124,9 @@ class _PlaywrightWorker:
             url, result_q = job
             try:
                 ensure_browser()
+                if url is self._WARMUP:
+                    result_q.put(None)
+                    continue
                 result_q.put(self._do_fetch(browser_context, url))
             except Exception as exc:
                 logger.error(f"Playwright worker fetch error: {exc}", exc_info=True)
