@@ -8,6 +8,19 @@
  - libraries in RAG ...
 
 ### How do I set it up? Initial configuration
+ - windows download jen server
+ - unzip protoze widle
+ - otevrit command prompt protoze logy
+ - run server, detect IP do not worry
+ - open browser, follow instructions
+ - show to enable network
+ - rescan IP
+ - upload hdnsh, reboot, show boot screen
+ - show info
+ - Show settings
+
+
+### How do I configure AI?
 
 ### How do I run it once it is installed. How to troubleshoot it?
 
@@ -15,7 +28,7 @@
  - from online source
  Hi folks,
  this is Honza of Hondani,
- with another video, show and tell 
+ with another show and tell
  about the Hondani Shell.
  In this video I want to show
  - I have not played Outrun for a long time
