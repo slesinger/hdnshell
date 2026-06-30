@@ -21,16 +21,14 @@ DEFAULT_SCREEN_CODE = 0x20  # Space character
 
 # Special ASCII characters that need custom screen code mapping
 _SPECIAL_ASCII = {
-    ord("@"): 0x00,  # @ → screen code $00
     ord("`"): 0x27,  # ` → apostrophe glyph on C64 screen ($27)
-    ord("["): 0x1B,  # [ → screen code $1B
-    ord("]"): 0x1D,  # ] → screen code $1D
     ord("{"): 0x6B,  # { → screen code $6B
     ord("}"): 0x73,  # } → screen code $73
     ord("_"): 0x64,  # _ → screen code $64
     ord("~"): 0x68,  # ~ → screen code $68
     ord("|"): 0x5D,  # | → screen code $5D
     ord("\\"): 0x7F,  # \ → screen code $7F
+    0x7F: 0x1F,  # DEL → screen code $1F
 }
 
 
@@ -153,18 +151,18 @@ def ascii_to_screencode(ascii_code: int) -> int:
 
     Screen codes are indices into the C64's VIC-II character ROM.
     Mapping (uppercase mode):
-        PC @ (0x40)   → $00
-        PC [ (0x5B)   → $1B
-        PC ] (0x5D)   → $1D
-        PC { (0x7B)   → $6B
-        PC } (0x7D)   → $73
-        PC _ (0x5F)   → $64
-        PC ~ (0x7E)   → $68
-        PC | (0x7C)   → $5D
-        PC \\ (0x5C)  → $7F
-        $20-$3F       → $20-$3F   (space, digits, punctuation)
-        $40-$5F       → $00-$1F   (@, A-Z, [, £, ], ↑, ←)
-        $60-$7F       → $00-$1F   (lowercase a-z mapped to uppercase screen codes)
+        PC   $20-$3F  → $20-$3F   (space, digits, punctuation)
+        PC   $41-$5A  → $41-$5A   (A-Z)
+        PC   $5B-$5E  → $1B-$1E   ([, £, ], ↑)
+        PC \\ (0x5C)  → $7F       (2nd+4th quadrant diagonal)
+        PC _ (0x5F)   → $64       (thin lower horizontal line)
+        PC ` (0x60)   → $27       (backtick → apostrophe glyph)
+        PC   $61-$7A  → $01-$1A   (lowercase a-z mapped to lowercase screen codes)
+        PC { (0x7B)   → $6B       (left nose)
+        PC | (0x7C)   → $5D       (middle vertical)
+        PC } (0x7D)   → $73       (right nose)
+        PC ~ (0x7E)   → $68       (lower half-gray block)
+        PC DEL (0x7F) → $1F       (←)
         anything else → $20 (space)
 
     Args:
@@ -177,10 +175,12 @@ def ascii_to_screencode(ascii_code: int) -> int:
         return _SPECIAL_ASCII[ascii_code]
     if 0x20 <= ascii_code <= 0x3F:
         return ascii_code
-    if 0x40 <= ascii_code <= 0x5F:
-        return ascii_code - 0x40  # Uppercase letters map to $00-$1F
-    if 0x60 <= ascii_code <= 0x7F:
-        return ascii_code - 0x60  # Lowercase letters map to $00-$1F
+    if 0x41 <= ascii_code <= 0x5A:
+        return ascii_code
+    if 0x5B <= ascii_code <= 0x5E:
+        return ascii_code - 0x40
+    if 0x61 <= ascii_code <= 0x7A:
+        return ascii_code - 0x60
     return DEFAULT_SCREEN_CODE
 
 

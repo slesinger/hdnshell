@@ -526,6 +526,22 @@ class _TelethonWorker:
         except Exception as e:
             return f"error:{e}"
 
+    async def _do_send_typing(self, chat_id: int = 0) -> str:
+        """Notify Telegram that the user is composing in a chat."""
+        if not self._connected or not chat_id:
+            return "error:Not connected or missing chat"
+        try:
+            from telethon.tl.functions.messages import SetTypingRequest
+            from telethon.tl.types import SendMessageTypingAction
+
+            peer = await self._client.get_input_entity(chat_id)
+            await self._client(
+                SetTypingRequest(peer=peer, action=SendMessageTypingAction())
+            )
+            return "ok"
+        except Exception as e:
+            return f"error:{e}"
+
     async def _do_get_contacts(self) -> List[ContactEntry]:
         """Fetch the user's contact list."""
         if not self._connected:
@@ -801,6 +817,8 @@ class TelegramChatConsole(ServerConsole):
         self._typing_until_by_chat: dict = {}  # chat_id -> monotonic deadline
         self._typing_ttl_sec: float = 5.0
         self._typing_anim_frame: int = 0  # incremented every _full_render call
+        self._last_typing_sent_by_chat: dict = {}  # chat_id -> monotonic timestamp
+        self._typing_send_interval_sec: float = 3.0
 
         # Contacts state
         self.contacts: List[ContactEntry] = []
@@ -1145,6 +1163,7 @@ class TelegramChatConsole(ServerConsole):
                 )
                 self.msg_cursor -= 1
                 self._clamp_input_scroll()
+                self._send_typing_if_needed()
 
         elif key == KEY_CRSR_LT:
             if cbm:
@@ -1204,6 +1223,7 @@ class TelegramChatConsole(ServerConsole):
                 )
                 self.msg_cursor += 1
                 self._clamp_input_scroll()
+                self._send_typing_if_needed()
 
     # ── CONTACTS mode (F3) ───────────────────────────────────────────
 
@@ -1480,6 +1500,23 @@ class TelegramChatConsole(ServerConsole):
         """Clear typing indicator for a chat."""
         if chat_id:
             self._typing_until_by_chat.pop(chat_id, None)
+
+    def _send_typing_if_needed(self):
+        """Send a throttled Telegram typing action for local compose edits."""
+        chat_id = self.current_chat_id
+        if not chat_id or not self.worker.connected:
+            return
+        now = time.monotonic()
+        last_sent = self._last_typing_sent_by_chat.get(chat_id, 0.0)
+        if now - last_sent < self._typing_send_interval_sec:
+            return
+        self._last_typing_sent_by_chat[chat_id] = now
+        try:
+            result = self.worker.call("send_typing", chat_id=chat_id)
+            if result != "ok":
+                logger.debug("send_typing failed for chat %d: %s", chat_id, result)
+        except Exception as e:
+            logger.debug("send_typing exception for chat %d: %s", chat_id, e)
 
     def _is_typing_active(self, chat_id: int) -> bool:
         """Return True when typing indicator is currently active for this chat."""
@@ -1985,7 +2022,8 @@ class TelegramChatConsole(ServerConsole):
         if self._is_typing_active(self.current_chat_id):
             _TYPING_CHARS = ".+*"
             glyph = _TYPING_CHARS[(self._typing_anim_frame // 10) % 3]
-            self._put_text(sep_row, SCREEN_COLS - 2, glyph, COL_YELLOW)
+            label = f"typing {glyph}"
+            self._put_text(sep_row, SCREEN_COLS - len(label), label, COL_YELLOW)
 
         # Input area: word-wrap msg_input into up to MAX_INPUT_LINES lines
         prompt = "> "
