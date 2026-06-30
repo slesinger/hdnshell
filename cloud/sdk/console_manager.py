@@ -239,6 +239,10 @@ class ConsoleManager:
             from . import network_helper as nh
 
             # get_screen_data()/get_color_data() already include the session toast overlay.
-            nh.send_screen_data(console.get_screen_data(), console.get_color_data())
+            nh.send_screen_data(
+                console.get_screen_data(),
+                console.get_color_data(),
+                session_id=session_id,
+            )
         except Exception:
             logger.debug("Session toast push failed", exc_info=True)

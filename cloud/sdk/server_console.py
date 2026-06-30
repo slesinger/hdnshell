@@ -376,7 +376,11 @@ class ServerConsole:
         """
         try:
             nh = _get_network_helper()
-            nh.send_screen_data(self.get_screen_data(), self.get_color_data())
+            nh.send_screen_data(
+                self.get_screen_data(),
+                self.get_color_data(),
+                session_id=self.session_id,
+            )
         except Exception as e:
             logger.warning(f"Failed to push screen data: {e}")
 
@@ -390,7 +394,7 @@ class ServerConsole:
         """
         try:
             nh = _get_network_helper()
-            nh.send_vic_colors(border, background)
+            nh.send_vic_colors(border, background, session_id=self.session_id)
         except Exception as e:
             logger.warning(f"Failed to push VIC colors: {e}")
 

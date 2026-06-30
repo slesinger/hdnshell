@@ -4,6 +4,7 @@ Network helper utilities for communicating with Ultimate64 via TCP DMA service.
 
 import socket
 import os
+from typing import Optional
 
 DMA_SERVICE_PORT = 64
 
@@ -49,8 +50,30 @@ def read_last_c64_ip() -> str:
     return ""
 
 
+def _resolve_c64_host(host: Optional[str] = None, session_id: Optional[int] = None) -> str:
+    """Resolve target C64 IP from explicit host, session state, or persisted config."""
+    if host:
+        return host
+
+    if session_id is not None:
+        try:
+            from .shared_state import get_session_state_copy
+
+            ip = str(get_session_state_copy(session_id).get("client_ip", "")).strip()
+            if ip:
+                return ip
+        except Exception:
+            pass
+
+    return read_last_c64_ip().strip()
+
+
 def _send_tcp_cmd(host: str, cmd: int, payload: bytes = b"") -> None:
     """Send a single DMA-service command to Ultimate64 on port 64."""
+    if not host:
+        raise ValueError(
+            "C64 host IP is not set. Configure last_c64_ip or send from an active session."
+        )
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(5)
     s.connect((host, 64))
@@ -86,41 +109,55 @@ def dma_read_memory(host: str, address: int, length: int) -> bytes:
     return resp.content
 
 
-def send_screen_data(screen_data: bytes, color_data: bytes) -> None:
+def send_screen_data(
+    screen_data: bytes,
+    color_data: bytes,
+    host: Optional[str] = None,
+    session_id: Optional[int] = None,
+) -> None:
     """Send screen + color data to Ultimate64 for DMA display."""
+    target_host = _resolve_c64_host(host=host, session_id=session_id)
     _send_tcp_cmd(
-        read_last_c64_ip(),
+        target_host,
         SOCKET_CMD_DMAWRITE,
         0x0400.to_bytes(2, "little") + screen_data,
     )
     _send_tcp_cmd(
-        read_last_c64_ip(),
+        target_host,
         SOCKET_CMD_DMAWRITE,
         0xD800.to_bytes(2, "little") + color_data,
     )
 
 
-def send_vic_colors(border: int, background: int) -> None:
+def send_vic_colors(
+    border: int,
+    background: int,
+    host: Optional[str] = None,
+    session_id: Optional[int] = None,
+) -> None:
     """DMA-write border ($D020) and background ($D021) colours to the C64."""
+    target_host = _resolve_c64_host(host=host, session_id=session_id)
     _send_tcp_cmd(
-        read_last_c64_ip(),
+        target_host,
         SOCKET_CMD_DMAWRITE,
         0xD020.to_bytes(2, "little") + bytes([border & 0x0F]),
     )
     _send_tcp_cmd(
-        read_last_c64_ip(),
+        target_host,
         SOCKET_CMD_DMAWRITE,
         0xD021.to_bytes(2, "little") + bytes([background & 0x0F]),
     )
 
 
-def send_c64_keyboard_input(data: bytes, host: str = None) -> None:
+def send_c64_keyboard_input(
+    data: bytes, host: Optional[str] = None, session_id: Optional[int] = None
+) -> None:
     """
     Send PETSCII key strokes to the C64 via the DMA service (SOCKET_CMD_KEYB).
     If host is not provided, uses the last known C64 IP from config.
     """
     if host is None:
-        host = read_last_c64_ip()
+        host = _resolve_c64_host(host=None, session_id=session_id)
     if not host:
         raise ValueError("C64 host IP address is not set.")
     _send_tcp_cmd(host, SOCKET_CMD_KEYB, data)

@@ -153,18 +153,17 @@ def ascii_to_screencode(ascii_code: int) -> int:
 
     Screen codes are indices into the C64's VIC-II character ROM.
     Mapping (uppercase mode):
-        PC @ (0x40)   → $00
-        PC [ (0x5B)   → $1B
-        PC ] (0x5D)   → $1D
-        PC { (0x7B)   → $6B
-        PC } (0x7D)   → $73
-        PC _ (0x5F)   → $64
-        PC ~ (0x7E)   → $68
-        PC | (0x7C)   → $5D
-        PC \\ (0x5C)  → $7F
-        $20-$3F       → $20-$3F   (space, digits, punctuation)
-        $40-$5F       → $00-$1F   (@, A-Z, [, £, ], ↑, ←)
-        $60-$7F       → $00-$1F   (lowercase a-z mapped to uppercase screen codes)
+        PC   $20-$3F  → $20-$3F   (space, digits, punctuation)
+        PC   $40-$5E  → $00-$1E   (@, A-Z, [, £, ], ↑)
+        PC \\ (0x5C)  → $7F       (2nd+4th quadrant diagonal)
+        PC _ (0x5F)   → $64       (thin lower horizontal line)
+        PC ` (0x60)   → $27       (backtick → apostrophe glyph)
+        PC   $61-$7A  → $81-$9A   (lowercase a-z mapped to lowercase screen codes)
+        PC { (0x7B)   → $6B       (left nose)
+        PC | (0x7C)   → $5D       (middle vertical)
+        PC } (0x7D)   → $73       (right nose)
+        PC ~ (0x7E)   → $68       (lower half-gray block)
+        PC DEL (0x7F) → $1F       (←)
         anything else → $20 (space)
 
     Args:
@@ -179,8 +178,10 @@ def ascii_to_screencode(ascii_code: int) -> int:
         return ascii_code
     if 0x40 <= ascii_code <= 0x5F:
         return ascii_code - 0x40  # Uppercase letters map to $00-$1F
-    if 0x60 <= ascii_code <= 0x7F:
-        return ascii_code - 0x60  # Lowercase letters map to $00-$1F
+    if 0x61 <= ascii_code <= 0x7A:
+        return ascii_code + 0x20  # Lowercase letters map to $81-$9A
+    if ascii_code == 0x7F:
+        return 0x1F  # DEL maps to left-arrow glyph
     return DEFAULT_SCREEN_CODE
 
 

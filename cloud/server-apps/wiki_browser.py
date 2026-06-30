@@ -502,7 +502,11 @@ class WikiBrowserConsole(ServerConsole):
         try:
             from sdk.network_helper import send_screen_data
 
-            send_screen_data(self.get_screen_data(), self.get_color_data())
+            send_screen_data(
+                self.get_screen_data(),
+                self.get_color_data(),
+                session_id=self.session_id,
+            )
         except Exception:
             pass
 
@@ -1495,7 +1499,11 @@ class WikiBrowserConsole(ServerConsole):
         try:
             from sdk.network_helper import send_vic_colors
 
-            send_vic_colors(border & 0x0F, background & 0x0F)
+            send_vic_colors(
+                border & 0x0F,
+                background & 0x0F,
+                session_id=self.session_id,
+            )
         except Exception as e:
             logger.warning(f"Could not send VIC colours: {e}")
 

@@ -194,7 +194,7 @@ class CommandHandler:
             logger.info(f"GET_SCREEN for console {console_id}, session {session_id}")
             screen = mgr.get_screen_data(console_id, session_id)
             color = mgr.get_color_data(console_id, session_id)
-            send_screen_data(screen, color)
+            send_screen_data(screen, color, session_id=session_id)
             return None
 
         # Delegate to console-specific handler
@@ -228,7 +228,7 @@ class CommandHandler:
         # TODO temporary inefficient - send whole screen via DMA
         screen = mgr.get_screen_data(console_id, session_id)
         color = mgr.get_color_data(console_id, session_id)
-        send_screen_data(screen, color)
+        send_screen_data(screen, color, session_id=session_id)
         return None
 
     @staticmethod

@@ -526,6 +526,36 @@ class _TelethonWorker:
         except Exception as e:
             return f"error:{e}"
 
+    async def _do_send_typing(self, chat_id: int = 0) -> str:
+        """Send a typing action to a chat. Returns 'ok' or error string."""
+        if not self._connected or not chat_id:
+            return "error:Not connected or missing chat_id"
+        try:
+            from telethon.tl.functions.messages import SetTypingRequest
+            from telethon.tl.types import SendMessageTypingAction
+
+            await self._client(
+                SetTypingRequest(peer=chat_id, action=SendMessageTypingAction())
+            )
+            return "ok"
+        except Exception as e:
+            return f"error:{e}"
+
+    async def _do_cancel_typing(self, chat_id: int = 0) -> str:
+        """Cancel typing action in a chat. Returns 'ok' or error string."""
+        if not self._connected or not chat_id:
+            return "error:Not connected or missing chat_id"
+        try:
+            from telethon.tl.functions.messages import SetTypingRequest
+            from telethon.tl.types import SendMessageCancelAction
+
+            await self._client(
+                SetTypingRequest(peer=chat_id, action=SendMessageCancelAction())
+            )
+            return "ok"
+        except Exception as e:
+            return f"error:{e}"
+
     async def _do_get_contacts(self) -> List[ContactEntry]:
         """Fetch the user's contact list."""
         if not self._connected:
@@ -801,6 +831,9 @@ class TelegramChatConsole(ServerConsole):
         self._typing_until_by_chat: dict = {}  # chat_id -> monotonic deadline
         self._typing_ttl_sec: float = 5.0
         self._typing_anim_frame: int = 0  # incremented every _full_render call
+        self._outgoing_typing_chat_id: int = 0
+        self._outgoing_typing_last_sent: float = 0.0
+        self._outgoing_typing_interval_sec: float = 4.0
 
         # Contacts state
         self.contacts: List[ContactEntry] = []
@@ -938,6 +971,7 @@ class TelegramChatConsole(ServerConsole):
             self._push_screen()
 
     def on_deactivate(self):
+        self._stop_outgoing_typing(self.current_chat_id)
         self._is_active = False
 
     # =================================================================
@@ -1145,6 +1179,7 @@ class TelegramChatConsole(ServerConsole):
                 )
                 self.msg_cursor -= 1
                 self._clamp_input_scroll()
+                self._sync_outgoing_typing()
 
         elif key == KEY_CRSR_LT:
             if cbm:
@@ -1174,6 +1209,7 @@ class TelegramChatConsole(ServerConsole):
 
         elif key == KEY_RUNSTOP or key == KEY_LEFT_ARROW:
             # Back to chat list
+            self._stop_outgoing_typing(self.current_chat_id)
             self._clear_typing_active(self.current_chat_id)
             self.mode = MODE_CHATS
             self.msg_input = ""
@@ -1182,6 +1218,7 @@ class TelegramChatConsole(ServerConsole):
             self._refresh_chats()
 
         elif key == KEY_F1:
+            self._stop_outgoing_typing(self.current_chat_id)
             self._clear_typing_active(self.current_chat_id)
             self.mode = MODE_CHATS
             self.msg_input = ""
@@ -1190,6 +1227,7 @@ class TelegramChatConsole(ServerConsole):
             self._refresh_chats()
 
         elif key == KEY_F8:
+            self._stop_outgoing_typing(self.current_chat_id)
             self.prev_mode = MODE_CHAT_VIEW
             self.help_scroll = 0
             self.mode = MODE_HELP
@@ -1204,6 +1242,7 @@ class TelegramChatConsole(ServerConsole):
                 )
                 self.msg_cursor += 1
                 self._clamp_input_scroll()
+                self._sync_outgoing_typing()
 
     # ── CONTACTS mode (F3) ───────────────────────────────────────────
 
@@ -1459,6 +1498,7 @@ class TelegramChatConsole(ServerConsole):
 
     def _open_chat(self, chat_id: int, chat_name: str):
         """Open a chat for viewing/messaging."""
+        self._stop_outgoing_typing(self._outgoing_typing_chat_id)
         self.current_chat_id = chat_id
         self.current_chat_name = chat_name
         self.msg_input = ""
@@ -1512,6 +1552,7 @@ class TelegramChatConsole(ServerConsole):
         if not text:
             return
         try:
+            self._stop_outgoing_typing(self.current_chat_id)
             result = self.worker.call(
                 "send_message", chat_id=self.current_chat_id, text=text
             )
@@ -1522,6 +1563,55 @@ class TelegramChatConsole(ServerConsole):
                 self._refresh_messages(self.current_chat_id)
         except Exception as e:
             logger.error("send_message: %s", e)
+
+    def _sync_outgoing_typing(self):
+        """Emit throttled typing actions while user composes a message."""
+        chat_id = self.current_chat_id
+        if not chat_id:
+            return
+
+        if not self.msg_input.strip():
+            self._stop_outgoing_typing(chat_id)
+            return
+
+        now = time.monotonic()
+        chat_changed = self._outgoing_typing_chat_id != chat_id
+        if not chat_changed and (
+            now - self._outgoing_typing_last_sent
+        ) < self._outgoing_typing_interval_sec:
+            return
+
+        if chat_changed and self._outgoing_typing_chat_id:
+            self._stop_outgoing_typing(self._outgoing_typing_chat_id)
+
+        try:
+            result = self.worker.call("send_typing", chat_id=chat_id)
+            if result == "ok":
+                self._outgoing_typing_chat_id = chat_id
+                self._outgoing_typing_last_sent = now
+            else:
+                logger.debug("send_typing failed for chat %d: %s", chat_id, result)
+        except Exception as e:
+            logger.debug("send_typing exception for chat %d: %s", chat_id, e)
+
+    def _stop_outgoing_typing(self, chat_id: int = 0):
+        """Cancel outgoing typing action for a chat and clear local state."""
+        target_chat_id = chat_id or self._outgoing_typing_chat_id
+        if target_chat_id:
+            try:
+                result = self.worker.call("cancel_typing", chat_id=target_chat_id)
+                if result != "ok":
+                    logger.debug(
+                        "cancel_typing failed for chat %d: %s", target_chat_id, result
+                    )
+            except Exception as e:
+                logger.debug(
+                    "cancel_typing exception for chat %d: %s", target_chat_id, e
+                )
+
+        if self._outgoing_typing_chat_id == target_chat_id:
+            self._outgoing_typing_chat_id = 0
+            self._outgoing_typing_last_sent = 0.0
 
     # =================================================================
     #  PHASE A: READ STATE SYNC
@@ -2345,7 +2435,11 @@ class TelegramChatConsole(ServerConsole):
         (per-console or session-level) is included in the push.
         """
         try:
-            send_screen_data(self.get_screen_data(), self.get_color_data())
+            send_screen_data(
+                self.get_screen_data(),
+                self.get_color_data(),
+                session_id=self.session_id,
+            )
         except Exception:
             logger.debug("Screen push failed (no C64 connected?)", exc_info=True)
 
@@ -2354,7 +2448,11 @@ class TelegramChatConsole(ServerConsole):
         try:
             from sdk.network_helper import send_vic_colors
 
-            send_vic_colors(border & 0x0F, background & 0x0F)
+            send_vic_colors(
+                border & 0x0F,
+                background & 0x0F,
+                session_id=self.session_id,
+            )
         except Exception as e:
             logger.warning("Could not send VIC colours: %s", e)
 
