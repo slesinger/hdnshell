@@ -5,18 +5,24 @@ Unit tests for request handlers
 import pytest
 import os
 import sys
+import threading
 
 _CLOUD_DIR = os.path.dirname(os.path.abspath(__file__))
 _HANDLERS_DIR = os.path.join(_CLOUD_DIR, "handlers")
 if _HANDLERS_DIR not in sys.path:
     sys.path.insert(0, _HANDLERS_DIR)
 
-from config_manager import apply_env_overrides
-from base_handler import BaseHandler
+import agent_tools
+
+from sdk.config_manager import apply_env_overrides
+from sdk.base_handler import BaseHandler
 from help_handler import HelpHandler
 from python_eval_handler import PythonEvalHandler
 from csdb_handler import CSDBHandler
 from chat_handler import ChatHandler
+from code_chat_handler import _sprite_image_consistency_warnings
+from agent_tools import search_manual
+from sdk.shared_state import get_session_state_copy, update_session_state
 
 # from generate_pet_asc_table import Petscii
 
@@ -177,6 +183,16 @@ class TestCSDBHandler:
 class TestChatHandler:
     """Test ChatHandler"""
 
+    REMOVED_SHELL_TOOL_NAMES = {
+        "find_oscar_symbol",
+        "get_oscar64_overview_stdlib_docs",
+        "get_oscar64_vic_sid_cia_reu_docs",
+        "get_oscar64_charwin_sprites_input_io_docs",
+        "get_oscar64_graphics_audio_vector_ultimate_docs",
+        "write_source",
+        "compile_code",
+    }
+
     def test_can_handle_chat(self):
         """Test chat command detection"""
         handler = ChatHandler()
@@ -194,6 +210,58 @@ class TestChatHandler:
         response = handler.handle("i:")
         assert "chat mode" in response.lower()
 
+    def test_skills_enabled_by_default(self):
+        """Chat assistant should start with all available skills enabled."""
+        handler = ChatHandler()
+        assert handler.active_skills == handler.available_skills()
+
+    def test_skills_slash_commands(self):
+        """Slash commands should manage chat assistant skills."""
+        handler = ChatHandler()
+
+        listed = handler.handle("I: /skills")
+        assert "skills:" in listed.lower()
+        assert "active:" in listed.lower()
+
+        cleared = handler.handle("I: /skill clear")
+        assert "cleared" in cleared.lower()
+
+        if handler.available_skills():
+            first = handler.available_skills()[0]
+            toggled = handler.handle(f"I: /skill {first}")
+            assert "active:" in toggled.lower()
+
+    def test_shell_assistant_excludes_coding_agent_tools(self):
+        """I: assistant should not expose coding-only Oscar/source tools."""
+        handler = ChatHandler()
+
+        tool_names = {getattr(tool, "name", "") for tool in handler.tools}
+
+        assert self.REMOVED_SHELL_TOOL_NAMES.isdisjoint(tool_names)
+
+    def test_code_chat_agent_keeps_coding_agent_tools(self):
+        """Server coding agent should retain its Oscar/source tools."""
+        from code_chat_handler import CodeChatAgent
+
+        handler = CodeChatAgent()
+        tool_names = {getattr(tool, "name", "") for tool in handler.tools}
+
+        assert self.REMOVED_SHELL_TOOL_NAMES.issubset(tool_names)
+
+    def test_code_chat_new_project_slash_command(self, monkeypatch, tmp_path):
+        """Coding agent should scaffold a workspace Oscar project via slash command."""
+        from code_chat_handler import CodeChatAgent
+
+        monkeypatch.setattr(agent_tools, "WORKSPACE_DIR", str(tmp_path))
+
+        handler = CodeChatAgent()
+        response = handler.handle("/new-project sprite-lab")
+
+        assert "created project:" in response.lower()
+        assert handler.working_dir == os.path.join(str(tmp_path), "oscar", "sprite-lab")
+        assert os.path.isfile(os.path.join(handler.working_dir, "sprite-lab.c"))
+        assert os.path.isfile(os.path.join(handler.working_dir, "sprite-lab.md"))
+
     def test_fallback_response_when_no_llm(self):
         """Test fallback when LLM not configured"""
         handler = ChatHandler()
@@ -203,6 +271,35 @@ class TestChatHandler:
             assert (
                 "unavailable" in response.lower() or "configuration" in response.lower()
             )
+
+    def test_manual_dir_resolves_repo_docs(self):
+        """Manual directory should resolve to repository docs in source runs."""
+        handler = ChatHandler()
+        manual_dir = handler.find_manual_dir()
+        assert os.path.isdir(manual_dir)
+
+        files = handler.load_manual_files(manual_dir)
+        assert files
+        assert any(name.endswith(".md") for name in files)
+
+    def test_shell_docs_query_uses_manual_tool_only(self):
+        """Shell help queries should constrain tools to hondani_shell_manual."""
+        handler = ChatHandler()
+        tools = handler._select_tools_for_query("how do i mount d64?", session_id=0)
+
+        assert tools
+        assert all(getattr(tool, "name", "") == "hondani_shell_manual" for tool in tools)
+
+    def test_shell_docs_query_without_manual_returns_guidance(self):
+        """If manual tool is missing, return direct guidance instead of looping tools."""
+        handler = ChatHandler()
+        handler.tools = [tool for tool in handler.tools if getattr(tool, "name", "") != "hondani_shell_manual"]
+        handler.manual_content = {}
+        handler.llm = object()
+
+        response = handler._query_llm("how do i mount d64?", history=[], session_id=0)
+        assert "manual" in response.lower()
+        assert "mnt" in response.lower() or "mount" in response.lower()
 
     def test_llm_response(self):
         """Test actual LLM response with Azure OpenAI"""
@@ -215,6 +312,53 @@ class TestChatHandler:
         else:
             # If LLM not available, skip this test
             pytest.skip("Azure OpenAI not configured")
+
+    def test_same_session_turns_are_serialized(self):
+        """Concurrent chat turns for one session should not interleave history."""
+        handler = ChatHandler()
+        session_id = 92001
+        update_session_state(session_id, active_module="i", chat_history=[])
+
+        started = threading.Event()
+        allow_finish = threading.Event()
+        entered = []
+
+        def fake_query(query, history=None, session_id=0):
+            entered.append(query)
+            if query == "first":
+                started.set()
+                allow_finish.wait(timeout=2.0)
+            return f"reply:{query}"
+
+        handler.llm = object()
+        handler._query_llm = fake_query
+
+        results = []
+
+        def run_query(text):
+            results.append(handler.handle(text, session_id=session_id))
+
+        first = threading.Thread(target=run_query, args=("I: first",))
+        second = threading.Thread(target=run_query, args=("second",))
+
+        first.start()
+        assert started.wait(timeout=1.0)
+        second.start()
+        assert second.is_alive()
+        assert entered == ["first"]
+
+        allow_finish.set()
+        first.join(timeout=2.0)
+        second.join(timeout=2.0)
+
+        assert results == ["reply:first", "reply:second"]
+        assert entered == ["first", "second"]
+        assert get_session_state_copy(session_id)["chat_history"] == [
+            {"role": "user", "content": "first"},
+            {"role": "assistant", "content": "reply:first"},
+            {"role": "user", "content": "second"},
+            {"role": "assistant", "content": "reply:second"},
+        ]
 
 
 class TestRequestDispatcher:
@@ -315,6 +459,58 @@ class TestRequestDispatcher:
 
         # Should get empty or minimal response
         assert len(response) > 0
+
+
+class TestCodeChatSemanticChecks:
+    """Test semantic guardrails used by CodeChatHandler."""
+
+    def test_sprite_image_mismatch_is_reported(self):
+        source = """
+char * const SpriteMem = (char*)0x0340;
+void main(void) {
+    memcpy(SpriteMem, sprite_data, 63);
+    spr_set(0, true, 160, 100, 0, 7, false, false, false);
+}
+"""
+        warnings = _sprite_image_consistency_warnings(source)
+        assert warnings
+        assert "expected one of [13]" in warnings[0]
+
+    def test_sprite_image_match_has_no_warning(self):
+        source = """
+char * const SpriteMem = (char*)0x0340;
+void main(void) {
+    memcpy(SpriteMem, sprite_data, 63);
+    spr_set(0, true, 160, 100, 13, 7, false, false, false);
+}
+"""
+        warnings = _sprite_image_consistency_warnings(source)
+        assert warnings == []
+
+
+class TestManualSearch:
+    """Test manual search helper ranking and fallback behavior."""
+
+    def test_natural_language_query_matches_relevant_paragraph(self):
+        manual = {
+            "using-the-shell.md": (
+                "Use mnt to mount a D64 image.\n\n"
+                "Use umnt to unmount the active image."
+            )
+        }
+
+        result = search_manual("How do I mount d64 image?", manual)
+        assert "mount a D64" in result
+
+    def test_no_match_returns_full_manual(self):
+        manual = {
+            "a.md": "First section text.",
+            "b.md": "Second section text.",
+        }
+
+        result = search_manual("nonexistent-topic-xyz", manual)
+        assert "=== a.md ===" in result
+        assert "=== b.md ===" in result
 
 
 if __name__ == "__main__":

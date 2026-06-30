@@ -21,15 +21,16 @@ DEFAULT_SCREEN_CODE = 0x20  # Space character
 
 # Special ASCII characters that need custom screen code mapping
 _SPECIAL_ASCII = {
-    ord("@"): 0x00,     # @ → screen code $00
-    ord("["): 0x1B,     # [ → screen code $1B
-    ord("]"): 0x1D,     # ] → screen code $1D
-    ord("{"): 0x6B,     # { → screen code $6B
-    ord("}"): 0x73,     # } → screen code $73
-    ord("_"): 0x64,     # _ → screen code $64
-    ord("~"): 0x68,     # ~ → screen code $68
-    ord("|"): 0x5D,     # | → screen code $5D
-    ord("\\"): 0x7F,    # \ → screen code $7F
+    ord("@"): 0x00,  # @ → screen code $00
+    ord("`"): 0x27,  # ` → apostrophe glyph on C64 screen ($27)
+    ord("["): 0x1B,  # [ → screen code $1B
+    ord("]"): 0x1D,  # ] → screen code $1D
+    ord("{"): 0x6B,  # { → screen code $6B
+    ord("}"): 0x73,  # } → screen code $73
+    ord("_"): 0x64,  # _ → screen code $64
+    ord("~"): 0x68,  # ~ → screen code $68
+    ord("|"): 0x5D,  # | → screen code $5D
+    ord("\\"): 0x7F,  # \ → screen code $7F
 }
 
 
@@ -107,9 +108,7 @@ def utf8_to_petscii(text: str) -> bytes:
     # then transliterate to ASCII-only string by encoding to ASCII
     # with 'ignore' (drops diacritic marks and yields base letters).
     ascii_text = (
-        unicodedata.normalize("NFKD", text)
-        .encode("ascii", "ignore")
-        .decode("ascii")
+        unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
     )
 
     out_bytes = []

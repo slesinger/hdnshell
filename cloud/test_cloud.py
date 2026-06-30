@@ -7,7 +7,7 @@ import socket
 import threading
 import time
 from cloud_server import C64Server
-from command_handler import CommandHandler, MAGIC_BYTES, ResponseType
+from sdk.command_handler import CommandHandler, MAGIC_BYTES, ResponseType
 
 
 @pytest.fixture
@@ -123,7 +123,12 @@ class TestResponseGeneration:
 
     def test_petscii_protocol_response_is_null_terminated(self):
         """Test that PETSCII_NULL_TERMINATED protocol responses are null-terminated"""
-        from command_handler import CommandHandler, CommandID, MAGIC_BYTES, ResponseType
+        from sdk.command_handler import (
+            CommandHandler,
+            CommandID,
+            MAGIC_BYTES,
+            ResponseType,
+        )
 
         # Prepare a text input packet: MAGIC_BYTES + CommandID.TEXT_INPUT + PETSCII 'help' + null
         petscii_text = bytes([0x48, 0x45, 0x4C, 0x50, 0x00])  # 'HELP' + null
@@ -167,7 +172,7 @@ class TestPETSCIIConversion:
 
     def test_petscii_to_utf8_lowercase(self):
         """Test converting PETSCII lowercase to UTF-8"""
-        from generate_pet_asc_table import Petscii
+        from sdk.generate_pet_asc_table import Petscii
 
         # PETSCII 'a' = $41, ASCII 'a' = $61
         petscii_a = 0x41
@@ -178,7 +183,7 @@ class TestPETSCIIConversion:
 
     def test_petscii_to_utf8_uppercase(self):
         """Test converting PETSCII uppercase to UTF-8"""
-        from generate_pet_asc_table import Petscii
+        from sdk.generate_pet_asc_table import Petscii
 
         # PETSCII 'A' = $C1, ASCII 'A' = $41
         petscii_A = 0xC1
@@ -189,7 +194,7 @@ class TestPETSCIIConversion:
 
     def test_utf8_to_petscii_lowercase(self):
         """Test converting UTF-8 lowercase to PETSCII"""
-        from generate_pet_asc_table import Petscii
+        from sdk.generate_pet_asc_table import Petscii
 
         # ASCII 'a' = $61, PETSCII 'a' = $41
         ascii_a = ord("a")
@@ -199,7 +204,7 @@ class TestPETSCIIConversion:
 
     def test_utf8_to_petscii_uppercase(self):
         """Test converting UTF-8 uppercase to PETSCII"""
-        from generate_pet_asc_table import Petscii
+        from sdk.generate_pet_asc_table import Petscii
 
         # ASCII 'A' = $41, PETSCII 'A' = $C1
         ascii_A = ord("A")
@@ -209,7 +214,7 @@ class TestPETSCIIConversion:
 
     def test_petscii_string_to_utf8(self):
         """Test converting a PETSCII string to UTF-8"""
-        from generate_pet_asc_table import Petscii
+        from sdk.generate_pet_asc_table import Petscii
 
         # "hello" in PETSCII
         petscii_hello = bytes([0x48, 0x45, 0x4C, 0x4C, 0x4F])
@@ -222,7 +227,7 @@ class TestPETSCIIConversion:
 
     def test_utf8_string_to_petscii(self):
         """Test converting a UTF-8 string to PETSCII"""
-        from generate_pet_asc_table import Petscii
+        from sdk.generate_pet_asc_table import Petscii
 
         # "HELLO" in UTF-8
         utf8_str = "HELLO"

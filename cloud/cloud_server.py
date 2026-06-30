@@ -14,6 +14,7 @@ import os
 import argparse
 import importlib
 from typing import Tuple, Optional
+from logging_utils import configure_application_logging
 
 # Add app and SDK directories to module search path.
 _CLOUD_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,19 +32,17 @@ WebBrowserConsole = importlib.import_module("web_browser").WebBrowserConsole
 RSSReaderConsole = importlib.import_module("rss_reader").RSSReaderConsole
 WikiBrowserConsole = importlib.import_module("wiki_browser").WikiBrowserConsole
 
-_cmd = importlib.import_module("command_handler")
+_cmd = importlib.import_module("sdk.command_handler")
 CommandHandler = _cmd.CommandHandler
 MAGIC_BYTES = _cmd.MAGIC_BYTES
 CommandID = _cmd.CommandID
 ResponseType = _cmd.ResponseType
 
-get_session_state = importlib.import_module("shared_state").get_session_state
-ConsoleManager = importlib.import_module("console_manager").ConsoleManager
+update_session_state = importlib.import_module("sdk.shared_state").update_session_state
+ConsoleManager = importlib.import_module("sdk.console_manager").ConsoleManager
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+configure_application_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -96,7 +95,7 @@ class C64Server:
                     client_socket, address = self.server_socket.accept()
                     with self.lock:
                         self.clients.append(client_socket)
-                    logger.info(f"Accepted connection from {address}")
+                    logger.debug(f"Accepted connection from {address}")
                     # Use a stable session ID per client IP to persist state across connections
                     session_id = hash(address[0]) & 0xFFFFFFFF
                     thread = threading.Thread(
@@ -124,8 +123,7 @@ class C64Server:
         """
         try:
             # Store client IP for this session
-            state = get_session_state(session_id)
-            state["client_ip"] = address[0]
+            update_session_state(session_id, client_ip=address[0])
             while self.running:
                 data = client_socket.recv(1024)
                 if not data:
@@ -138,7 +136,7 @@ class C64Server:
         except Exception as e:
             logger.error(f"Error handling client {address}: {e}", exc_info=True)
         finally:
-            logger.info(f"Connection from {address} closed")
+            logger.debug(f"Connection from {address} closed")
             with self.lock:
                 if client_socket in self.clients:
                     self.clients.remove(client_socket)
@@ -150,7 +148,7 @@ class C64Server:
         Process a complete command packet from the client
         """
         # Print packet in hex for debugging
-        logger.info(f"Received packet: {packet.hex()}")
+        logger.debug(f"Received packet: {packet.hex()}")
 
         try:
             magic, console_cmd_id, data = CommandHandler.parse_packet(packet)
@@ -175,7 +173,7 @@ class C64Server:
 
                 if response_data:
                     resp = CommandHandler.create_response(response_type, response_data)
-                    logger.info(f"ResponseT: {resp.hex()}")
+                    # logger.info(f"ResponseT: {resp.hex()}")
                     return resp
 
             elif CommandHandler.is_server_console(console_id):

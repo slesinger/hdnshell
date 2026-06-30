@@ -1,2 +1,1 @@
-#include "sid.h"
-
+../sid.c

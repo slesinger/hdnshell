@@ -10,10 +10,6 @@ from typing import Optional, Tuple
 from .generate_pet_asc_table import Petscii
 from .console_manager import ConsoleManager, MIN_CONSOLE_ID, MAX_CONSOLE_ID
 from .network_helper import send_screen_data
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from request_dispatcher import RequestDispatcher
 
 logger = logging.getLogger(__name__)
 
@@ -57,12 +53,13 @@ class CommandHandler:
     @classmethod
     def get_dispatcher(cls):
         """Get or create the request dispatcher instance.
-        
+
         Lazily imports RequestDispatcher from cloud/request_dispatcher.py.
         """
         if cls._dispatcher is None:
             # Import at runtime to avoid circular dependency
             from request_dispatcher import RequestDispatcher
+
             cls._dispatcher = RequestDispatcher()
         return cls._dispatcher
 
@@ -222,7 +219,7 @@ class CommandHandler:
             data:       Keypress payload (PETSCII code + modifier flags).
             session_id: Client session ID.
         """
-        print(f"handle_console_keypress: console_id={console_id}, data={data.hex()}")
+        # print(f"handle_console_keypress: console_id={console_id}, data={data.hex()}")
         petscii_code = data[0]
         modifiers = data[1]
         mgr = ConsoleManager.instance()

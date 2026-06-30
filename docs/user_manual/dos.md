@@ -58,10 +58,10 @@ Examples:
 
 The `mount` command can mount disk images (D64/D71/D81) to a device 8 or 9. This allows you to use the contents of the disk image as if it were a real disk drive.
 
-- `mount myimage.d64` — Mount image in current directory
-- `mount mydir/myimage.d64` — Mount image in subdirectory
-- `mount /mydir/myimage.d64` — Mount image absolute from root
-- `unmount` — Unmount disk image (return to SD card directory)
+- `mnt myimage.d64` — Mount image in current directory
+- `mnt mydir/myimage.d64` — Mount image in subdirectory
+- `mnt /mydir/myimage.d64` — Mount image absolute from root
+- `umnt` — Unmount disk image (return to SD card directory)
 
 ## SoftIEC (SD2IEC Emulation)
 

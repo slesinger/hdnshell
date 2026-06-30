@@ -7,7 +7,7 @@ Useful for testing the TCP communication protocol.
 """
 import socket
 import sys
-from generate_pet_asc_table import Petscii
+from sdk.generate_pet_asc_table import Petscii
 
 # Protocol constants
 MAGIC_BYTES = bytes([0xFE, 0xFF])

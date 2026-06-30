@@ -34,6 +34,8 @@ langgraph-sdk==0.3.1
 google-search-results==2.4.2
 
 # Context7 MCP integration (direct HTTP, uses requests which is already listed)
+langchain-mcp-adapters
+mcp
 
 # Telegram client
 telethon>=1.36.0

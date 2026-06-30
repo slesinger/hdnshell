@@ -15,7 +15,7 @@ import subprocess
 import sys
 from typing import Optional, List, Tuple, Dict
 
-from server_console import (
+from sdk.server_console import (
     ServerConsole,
     SCREEN_COLS,
     SCREEN_ROWS,
@@ -23,8 +23,8 @@ from server_console import (
     DEFAULT_SCREEN_CODE,
     ascii_to_screencode,
 )
-from generate_pet_asc_table import Petscii
-from shared_state import get_clipboard, set_clipboard
+from sdk.generate_pet_asc_table import Petscii
+from sdk.shared_state import get_clipboard, set_clipboard
 from workspace_init import WORKSPACE_DIR
 
 logger = logging.getLogger(__name__)
@@ -627,10 +627,14 @@ class FileEditorConsole(ServerConsole):
             self._cmd_close_file()
         elif key == KEY_CBM_S:
             self._cmd_save()
-        elif key == KEY_SHIFT_SEMICOLON and mod & 0x02:  # CBM+; → indent line by 2 spaces
+        elif (
+            key == KEY_SHIFT_SEMICOLON and mod & 0x02
+        ):  # CBM+; → indent line by 2 spaces
             d.set_cur_line("  " + d.cur_line())
             d.cursor_x += 2
-        elif key == KEY_SHIFT_COLON and mod & 0x02:  # CBM+: → dedent line by up to 2 spaces
+        elif (
+            key == KEY_SHIFT_COLON and mod & 0x02
+        ):  # CBM+: → dedent line by up to 2 spaces
             line = d.cur_line()
             removed = min(2, len(line) - len(line.lstrip(" ")))
             if removed:
@@ -650,7 +654,10 @@ class FileEditorConsole(ServerConsole):
                 self._ensure_split_doc()
         elif key == KEY_SHIFT_UPARROW:  # SHIFT+UP-ARROW → swap active pane
             if self.split_mode > 0:
-                self.active_doc_idx, self.split_doc_idx = self.split_doc_idx, self.active_doc_idx
+                self.active_doc_idx, self.split_doc_idx = (
+                    self.split_doc_idx,
+                    self.active_doc_idx,
+                )
 
         # ─ CTRL key combos ─
         elif key == KEY_CTRL_F:
@@ -789,7 +796,10 @@ class FileEditorConsole(ServerConsole):
                 self._ensure_split_doc()
         elif label == "Swap pane":
             if self.split_mode > 0:
-                self.active_doc_idx, self.split_doc_idx = self.split_doc_idx, self.active_doc_idx
+                self.active_doc_idx, self.split_doc_idx = (
+                    self.split_doc_idx,
+                    self.active_doc_idx,
+                )
         elif label == "Tabs":
             self._enter_file_list()
         elif label == "Wrap":
@@ -840,7 +850,9 @@ class FileEditorConsole(ServerConsole):
                     self._refresh_browser()
                     # Clamp cursor to new entry count so it stays visible
                     if self.browser_entries:
-                        self.browser_sel = min(self.browser_sel, len(self.browser_entries) - 1)
+                        self.browser_sel = min(
+                            self.browser_sel, len(self.browser_entries) - 1
+                        )
                     else:
                         self.browser_sel = 0
                     if self.browser_sel < self.browser_scroll:
@@ -1246,6 +1258,16 @@ class FileEditorConsole(ServerConsole):
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "oscar"
         )
 
+    @staticmethod
+    def _workspace_dir() -> str:
+        """Return the absolute path to the workspace/ directory."""
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            return os.path.join(meipass, "workspace")
+        return os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "workspace"
+        )
+
     def _cmd_compile(self) -> bool:
         """Save current file and compile it with oscar64. Returns True on success."""
         self._compile_ok = False
@@ -1259,7 +1281,9 @@ class FileEditorConsole(ServerConsole):
 
         oscar_dir = self._oscar_dir()
         compiler = os.path.join(oscar_dir, "bin", "oscar64")
-        include_dir = os.path.join(oscar_dir, "include")
+        include_dir = os.path.join(
+            self._workspace_dir(), "oscar", "include"
+        )  # current dir is supposed to be the workspace
 
         if not os.path.isfile(compiler):
             self.status_msg = "oscar64 not found"
@@ -1294,8 +1318,11 @@ class FileEditorConsole(ServerConsole):
         # Strip absolute path prefixes from file references so lines fit in 40 cols.
         # oscar64 emits:  /abs/path/to/file.c(12, 1) : error 3006: ...
         # We keep only:  file.c(12, 1) : error 3006: ...
-        output = re.sub(r"(?:/[^/()\s]+)+/([^/()\s]+(?:\.[^/()\s]+)?)(\(\d+(?:,\s*\d+)?\))",
-                        r"\1\2", output)
+        output = re.sub(
+            r"(?:/[^/()\s]+)+/([^/()\s]+(?:\.[^/()\s]+)?)(\(\d+(?:,\s*\d+)?\))",
+            r"\1\2",
+            output,
+        )
         clog_path = os.path.join(os.path.dirname(d.path), "clog.txt")
         try:
             with open(clog_path, "w") as f:
@@ -1345,7 +1372,8 @@ class FileEditorConsole(ServerConsole):
             self._log_run(f"[run] .prg not found: {prg_path}")
             return
 
-        from network_helper import read_last_c64_ip, send_dmawrite
+        from sdk.network_helper import read_last_c64_ip, send_dmawrite
+
         c64_ip = read_last_c64_ip()
         if not c64_ip:
             self.status_msg = "No C64 IP configured"
@@ -1509,9 +1537,15 @@ class FileEditorConsole(ServerConsole):
 
         if self.word_wrap:
             self._render_editor_pane_wrapped(
-                top_row, visible_rows, text_cols, doc,
-                show_cursor, col_offset, pane_cols,
-                sel_start, sel_end,
+                top_row,
+                visible_rows,
+                text_cols,
+                doc,
+                show_cursor,
+                col_offset,
+                pane_cols,
+                sel_start,
+                sel_end,
             )
             return
 
@@ -1845,8 +1879,7 @@ class FileEditorConsole(ServerConsole):
             " return     new line",
             " del        backspace",
             " ins        insert space",
-            " C=[ ]      (un)indent line"
-            " arrow left underscore",
+            " C=[ ]      (un)indent line" " arrow left underscore",
             " pound      backslash",
             " C=+q       { open curly brace",
             " C=+w       } close curly brace",

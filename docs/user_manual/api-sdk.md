@@ -23,6 +23,15 @@ For developping a Server Application, you need to checkout Hondani Shell source 
 
 You can find the Server Apps sources under `cloud/server-apps/`. Play with the code there and then use `make run-server` to start the server and test your changes from the C64. When you are happy with the result, you can decide to prepare a pull request should you want to publish it for all the other users.
 
+For Coding Agent backend development, you can also run the handler directly from a PC terminal without starting the C64 UI:
+
+```bash
+cd cloud
+python handlers/code_chat_handler.py
+```
+
+This starts an interactive terminal chat loop for `CodeChatAgent`, which is the backend used by the Coding Agent console. It is useful for quick local iteration on the agent behavior, prompts, and tool wiring. It does not exercise the 40x25 console UI in `cloud/server-apps/coding_agent_console.py`.
+
 ## Current Structure
 
 - `cloud/sdk/`: core reusable API

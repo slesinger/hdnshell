@@ -23,15 +23,15 @@ from dataclasses import dataclass, field
 from typing import Optional, List, Tuple
 from urllib.parse import urljoin, urlparse, quote
 
-from server_console import (
+from sdk.server_console import (
     ServerConsole,
     SCREEN_COLS,
     SCREEN_ROWS,
     SCREEN_SIZE,
     ascii_to_screencode,
 )
-from generate_pet_asc_table import Petscii
-from text_utils import word_wrap
+from sdk.generate_pet_asc_table import Petscii
+from sdk.text_utils import word_wrap
 
 logger = logging.getLogger(__name__)
 
@@ -171,9 +171,9 @@ class LinkInfo:
 # =====================================================================
 @dataclass
 class TocEntry:
-    text: str           # heading text (already cleaned)
-    line_idx: int       # index in content_lines where this heading lives
-    level: int          # heading level (2=H2, 3=H3, etc.)
+    text: str  # heading text (already cleaned)
+    line_idx: int  # index in content_lines where this heading lives
+    level: int  # heading level (2=H2, 3=H3, etc.)
 
 
 # =====================================================================
@@ -222,6 +222,7 @@ class WikiBrowserConsole(ServerConsole):
     def _warmup_playwright(self):
         try:
             from web_browser import _pw_worker
+
             _pw_worker.warmup()
             logger.info("Wiki browser: Playwright pre-warm complete")
         except Exception as e:
@@ -307,7 +308,11 @@ class WikiBrowserConsole(ServerConsole):
         elif key == KEY_RETURN:
             if 0 <= self.active_link_idx < len(self.links):
                 link = self.links[self.active_link_idx]
-                target_url = urljoin(self.current_url, link.url) if self.current_url else link.url
+                target_url = (
+                    urljoin(self.current_url, link.url)
+                    if self.current_url
+                    else link.url
+                )
                 self._navigate(target_url)
 
         elif key == KEY_F7:
@@ -396,8 +401,28 @@ class WikiBrowserConsole(ServerConsole):
                 )
                 self.search_cursor += 1
 
-    _SEARCH_LANGS = ["en", "de", "fr", "es", "it", "pt", "ru", "ja", "zh", "pl",
-                     "nl", "sv", "uk", "ca", "fi", "cs", "hu", "ko", "id", "tr"]
+    _SEARCH_LANGS = [
+        "en",
+        "de",
+        "fr",
+        "es",
+        "it",
+        "pt",
+        "ru",
+        "ja",
+        "zh",
+        "pl",
+        "nl",
+        "sv",
+        "uk",
+        "ca",
+        "fi",
+        "cs",
+        "hu",
+        "ko",
+        "id",
+        "tr",
+    ]
 
     def _cycle_search_lang(self, direction: int):
         try:
@@ -475,7 +500,8 @@ class WikiBrowserConsole(ServerConsole):
         self.content_lines = [self._make_text_line("Loading...", COL_WHITE)]
         self._full_render()
         try:
-            from network_helper import send_screen_data
+            from sdk.network_helper import send_screen_data
+
             send_screen_data(self.get_screen_data(), self.get_color_data())
         except Exception:
             pass
@@ -489,7 +515,9 @@ class WikiBrowserConsole(ServerConsole):
                 self.content_lines, self.links = self._extract_portal(page_data, url)
                 self.toc_entries = []
             else:
-                self.content_lines, self.links, self.toc_entries = self._extract_article(page_data, url)
+                self.content_lines, self.links, self.toc_entries = (
+                    self._extract_article(page_data, url)
+                )
 
             self.scroll_y = 0
             self.active_link_idx = -1
@@ -505,7 +533,9 @@ class WikiBrowserConsole(ServerConsole):
             )
 
             if not self.content_lines:
-                self.content_lines = [self._make_text_line("(no content)", COL_LIGHT_GREY)]
+                self.content_lines = [
+                    self._make_text_line("(no content)", COL_LIGHT_GREY)
+                ]
 
         except Exception as e:
             logger.error(f"Wiki navigation error: {e}", exc_info=True)
@@ -543,29 +573,8 @@ class WikiBrowserConsole(ServerConsole):
         class _WikiFetchJob:
             """Piggyback on the Playwright worker's thread by submitting
             a custom job that runs our extraction JS instead of the default."""
+
             pass
-
-        # We need to use the worker thread. The simplest approach: fetch
-        # via the worker (which gives us the generic extraction), but then
-        # also do a second fetch with custom JS. Instead, let's use the
-        # worker's internal queue directly with a custom extraction.
-        import queue as _queue
-
-        result_q = _queue.Queue()
-
-        def _custom_fetch(browser_context, url):
-            page = browser_context.new_page()
-            try:
-                page.goto(url, wait_until="domcontentloaded", timeout=15000)
-                try:
-                    page.wait_for_load_state("networkidle", timeout=5000)
-                except Exception:
-                    pass
-
-                data = page.evaluate(_WIKI_EXTRACT_JS)
-                return data
-            finally:
-                page.close()
 
         # Submit custom job to the worker
         # The worker expects (url, result_q) tuples, but we need custom extraction.
@@ -589,42 +598,94 @@ class WikiBrowserConsole(ServerConsole):
         """
         # "From Wikipedia, the free encyclopedia" in various languages
         _WIKI_MARKERS = [
-            "from wikipedia",        # English
-            "aus wikipedia",         # German
-            "de wikipedia",          # French, Spanish, Portuguese, Catalan
-            "da wikipedia",          # Italian
-            "z wikipedii",           # Polish
-            "material from wikipedia", # fallback
+            "from wikipedia",  # English
+            "aus wikipedia",  # German
+            "de wikipedia",  # French, Spanish, Portuguese, Catalan
+            "da wikipedia",  # Italian
+            "z wikipedii",  # Polish
+            "material from wikipedia",  # fallback
         ]
 
         # Navigation text to always skip
         _NAV_TEXTS = {
             # English
-            "jump to content", "main menu", "search", "appearance",
-            "donate", "create account", "log in", "toggle the table of contents",
-            "languages", "article", "talk", "read", "edit", "view history",
-            "tools", "general", "what links here", "related changes",
-            "upload file", "permanent link", "page information",
-            "cite this page", "get shortened url", "download as pdf",
-            "printable version", "in other projects", "toggle limited content width",
-            "move to sidebar", "hide", "main page", "contents",
-            "current events", "random article", "about wikipedia",
-            "contact us", "contribute", "help", "learn to edit",
-            "community portal", "recent changes",
+            "jump to content",
+            "main menu",
+            "search",
+            "appearance",
+            "donate",
+            "create account",
+            "log in",
+            "toggle the table of contents",
+            "languages",
+            "article",
+            "talk",
+            "read",
+            "edit",
+            "view history",
+            "tools",
+            "general",
+            "what links here",
+            "related changes",
+            "upload file",
+            "permanent link",
+            "page information",
+            "cite this page",
+            "get shortened url",
+            "download as pdf",
+            "printable version",
+            "in other projects",
+            "toggle limited content width",
+            "move to sidebar",
+            "hide",
+            "main page",
+            "contents",
+            "current events",
+            "random article",
+            "about wikipedia",
+            "contact us",
+            "contribute",
+            "help",
+            "learn to edit",
+            "community portal",
+            "recent changes",
             # German
-            "zum inhalt springen", "hauptmenü", "suche", "erscheinungsbild",
-            "jetzt spenden", "benutzerkonto erstellen", "anmelden",
-            "inhaltsverzeichnis umschalten", "artikel", "diskussion",
-            "lesen", "bearbeiten", "quelltext bearbeiten", "versionsgeschichte",
+            "zum inhalt springen",
+            "hauptmenü",
+            "suche",
+            "erscheinungsbild",
+            "jetzt spenden",
+            "benutzerkonto erstellen",
+            "anmelden",
+            "inhaltsverzeichnis umschalten",
+            "artikel",
+            "diskussion",
+            "lesen",
+            "bearbeiten",
+            "quelltext bearbeiten",
+            "versionsgeschichte",
             "werkzeuge",
             # French
-            "aller au contenu", "menu principal", "rechercher",
-            "contribuer", "créer un compte", "se connecter",
-            "basculer la table des matières", "discussion", "lire",
-            "modifier", "modifier le code", "voir l'historique", "outils",
+            "aller au contenu",
+            "menu principal",
+            "rechercher",
+            "contribuer",
+            "créer un compte",
+            "se connecter",
+            "basculer la table des matières",
+            "discussion",
+            "lire",
+            "modifier",
+            "modifier le code",
+            "voir l'historique",
+            "outils",
             # Spanish
-            "ir al contenido", "menú principal", "buscar",
-            "crear una cuenta", "acceder", "herramientas",
+            "ir al contenido",
+            "menú principal",
+            "buscar",
+            "crear una cuenta",
+            "acceder",
+            "herramientas",
         }
 
         # Phase 1: Find content start
@@ -680,33 +741,44 @@ class WikiBrowserConsole(ServerConsole):
 
             # Skip "N languages/Sprachen/langues" text
             if re.match(r"^\d+\s+\S+$", text_lower) and any(
-                w in text_lower for w in ["language", "sprach", "langue", "idioma", "lingu"]
+                w in text_lower
+                for w in ["language", "sprach", "langue", "idioma", "lingu"]
             ):
                 continue
 
             # Skip edit links
             if tag == "A":
-                href = (elem.get("href", "") or "")
+                href = elem.get("href", "") or ""
                 if "action=edit" in href:
                     continue
-                if text_lower in ("edit", "[edit]", "bearbeiten",
-                                  "modifier", "editar", "modifica"):
+                if text_lower in (
+                    "edit",
+                    "[edit]",
+                    "bearbeiten",
+                    "modifier",
+                    "editar",
+                    "modifica",
+                ):
                     continue
 
             # Skip footer/meta content
-            if tag == "#text" and any(p in text_lower for p in [
-                "this page was last edited",
-                "diese seite wurde zuletzt",
-                "la dernière modification",
-                "text is available under",
-                "creative commons",
-                "privacy policy",
-                "terms of use",
-                "cookie statement",
-                "wikipedia® is a registered trademark",
-                "powered by mediawiki",
-                "datenschutz", "impressum",
-            ]):
+            if tag == "#text" and any(
+                p in text_lower
+                for p in [
+                    "this page was last edited",
+                    "diese seite wurde zuletzt",
+                    "la dernière modification",
+                    "text is available under",
+                    "creative commons",
+                    "privacy policy",
+                    "terms of use",
+                    "cookie statement",
+                    "wikipedia® is a registered trademark",
+                    "powered by mediawiki",
+                    "datenschutz",
+                    "impressum",
+                ]
+            ):
                 continue
 
             result.append(elem)
@@ -717,7 +789,9 @@ class WikiBrowserConsole(ServerConsole):
     #  WIKIPEDIA PORTAL EXTRACTION (wikipedia.org main page)
     # =================================================================
 
-    def _extract_portal(self, page_data: dict, url: str) -> Tuple[List[ContentLine], List[LinkInfo]]:
+    def _extract_portal(
+        self, page_data: dict, url: str
+    ) -> Tuple[List[ContentLine], List[LinkInfo]]:
         """Extract language links from the Wikipedia portal page.
 
         Uses structure-based detection:
@@ -729,8 +803,12 @@ class WikiBrowserConsole(ServerConsole):
         links: List[LinkInfo] = []
 
         # Title
-        lines.append(self._make_text_line("WIKIPEDIA", COL_WHITE, reverse=True, center=True))
-        lines.append(self._make_text_line("The Free Encyclopedia", COL_LIGHT_GREY, center=True))
+        lines.append(
+            self._make_text_line("WIKIPEDIA", COL_WHITE, reverse=True, center=True)
+        )
+        lines.append(
+            self._make_text_line("The Free Encyclopedia", COL_LIGHT_GREY, center=True)
+        )
         lines.append(self._make_empty_line())
 
         # Collect language links from elements — identify by href pattern
@@ -787,16 +865,21 @@ class WikiBrowserConsole(ServerConsole):
                 link_col_end = col
                 link_row_end = len(lines)
 
-                links.append(LinkInfo(
-                    url=href, text=display,
-                    row_start=link_row_start, row_end=link_row_end,
-                    col_start=link_col_start, col_end=link_col_end,
-                ))
+                links.append(
+                    LinkInfo(
+                        url=href,
+                        text=display,
+                        row_start=link_row_start,
+                        row_end=link_row_end,
+                        col_start=link_col_start,
+                        col_end=link_col_end,
+                    )
+                )
 
                 # Article count after the link
                 if article_count and col < SCREEN_COLS - 2:
                     col += 1  # space
-                    count_text = article_count[:SCREEN_COLS - col]
+                    count_text = article_count[: SCREEN_COLS - col]
                     for ch in count_text:
                         if col >= SCREEN_COLS:
                             break
@@ -809,7 +892,9 @@ class WikiBrowserConsole(ServerConsole):
         lines.append(self._make_empty_line())
         lines.append(self._make_hline())
         lines.append(self._make_empty_line())
-        lines.append(self._make_text_line("F7 = Search  F8 = Help", COL_HELP_FG, center=True))
+        lines.append(
+            self._make_text_line("F7 = Search  F8 = Help", COL_HELP_FG, center=True)
+        )
 
         return lines, links
 
@@ -817,7 +902,9 @@ class WikiBrowserConsole(ServerConsole):
     #  WIKIPEDIA ARTICLE EXTRACTION
     # =================================================================
 
-    def _extract_article(self, page_data: dict, url: str) -> Tuple[List[ContentLine], List[LinkInfo], List[TocEntry]]:
+    def _extract_article(
+        self, page_data: dict, url: str
+    ) -> Tuple[List[ContentLine], List[LinkInfo], List[TocEntry]]:
         """Extract essential content from a Wikipedia article page.
 
         Structure-based rules:
@@ -842,13 +929,26 @@ class WikiBrowserConsole(ServerConsole):
         skip_section = False
         # Track sections to skip (references, external links, see also, etc.)
         _SKIP_SECTIONS = {
-            "references", "external links", "see also", "notes",
-            "further reading", "bibliography", "citations",
-            "navigation menu", "tools", "print/export",
+            "references",
+            "external links",
+            "see also",
+            "notes",
+            "further reading",
+            "bibliography",
+            "citations",
+            "navigation menu",
+            "tools",
+            "print/export",
             # Common non-English equivalents
-            "einzelnachweise", "weblinks", "siehe auch",  # German
-            "referencias", "enlaces externos", "vease tambien",  # Spanish
-            "references", "liens externes", "voir aussi",  # French
+            "einzelnachweise",
+            "weblinks",
+            "siehe auch",  # German
+            "referencias",
+            "enlaces externos",
+            "vease tambien",  # Spanish
+            "references",
+            "liens externes",
+            "voir aussi",  # French
         }
 
         def flush_line():
@@ -862,7 +962,6 @@ class WikiBrowserConsole(ServerConsole):
             col = 0
 
         def blank_line():
-            nonlocal last_was_blank
             if not last_was_blank:
                 flush_line()
 
@@ -870,7 +969,7 @@ class WikiBrowserConsole(ServerConsole):
             nonlocal col
             # If text starts with punctuation, consume trailing space from a
             # preceding link so we get "[link]." not "[link] ."
-            if text and text[0] in '.,:;!?)' and col > 0:
+            if text and text[0] in ".,:;!?)" and col > 0:
                 if current_line.chars[col - 1] == SC_SPACE:
                     col -= 1
             # If the raw text starts with whitespace and we're mid-line, emit a
@@ -949,11 +1048,16 @@ class WikiBrowserConsole(ServerConsole):
                 current_line.colors[col] = fg
                 col += 1
 
-            links.append(LinkInfo(
-                url=href or "", text=text,
-                row_start=link_row_start, row_end=len(lines),
-                col_start=link_col_start, col_end=col,
-            ))
+            links.append(
+                LinkInfo(
+                    url=href or "",
+                    text=text,
+                    row_start=link_row_start,
+                    row_end=len(lines),
+                    col_start=link_col_start,
+                    col_end=col,
+                )
+            )
 
         for elem in elements:
             tag = elem.get("tag", "")
@@ -973,11 +1077,13 @@ class WikiBrowserConsole(ServerConsole):
                 heading_level = int(tag[1])
                 # Record TOC entry (up to 9 entries for digit keys 1-9)
                 if len(toc) < 9:
-                    toc.append(TocEntry(
-                        text=text[:TOC_WIDTH - 2],  # leave room for indent
-                        line_idx=len(lines),
-                        level=heading_level,
-                    ))
+                    toc.append(
+                        TocEntry(
+                            text=text[: TOC_WIDTH - 2],  # leave room for indent
+                            line_idx=len(lines),
+                            level=heading_level,
+                        )
+                    )
                 write_text(text, COL_HEADING_FG, reverse=True)
                 flush_line()
                 continue
@@ -1014,12 +1120,14 @@ class WikiBrowserConsole(ServerConsole):
                 # Filter links: only keep internal wiki links
                 parsed = urlparse(href)
                 path = parsed.path
-                is_wiki_link = "/wiki/" in path and ":" not in path.split("/wiki/", 1)[-1]
+                is_wiki_link = (
+                    "/wiki/" in path and ":" not in path.split("/wiki/", 1)[-1]
+                )
                 is_wiki_lang_link = bool(_WIKI_LANG_RE.match(href))
 
                 if is_wiki_link or is_wiki_lang_link:
                     # Skip tiny links (usually [edit], [citation needed], etc.)
-                    if len(text) <= 2 and text not in ("", ):
+                    if len(text) <= 2 and text not in ("",):
                         continue
                     # Skip reference numbers like [1], [2]
                     if re.match(r"^\[\d+\]$", text):
@@ -1074,15 +1182,27 @@ class WikiBrowserConsole(ServerConsole):
     def _show_welcome(self):
         self.content_lines = []
         self.links = []
-        self.content_lines.append(self._make_text_line("WIKIPEDIA BROWSER", COL_WHITE, reverse=True, center=True))
+        self.content_lines.append(
+            self._make_text_line(
+                "WIKIPEDIA BROWSER", COL_WHITE, reverse=True, center=True
+            )
+        )
         self.content_lines.append(self._make_empty_line())
-        self.content_lines.append(self._make_text_line("F1  Go to wikipedia.org", COL_HELP_FG))
-        self.content_lines.append(self._make_text_line("F7  Search Wikipedia", COL_HELP_FG))
+        self.content_lines.append(
+            self._make_text_line("F1  Go to wikipedia.org", COL_HELP_FG)
+        )
+        self.content_lines.append(
+            self._make_text_line("F7  Search Wikipedia", COL_HELP_FG)
+        )
         self.content_lines.append(self._make_text_line("F8  Help", COL_HELP_FG))
         self.content_lines.append(self._make_empty_line())
-        self.content_lines.append(self._make_text_line("CTRL+T in article = open TOC", COL_HELP_FG))
+        self.content_lines.append(
+            self._make_text_line("CTRL+T in article = open TOC", COL_HELP_FG)
+        )
         self.content_lines.append(self._make_empty_line())
-        self.content_lines.append(self._make_text_line("Press F1 or F7 to start.", COL_LIGHT_GREY))
+        self.content_lines.append(
+            self._make_text_line("Press F1 or F7 to start.", COL_LIGHT_GREY)
+        )
 
     # =================================================================
     #  RENDERING
@@ -1210,7 +1330,9 @@ class WikiBrowserConsole(ServerConsole):
     def _render_search(self):
         # Header
         header = "WIKIPEDIA SEARCH"
-        self._put_text(0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True)
+        self._put_text(
+            0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True
+        )
         for c in range(SCREEN_COLS):
             if self.screen[c] == SC_SPACE:
                 self.screen[c] = SC_SPACE | SC_REVERSE_BIT
@@ -1258,7 +1380,9 @@ class WikiBrowserConsole(ServerConsole):
 
     def _render_help(self):
         header = "WIKIPEDIA HELP"
-        self._put_text(0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True)
+        self._put_text(
+            0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True
+        )
         for c in range(SCREEN_COLS):
             if self.screen[c] == SC_SPACE:
                 self.screen[c] = SC_SPACE | SC_REVERSE_BIT
@@ -1305,7 +1429,9 @@ class WikiBrowserConsole(ServerConsole):
             self.screen[pos] = sc
             self.color[pos] = fg
 
-    def _make_text_line(self, text: str, fg: int, reverse: bool = False, center: bool = False) -> ContentLine:
+    def _make_text_line(
+        self, text: str, fg: int, reverse: bool = False, center: bool = False
+    ) -> ContentLine:
         line = ContentLine(
             chars=[SC_SPACE] * SCREEN_COLS,
             colors=[fg] * SCREEN_COLS,
@@ -1347,10 +1473,16 @@ class WikiBrowserConsole(ServerConsole):
                 cl.chars[i] = _char_to_screencode(ch)
                 cl.colors[i] = fg
             lines.append(cl)
-        return lines if lines else [ContentLine(
-            chars=[SC_SPACE] * SCREEN_COLS,
-            colors=[fg] * SCREEN_COLS,
-        )]
+        return (
+            lines
+            if lines
+            else [
+                ContentLine(
+                    chars=[SC_SPACE] * SCREEN_COLS,
+                    colors=[fg] * SCREEN_COLS,
+                )
+            ]
+        )
 
     @staticmethod
     def _petscii_to_printable(petscii: int) -> Optional[str]:
@@ -1361,7 +1493,8 @@ class WikiBrowserConsole(ServerConsole):
 
     def _send_vic_colors(self, border: int, background: int):
         try:
-            from network_helper import send_vic_colors
+            from sdk.network_helper import send_vic_colors
+
             send_vic_colors(border & 0x0F, background & 0x0F)
         except Exception as e:
             logger.warning(f"Could not send VIC colours: {e}")
@@ -1370,6 +1503,7 @@ class WikiBrowserConsole(ServerConsole):
 # =====================================================================
 #  Character conversion utility
 # =====================================================================
+
 
 def _char_to_screencode(ch: str) -> int:
     code = ord(ch)

@@ -140,9 +140,7 @@ class ConsoleManager:
                 try:
                     prev_console.on_deactivate()
                 except Exception:
-                    logger.exception(
-                        f"on_deactivate failed for console {prev_id}"
-                    )
+                    logger.exception(f"on_deactivate failed for console {prev_id}")
         # Activate new console
         self._active[session_id] = console_id
         new_console = self._consoles.get((session_id, console_id))
@@ -150,9 +148,7 @@ class ConsoleManager:
             try:
                 new_console.on_activate()
             except Exception:
-                logger.exception(
-                    f"on_activate failed for console {console_id}"
-                )
+                logger.exception(f"on_activate failed for console {console_id}")
 
     def handle_keypress(
         self, console_id: int, session_id: int, petscii_code: int, modifiers: int
@@ -220,7 +216,10 @@ class ConsoleManager:
             push:         If True, immediately push the updated screen to the C64.
         """
         import time
-        _session_toasts.put(session_id, text, time.monotonic() + duration_sec, color & 0x0F)
+
+        _session_toasts.put(
+            session_id, text, time.monotonic() + duration_sec, color & 0x0F
+        )
         if push:
             self._push_session_toast(session_id)
 
@@ -238,6 +237,7 @@ class ConsoleManager:
             return
         try:
             from . import network_helper as nh
+
             # get_screen_data()/get_color_data() already include the session toast overlay.
             nh.send_screen_data(console.get_screen_data(), console.get_color_data())
         except Exception:

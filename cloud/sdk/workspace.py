@@ -30,7 +30,9 @@ logger = logging.getLogger(__name__)
 if getattr(sys, "frozen", False):
     _base_dir = os.path.dirname(sys.executable)
 else:
-    _base_dir = os.path.dirname(os.path.abspath(__file__))
+    # In source layout this file lives in cloud/sdk/, but the canonical
+    # workspace lives in cloud/workspace.
+    _base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 WORKSPACE_DIR = os.path.join(_base_dir, "workspace")
 
 HELLO_C64_C = """\
@@ -38,6 +40,13 @@ int main() {
     printf("Hello C64");
 }
 """
+
+ASSISTANT_SEED_FILES = {
+    "preferences.md": "# Preferences\n\n- Store user preferences here.\n",
+    "instructions.md": "# Instructions\n\n- Store persistent assistant instructions here.\n",
+    "current_state.md": "# Current State\n\n- Track active tasks, progress, and next steps here.\n",
+    "skills.md": "# Skills\n\n- Track enabled/disabled custom skills and notes here.\n",
+}
 
 
 def init_workspace() -> str:
@@ -66,8 +75,17 @@ def init_workspace() -> str:
         logger.info("Created sample %s", hello_file)
 
     # Empty default directories
-    for name in ("games", "docs", "demos"):
+    for name in ("games", "docs", "demos", "assistant"):
         _ensure_dir(os.path.join(WORKSPACE_DIR, name))
+
+    # Seed assistant memory markdown files (created only once).
+    assistant_dir = os.path.join(WORKSPACE_DIR, "assistant")
+    for filename, content in ASSISTANT_SEED_FILES.items():
+        seed_path = os.path.join(assistant_dir, filename)
+        if not os.path.exists(seed_path):
+            with open(seed_path, "w", encoding="utf-8") as f:
+                f.write(content)
+            logger.info("Created assistant seed %s", seed_path)
 
     # Copy bundled oscar docs (C_0*.md) into workspace/docs/
     _copy_bundled_docs(os.path.join(WORKSPACE_DIR, "docs"))

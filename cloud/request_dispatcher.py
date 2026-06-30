@@ -10,8 +10,8 @@ import sys
 import importlib
 from typing import List
 
-from base_handler import BaseHandler
-from shared_state import get_session_state
+from sdk.base_handler import BaseHandler
+from sdk.shared_state import get_session_state_copy
 
 _CLOUD_DIR = os.path.dirname(os.path.abspath(__file__))
 _HANDLERS_DIR = os.path.join(_CLOUD_DIR, "handlers")
@@ -45,8 +45,8 @@ class RequestDispatcher:
                 CSDBHandler(),
             ]
             logger.info(f"Initialized {len(self.handlers)} request handlers")
-        except Exception as e:
-            logger.error(f"Error initializing handlers: {e}")
+        except Exception:
+            logger.exception("Error initializing handlers")
             self.handlers = []
 
     def dispatch(self, petscii_text: bytes, session_id: int = 0) -> bytes:
@@ -75,7 +75,7 @@ class RequestDispatcher:
                     return BaseHandler.utf8_to_petscii(response_text)
 
             # If no handler claims it, but a module is active, send it to that module's handler
-            state = get_session_state(session_id)
+            state = get_session_state_copy(session_id)
             active_module = state.get("active_module")
             if active_module:
                 for handler in self.handlers:

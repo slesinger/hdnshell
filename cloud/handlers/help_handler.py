@@ -5,7 +5,6 @@ Provides static help text or uses LLM to find relevant help topics.
 Processes requests starting with "help"
 """
 
-import os
 import logging
 from sdk import BaseHandler
 
@@ -101,7 +100,7 @@ class HelpHandler(BaseHandler):
         try:
             from llm_factory import create_llm_with_fallback
 
-            self.llm = create_llm_with_fallback("chat", temperature=0.3)
+            self.llm = create_llm_with_fallback("chat")
             if self.llm:
                 logger.info("HelpHandler initialized with LLM support")
         except Exception as e:

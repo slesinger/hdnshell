@@ -6,7 +6,7 @@ This script shows how to use the dispatcher without running the full server.
 Useful for testing and understanding the request routing.
 """
 from request_dispatcher import RequestDispatcher
-from base_handler import BaseHandler
+from sdk.base_handler import BaseHandler
 
 
 def test_command(command: str):

@@ -6,7 +6,6 @@ Processes requests starting with "c:"
 """
 
 import logging
-import os
 import requests
 import zipfile
 import fnmatch
@@ -15,7 +14,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional, List
 from pydantic import BaseModel
-from sdk import BaseHandler, get_session_state
+from sdk import BaseHandler, get_session_state_copy, update_session_state
 from csdb_group_parser import parse_csdb_group_detail
 from csdb_search_parser import parse_csdb_find
 from csdb_latest_releases_parser import parse_latest_releases
@@ -49,8 +48,6 @@ class CSDBEvent(BaseModel):
     name: str
     start_date: str
     end_date: Optional[str] = None
-
-
 
 
 logger = logging.getLogger(__name__)
@@ -133,7 +130,8 @@ class CSDBHandler(BaseHandler):
         self.session.headers.update(CSDB_BROWSER_HEADERS)
 
         # Add authentication if available
-        from config_manager import read_config
+        from sdk.config_manager import read_config
+
         cfg = read_config()
         csdb_user = cfg.get("CSDB_USER", "")
         csdb_password = cfg.get("CSDB_PASSWORD", "")
@@ -146,7 +144,7 @@ class CSDBHandler(BaseHandler):
         Only handle if text starts with c:, or if c: is the active module for this session.
         """
         t = text.strip().lower()
-        state = get_session_state(session_id)
+        state = get_session_state_copy(session_id)
         if t.startswith("c:") or t == "#c":
             return True
         # Only assume csdb module if user explicitly switched to it
@@ -163,26 +161,34 @@ class CSDBHandler(BaseHandler):
         """
         t = text.strip()
         t_lower = t.lower()
-        state = get_session_state(session_id)
+        state = get_session_state_copy(session_id)
 
         # If starts with c:, switch module and parse rest
         if t_lower.startswith("c:") or t_lower.startswith("#c"):
             query = t[2:].strip()
             if not query:
-                state["active_module"] = "c"
-                state["active_dir"] = None
-                state["active_id"] = None
-                state["zip_id"] = None
-                state["zip_files"] = None
+                update_session_state(
+                    session_id,
+                    active_module="c",
+                    active_dir=None,
+                    active_id=None,
+                    zip_id=None,
+                    zip_files=None,
+                )
                 return "CSDB mode"
 
             # Preserve directory context when already in CSDB module
             if state.get("active_module") != "c":
-                state["active_dir"] = None
-                state["active_id"] = None
-                state["zip_id"] = None
-                state["zip_files"] = None
-            state["active_module"] = "c"
+                update_session_state(
+                    session_id,
+                    active_dir=None,
+                    active_id=None,
+                    zip_id=None,
+                    zip_files=None,
+                    active_module="c",
+                )
+            else:
+                update_session_state(session_id, active_module="c")
             return self._process_csdb_command(query, session_id)
 
         # If c: is active module, interpret commands
@@ -253,7 +259,7 @@ class CSDBHandler(BaseHandler):
 
     def _cp_file(self, file_pattern: str, session_id: int) -> str:
         """Copy file(s) from a release or zip."""
-        state = get_session_state(session_id)
+        state = get_session_state_copy(session_id)
         if not state.get("active_dir") == "release" or not state.get("active_id"):
             return "cp can only be used within a release."
 
@@ -356,7 +362,7 @@ class CSDBHandler(BaseHandler):
 
     def _cd_into_zip(self, file_id: int, session_id: int) -> str:
         """Download and extract a zip file, listing its contents."""
-        state = get_session_state(session_id)
+        state = get_session_state_copy(session_id)
         tmp_dir = Path("/tmp/hdnshell")
         tmp_dir.mkdir(exist_ok=True)
         zip_path = tmp_dir / f"{file_id}.zip"
@@ -372,8 +378,7 @@ class CSDBHandler(BaseHandler):
 
             with zipfile.ZipFile(zip_path, "r") as z:
                 files = z.namelist()
-                state["zip_id"] = file_id
-                state["zip_files"] = files
+                update_session_state(session_id, zip_id=file_id, zip_files=files)
                 return "Contents of zip:\n" + "\n".join(f"  - {f}" for f in files)
 
         except requests.exceptions.RequestException as e:
@@ -588,7 +593,7 @@ class CSDBHandler(BaseHandler):
         Get information for a specific CSDB entry
         For 'group' and 'release', use HTML parser for detailed information.
         """
-        state = get_session_state(session_id)
+        state = get_session_state_copy(session_id)
         if state.get("zip_id") and state.get("zip_files"):
             return "\x9fContents of zip file\x9a:\n" + "\n".join(state["zip_files"])
 
@@ -735,7 +740,7 @@ c: cp <file>     - Copy file from a release to local tmp
         """
         Parse and execute a command in the context of a session's CSDB state.
         """
-        state = get_session_state(session_id)
+        state = get_session_state_copy(session_id)
         parts = command.strip().split(maxsplit=1)
         cmd = parts[0].lower() if parts else ""
         arg = parts[1] if len(parts) > 1 else ""
@@ -773,8 +778,7 @@ c: cp <file>     - Copy file from a release to local tmp
 
             # Support 'cd /' to reset to CSDB root
             if arg.strip() == "/":
-                state["active_dir"] = None
-                state["active_id"] = None
+                update_session_state(session_id, active_dir=None, active_id=None)
                 return "At CSDB root."
 
             # Aliases for cd <type>
@@ -806,36 +810,40 @@ c: cp <file>     - Copy file from a release to local tmp
                     in ["release", "group", "scener", "event", "bbs", "sid"]
                     and path_parts[1].isdigit()
                 ):
-                    state["active_dir"] = path_type
-                    state["active_id"] = int(path_parts[1])
-                    return self._get_entry_info(
-                        state["active_dir"], state["active_id"], session_id
+                    entry_id = int(path_parts[1])
+                    update_session_state(
+                        session_id,
+                        active_dir=path_type,
+                        active_id=entry_id,
                     )
+                    return self._get_entry_info(path_type, entry_id, session_id)
                 elif (
                     len(path_parts) == 3
                     and path_type == "release"
                     and path_parts[1].isdigit()
                     and path_parts[2].isdigit()
                 ):
-                    state["active_dir"] = "release"
-                    state["active_id"] = int(path_parts[1])
+                    update_session_state(
+                        session_id,
+                        active_dir="release",
+                        active_id=int(path_parts[1]),
+                    )
                     # This is likely a zip file inside a release, attempt to cd into it
                     return self._cd_into_zip(int(path_parts[2]), session_id)
                 else:
                     return f"Invalid path format: {arg}"
             # cd <type>
             if arg.lower() in ["release", "group", "scener", "event", "bbs", "sid"]:
-                state["active_dir"] = arg.lower()
-                state["active_id"] = None
-                return f"Switched to {state['active_dir']} directory.\n"
+                active_dir = arg.lower()
+                update_session_state(session_id, active_dir=active_dir, active_id=None)
+                return f"Switched to {active_dir} directory.\n"
             # cd <id>
             if arg.isdigit():
                 if not state.get("active_dir"):
                     return "Cannot cd into an ID without a directory context. Use 'cd <type>' first."
-                state["active_id"] = int(arg)
-                return self._get_entry_info(
-                    state["active_dir"], state["active_id"], session_id
-                )
+                entry_id = int(arg)
+                update_session_state(session_id, active_id=entry_id)
+                return self._get_entry_info(state["active_dir"], entry_id, session_id)
             # cd <zip_file_id>
             if (
                 arg.lower().endswith(".zip")
@@ -862,7 +870,7 @@ c: cp <file>     - Copy file from a release to local tmp
             )
             if not search_text and not state.get("active_dir"):
                 return "Usage: find <text>"
-            state["last_find"] = search_text
+            update_session_state(session_id, last_find=search_text)
 
             if state.get("active_dir"):
                 # Search globally and filter section locally (CSDB filtered pages are harder to parse)

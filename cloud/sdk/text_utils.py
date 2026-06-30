@@ -110,6 +110,7 @@ def strip_html(text: str) -> str:
         'Hello World'
     """
     import re
+
     # Remove HTML tags: <...> and self-closing tags <.../>
     text = re.sub(r"<[^>]+>", "", text)
     return text
@@ -135,6 +136,7 @@ def normalize_whitespace(text: str) -> str:
         'Hello world\\ntest'
     """
     import re
+
     # Collapse multiple spaces
     text = re.sub(r" +", " ", text)
     # Collapse multiple newlines (but preserve single newlines)

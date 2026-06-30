@@ -5,7 +5,16 @@ a = Analysis(
     ['cloud.py'],
     pathex=['server-apps', 'handlers'],
     binaries=[],
-    datas=[('static', 'static'), ('./oscar/bin/oscar64', 'oscar/bin'), ('./oscar/include', 'oscar/include'), ('./oscar/docs/C_0*.md', 'oscar/docs')],
+    datas=[
+        ('static', 'static'),
+        ('../docs/user_manual/*.md', 'docs/user_manual'),
+        ('./oscar/bin/oscar64', 'oscar/bin'),
+        ('./oscar/include', 'oscar/include'),
+        ('./oscar/docs/C_0*.md', 'oscar/docs'),
+        ('./server-apps/coding_agent/prompts/*.md', 'server-apps/coding_agent/prompts'),
+        ('./server-apps/coding_agent/instructions/*.md', 'server-apps/coding_agent/instructions'),
+        ('./server-apps/coding_agent/skills/*.md', 'server-apps/coding_agent/skills'),
+    ],
     hiddenimports=[
         'code_chat_console',
         'coding_agent_console',

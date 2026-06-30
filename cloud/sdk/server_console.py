@@ -21,12 +21,16 @@ logger = logging.getLogger(__name__)
 
 # Lazy import to avoid circular dependency
 _network_helper = None
+
+
 def _get_network_helper():
     global _network_helper
     if _network_helper is None:
         from . import network_helper as nh
+
         _network_helper = nh
     return _network_helper
+
 
 # C64 screen dimensions
 SCREEN_COLS = 40
@@ -35,16 +39,16 @@ SCREEN_SIZE = SCREEN_COLS * SCREEN_ROWS  # 1000 bytes
 
 # Toast box rendering constants (top-right corner popup)
 _TOAST_MAX_CONTENT_WIDTH = 26  # max text width per line (box outer width ≤ 30)
-_TOAST_PADDING = 1              # blank cells on each side of text inside box
-_TOAST_SC_TL    = 0x70          # top-left corner
-_TOAST_SC_TR    = 0x6E          # top-right corner
-_TOAST_SC_BL    = 0x6D          # bottom-left corner
-_TOAST_SC_BR    = 0x7D          # bottom-right corner
-_TOAST_SC_VERT  = 0x5D          # vertical border line
-_TOAST_SC_HORIZ = 0x40          # horizontal border line
-_TOAST_SC_FILL  = 0xA0          # reverse space = solid background fill
-_TOAST_COL_BG   = 11            # dark gray background
-_TOAST_COL_TEXT = 1             # white text
+_TOAST_PADDING = 1  # blank cells on each side of text inside box
+_TOAST_SC_TL = 0x70  # top-left corner
+_TOAST_SC_TR = 0x6E  # top-right corner
+_TOAST_SC_BL = 0x6D  # bottom-left corner
+_TOAST_SC_BR = 0x7D  # bottom-right corner
+_TOAST_SC_VERT = 0x5D  # vertical border line
+_TOAST_SC_HORIZ = 0x40  # horizontal border line
+_TOAST_SC_FILL = 0xA0  # reverse space = solid background fill
+_TOAST_COL_BG = 11  # dark gray background
+_TOAST_COL_TEXT = 1  # white text
 
 # Defaults
 DEFAULT_SCREEN_CODE = 0x20  # Space
@@ -258,11 +262,11 @@ class ServerConsole:
     def put_text(self, row: int, col: int, text: str, fg: int, reverse: bool = False):
         """
         Write a string at the specified screen position.
-        
+
         This is a common pattern used by all console apps. Writes text starting
         at (row, col), wrapping to next column automatically. Does not wrap to
         next row (stops at screen edge).
-        
+
         Args:
             row: Row coordinate (0-24)
             col: Starting column coordinate (0-39)
@@ -276,19 +280,19 @@ class ServerConsole:
                 continue
             if row < 0 or row >= SCREEN_ROWS:
                 return
-            
+
             pos = row * SCREEN_COLS + c
             sc = ascii_to_screencode(ord(ch))
             if reverse:
                 sc = sc | 0x80  # Set reverse-video bit
-            
+
             self.screen[pos] = sc
             self.color[pos] = fg & 0x0F
 
     def fill_row(self, row: int, char: str = " ", fg: int = DEFAULT_FG_COLOR):
         """
         Fill an entire row with a character and color.
-        
+
         Args:
             row: Row coordinate (0-24)
             char: Character to fill with (default: space)
@@ -296,21 +300,23 @@ class ServerConsole:
         """
         if row < 0 or row >= SCREEN_ROWS:
             return
-        
+
         sc = ascii_to_screencode(ord(char))
         row_start = row * SCREEN_COLS
-        
+
         for i in range(SCREEN_COLS):
             self.screen[row_start + i] = sc
             self.color[row_start + i] = fg & 0x0F
 
-    def render_status_bar(self, text: str, row: int = 24, fg: int = 1, bg: int = 0, center: bool = False):
+    def render_status_bar(
+        self, text: str, row: int = 24, fg: int = 1, bg: int = 0, center: bool = False
+    ):
         """
         Render a reverse-video status bar with optional centered text.
-        
+
         This is a common UI element in console apps. Creates a "button-like"
         reverse-video bar with optional text inside.
-        
+
         Args:
             text: Status text to display
             row: Row coordinate (default: 24, the bottom row)
@@ -320,34 +326,34 @@ class ServerConsole:
         """
         # Fill entire row with background color
         self.fill_row(row, " ", bg)
-        
+
         # Truncate/pad text to 40 columns
         if len(text) > SCREEN_COLS:
-            text = text[:SCREEN_COLS-1]
-        
+            text = text[: SCREEN_COLS - 1]
+
         if center:
             # Center the text
-            padding = (SCREEN_COLS  - len(text)) // 2
+            padding = (SCREEN_COLS - len(text)) // 2
             col = padding
         else:
             col = 0
-        
+
         # Write text with reverse-video bit set
         for i, ch in enumerate(text):
             c = col + i
             if c >= SCREEN_COLS or c < 0:
                 continue
-            
+
             pos = row * SCREEN_COLS + c
             sc = ascii_to_screencode(ord(ch)) | 0x80  # Always reverse for status bar
-            
+
             self.screen[pos] = sc
             self.color[pos] = fg & 0x0F
 
     def clear_region(self, row: int, col: int, width: int, height: int):
         """
         Clear a rectangular region of the screen with spaces and default color.
-        
+
         Args:
             row: Starting row (0-24)
             col: Starting column (0-39)
@@ -363,7 +369,7 @@ class ServerConsole:
     def push_screen(self):
         """
         Send the current screen and color buffers to the C64 via DMA.
-        
+
         Called after rendering screen updates to transmit them to all connected C64 clients.
         Internally uses network_helper.send_screen_data() to push via DMA writes.
         Toaster overlays are included automatically via get_screen_data()/get_color_data().
@@ -377,7 +383,7 @@ class ServerConsole:
     def push_vic_colors(self, border: int, background: int):
         """
         Send VIC border and background colors to the C64.
-        
+
         Args:
             border: Border color (0-15) - written to $D020
             background: Background color (0-15) - written to $D021
@@ -393,7 +399,7 @@ class ServerConsole:
     def auto_push(self) -> bool:
         """Check if automatic screen pushing is enabled after keypress handling."""
         return getattr(self, "_auto_push", True)
-    
+
     @auto_push.setter
     def auto_push(self, value: bool):
         """Enable/disable automatic screen pushing after keypress handling."""
@@ -406,6 +412,7 @@ class ServerConsole:
     def get_screen_data(self) -> bytes:
         """Return the 1000-byte screen-code buffer, with toast box overlay if active."""
         from . import _session_toasts
+
         scr = bytearray(self.screen)
         col = bytearray(self.color)
         if self._toaster_active():
@@ -418,6 +425,7 @@ class ServerConsole:
     def get_color_data(self) -> bytes:
         """Return the 1000-byte colour buffer, with toast box overlay if active."""
         from . import _session_toasts
+
         scr = bytearray(self.screen)
         col = bytearray(self.color)
         if self._toaster_active():
@@ -443,6 +451,7 @@ class ServerConsole:
 # ======================================================================
 # Toast box rendering helpers
 # ======================================================================
+
 
 def _toast_word_wrap(text: str, width: int) -> list:
     """Wrap *text* so that each line fits within *width* characters."""
@@ -470,9 +479,9 @@ def _render_toast_box(scr: bytearray, col: bytearray, text: str) -> None:
     if not lines:
         return
 
-    content_w = max(len(l) for l in lines)
-    inner_w   = content_w + _TOAST_PADDING * 2   # text + left/right padding
-    box_w     = inner_w + 2                        # + left/right border columns
+    content_w = max(len(line_content) for line_content in lines)
+    inner_w = content_w + _TOAST_PADDING * 2  # text + left/right padding
+    box_w = inner_w + 2  # + left/right border columns
 
     col_start = SCREEN_COLS - box_w
     if col_start < 0:
@@ -494,14 +503,18 @@ def _render_toast_box(scr: bytearray, col: bytearray, text: str) -> None:
     # Text rows
     for li, line in enumerate(lines):
         row = row_start + 1 + li
-        c   = col_start
-        _put(row, c, _TOAST_SC_VERT, _TOAST_COL_BG);  c += 1
+        c = col_start
+        _put(row, c, _TOAST_SC_VERT, _TOAST_COL_BG)
+        c += 1
         for _ in range(_TOAST_PADDING):
-            _put(row, c, _TOAST_SC_FILL, _TOAST_COL_BG);  c += 1
+            _put(row, c, _TOAST_SC_FILL, _TOAST_COL_BG)
+            c += 1
         for ch in line:
-            _put(row, c, ascii_to_screencode(ord(ch)), _TOAST_COL_TEXT);  c += 1
+            _put(row, c, ascii_to_screencode(ord(ch)), _TOAST_COL_TEXT)
+            c += 1
         for _ in range(content_w - len(line) + _TOAST_PADDING):
-            _put(row, c, _TOAST_SC_FILL, _TOAST_COL_BG);  c += 1
+            _put(row, c, _TOAST_SC_FILL, _TOAST_COL_BG)
+            c += 1
         _put(row, c, _TOAST_SC_VERT, _TOAST_COL_BG)
 
     # Bottom border

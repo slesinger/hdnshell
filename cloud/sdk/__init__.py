@@ -51,7 +51,7 @@ class MyConsole(ServerConsole):
     def __init__(self, console_id: int, session_id: int):
         super().__init__(console_id, session_id)
         self.mode = "main"
-    
+
     def handle_keypress(self, petscii_code: int, modifiers: int):
         self.write_text(f"Key: {chr(petscii_code)}")
         self._full_render()  # My custom render method
@@ -66,7 +66,7 @@ from sdk import BaseHandler, utf8_to_petscii, get_session_state
 class MyHandler(BaseHandler):
     def can_handle(self, text: str, session_id: int = 0) -> bool:
         return text.strip().lower().startswith("my:")
-    
+
     def handle(self, text: str, session_id: int = 0) -> str:
         query = text[3:].strip()
         result = f"Processed: {query}"
@@ -107,8 +107,6 @@ from .command_handler import (
     CommandID,
     ResponseType,
     ModifierFlags,
-    MAGIC_BYTES,
-    SERVER_CMD_GET_SCREEN,
 )
 
 # ─────────────────────────────────────────────────────────────────────
@@ -122,14 +120,22 @@ from .network_helper import (
     dma_read_memory,
     send_c64_keyboard_input,
     read_last_c64_ip,
-    DMA_SERVICE_PORT,
 )
 
 # ─────────────────────────────────────────────────────────────────────
 # Session & State Management
 # ─────────────────────────────────────────────────────────────────────
 
-from .shared_state import get_session_state, get_clipboard, set_clipboard
+from .shared_state import (
+    get_session_state,
+    get_session_state_copy,
+    locked_session_state,
+    serialized_session_turn,
+    update_session_state,
+    append_chat_message,
+    get_clipboard,
+    set_clipboard,
+)
 
 # ─────────────────────────────────────────────────────────────────────
 # Configuration
@@ -140,9 +146,6 @@ from .config_manager import (
     write_config,
     get_merged_config,
     get_llm_config,
-    apply_env_overrides,
-    migrate_config,
-    mask_secret,
 )
 
 from .cloud_config_template import (
@@ -282,6 +285,11 @@ __all__ = [
     "read_last_c64_ip",
     # State
     "get_session_state",
+    "get_session_state_copy",
+    "locked_session_state",
+    "serialized_session_turn",
+    "update_session_state",
+    "append_chat_message",
     "get_clipboard",
     "set_clipboard",
     # Config
@@ -289,30 +297,73 @@ __all__ = [
     "write_config",
     "get_merged_config",
     "get_llm_config",
+    "CONFIG_DEFAULTS",
+    "SECRET_KEYS",
+    "ENV_OVERRIDE_KEYS",
     # Text Encoding
+    "petscii_to_ascii",
+    "ascii_to_petscii",
     "petscii_to_utf8",
     "utf8_to_petscii",
     "petscii_to_char",
+    "ascii_to_screencode",
     "char_to_screencode",
+    "petscii_to_screencode",
     # Text Utils
     "word_wrap",
     "truncate",
     "strip_html",
     "normalize_whitespace",
     "center_text",
+    "pad_right",
+    "pad_left",
+    "split_into_lines",
+    "limit_lines",
     # Colors
     "COL_BLACK",
     "COL_WHITE",
     "COL_RED",
     "COL_CYAN",
+    "COL_PURPLE",
     "COL_GREEN",
     "COL_BLUE",
     "COL_YELLOW",
+    "COL_ORANGE",
+    "COL_BROWN",
+    "COL_LIGHT_RED",
+    "COL_DARK_GREY",
+    "COL_GREY",
+    "COL_LIGHT_GREEN",
+    "COL_LIGHT_BLUE",
+    "COL_LIGHT_GREY",
+    "COL_STATUS_BG",
+    "COL_STATUS_FG",
     "COL_USER_FG",
     "COL_AGENT_FG",
+    "COL_SYSTEM_FG",
+    "COL_ACTION_FG",
     "COL_ERROR_FG",
+    "COL_WARNING_FG",
+    "COL_INPUT_FG",
+    "COL_SEPARATOR_FG",
+    "COL_BROWSER_DIR",
+    "COL_BROWSER_FILE",
+    "COL_HELP_FG",
+    "COL_THINKING_FG",
+    "COL_TEXT_DEFAULT_FG",
+    "COL_TEXT_DEFAULT_BG",
+    "COL_HIGHLIGHT",
+    "COL_BORDER",
     # Workspace
     "WORKSPACE_DIR",
     "init_workspace",
     "get_workspace_config_path",
+    # Network
+    "get_primary_ip",
+    "get_network",
+    "scan_network_for_port_64",
+    "scan_network_for_modem",
+    "find_port_64_hosts",
+    # PETSCII Table
+    "Petscii",
 ]

@@ -38,6 +38,7 @@ SOCKET_CMD_DEBUG_REG = 0x76  # Debug registers
 def read_last_c64_ip() -> str:
     """Read the last known C64 IP address from the config file."""
     from .workspace import get_workspace_config_path
+
     config_path = get_workspace_config_path()
     if not os.path.exists(config_path):
         return ""
@@ -77,6 +78,7 @@ def dma_read_memory(host: str, address: int, length: int) -> bytes:
     Returns the raw memory bytes on success, raises on error.
     """
     import requests as _requests
+
     url = f"http://{host}/v1/machine:readmem"
     params = {"address": f"{address:04x}", "length": str(length)}
     resp = _requests.get(url, params=params, timeout=5)
@@ -122,3 +124,60 @@ def send_c64_keyboard_input(data: bytes, host: str = None) -> None:
     if not host:
         raise ValueError("C64 host IP address is not set.")
     _send_tcp_cmd(host, SOCKET_CMD_KEYB, data)
+
+
+def dma_write_memory_rest(host: str, address: int, data: bytes) -> None:
+    """
+    Write data to C64 memory starting at *address* via the
+    Ultimate cartridge REST API (POST /v1/machine:writemem).
+    """
+    import requests as _requests
+
+    url = f"http://{host}/v1/machine:writemem"
+    params = {"address": f"{address:04x}"}
+    _requests.post(url, params=params, data=data, timeout=5)
+
+
+def dma_jump(host: str, address: int) -> None:
+    """
+    Jump to and execute code at *address* on the C64 via DMA service.
+    Uses SOCKET_CMD_DMAJUMP (0x09) which takes the target address as a 2-byte payload.
+    """
+    payload = address.to_bytes(2, "little")
+    _send_tcp_cmd(host, SOCKET_CMD_DMAJUMP, payload)
+
+
+def send_reset(host: str) -> None:
+    """
+    Send a soft reset command to the C64 via DMA service.
+    Uses SOCKET_CMD_RESET (0x04).
+    """
+    _send_tcp_cmd(host, SOCKET_CMD_RESET)
+
+
+def send_poweroff(host: str) -> None:
+    """
+    Send a power-off command to the Ultimate64 via DMA service.
+    Uses SOCKET_CMD_POWEROFF (0x0C).
+    """
+    _send_tcp_cmd(host, SOCKET_CMD_POWEROFF)
+
+
+def rest_menu_button(host: str) -> None:
+    """
+    Trigger the menu button on the Ultimate64 via REST API.
+    """
+    import requests as _requests
+
+    url = f"http://{host}/v1/machine:menu_button"
+    _requests.post(url, timeout=5)
+
+
+def rest_reboot(host: str) -> None:
+    """
+    Trigger a reboot of the Ultimate64 via REST API.
+    """
+    import requests as _requests
+
+    url = f"http://{host}/v1/machine:reboot"
+    _requests.post(url, timeout=5)

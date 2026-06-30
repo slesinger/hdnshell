@@ -117,6 +117,13 @@ const ENDPOINT_HINTS = {
   azure_openai: "https://my-resource.openai.azure.com",
 };
 
+const THINKING_EFFORT_OPTIONS = [
+  { value: "", label: "Auto / provider default" },
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+];
+
 function LlmSection({ title, prefix, secretPrefix, config, setConfig, onTest, testResult, testLoading, optional }) {
   const provider = config[`${prefix}_provider`] || "";
   const fields = provider ? PROVIDER_FIELDS[provider] || [] : [];
@@ -178,6 +185,39 @@ function LlmSection({ title, prefix, secretPrefix, config, setConfig, onTest, te
               onChange={(e) => set(`${prefix}_model`, e.target.value)}
             />
           </div>
+        )}
+
+        {provider && (
+          <>
+            <div className="mb-3">
+              <label className="form-label">Temperature</label>
+              <input
+                type="number"
+                min="0"
+                max="2"
+                step="0.1"
+                className="form-control"
+                placeholder={prefix === "code_llm" ? "0.2" : "0.7"}
+                value={config[`${prefix}_temperature`] || ""}
+                onChange={(e) => set(`${prefix}_temperature`, e.target.value)}
+              />
+              <div className="form-text">Controls randomness. Some models (for example GPT-5 family) may only support provider default temperature.</div>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Thinking Effort</label>
+              <select
+                className="form-select"
+                value={config[`${prefix}_reasoning_effort`] || ""}
+                onChange={(e) => set(`${prefix}_reasoning_effort`, e.target.value)}
+              >
+                {THINKING_EFFORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <div className="form-text">For reasoning-capable models. Increase for tougher tasks, lower for speed and lower cost.</div>
+            </div>
+          </>
         )}
 
         {fields.includes("api_version") && (

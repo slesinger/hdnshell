@@ -10,16 +10,20 @@ import sys
 import re
 import logging
 
-from .cloud_config_template import CONFIG_DEFAULTS, SECRET_KEYS, ENV_OVERRIDE_KEYS
-from .cloud_config_template import CONFIG_DEFAULTS, SECRET_KEYS, ENV_OVERRIDE_KEYS
+from .cloud_config_template import CONFIG_DEFAULTS, ENV_OVERRIDE_KEYS
 from .workspace import get_workspace_config_path
+
 logger = logging.getLogger(__name__)
 
 # Path where the old .env file used to live (used only for one-time migration)
 _OLD_ENV_PATH = os.path.join(
-    os.path.dirname(sys.executable) if getattr(sys, "frozen", False)
-    else os.path.dirname(os.path.abspath(__file__)),
-    ".env")
+    (
+        os.path.dirname(sys.executable)
+        if getattr(sys, "frozen", False)
+        else os.path.dirname(os.path.abspath(__file__))
+    ),
+    ".env",
+)
 
 # Boolean-valued keys stored without quotes
 _BOOLEAN_KEYS = {"code_llm_same_as_chat", "LANGSMITH_TRACING"}
@@ -170,12 +174,16 @@ def get_llm_config(role: str) -> dict:
     """Get LLM configuration for a specific role ('chat', 'code', 'backup').
 
     Returns a dict with keys: provider, endpoint, model, api_key,
-    api_version, project_id, location, service_account_json.
+    api_version, project_id, location, service_account_json,
+    temperature, reasoning_effort.
     """
     config = read_config()
 
     # If code role and "same as chat" is enabled, use chat config
-    if role == "code" and config.get("code_llm_same_as_chat", "false").lower() == "true":
+    if (
+        role == "code"
+        and config.get("code_llm_same_as_chat", "false").lower() == "true"
+    ):
         role = "chat"
 
     prefix = f"{role}_llm"
@@ -185,6 +193,8 @@ def get_llm_config(role: str) -> dict:
         "provider": config.get(f"{prefix}_provider", ""),
         "endpoint": config.get(f"{prefix}_endpoint", ""),
         "model": config.get(f"{prefix}_model", ""),
+        "temperature": config.get(f"{prefix}_temperature", ""),
+        "reasoning_effort": config.get(f"{prefix}_reasoning_effort", ""),
         "api_key": config.get(f"{secret_prefix}_API_KEY", ""),
         "api_version": config.get(f"{secret_prefix}_API_VERSION", ""),
         "project_id": config.get(f"{secret_prefix}_PROJECT_ID", ""),

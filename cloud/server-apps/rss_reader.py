@@ -17,24 +17,23 @@ import re
 import threading
 import time
 import unicodedata
-from dataclasses import dataclass, field
 from typing import Optional, List
 
 import feedparser
 import requests
 from bs4 import BeautifulSoup
 
-from server_console import (
+from sdk.server_console import (
     ServerConsole,
     SCREEN_COLS,
     SCREEN_ROWS,
     SCREEN_SIZE,
     ascii_to_screencode,
 )
-from generate_pet_asc_table import Petscii
-from shared_state import get_clipboard, set_clipboard
+from sdk.generate_pet_asc_table import Petscii
+from sdk.shared_state import set_clipboard
 from workspace_init import WORKSPACE_DIR
-from text_utils import word_wrap as _word_wrap
+from sdk.text_utils import word_wrap as _word_wrap
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +127,7 @@ DEFAULT_FEEDS = [
 
 # ── Full article content extractor ─────────────────────────────────
 
+
 def _fetch_full_article(url: str) -> str:
     """Fetch the full article text from *url* using requests + BeautifulSoup."""
     headers = {"User-Agent": "Mozilla/5.0 (compatible; HDNCloud RSS Reader/1.0)"}
@@ -137,8 +137,19 @@ def _fetch_full_article(url: str) -> str:
     soup = BeautifulSoup(resp.text, "html.parser")
 
     # Remove boilerplate elements
-    for tag in soup(["script", "style", "nav", "header", "footer",
-                     "aside", "form", "noscript", "iframe"]):
+    for tag in soup(
+        [
+            "script",
+            "style",
+            "nav",
+            "header",
+            "footer",
+            "aside",
+            "form",
+            "noscript",
+            "iframe",
+        ]
+    ):
         tag.decompose()
 
     # Try common main-content selectors first
@@ -146,12 +157,15 @@ def _fetch_full_article(url: str) -> str:
         soup.find("article")
         or soup.find("main")
         or soup.find(attrs={"id": re.compile(r"content|article|post|story", re.I)})
-        or soup.find(attrs={"class": re.compile(r"content|article|post|story|body", re.I)})
+        or soup.find(
+            attrs={"class": re.compile(r"content|article|post|story|body", re.I)}
+        )
         or soup.body
         or soup
     )
 
     return _strip_html(content_node.get_text(separator="\n"))
+
 
 # ── Help text ────────────────────────────────────────────────────────
 HELP_TEXT = [
@@ -232,6 +246,7 @@ def _strip_html(text: str) -> str:
 #  Helper: character to C64 screen code (with Unicode normalisation)
 # =====================================================================
 
+
 def _char_to_screencode(ch: str) -> int:
     code = ord(ch)
     if 32 <= code < 127:
@@ -247,6 +262,7 @@ def _char_to_screencode(ch: str) -> int:
 # =====================================================================
 #  Feed persistence
 # =====================================================================
+
 
 def _feeds_path() -> str:
     return os.path.join(WORKSPACE_DIR, ".config", _FEEDS_FILENAME)
@@ -275,6 +291,7 @@ def _save_feeds(feeds: List[dict]) -> None:
 # =====================================================================
 #  RSSReaderConsole
 # =====================================================================
+
 
 class RSSReaderConsole(ServerConsole):
     """Console 6 — PETSCII RSS/Atom Feed Reader."""
@@ -401,7 +418,9 @@ class RSSReaderConsole(ServerConsole):
 
         elif key == KEY_F5:
             # Page down
-            self.article_sel = min(n - 1, self.article_sel + (CONTENT_ROWS // LINES_PER_ARTICLE))
+            self.article_sel = min(
+                n - 1, self.article_sel + (CONTENT_ROWS // LINES_PER_ARTICLE)
+            )
             self._ensure_article_visible()
 
         elif key == KEY_RETURN:
@@ -436,7 +455,9 @@ class RSSReaderConsole(ServerConsole):
             self.article_view_scroll = max(0, self.article_view_scroll - CONTENT_ROWS)
 
         elif key == KEY_F5:
-            self.article_view_scroll = min(max_scroll, self.article_view_scroll + CONTENT_ROWS)
+            self.article_view_scroll = min(
+                max_scroll, self.article_view_scroll + CONTENT_ROWS
+            )
 
         elif key == KEY_RUNSTOP:
             self.mode = MODE_ARTICLES
@@ -493,7 +514,9 @@ class RSSReaderConsole(ServerConsole):
                 feed = self.feeds[self.feed_sel]
                 feed["enabled"] = not feed.get("enabled", True)
                 _save_feeds(self.feeds)
-                self.status_msg = "Feed " + ("enabled" if feed["enabled"] else "disabled")
+                self.status_msg = "Feed " + (
+                    "enabled" if feed["enabled"] else "disabled"
+                )
 
         elif key == KEY_CTRL_W:
             # Delete selected feed
@@ -818,7 +841,9 @@ class RSSReaderConsole(ServerConsole):
                         seen_links.add(link)
 
                     # Parse published date
-                    pub_parsed = entry.get("published_parsed") or entry.get("updated_parsed")
+                    pub_parsed = entry.get("published_parsed") or entry.get(
+                        "updated_parsed"
+                    )
                     pub_str = ""
                     pub_ts = 0.0
                     if pub_parsed:
@@ -833,14 +858,16 @@ class RSSReaderConsole(ServerConsole):
                     summary_raw = entry.get("summary", entry.get("description", ""))
                     summary = _strip_html(summary_raw) if summary_raw else ""
 
-                    articles.append({
-                        "title": entry.get("title", "(no title)"),
-                        "summary": summary,
-                        "link": link,
-                        "published": pub_str,
-                        "pub_ts": pub_ts,
-                        "feed_title": feed_title,
-                    })
+                    articles.append(
+                        {
+                            "title": entry.get("title", "(no title)"),
+                            "summary": summary,
+                            "link": link,
+                            "published": pub_str,
+                            "pub_ts": pub_ts,
+                            "feed_title": feed_title,
+                        }
+                    )
             except Exception as e:
                 logger.warning(f"Error fetching feed {url}: {e}")
 
@@ -904,8 +931,15 @@ class RSSReaderConsole(ServerConsole):
 
     # ── Write a text string at a given row/col ───────────────────────
 
-    def _write_text(self, row: int, col: int, text: str, color: int,
-                    reverse: bool = False, max_len: int = SCREEN_COLS):
+    def _write_text(
+        self,
+        row: int,
+        col: int,
+        text: str,
+        color: int,
+        reverse: bool = False,
+        max_len: int = SCREEN_COLS,
+    ):
         if row < 0 or row >= SCREEN_ROWS:
             return
         off = row * SCREEN_COLS + col
@@ -925,7 +959,12 @@ class RSSReaderConsole(ServerConsole):
         n = len(self.articles)
         count_str = f" {n} articles"
         feeds_str = f" {len(self.feeds)} feeds"
-        title = "RSS READER" + " " * max(1, SCREEN_COLS - 10 - len(count_str) - len(feeds_str)) + feeds_str + count_str
+        title = (
+            "RSS READER"
+            + " " * max(1, SCREEN_COLS - 10 - len(count_str) - len(feeds_str))
+            + feeds_str
+            + count_str
+        )
         self._render_title_bar(title[:SCREEN_COLS])
 
         if not n:
@@ -943,7 +982,7 @@ class RSSReaderConsole(ServerConsole):
             if screen_row > CONTENT_BOTTOM:
                 break
             art = self.articles[art_idx]
-            is_sel = (art_idx == self.article_sel)
+            is_sel = art_idx == self.article_sel
 
             # Line 1: feed abbreviation + title
             feed_abbr = (art.get("feed_title", "") or "")[:8]
@@ -954,8 +993,13 @@ class RSSReaderConsole(ServerConsole):
             full_line = feed_abbr + art_title
 
             if is_sel:
-                self._write_text(screen_row, 0, full_line.ljust(SCREEN_COLS),
-                                 COL_SELECTED_FG, reverse=True)
+                self._write_text(
+                    screen_row,
+                    0,
+                    full_line.ljust(SCREEN_COLS),
+                    COL_SELECTED_FG,
+                    reverse=True,
+                )
             else:
                 # Feed name in cyan, title in white
                 if feed_abbr:
@@ -972,8 +1016,13 @@ class RSSReaderConsole(ServerConsole):
             for pi in range(2):
                 pline = preview_lines[pi] if pi < len(preview_lines) else ""
                 if is_sel:
-                    self._write_text(screen_row, 0, pline.ljust(SCREEN_COLS),
-                                     COL_TEXT_FG, reverse=True)
+                    self._write_text(
+                        screen_row,
+                        0,
+                        pline.ljust(SCREEN_COLS),
+                        COL_TEXT_FG,
+                        reverse=True,
+                    )
                 else:
                     self._write_text(screen_row, 0, pline, COL_TEXT_FG)
                 screen_row += 1
@@ -986,8 +1035,13 @@ class RSSReaderConsole(ServerConsole):
             # Line 4: date
             date_str = art.get("published", "")[:SCREEN_COLS]
             if is_sel:
-                self._write_text(screen_row, 0, date_str.ljust(SCREEN_COLS),
-                                 COL_LIGHT_BLUE, reverse=True)
+                self._write_text(
+                    screen_row,
+                    0,
+                    date_str.ljust(SCREEN_COLS),
+                    COL_LIGHT_BLUE,
+                    reverse=True,
+                )
             else:
                 self._write_text(screen_row, 0, date_str, COL_DATE_FG)
 
@@ -1063,7 +1117,7 @@ class RSSReaderConsole(ServerConsole):
             if screen_row > CONTENT_BOTTOM:
                 break
             feed = self.feeds[fi]
-            is_sel = (fi == self.feed_sel)
+            is_sel = fi == self.feed_sel
 
             # Line 1: feed title with enabled/disabled indicator
             enabled = feed.get("enabled", True)
@@ -1071,8 +1125,13 @@ class RSSReaderConsole(ServerConsole):
             title = (prefix + (feed.get("title", "") or "(untitled)"))[:SCREEN_COLS]
             title_col = COL_WHITE if enabled else COL_DARK_GREY
             if is_sel:
-                self._write_text(screen_row, 0, title.ljust(SCREEN_COLS),
-                                 COL_SELECTED_FG, reverse=True)
+                self._write_text(
+                    screen_row,
+                    0,
+                    title.ljust(SCREEN_COLS),
+                    COL_SELECTED_FG,
+                    reverse=True,
+                )
             else:
                 self._write_text(screen_row, 0, title, title_col)
             screen_row += 1
@@ -1084,8 +1143,9 @@ class RSSReaderConsole(ServerConsole):
             url = (feed.get("url", ""))[:SCREEN_COLS]
             url_col = COL_URL_FG if enabled else COL_DARK_GREY
             if is_sel:
-                self._write_text(screen_row, 0, url.ljust(SCREEN_COLS),
-                                 COL_LIGHT_BLUE, reverse=True)
+                self._write_text(
+                    screen_row, 0, url.ljust(SCREEN_COLS), COL_LIGHT_BLUE, reverse=True
+                )
             else:
                 self._write_text(screen_row, 0, url, url_col)
             screen_row += 1
@@ -1113,7 +1173,7 @@ class RSSReaderConsole(ServerConsole):
         if cursor > visible_width - 1:
             view_start = cursor - visible_width + 1
 
-        visible = url[view_start: view_start + visible_width]
+        visible = url[view_start : view_start + visible_width]
 
         self._write_text(5, 1, visible, COL_URL_FG)
 
@@ -1139,7 +1199,7 @@ class RSSReaderConsole(ServerConsole):
         for i, label in enumerate(SETTINGS_FIELDS):
             if screen_row > CONTENT_BOTTOM - 1:
                 break
-            is_sel = (i == self.settings_sel)
+            is_sel = i == self.settings_sel
             cfg_key = SETTINGS_KEYS[i]
             value = cfg.get(cfg_key, SETTINGS_DEFAULTS.get(cfg_key, ""))
 
@@ -1161,8 +1221,13 @@ class RSSReaderConsole(ServerConsole):
             else:
                 line = f" {label}: {value}"
                 if is_sel:
-                    self._write_text(screen_row, 0, line.ljust(SCREEN_COLS),
-                                     COL_SELECTED_FG, reverse=True)
+                    self._write_text(
+                        screen_row,
+                        0,
+                        line.ljust(SCREEN_COLS),
+                        COL_SELECTED_FG,
+                        reverse=True,
+                    )
                 else:
                     self._write_text(screen_row, 0, line, COL_TEXT_FG)
                 screen_row += 2
@@ -1191,7 +1256,8 @@ class RSSReaderConsole(ServerConsole):
     @staticmethod
     def _read_settings() -> dict:
         try:
-            from config_manager import read_config
+            from sdk.config_manager import read_config
+
             return read_config()
         except Exception:
             return {}
@@ -1199,7 +1265,8 @@ class RSSReaderConsole(ServerConsole):
     @staticmethod
     def _write_settings(data: dict):
         try:
-            from config_manager import write_config
+            from sdk.config_manager import write_config
+
             write_config(data)
         except Exception as e:
             logger.warning(f"Could not write settings: {e}")
@@ -1219,7 +1286,8 @@ class RSSReaderConsole(ServerConsole):
     def _send_vic_colors(self, border: int, background: int):
         """DMA-write border and background colours to C64."""
         try:
-            from network_helper import send_vic_colors
+            from sdk.network_helper import send_vic_colors
+
             send_vic_colors(border & 0x0F, background & 0x0F)
         except Exception as e:
             logger.warning(f"Could not send VIC colours: {e}")

@@ -20,15 +20,15 @@ from dataclasses import dataclass
 from datetime import timezone, timedelta
 from typing import List, Optional
 
-from network_helper import send_screen_data
-from server_console import (
+from sdk.network_helper import send_screen_data
+from sdk.server_console import (
     ServerConsole,
     SCREEN_COLS,
     SCREEN_ROWS,
     SCREEN_SIZE,
     ascii_to_screencode,
 )
-from generate_pet_asc_table import Petscii
+from sdk.generate_pet_asc_table import Petscii
 
 logger = logging.getLogger(__name__)
 
@@ -213,9 +213,11 @@ HELP_LINES = [
 #  Data classes
 # =====================================================================
 
+
 @dataclass
 class ChatEntry:
     """A chat/dialog in the list."""
+
     id: int = 0
     name: str = ""
     last_message: str = ""
@@ -227,6 +229,7 @@ class ChatEntry:
 @dataclass
 class MessageEntry:
     """A single message in a chat."""
+
     id: int = 0
     sender_name: str = ""
     text: str = ""
@@ -237,6 +240,7 @@ class MessageEntry:
 @dataclass
 class ContactEntry:
     """A Telegram contact."""
+
     id: int = 0
     name: str = ""
     phone: str = ""
@@ -246,6 +250,7 @@ class ContactEntry:
 # =====================================================================
 #  _TelethonWorker — async thread that owns the Telethon client
 # =====================================================================
+
 
 class _TelethonWorker:
     """Runs all Telethon operations in a dedicated daemon thread with
@@ -338,7 +343,9 @@ class _TelethonWorker:
                     result = await method(**kwargs)
                     result_q.put(result)
             except Exception as exc:
-                logger.error("Telethon worker error (%s): %s", method_name, exc, exc_info=True)
+                logger.error(
+                    "Telethon worker error (%s): %s", method_name, exc, exc_info=True
+                )
                 result_q.put(exc)
 
     async def _cleanup(self):
@@ -366,6 +373,7 @@ class _TelethonWorker:
             return False
 
         from telethon import TelegramClient
+
         session_path = self._get_session_path()
         self._client = TelegramClient(session_path, int_api_id, api_hash)
         return True
@@ -385,7 +393,9 @@ class _TelethonWorker:
         except Exception as e:
             return f"error:{e}"
 
-    async def _do_send_code(self, phone: str = "", api_id: str = "", api_hash: str = "") -> str:
+    async def _do_send_code(
+        self, phone: str = "", api_id: str = "", api_hash: str = ""
+    ) -> str:
         """Send login code to phone. Returns 'ok' or error string."""
         if not await self._ensure_client(api_id, api_hash):
             return "error:Missing API ID or API Hash"
@@ -408,7 +418,11 @@ class _TelethonWorker:
             return "ok"
         except Exception as e:
             err_str = str(e).lower()
-            if "two-steps verification" in err_str or "2fa" in err_str or "password" in err_str:
+            if (
+                "two-steps verification" in err_str
+                or "2fa" in err_str
+                or "password" in err_str
+            ):
                 return "need_2fa"
             return f"error:{e}"
 
@@ -421,12 +435,15 @@ class _TelethonWorker:
         except Exception as e:
             return f"error:{e}"
 
-    async def _do_get_dialogs(self, limit: int = MAX_DIALOGS, tz_offset_minutes: int = 0) -> List[ChatEntry]:
+    async def _do_get_dialogs(
+        self, limit: int = MAX_DIALOGS, tz_offset_minutes: int = 0
+    ) -> List[ChatEntry]:
         """Fetch recent dialogs/chats."""
         if not self._connected:
             return []
         try:
             from telethon.tl.types import User
+
             dialogs = await self._client.get_dialogs(limit=limit)
             result = []
             tz = timezone(timedelta(minutes=tz_offset_minutes))
@@ -441,20 +458,24 @@ class _TelethonWorker:
                         last_msg = _media_placeholder(d.message)
                     if d.message.date:
                         ts = d.message.date.astimezone(tz).strftime("%H:%M")
-                result.append(ChatEntry(
-                    id=d.id,
-                    name=name[:36],
-                    last_message=last_msg[:60],
-                    unread_count=d.unread_count or 0,
-                    is_group=is_group,
-                    timestamp=ts,
-                ))
+                result.append(
+                    ChatEntry(
+                        id=d.id,
+                        name=name[:36],
+                        last_message=last_msg[:60],
+                        unread_count=d.unread_count or 0,
+                        is_group=is_group,
+                        timestamp=ts,
+                    )
+                )
             return result
         except Exception as e:
             logger.error("get_dialogs error: %s", e)
             return []
 
-    async def _do_get_messages(self, chat_id: int = 0, limit: int = MAX_MESSAGES, tz_offset_minutes: int = 0) -> List[MessageEntry]:
+    async def _do_get_messages(
+        self, chat_id: int = 0, limit: int = MAX_MESSAGES, tz_offset_minutes: int = 0
+    ) -> List[MessageEntry]:
         """Fetch messages from a chat."""
         if not self._connected or not chat_id:
             return []
@@ -466,7 +487,9 @@ class _TelethonWorker:
                 sender_name = ""
                 if m.sender:
                     if hasattr(m.sender, "first_name"):
-                        sender_name = (m.sender.first_name or "") + (" " + (m.sender.last_name or "")).rstrip()
+                        sender_name = (m.sender.first_name or "") + (
+                            " " + (m.sender.last_name or "")
+                        ).rstrip()
                     elif hasattr(m.sender, "title"):
                         sender_name = m.sender.title or ""
                     else:
@@ -477,13 +500,15 @@ class _TelethonWorker:
                 ts = ""
                 if m.date:
                     ts = m.date.astimezone(tz).strftime("%H:%M")
-                result.append(MessageEntry(
-                    id=m.id,
-                    sender_name=sender_name[:20],
-                    text=text[:500],
-                    timestamp=ts,
-                    is_outgoing=m.out or False,
-                ))
+                result.append(
+                    MessageEntry(
+                        id=m.id,
+                        sender_name=sender_name[:20],
+                        text=text[:500],
+                        timestamp=ts,
+                        is_outgoing=m.out or False,
+                    )
+                )
             # Reverse so oldest is first
             result.reverse()
             return result
@@ -507,16 +532,21 @@ class _TelethonWorker:
             return []
         try:
             from telethon.tl.functions.contacts import GetContactsRequest
+
             result = await self._client(GetContactsRequest(hash=0))
             contacts = []
             for u in result.users:
-                name = (getattr(u, "first_name", "") or "") + (" " + (getattr(u, "last_name", "") or "")).rstrip()
-                contacts.append(ContactEntry(
-                    id=u.id,
-                    name=name[:30],
-                    phone=getattr(u, "phone", "") or "",
-                    username=getattr(u, "username", "") or "",
-                ))
+                name = (getattr(u, "first_name", "") or "") + (
+                    " " + (getattr(u, "last_name", "") or "")
+                ).rstrip()
+                contacts.append(
+                    ContactEntry(
+                        id=u.id,
+                        name=name[:30],
+                        phone=getattr(u, "phone", "") or "",
+                        username=getattr(u, "username", "") or "",
+                    )
+                )
             contacts.sort(key=lambda c: c.name.lower())
             return contacts
         except Exception as e:
@@ -553,7 +583,11 @@ class _TelethonWorker:
             # Remove session file
             session_path = self._get_session_path()
             for ext in ("", ".session"):
-                p = session_path + ext if not session_path.endswith(".session") else session_path
+                p = (
+                    session_path + ext
+                    if not session_path.endswith(".session")
+                    else session_path
+                )
                 if os.path.exists(p):
                     os.remove(p)
             return "ok"
@@ -587,11 +621,13 @@ class _TelethonWorker:
             async def on_new_message(event):
                 """Queue incoming messages."""
                 try:
-                    self._update_queue.put_nowait({
-                        'type': 'new_message',
-                        'chat_id': event.chat_id,
-                        'message': event.message,
-                    })
+                    self._update_queue.put_nowait(
+                        {
+                            "type": "new_message",
+                            "chat_id": event.chat_id,
+                            "message": event.message,
+                        }
+                    )
                 except queue.Full:
                     logger.debug("Update queue full, dropping message event")
 
@@ -599,11 +635,13 @@ class _TelethonWorker:
             async def on_message_edited(event):
                 """Queue edited messages."""
                 try:
-                    self._update_queue.put_nowait({
-                        'type': 'message_edited',
-                        'chat_id': event.chat_id,
-                        'message': event.message,
-                    })
+                    self._update_queue.put_nowait(
+                        {
+                            "type": "message_edited",
+                            "chat_id": event.chat_id,
+                            "message": event.message,
+                        }
+                    )
                 except queue.Full:
                     logger.debug("Update queue full, dropping edited event")
 
@@ -615,11 +653,13 @@ class _TelethonWorker:
                     action_obj = getattr(event, "action", None)
                     if action_obj is not None:
                         action_name = type(action_obj).__name__
-                    self._update_queue.put_nowait({
-                        'type': 'chat_action',
-                        'chat_id': event.chat_id,
-                        'action_name': action_name,
-                    })
+                    self._update_queue.put_nowait(
+                        {
+                            "type": "chat_action",
+                            "chat_id": event.chat_id,
+                            "action_name": action_name,
+                        }
+                    )
                 except queue.Full:
                     logger.debug("Update queue full, dropping chat action")
 
@@ -633,20 +673,34 @@ class _TelethonWorker:
 
                     if isinstance(update, UpdateUserTyping):
                         chat_id = get_peer_id(PeerUser(update.user_id))
-                        action_name = type(update.action).__name__ if update.action is not None else ""
+                        action_name = (
+                            type(update.action).__name__
+                            if update.action is not None
+                            else ""
+                        )
                     elif isinstance(update, UpdateChatUserTyping):
                         chat_id = get_peer_id(PeerChat(update.chat_id))
-                        action_name = type(update.action).__name__ if update.action is not None else ""
+                        action_name = (
+                            type(update.action).__name__
+                            if update.action is not None
+                            else ""
+                        )
                     elif isinstance(update, UpdateChannelUserTyping):
                         chat_id = get_peer_id(PeerChannel(update.channel_id))
-                        action_name = type(update.action).__name__ if update.action is not None else ""
+                        action_name = (
+                            type(update.action).__name__
+                            if update.action is not None
+                            else ""
+                        )
 
                     if chat_id is not None:
-                        self._update_queue.put_nowait({
-                            'type': 'typing',
-                            'chat_id': chat_id,
-                            'action_name': action_name,
-                        })
+                        self._update_queue.put_nowait(
+                            {
+                                "type": "typing",
+                                "chat_id": chat_id,
+                                "action_name": action_name,
+                            }
+                        )
                 except queue.Full:
                     logger.debug("Update queue full, dropping typing update")
                 except Exception as e:
@@ -660,6 +714,7 @@ class _TelethonWorker:
     def _get_session_path() -> str:
         """Return path for the Telethon session file."""
         from workspace_init import WORKSPACE_DIR
+
         config_dir = os.path.join(WORKSPACE_DIR, ".config")
         os.makedirs(config_dir, exist_ok=True)
         return os.path.join(config_dir, "telegram")
@@ -688,7 +743,9 @@ def _media_placeholder(msg) -> str:
             return "[Photo]"
         if "Document" in cls_name:
             return "[Document]"
-        if "Sticker" in cls_name or "sticker" in str(getattr(msg.media, "document", "")):
+        if "Sticker" in cls_name or "sticker" in str(
+            getattr(msg.media, "document", "")
+        ):
             return "[Sticker]"
         if "Video" in cls_name:
             return "[Video]"
@@ -707,6 +764,7 @@ def _media_placeholder(msg) -> str:
 # =====================================================================
 #  TelegramChatConsole — main console class
 # =====================================================================
+
 
 class TelegramChatConsole(ServerConsole):
     """Console 5 — PETSCII Telegram Chat Client."""
@@ -797,12 +855,14 @@ class TelegramChatConsole(ServerConsole):
 
     @staticmethod
     def _read_config() -> dict:
-        from config_manager import read_config
+        from sdk.config_manager import read_config
+
         return read_config()
 
     @staticmethod
     def _write_config(data: dict):
-        from config_manager import write_config
+        from sdk.config_manager import write_config
+
         write_config(data)
 
     def _get_api_credentials(self) -> tuple:
@@ -862,11 +922,11 @@ class TelegramChatConsole(ServerConsole):
                     pending = self.worker.get_pending_updates()
                     for upd in pending:
                         try:
-                            event_type = upd.get('type')
-                            event_chat_id = upd.get('chat_id')
-                            action_name = upd.get('action_name') or ""
-                            if event_type in ('chat_action', 'typing'):
-                                if event_type == 'typing' and not action_name:
+                            event_type = upd.get("type")
+                            event_chat_id = upd.get("chat_id")
+                            action_name = upd.get("action_name") or ""
+                            if event_type in ("chat_action", "typing"):
+                                if event_type == "typing" and not action_name:
                                     self._set_typing_active(event_chat_id)
                                 elif self._is_typing_action_name(action_name):
                                     self._set_typing_active(event_chat_id)
@@ -939,7 +999,9 @@ class TelegramChatConsole(ServerConsole):
             self.login_phone = phone
             self.login_status = "Sending code..."
             self._full_render()  # show status before blocking call
-            result = self.worker.call("send_code", phone=phone, api_id=api_id, api_hash=api_hash)
+            result = self.worker.call(
+                "send_code", phone=phone, api_id=api_id, api_hash=api_hash
+            )
             if result == "ok":
                 # Save phone to config
                 cfg = self._read_config()
@@ -1041,10 +1103,9 @@ class TelegramChatConsole(ServerConsole):
 
         elif key == KEY_POUND:
             # Test: show a toast notification
-            from console_manager import ConsoleManager
-            ConsoleManager.instance().show_session_toast(
-                self.session_id, "Hello world"
-            )
+            from sdk.console_manager import ConsoleManager
+
+            ConsoleManager.instance().show_session_toast(self.session_id, "Hello world")
 
     # ── CHAT VIEW mode ───────────────────────────────────────────────
 
@@ -1064,7 +1125,9 @@ class TelegramChatConsole(ServerConsole):
 
         elif key == KEY_F5:
             max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
-            self.msg_scroll = min(max_scroll, self.msg_scroll + self._msg_display_rows())
+            self.msg_scroll = min(
+                max_scroll, self.msg_scroll + self._msg_display_rows()
+            )
 
         elif key == KEY_F3:
             self.msg_scroll = max(0, self.msg_scroll - self._msg_display_rows())
@@ -1077,8 +1140,8 @@ class TelegramChatConsole(ServerConsole):
             # Backspace at cursor
             if self.msg_input and self.msg_cursor > 0:
                 self.msg_input = (
-                    self.msg_input[:self.msg_cursor - 1]
-                    + self.msg_input[self.msg_cursor:]
+                    self.msg_input[: self.msg_cursor - 1]
+                    + self.msg_input[self.msg_cursor :]
                 )
                 self.msg_cursor -= 1
                 self._clamp_input_scroll()
@@ -1135,9 +1198,9 @@ class TelegramChatConsole(ServerConsole):
             ch = self._petscii_to_printable(key)
             if ch and len(self.msg_input) < MAX_INPUT_LEN:
                 self.msg_input = (
-                    self.msg_input[:self.msg_cursor]
+                    self.msg_input[: self.msg_cursor]
                     + ch
-                    + self.msg_input[self.msg_cursor:]
+                    + self.msg_input[self.msg_cursor :]
                 )
                 self.msg_cursor += 1
                 self._clamp_input_scroll()
@@ -1158,7 +1221,9 @@ class TelegramChatConsole(ServerConsole):
                     self.contact_scroll = self.contact_sel - CONTENT_ROWS + 1
 
         elif key == KEY_F5:
-            self.contact_sel = min(len(self.contacts) - 1, self.contact_sel + CONTENT_ROWS)
+            self.contact_sel = min(
+                len(self.contacts) - 1, self.contact_sel + CONTENT_ROWS
+            )
             self.contact_scroll = max(0, self.contact_sel - CONTENT_ROWS + 1)
 
         elif key == KEY_RETURN:
@@ -1186,8 +1251,22 @@ class TelegramChatConsole(ServerConsole):
     # ── SETTINGS mode (F2) ───────────────────────────────────────────
 
     # Settings fields: 0=Phone, 1=API ID, 2=API Hash, 3=Timezone, 4=Login, 5=Logout
-    _SETTINGS_FIELDS = ["Phone Number", "API ID", "API Hash", "Timezone", "Login", "Logout"]
-    _SETTINGS_KEYS = ["TELEGRAM_PHONE", "TELEGRAM_API_ID", "TELEGRAM_API_HASH", "TIMEZONE", None, None]
+    _SETTINGS_FIELDS = [
+        "Phone Number",
+        "API ID",
+        "API Hash",
+        "Timezone",
+        "Login",
+        "Logout",
+    ]
+    _SETTINGS_KEYS = [
+        "TELEGRAM_PHONE",
+        "TELEGRAM_API_ID",
+        "TELEGRAM_API_HASH",
+        "TIMEZONE",
+        None,
+        None,
+    ]
     _SETTINGS_COUNT = 6
 
     def _key_settings(self, key: int, mod: int):
@@ -1220,7 +1299,9 @@ class TelegramChatConsole(ServerConsole):
                     self.settings_editing = True
 
         elif key == KEY_RUNSTOP:
-            self.mode = self.prev_mode if self.prev_mode != MODE_SETTINGS else MODE_CHATS
+            self.mode = (
+                self.prev_mode if self.prev_mode != MODE_SETTINGS else MODE_CHATS
+            )
 
         elif key == KEY_F1:
             self.mode = MODE_CHATS
@@ -1252,7 +1333,7 @@ class TelegramChatConsole(ServerConsole):
             if self.settings_input and self.settings_cursor > 0:
                 self.settings_input = (
                     self.settings_input[: self.settings_cursor - 1]
-                    + self.settings_input[self.settings_cursor:]
+                    + self.settings_input[self.settings_cursor :]
                 )
                 self.settings_cursor -= 1
         elif key == KEY_CRSR_LT:
@@ -1269,7 +1350,7 @@ class TelegramChatConsole(ServerConsole):
                 self.settings_input = (
                     self.settings_input[: self.settings_cursor]
                     + ch
-                    + self.settings_input[self.settings_cursor:]
+                    + self.settings_input[self.settings_cursor :]
                 )
                 self.settings_cursor += 1
 
@@ -1333,8 +1414,10 @@ class TelegramChatConsole(ServerConsole):
         tz_name = cfg.get("TIMEZONE", "UTC").strip()
         try:
             import zoneinfo
+
             zi = zoneinfo.ZoneInfo(tz_name)
             import datetime
+
             now = datetime.datetime.now(datetime.timezone.utc)
             offset = zi.utcoffset(now)
             return int(offset.total_seconds() // 60) if offset is not None else 0
@@ -1355,7 +1438,9 @@ class TelegramChatConsole(ServerConsole):
         """Fetch messages for a chat."""
         try:
             tz_minutes = self._get_tz_offset_minutes()
-            self.messages = self.worker.call("get_messages", chat_id=chat_id, tz_offset_minutes=tz_minutes)
+            self.messages = self.worker.call(
+                "get_messages", chat_id=chat_id, tz_offset_minutes=tz_minutes
+            )
             self._build_rendered_lines()
             # Auto-scroll to bottom
             max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
@@ -1387,7 +1472,9 @@ class TelegramChatConsole(ServerConsole):
     def _set_typing_active(self, chat_id: int):
         """Mark typing indicator active for a chat with short TTL."""
         if chat_id:
-            self._typing_until_by_chat[chat_id] = time.monotonic() + self._typing_ttl_sec
+            self._typing_until_by_chat[chat_id] = (
+                time.monotonic() + self._typing_ttl_sec
+            )
 
     def _clear_typing_active(self, chat_id: int):
         """Clear typing indicator for a chat."""
@@ -1461,7 +1548,9 @@ class TelegramChatConsole(ServerConsole):
 
         # Mark as read asynchronously (don't block on network)
         try:
-            result = self.worker.call("mark_read", chat_id=chat_id, max_id=newest_msg_id)
+            result = self.worker.call(
+                "mark_read", chat_id=chat_id, max_id=newest_msg_id
+            )
             if result == "ok":
                 self._last_read_by_chat[chat_id] = newest_msg_id
             else:
@@ -1503,18 +1592,19 @@ class TelegramChatConsole(ServerConsole):
         if not event:
             return
 
-        event_type = event.get('type')
-        event_chat_id = event.get('chat_id')
+        event_type = event.get("type")
+        event_chat_id = event.get("chat_id")
 
         # Hold lock during state updates and rendering
         with self._render_lock:
             # Check if console is active and in a mode where events are relevant
-            from console_manager import ConsoleManager
+            from sdk.console_manager import ConsoleManager
+
             mgr = ConsoleManager.instance()
             active_console_id = mgr._active.get(self.session_id)
             is_active = active_console_id == self.console_id
 
-            if event_type == 'new_message':
+            if event_type == "new_message":
                 # New message arrived: refresh if viewing that chat or chat list
                 viewing_this_chat = (
                     is_active
@@ -1534,7 +1624,9 @@ class TelegramChatConsole(ServerConsole):
                             self.messages = new_messages
                             self._build_rendered_lines()
                             # Auto-scroll to bottom for new messages
-                            max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
+                            max_scroll = max(
+                                0, len(self._rendered_lines) - self._msg_display_rows()
+                            )
                             self.msg_scroll = max_scroll
                             # Mark as read
                             self._mark_chat_read_if_needed(event_chat_id)
@@ -1560,9 +1652,13 @@ class TelegramChatConsole(ServerConsole):
                         except Exception as e:
                             logger.debug("Event: error fetching dialogs: %s", e)
 
-            elif event_type == 'message_edited':
+            elif event_type == "message_edited":
                 # Message was edited: refresh if viewing that chat
-                if is_active and self.mode == MODE_CHAT_VIEW and event_chat_id == self.current_chat_id:
+                if (
+                    is_active
+                    and self.mode == MODE_CHAT_VIEW
+                    and event_chat_id == self.current_chat_id
+                ):
                     try:
                         tz_minutes = self._get_tz_offset_minutes()
                         new_messages = self.worker.call(
@@ -1576,9 +1672,9 @@ class TelegramChatConsole(ServerConsole):
                     except Exception as e:
                         logger.debug("Event: error refreshing edited messages: %s", e)
 
-            elif event_type in ('chat_action', 'typing'):
-                action_name = event.get('action_name') or ""
-                if event_type == 'typing' and not action_name:
+            elif event_type in ("chat_action", "typing"):
+                action_name = event.get("action_name") or ""
+                if event_type == "typing" and not action_name:
                     self._set_typing_active(event_chat_id)
                 elif self._is_typing_action_name(action_name):
                     self._set_typing_active(event_chat_id)
@@ -1618,7 +1714,9 @@ class TelegramChatConsole(ServerConsole):
     def _clamp_input_scroll(self):
         """Ensure msg_input_scroll keeps the cursor line visible."""
         input_width = SCREEN_COLS - 2  # width for "> " prefix
-        cursor_line, _ = self._cursor_wrapped_pos(self.msg_input, self.msg_cursor, input_width)
+        cursor_line, _ = self._cursor_wrapped_pos(
+            self.msg_input, self.msg_cursor, input_width
+        )
 
         if self.msg_input_scroll > cursor_line:
             self.msg_input_scroll = cursor_line
@@ -1818,9 +1916,21 @@ class TelegramChatConsole(ServerConsole):
                     self.color[row * SCREEN_COLS + c] = COL_SELECTED_FG
                 self._put_text(row, 0, display_name, COL_SELECTED_FG, reverse=True)
                 if badge:
-                    self._put_text(row, SCREEN_COLS - right_width, badge, COL_SELECTED_FG, reverse=True)
+                    self._put_text(
+                        row,
+                        SCREEN_COLS - right_width,
+                        badge,
+                        COL_SELECTED_FG,
+                        reverse=True,
+                    )
                 if time_str:
-                    self._put_text(row, SCREEN_COLS - time_width, time_str, COL_SELECTED_FG, reverse=True)
+                    self._put_text(
+                        row,
+                        SCREEN_COLS - time_width,
+                        time_str,
+                        COL_SELECTED_FG,
+                        reverse=True,
+                    )
             else:
                 name_fg = COL_GROUP_FG if chat.is_group else COL_WHITE
                 self._put_text(row, 0, display_name, name_fg)
@@ -1832,7 +1942,11 @@ class TelegramChatConsole(ServerConsole):
         # Status bar
         total = len(self.chats)
         pos = self.chat_sel + 1
-        status_text = self._chat_status if self._chat_status else f"{pos}/{total} RET=Open HOME=Refresh"
+        status_text = (
+            self._chat_status
+            if self._chat_status
+            else f"{pos}/{total} RET=Open HOME=Refresh"
+        )
         self._render_status_bar(status_text)
 
     # ── Chat view ────────────────────────────────────────────────────
@@ -1876,7 +1990,11 @@ class TelegramChatConsole(ServerConsole):
         # Input area: word-wrap msg_input into up to MAX_INPUT_LINES lines
         prompt = "> "
         input_width = SCREEN_COLS - len(prompt)
-        wrapped_input = self._word_wrap(self.msg_input or "", input_width) if self.msg_input else [""]
+        wrapped_input = (
+            self._word_wrap(self.msg_input or "", input_width)
+            if self.msg_input
+            else [""]
+        )
         total_input_lines = len(wrapped_input)
 
         # Determine which wrapped line the cursor is on and its column
@@ -1899,7 +2017,9 @@ class TelegramChatConsole(ServerConsole):
             if row >= SCREEN_ROWS:
                 break
             wrapped_idx = visible_start + li
-            line_text = wrapped_input[wrapped_idx] if wrapped_idx < total_input_lines else ""
+            line_text = (
+                wrapped_input[wrapped_idx] if wrapped_idx < total_input_lines else ""
+            )
             # First visible line gets the "> " prompt
             if li == 0:
                 self._put_text(row, 0, prompt, COL_CYAN)
@@ -1971,7 +2091,13 @@ class TelegramChatConsole(ServerConsole):
                     self.color[row * SCREEN_COLS + c] = COL_SELECTED_FG
                 self._put_text(row, 0, display_name, COL_SELECTED_FG, reverse=True)
                 if info:
-                    self._put_text(row, SCREEN_COLS - len(info), info, COL_SELECTED_FG, reverse=True)
+                    self._put_text(
+                        row,
+                        SCREEN_COLS - len(info),
+                        info,
+                        COL_SELECTED_FG,
+                        reverse=True,
+                    )
             else:
                 self._put_text(row, 0, display_name, COL_WHITE)
                 if info:
@@ -2017,7 +2143,7 @@ class TelegramChatConsole(ServerConsole):
                 vis_start = 0
                 if self.settings_cursor > visible_width:
                     vis_start = self.settings_cursor - visible_width
-                visible = self.settings_input[vis_start: vis_start + visible_width]
+                visible = self.settings_input[vis_start : vis_start + visible_width]
                 self._put_text(row, input_col, visible, COL_FIELD_FG)
                 # Cursor
                 cursor_screen = input_col + (self.settings_cursor - vis_start)
@@ -2031,7 +2157,9 @@ class TelegramChatConsole(ServerConsole):
                     self.screen[row * SCREEN_COLS + c] = SC_SPACE | SC_REVERSE_BIT
                     self.color[row * SCREEN_COLS + c] = COL_SELECTED_FG
                 if value:
-                    self._put_text(row, 1, f"{label} {value}", COL_SELECTED_FG, reverse=True)
+                    self._put_text(
+                        row, 1, f"{label} {value}", COL_SELECTED_FG, reverse=True
+                    )
                 else:
                     self._put_text(row, 1, label, COL_SELECTED_FG, reverse=True)
             else:
@@ -2084,7 +2212,12 @@ class TelegramChatConsole(ServerConsole):
                         desc_part = "  " + parts[1]
                         self._put_text(row, 0, key_part[:SCREEN_COLS], COL_WHITE)
                         desc_start = indent + len(parts[0])
-                        self._put_text(row, desc_start, desc_part[: SCREEN_COLS - desc_start], COL_LIGHT_GREY)
+                        self._put_text(
+                            row,
+                            desc_start,
+                            desc_part[: SCREEN_COLS - desc_start],
+                            COL_LIGHT_GREY,
+                        )
                     else:
                         self._put_text(row, 0, text[:SCREEN_COLS], COL_HELP_FG)
                 else:
@@ -2117,7 +2250,7 @@ class TelegramChatConsole(ServerConsole):
         vis_start = 0
         if cursor_pos > visible_width:
             vis_start = cursor_pos - visible_width
-        visible = text[vis_start: vis_start + visible_width]
+        visible = text[vis_start : vis_start + visible_width]
         self._put_text(row, 1, visible, COL_INPUT_FG)
         # Cursor
         cursor_screen = 1 + (cursor_pos - vis_start)
@@ -2219,7 +2352,8 @@ class TelegramChatConsole(ServerConsole):
     def _send_vic_colors(self, border: int, background: int):
         """DMA-write border ($D020) and background ($D021) colours to C64."""
         try:
-            from network_helper import send_vic_colors
+            from sdk.network_helper import send_vic_colors
+
             send_vic_colors(border & 0x0F, background & 0x0F)
         except Exception as e:
             logger.warning("Could not send VIC colours: %s", e)
@@ -2301,7 +2435,8 @@ class TelegramChatConsole(ServerConsole):
             # ── Apply data + render UNDER the lock; only DMA-push when
             # the Telegram console is both the active console for the
             # session AND the user is viewing a chat (MODE_CHAT_VIEW).
-            from console_manager import ConsoleManager
+            from sdk.console_manager import ConsoleManager
+
             mgr = ConsoleManager.instance()
             active_console_id = mgr._active.get(self.session_id)
 
@@ -2321,7 +2456,9 @@ class TelegramChatConsole(ServerConsole):
                 if new_messages is not None:
                     self.messages = new_messages
                     self._build_rendered_lines()
-                    max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
+                    max_scroll = max(
+                        0, len(self._rendered_lines) - self._msg_display_rows()
+                    )
                     self.msg_scroll = max_scroll
                     # Phase A: Mark messages as read during polling
                     self._mark_chat_read_if_needed(self.current_chat_id)

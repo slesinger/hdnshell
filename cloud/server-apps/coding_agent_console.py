@@ -10,8 +10,8 @@ Features:
 - Word-wrapped messages at 40 columns
 - Role indicators: user (>), agent, system
 - F3: browse and select a working directory
-- Agent can read/write .c/.h files, compile, and run on C64
-- Slash commands: /clear, /files, /compile, /run, /help
+- Agent can read/write .c/.h/.md files, compile, and run on C64
+- Slash commands: /clear, /new-project, /files, /compile, /run, /help
 """
 
 import os
@@ -19,7 +19,7 @@ import logging
 import threading
 from typing import Optional, List, Tuple
 
-from server_console import (
+from sdk.server_console import (
     ServerConsole,
     SCREEN_COLS,
     SCREEN_ROWS,
@@ -27,28 +27,27 @@ from server_console import (
     DEFAULT_SCREEN_CODE,
     ascii_to_screencode,
 )
-from generate_pet_asc_table import Petscii
+from sdk.generate_pet_asc_table import Petscii
 from workspace_init import WORKSPACE_DIR
 from code_chat_handler import CodeChatAgent
-from agent_tools import list_project_files
-from network_helper import send_screen_data
-from text_utils import word_wrap as _word_wrap
+from agent_tools import create_project_scaffold, list_project_files
+from sdk.text_utils import word_wrap as _word_wrap
 
 logger = logging.getLogger(__name__)
 
 # ── Colour palette ───────────────────────────────────────────────────
-COL_STATUS_BG = 0   # black
-COL_STATUS_FG = 1   # white
-COL_USER_FG = 14    # light blue  (user messages)
-COL_AGENT_FG = 13   # light green (agent messages)
-COL_SYSTEM_FG = 3   # cyan        (system messages)
-COL_ACTION_FG = 7   # yellow      (agent actions: wrote file, compiled)
-COL_ERROR_FG = 2    # red         (errors)
-COL_INPUT_FG = 1    # white       (input line)
+COL_STATUS_BG = 0  # black
+COL_STATUS_FG = 1  # white
+COL_USER_FG = 14  # light blue  (user messages)
+COL_AGENT_FG = 13  # light green (agent messages)
+COL_SYSTEM_FG = 3  # cyan        (system messages)
+COL_ACTION_FG = 7  # yellow      (agent actions: wrote file, compiled)
+COL_ERROR_FG = 2  # red         (errors)
+COL_INPUT_FG = 1  # white       (input line)
 COL_SEPARATOR_FG = 11  # dark grey
-COL_BROWSER_DIR = 5    # green
+COL_BROWSER_DIR = 5  # green
 COL_BROWSER_FILE = 14  # light blue
-COL_HELP_FG = 3     # cyan
+COL_HELP_FG = 3  # cyan
 COL_THINKING_FG = 7  # yellow
 
 # ── PETSCII key constants (same as file_editor_console.py) ───────────
@@ -85,12 +84,12 @@ MODE_HELP = 2
 MODE_THINKING = 3
 
 # ── Layout constants ─────────────────────────────────────────────────
-STATUS_ROW = 0       # Row 0 = status bar
-CHAT_TOP = 1         # First row of chat area
-CHAT_BOTTOM = 22     # Last row of chat area
+STATUS_ROW = 0  # Row 0 = status bar
+CHAT_TOP = 1  # First row of chat area
+CHAT_BOTTOM = 22  # Last row of chat area
 CHAT_ROWS = CHAT_BOTTOM - CHAT_TOP + 1  # 22 visible chat rows
-SEPARATOR_ROW = 23   # Separator line
-INPUT_ROW = 24       # Row 24 = input line (default, single-line)
+SEPARATOR_ROW = 23  # Separator line
+INPUT_ROW = 24  # Row 24 = input line (default, single-line)
 INPUT_PROMPT = "> "
 INPUT_MAX_ROWS = 10  # Max rows the input area can occupy
 # Characters that fit on the first input line (after the prompt)
@@ -171,7 +170,8 @@ class CodingAgentConsole(ServerConsole):
     #  INPUT HANDLER
     # =================================================================
     def handle_keypress(self, petscii_code: int, modifiers: int) -> Optional[bytes]:
-        self.status_msg = ""
+        if not self._thinking:
+            self.status_msg = ""
 
         # Check if thinking thread finished
         if self._thinking and self._pending_response is not None:
@@ -222,8 +222,8 @@ class CodingAgentConsole(ServerConsole):
         elif key == KEY_DEL_CTRLT:
             if self.input_buf and self.input_cursor > 0:
                 self.input_buf = (
-                    self.input_buf[:self.input_cursor - 1]
-                    + self.input_buf[self.input_cursor:]
+                    self.input_buf[: self.input_cursor - 1]
+                    + self.input_buf[self.input_cursor :]
                 )
                 self.input_cursor -= 1
         elif key == KEY_CRSR_LT:
@@ -237,9 +237,9 @@ class CodingAgentConsole(ServerConsole):
             ch = self._petscii_to_char(key)
             if ch and self._input_rows(len(self.input_buf) + 1) <= INPUT_MAX_ROWS:
                 self.input_buf = (
-                    self.input_buf[:self.input_cursor]
+                    self.input_buf[: self.input_cursor]
                     + ch
-                    + self.input_buf[self.input_cursor:]
+                    + self.input_buf[self.input_cursor :]
                 )
                 self.input_cursor += 1
 
@@ -327,6 +327,7 @@ class CodingAgentConsole(ServerConsole):
         parts = cmd.split(None, 1)
         command = parts[0].lower()
         arg = parts[1] if len(parts) > 1 else ""
+        agent = self._get_agent()
 
         if command == "/clear":
             self.chat_history.clear()
@@ -355,11 +356,65 @@ class CodingAgentConsole(ServerConsole):
                 self._add_system_msg("No project dir set. Press F3.")
         elif command == "/help":
             self._enter_help()
+        elif command == "/mode":
+            if not arg:
+                self._add_system_msg(f"Mode: {agent.agent_mode}")
+            else:
+                try:
+                    agent.set_agent_mode(arg)
+                    self._add_system_msg(f"Mode: {agent.agent_mode}")
+                except ValueError as e:
+                    self._add_system_msg(str(e))
+        elif command in ("/code", "/plan", "/explore"):
+            try:
+                agent.set_agent_mode(command[1:])
+                self._add_system_msg(f"Mode: {agent.agent_mode}")
+                if arg:
+                    self._add_chat_msg("user", f"[{agent.agent_mode}] {arg}")
+                    self.scroll_offset = 0
+                    self._start_thinking(arg)
+            except ValueError as e:
+                self._add_system_msg(str(e))
+        elif command == "/skills":
+            available = ", ".join(agent.available_skills()) or "none"
+            active = ", ".join(agent.active_skills) or "none"
+            self._add_system_msg(f"Skills: {available}\nActive: {active}")
+        elif command == "/skill":
+            if not arg:
+                self._add_system_msg("Usage: /skill <name> | /skill clear")
+            elif arg.lower() in ("clear", "none", "off"):
+                agent.set_active_skills([])
+                self._add_system_msg("Skills cleared.")
+            else:
+                try:
+                    enabled = agent.toggle_skill(arg.strip())
+                    state = "enabled" if enabled else "disabled"
+                    active = ", ".join(agent.active_skills) or "none"
+                    self._add_system_msg(
+                        f"Skill {arg.strip()} {state}. Active: {active}"
+                    )
+                except ValueError as e:
+                    self._add_system_msg(str(e))
+        elif command == "/status":
+            self._add_system_msg(agent.get_status())
         elif command == "/project":
             if self.working_dir:
                 self._add_system_msg(f"Project: {self.working_dir}")
             else:
                 self._add_system_msg("No project dir set. Press F3.")
+        elif command == "/new-project":
+            if not arg.strip():
+                self._add_system_msg("Usage: /new-project <name>")
+            else:
+                try:
+                    project_dir, created_files = create_project_scaffold(arg.strip())
+                    self._add_system_msg(
+                        f"Created: /{os.path.relpath(project_dir, WORKSPACE_DIR)}\n"
+                        f"Files: {', '.join(created_files)}"
+                    )
+                    self._set_working_dir(project_dir)
+                except ValueError as e:
+                    self._add_system_msg(f"Error: {e}")
         else:
             self._add_system_msg(f"Unknown command: {command}")
 
@@ -371,6 +426,7 @@ class CodingAgentConsole(ServerConsole):
         self.status_msg = "thinking..."
 
         agent = self._get_agent()
+        agent.set_status_callback(self._on_agent_status)
 
         def worker():
             try:
@@ -433,10 +489,14 @@ class CodingAgentConsole(ServerConsole):
 
     def _push_screen(self):
         """DMA-push the current screen/color buffers to the C64."""
-        try:
-            send_screen_data(bytes(self.screen), bytes(self.color))
-        except Exception:
-            logger.debug("Screen push failed (no C64 connected?)", exc_info=True)
+        self.push_screen()  # delegates to ServerConsole.push_screen() which logs at WARNING
+
+    def _on_agent_status(self, msg: str):
+        """Called from worker thread when agent status changes (LLM call or tool)."""
+        logger.info("[CodingAgentConsole] status update: %s", msg)
+        self.status_msg = msg
+        self._full_render()
+        self._push_screen()
 
     # =================================================================
     #  CHAT MESSAGE MANAGEMENT
@@ -588,22 +648,22 @@ class CodingAgentConsole(ServerConsole):
             display = "/" + os.path.relpath(os.path.realpath(self.working_dir), ws_real)
         else:
             display = "(no project)"
-        if self._thinking:
-            right = "thinking..."
-        else:
-            right = "idle"
+
+        right = ""
         # Count files
         if self.working_dir and os.path.isdir(self.working_dir):
             n_files = sum(
-                1 for f in os.listdir(self.working_dir)
-                if f.endswith((".c", ".h"))
+                1 for f in os.listdir(self.working_dir) if f.endswith((".c", ".h"))
             )
-            right = f"{n_files}f {right}"
+            right = f"{n_files}f"
         # Compose status line
-        avail = SCREEN_COLS - len(right) - 1
-        if len(display) > avail:
-            display = "..." + display[-(avail - 3):]
-        status = display.ljust(avail) + " " + right
+        if right:
+            avail = SCREEN_COLS - len(right) - 1
+            if len(display) > avail:
+                display = "..." + display[-(avail - 3) :]
+            status = display.ljust(avail) + " " + right
+        else:
+            status = display[:SCREEN_COLS].ljust(SCREEN_COLS)
         status = status[:SCREEN_COLS]
         self._put_text(STATUS_ROW, 0, status, COL_STATUS_FG, reverse=True)
 
@@ -629,9 +689,14 @@ class CodingAgentConsole(ServerConsole):
 
         # Thinking indicator
         if self._thinking:
-            # Show animated dots on the last line of chat
-            dots = "." * ((len(self._rendered_lines) % 3) + 1)
-            self._put_text(chat_bottom, 0, f"thinking{dots}", COL_THINKING_FG)
+            status_text = (self.status_msg or "thinking...").strip()
+
+            # Keep the classic dot animation only for plain thinking state.
+            if status_text == "thinking...":
+                dots = "." * ((len(self._rendered_lines) % 3) + 1)
+                status_text = f"thinking{dots}"
+
+            self._put_text(chat_bottom, 0, status_text[:SCREEN_COLS], COL_THINKING_FG)
 
     # ── Separator (dynamic row) ──────────────────────────────────────
     def _render_separator(self):
@@ -645,7 +710,9 @@ class CodingAgentConsole(ServerConsole):
         first_input_row = SCREEN_ROWS - input_h  # top row of input area
 
         if self._thinking:
-            self._put_text(first_input_row, 0, INPUT_PROMPT + "(waiting...)", COL_SEPARATOR_FG)
+            self._put_text(
+                first_input_row, 0, INPUT_PROMPT + "(waiting...)", COL_SEPARATOR_FG
+            )
             return
 
         prompt = INPUT_PROMPT
@@ -669,7 +736,7 @@ class CodingAgentConsole(ServerConsole):
                 # Map back to full_text offset
                 line_chars = _CONT_LINE_CHARS
 
-            segment = full_text[line_start:line_start + line_chars]
+            segment = full_text[line_start : line_start + line_chars]
             self._put_text(row, 0, segment, COL_INPUT_FG)
 
         # Draw cursor (reversed character)
@@ -702,11 +769,13 @@ class CodingAgentConsole(ServerConsole):
         else:
             title = "/" + os.path.relpath(cwd_real, ws_real)
         if len(title) > SCREEN_COLS - 2:
-            title = "..." + title[-(SCREEN_COLS - 5):]
+            title = "..." + title[-(SCREEN_COLS - 5) :]
         self._put_text(CHAT_TOP, 0, title, COL_HELP_FG)
 
         # Hint line
-        self._put_text(CHAT_TOP + 1, 0, "RETURN=enter dir  F5=select dir", COL_SEPARATOR_FG)
+        self._put_text(
+            CHAT_TOP + 1, 0, "RETURN=enter dir  F5=select dir", COL_SEPARATOR_FG
+        )
 
         max_visible = CHAT_ROWS - 2  # -2 for title + hint
         for vi in range(max_visible):
@@ -745,10 +814,18 @@ class CodingAgentConsole(ServerConsole):
             " F3              browse/select dir",
             " F8              this help",
             " /clear          clear chat",
+            " /mode [m]       show/set mode",
+            " /code [task]    switch to coder",
+            " /plan [task]    switch to planner",
+            " /explore [q]    switch to explorer",
+            " /skills         list skills",
+            " /skill <name>   toggle skill",
+            " /new-project n  create scaffold",
             " /files          list project files",
             " /compile [f]    compile project",
             " /run            run on C64",
             " /project        show project dir",
+            " /status         show mode/skills",
             " /help           this help",
             "",
             " Browser:",

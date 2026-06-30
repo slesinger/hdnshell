@@ -24,15 +24,15 @@ from typing import Optional, List, Tuple
 from urllib.parse import urljoin
 
 from version import __version__
-from server_console import (
+from sdk.server_console import (
     ServerConsole,
     SCREEN_COLS,
     SCREEN_ROWS,
     SCREEN_SIZE,
     ascii_to_screencode,
 )
-from generate_pet_asc_table import Petscii
-from text_utils import word_wrap
+from sdk.generate_pet_asc_table import Petscii
+from sdk.text_utils import word_wrap
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +40,7 @@ logger = logging.getLogger(__name__)
 # =====================================================================
 #  _PlaywrightWorker — single long-lived thread that owns Playwright
 # =====================================================================
+
 
 class _PlaywrightWorker:
     """Runs all Playwright operations in one dedicated daemon thread.
@@ -55,11 +56,13 @@ class _PlaywrightWorker:
     """
 
     _SENTINEL = object()  # poison-pill to shut down the worker
-    _WARMUP   = object()  # warm-up job: launch browser, don't fetch anything
+    _WARMUP = object()  # warm-up job: launch browser, don't fetch anything
 
     def __init__(self):
         self._job_queue: queue.Queue = queue.Queue()
-        self._thread = threading.Thread(target=self._run, name="playwright-worker", daemon=True)
+        self._thread = threading.Thread(
+            target=self._run, name="playwright-worker", daemon=True
+        )
         self._thread.start()
 
     def warmup(self) -> None:
@@ -104,6 +107,7 @@ class _PlaywrightWorker:
             if browser is not None:
                 return
             from playwright.sync_api import sync_playwright
+
             playwright = sync_playwright().start()
             browser = playwright.chromium.launch(
                 headless=True,
@@ -184,7 +188,7 @@ class _PlaywrightWorker:
                             if (t && t.trim()) {
                                 results.push({
                                     tag: '#text',
-                                    text: t.replace(/\s+/g, ' '),
+                                    text: t.replace(/\\s+/g, ' '),
                                     href: null,
                                     alt: null,
                                     list_index: -1
@@ -335,9 +339,11 @@ _pw_worker = _PlaywrightWorker()
 #  Bookmark persistence — JSON array of URL strings
 # =====================================================================
 
+
 def _bookmarks_path() -> str:
     """Return path to workspace/.config/bookmarks.json."""
     from workspace_init import WORKSPACE_DIR
+
     return os.path.join(WORKSPACE_DIR, ".config", "bookmarks.json")
 
 
@@ -611,7 +617,8 @@ class WebBrowserConsole(ServerConsole):
         # If a home page is configured in server settings, start navigation
         # in a background thread so initialization isn't blocked.
         try:
-            from config_manager import read_config
+            from sdk.config_manager import read_config
+
             cfg = read_config() or {}
             _homepage = (cfg.get("home_page_url") or "").strip()
         except Exception:
@@ -620,7 +627,9 @@ class WebBrowserConsole(ServerConsole):
         if _homepage:
             self.mode = MODE_BROWSE
             # Launch navigation asynchronously
-            threading.Thread(target=lambda: self._navigate(_homepage), daemon=True).start()
+            threading.Thread(
+                target=lambda: self._navigate(_homepage), daemon=True
+            ).start()
         else:
             self.mode = MODE_URL_INPUT
 
@@ -791,8 +800,8 @@ class WebBrowserConsole(ServerConsole):
             # Backspace
             if self.url_cursor > 0:
                 self.url_input = (
-                    self.url_input[:self.url_cursor - 1]
-                    + self.url_input[self.url_cursor:]
+                    self.url_input[: self.url_cursor - 1]
+                    + self.url_input[self.url_cursor :]
                 )
                 self.url_cursor -= 1
 
@@ -839,9 +848,9 @@ class WebBrowserConsole(ServerConsole):
             ch = self._petscii_to_printable(key)
             if ch and len(self.url_input) < MAX_URL_LEN:
                 self.url_input = (
-                    self.url_input[:self.url_cursor]
+                    self.url_input[: self.url_cursor]
                     + ch
-                    + self.url_input[self.url_cursor:]
+                    + self.url_input[self.url_cursor :]
                 )
                 self.url_cursor += 1
 
@@ -928,7 +937,9 @@ class WebBrowserConsole(ServerConsole):
             if self.bookmark_sel < len(self.bookmarks) - 1:
                 self.bookmark_sel += 1
                 # Scroll down if selection moved below visible area
-                visible_bottom = self.bookmark_scroll + CONTENT_ROWS - 2  # -2 for header gap
+                visible_bottom = (
+                    self.bookmark_scroll + CONTENT_ROWS - 2
+                )  # -2 for header gap
                 if self.bookmark_sel > visible_bottom:
                     self.bookmark_scroll = self.bookmark_sel - (CONTENT_ROWS - 2)
 
@@ -1031,7 +1042,8 @@ class WebBrowserConsole(ServerConsole):
             return
         # If a homepage is configured, open the new tab to that URL.
         try:
-            from config_manager import read_config
+            from sdk.config_manager import read_config
+
             cfg = read_config() or {}
             homepage = (cfg.get("home_page_url") or "").strip()
         except Exception:
@@ -1044,7 +1056,9 @@ class WebBrowserConsole(ServerConsole):
             # Open directly to the homepage (navigate asynchronously).
             self.mode = MODE_BROWSE
             self._send_vic_colors(COL_LIGHT_BLUE, COL_BLUE)
-            threading.Thread(target=lambda: self._navigate(homepage), daemon=True).start()
+            threading.Thread(
+                target=lambda: self._navigate(homepage), daemon=True
+            ).start()
             return
 
         # Default: open URL input field for manual entry
@@ -1144,7 +1158,8 @@ class WebBrowserConsole(ServerConsole):
 
         # Send screen update before blocking fetch
         try:
-            from network_helper import send_screen_data
+            from sdk.network_helper import send_screen_data
+
             send_screen_data(self.get_screen_data(), self.get_color_data())
         except Exception:
             pass
@@ -1168,9 +1183,12 @@ class WebBrowserConsole(ServerConsole):
                 f"lines={len(tab.content_lines)}, links={len(tab.links)}"
             )
             # If content is effectively empty, show a helpful message
-            if len(tab.content_lines) <= 1 and all(
-                c == SC_SPACE for c in tab.content_lines[0].chars
-            ) if tab.content_lines else True:
+            if (
+                len(tab.content_lines) <= 1
+                and all(c == SC_SPACE for c in tab.content_lines[0].chars)
+                if tab.content_lines
+                else True
+            ):
                 logger.warning(f"Browser: page has no extractable content: {url}")
                 default_fg = self._contrast_fg(tab.bg_color)
                 tab.content_lines = self._text_to_content_lines(
@@ -1201,7 +1219,8 @@ class WebBrowserConsole(ServerConsole):
         # waiting for the next keypress to trigger handle_keypress re-render.
         self._full_render()
         try:
-            from network_helper import send_screen_data
+            from sdk.network_helper import send_screen_data
+
             send_screen_data(self.get_screen_data(), self.get_color_data())
         except Exception:
             pass
@@ -1222,7 +1241,9 @@ class WebBrowserConsole(ServerConsole):
     #  HTML → C64 CONTENT LINES CONVERTER
     # =================================================================
 
-    def _html_to_c64_lines(self, page_data: dict) -> Tuple[List[ContentLine], List[LinkInfo]]:
+    def _html_to_c64_lines(
+        self, page_data: dict
+    ) -> Tuple[List[ContentLine], List[LinkInfo]]:
         """Convert extracted page data to content lines and links."""
         elements = page_data.get("elements", [])
         lines: List[ContentLine] = []
@@ -1252,7 +1273,6 @@ class WebBrowserConsole(ServerConsole):
             col = 0
 
         def blank_line():
-            nonlocal last_was_blank
             if not last_was_blank:
                 flush_line()
 
@@ -1332,14 +1352,16 @@ class WebBrowserConsole(ServerConsole):
 
             # Register link — track first and last row for multi-line links
             link_row_end = len(lines)
-            links.append(LinkInfo(
-                url=href or "",
-                text=text,
-                row_start=link_row_start,
-                row_end=link_row_end,
-                col_start=link_col_start,
-                col_end=col,
-            ))
+            links.append(
+                LinkInfo(
+                    url=href or "",
+                    text=text,
+                    row_start=link_row_start,
+                    row_end=link_row_end,
+                    col_start=link_col_start,
+                    col_end=col,
+                )
+            )
 
         # Process elements
         for elem in elements:
@@ -1452,10 +1474,12 @@ class WebBrowserConsole(ServerConsole):
 
         # Ensure at least one line
         if not lines:
-            lines.append(ContentLine(
-                chars=[SC_SPACE] * SCREEN_COLS,
-                colors=[default_fg] * SCREEN_COLS,
-            ))
+            lines.append(
+                ContentLine(
+                    chars=[SC_SPACE] * SCREEN_COLS,
+                    colors=[default_fg] * SCREEN_COLS,
+                )
+            )
 
         return lines, links
 
@@ -1512,7 +1536,9 @@ class WebBrowserConsole(ServerConsole):
 
             # Opening bracket (reverse for active)
             if col < SCREEN_COLS:
-                self.screen[col] = SC_LBRACKET if not is_active else (SC_LBRACKET | SC_REVERSE_BIT)
+                self.screen[col] = (
+                    SC_LBRACKET if not is_active else (SC_LBRACKET | SC_REVERSE_BIT)
+                )
                 self.color[col] = fg
                 col += 1
 
@@ -1529,7 +1555,9 @@ class WebBrowserConsole(ServerConsole):
 
             # Closing bracket
             if col < SCREEN_COLS:
-                self.screen[col] = SC_RBRACKET if not is_active else (SC_RBRACKET | SC_REVERSE_BIT)
+                self.screen[col] = (
+                    SC_RBRACKET if not is_active else (SC_RBRACKET | SC_REVERSE_BIT)
+                )
                 self.color[col] = fg
                 col += 1
 
@@ -1616,7 +1644,9 @@ class WebBrowserConsole(ServerConsole):
     def _render_url_input(self):
         # Row 0: "HDNSH WEB BROWSER" header
         header = "HDNSH WEB BROWSER"
-        self._put_text(0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True)
+        self._put_text(
+            0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True
+        )
 
         # Row 2: "URL:" label
         self._put_text(2, 0, "URL:", COL_URL_LABEL_FG)
@@ -1626,7 +1656,7 @@ class WebBrowserConsole(ServerConsole):
         visible_start = 0
         if self.url_cursor > SCREEN_COLS - 1:
             visible_start = self.url_cursor - SCREEN_COLS + 1
-        visible_url = self.url_input[visible_start: visible_start + SCREEN_COLS]
+        visible_url = self.url_input[visible_start : visible_start + SCREEN_COLS]
 
         for i, ch in enumerate(visible_url):
             sc = ascii_to_screencode(ord(ch)) if 32 <= ord(ch) < 127 else SC_SPACE
@@ -1638,7 +1668,9 @@ class WebBrowserConsole(ServerConsole):
 
         # Show cursor at end if past last char
         cursor_screen_pos = self.url_cursor - visible_start
-        if 0 <= cursor_screen_pos < SCREEN_COLS and cursor_screen_pos >= len(visible_url):
+        if 0 <= cursor_screen_pos < SCREEN_COLS and cursor_screen_pos >= len(
+            visible_url
+        ):
             pos = 3 * SCREEN_COLS + cursor_screen_pos
             self.screen[pos] = SC_SPACE | SC_REVERSE_BIT
             self.color[pos] = COL_URL_INPUT_FG
@@ -1677,7 +1709,9 @@ class WebBrowserConsole(ServerConsole):
     def _render_bookmarks(self):
         # Header
         header = f"BOOKMARKS ({len(self.bookmarks)})"
-        self._put_text(0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True)
+        self._put_text(
+            0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True
+        )
         # Fill row 0
         for c in range(SCREEN_COLS):
             if self.screen[c] == SC_SPACE:
@@ -1701,7 +1735,7 @@ class WebBrowserConsole(ServerConsole):
                 fg = COL_WHITE if is_sel else COL_CYAN
                 url = self.bookmarks[bi] or "(empty)"
                 entry = f"{bi + 1:2d}. {url[:SCREEN_COLS - 5]}"
-                self._put_text(row, 1, entry[:SCREEN_COLS - 2], fg, reverse=is_sel)
+                self._put_text(row, 1, entry[: SCREEN_COLS - 2], fg, reverse=is_sel)
 
         # Status bar
         help_text = "RET=Go CTRL+N=Add CTRL+W=Del F2=Back"
@@ -1715,7 +1749,9 @@ class WebBrowserConsole(ServerConsole):
         history = self.tab.history
         # Header
         header = f"HISTORY ({len(history)})"
-        self._put_text(0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True)
+        self._put_text(
+            0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True
+        )
         # Fill row 0
         for c in range(SCREEN_COLS):
             if self.screen[c] == SC_SPACE:
@@ -1737,7 +1773,7 @@ class WebBrowserConsole(ServerConsole):
                 fg = COL_WHITE if is_sel else COL_CYAN
                 url = history[hi] or "(empty)"
                 entry = f"{hi + 1:2d}. {url[:SCREEN_COLS - 5]}"
-                self._put_text(row, 1, entry[:SCREEN_COLS - 2], fg, reverse=is_sel)
+                self._put_text(row, 1, entry[: SCREEN_COLS - 2], fg, reverse=is_sel)
 
         # Status bar
         help_text = "RET=Go CTRL+W=Del F4=Back"
@@ -1750,7 +1786,9 @@ class WebBrowserConsole(ServerConsole):
     def _render_tab_list(self):
         # Header
         header = f"TABS ({len(self.tabs)}/{MAX_TABS})"
-        self._put_text(0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True)
+        self._put_text(
+            0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True
+        )
         # Fill row 0
         for c in range(SCREEN_COLS):
             if self.screen[c] == SC_SPACE:
@@ -1763,14 +1801,18 @@ class WebBrowserConsole(ServerConsole):
                 break
             is_sel = i == self.tab_list_sel
             is_active = i == self.active_tab_idx
-            fg = COL_WHITE if is_sel else (COL_TAB_ACTIVE if is_active else COL_TAB_INACTIVE)
+            fg = (
+                COL_WHITE
+                if is_sel
+                else (COL_TAB_ACTIVE if is_active else COL_TAB_INACTIVE)
+            )
 
             # Format: [N] Title - url
             marker = ">" if is_active else " "
             title = (tab.title or "New Tab")[:15]
             url = (tab.url or "about:blank")[:20]
             entry = f"{marker}{i + 1}. {title} - {url}"
-            self._put_text(row, 1, entry[:SCREEN_COLS - 2], fg, reverse=is_sel)
+            self._put_text(row, 1, entry[: SCREEN_COLS - 2], fg, reverse=is_sel)
 
         # Help row
         help_text = "RET=Switch CTRL+W=Close CTRL+N=New"
@@ -1783,7 +1825,9 @@ class WebBrowserConsole(ServerConsole):
     def _render_help(self):
         # Header (row 0) — full reverse bar
         header = "BROWSER HELP"
-        self._put_text(0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True)
+        self._put_text(
+            0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True
+        )
         for c in range(SCREEN_COLS):
             if self.screen[c] == SC_SPACE:
                 self.screen[c] = SC_SPACE | SC_REVERSE_BIT
@@ -1816,11 +1860,16 @@ class WebBrowserConsole(ServerConsole):
                     # Split at longest run of spaces separating key from description
                     parts = stripped.split("  ", 1)
                     if len(parts) == 2 and parts[0].strip():
-                        key_part = text[:indent + len(parts[0])]
+                        key_part = text[: indent + len(parts[0])]
                         desc_part = "  " + parts[1]
                         self._put_text(row, 0, key_part[:SCREEN_COLS], COL_WHITE)
                         desc_start = indent + len(parts[0])
-                        self._put_text(row, desc_start, desc_part[:SCREEN_COLS - desc_start], COL_LIGHT_GREY)
+                        self._put_text(
+                            row,
+                            desc_start,
+                            desc_part[: SCREEN_COLS - desc_start],
+                            COL_LIGHT_GREY,
+                        )
                     else:
                         self._put_text(row, 0, text[:SCREEN_COLS], COL_HELP_FG)
                 else:
@@ -1835,7 +1884,9 @@ class WebBrowserConsole(ServerConsole):
 
         # Status bar
         help_status = "UP/DN=Scroll  F3/F5=Page  F8/STOP=Close"
-        self._put_text(STATUS_ROW, 0, help_status[:SCREEN_COLS], COL_STATUS_FG, reverse=True)
+        self._put_text(
+            STATUS_ROW, 0, help_status[:SCREEN_COLS], COL_STATUS_FG, reverse=True
+        )
         for c in range(len(help_status), SCREEN_COLS):
             self.screen[STATUS_ROW * SCREEN_COLS + c] = SC_SPACE | SC_REVERSE_BIT
             self.color[STATUS_ROW * SCREEN_COLS + c] = COL_STATUS_FG
@@ -1869,10 +1920,16 @@ class WebBrowserConsole(ServerConsole):
                 cl.chars[i] = _char_to_screencode(ch)
                 cl.colors[i] = fg
             lines.append(cl)
-        return lines if lines else [ContentLine(
-            chars=[SC_SPACE] * SCREEN_COLS,
-            colors=[fg] * SCREEN_COLS,
-        )]
+        return (
+            lines
+            if lines
+            else [
+                ContentLine(
+                    chars=[SC_SPACE] * SCREEN_COLS,
+                    colors=[fg] * SCREEN_COLS,
+                )
+            ]
+        )
 
     @staticmethod
     def _petscii_to_printable(petscii: int) -> Optional[str]:
@@ -1885,7 +1942,8 @@ class WebBrowserConsole(ServerConsole):
     def _send_vic_colors(self, border: int, background: int):
         """DMA-write border ($D020) and background ($D021) colours to C64."""
         try:
-            from network_helper import send_vic_colors
+            from sdk.network_helper import send_vic_colors
+
             send_vic_colors(border & 0x0F, background & 0x0F)
         except Exception as e:
             logger.warning(f"Could not send VIC colours: {e}")
