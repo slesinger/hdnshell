@@ -819,6 +819,9 @@ class TelegramChatConsole(ServerConsole):
         self._typing_anim_frame: int = 0  # incremented every _full_render call
         self._last_typing_sent_by_chat: dict = {}  # chat_id -> monotonic timestamp
         self._typing_send_interval_sec: float = 3.0
+        self._outgoing_typing_chat_id: int = 0
+        self._outgoing_typing_last_sent: float = 0.0
+        self._outgoing_typing_interval_sec: float = 3.0
 
         # Contacts state
         self.contacts: List[ContactEntry] = []
