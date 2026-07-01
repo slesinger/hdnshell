@@ -99,8 +99,8 @@ Interactive controls:
 List/data widgets:
 - List Box / Scroll List: vertical items, one selected row.
 	- Look: one item per row, selected row highlighted by color/inverse.
-- Table/Grid (future optional widget): fixed columns with clipped text.
-	- Look: headers + row highlight; no heavy borders by default.
+- Table/Grid: fixed columns with clipped text, header bar, one selected row.
+	- Look: reverse-video header bar + per-row selection highlight; columns padded to fixed widths with single-cell gutters. Enabled with `TUI_ENABLE_TABLE` (default on).
 - Scrollbar (vertical and optional horizontal): track + thumb.
 	- Look: track from repeated character, thumb from inverse block/space.
 

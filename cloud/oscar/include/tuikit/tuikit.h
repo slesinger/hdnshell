@@ -26,6 +26,9 @@
 #ifndef TUI_ENABLE_DROPDOWN_BUTTON
 #define TUI_ENABLE_DROPDOWN_BUTTON    1
 #endif
+#ifndef TUI_ENABLE_TABLE
+#define TUI_ENABLE_TABLE              1
+#endif
 
 #if !defined(TUI_THEME_TERMINAL_GREEN) && !defined(TUI_THEME_PAPER_UI)
 #define TUI_THEME_CLASSIC_BLUE        1
@@ -77,7 +80,8 @@ typedef enum {
 	TUI_WIDGET_TEXT_AREA,
 	TUI_WIDGET_DIALOG,
 	TUI_WIDGET_SEPARATOR,
-	TUI_WIDGET_PROGRESS
+	TUI_WIDGET_PROGRESS,
+	TUI_WIDGET_TABLE
 } tui_widget_type_t;
 
 typedef enum {
@@ -224,6 +228,13 @@ byte tui_dropdown_get_selected(const tui_widget_t * w);
 void tui_scrollbar_set_range(tui_widget_t * w, byte total, byte visible, byte top);
 void tui_scrollbar_set_value(tui_widget_t * w, byte top);
 byte tui_scrollbar_get_value(const tui_widget_t * w);
+
+void tui_table_set_columns(tui_widget_t * w, const char * const * headers, const byte * widths, byte col_count);
+void tui_table_set_cells(tui_widget_t * w, const char * const * cells, byte row_count);
+void tui_table_set_selected(tui_widget_t * w, byte row);
+byte tui_table_get_selected(const tui_widget_t * w);
+void tui_table_set_scroll(tui_widget_t * w, byte top);
+byte tui_table_get_scroll(const tui_widget_t * w);
 
 void tui_dialog_set_message(tui_widget_t * w, const char * message);
 void tui_dialog_set_buttons(tui_widget_t * w, const char * const * labels, byte count);

@@ -31,6 +31,11 @@ static void tui_data_clear(byte index)
 	d->buffer = nullptr;
 	d->buffer_size = 0;
 	d->cursor = 0;
+#if TUI_ENABLE_TABLE
+	d->headers = nullptr;
+	d->col_widths = nullptr;
+	d->col_count = 0;
+#endif
 	for (i = 0; i < TUI_MAX_MENU_ITEMS; ++i) {
 		d->dropdown[i] = TUI_NONE;
 		d->shortcut_key[i] = 0;
@@ -94,7 +99,7 @@ void tui_widget_init(tui_widget_t * widget, byte type, byte x, byte y, byte w, b
 	widget->handler = nullptr;
 	if (type == TUI_WIDGET_BUTTON || type == TUI_WIDGET_DROPDOWN_BUTTON || type == TUI_WIDGET_CHECKBOX ||
 		type == TUI_WIDGET_RADIO || type == TUI_WIDGET_MENU_BAR || type == TUI_WIDGET_DROPDOWN ||
-		type == TUI_WIDGET_LISTBOX || type == TUI_WIDGET_TEXT_INPUT || type == TUI_WIDGET_DIALOG)
+		type == TUI_WIDGET_LISTBOX || type == TUI_WIDGET_TABLE || type == TUI_WIDGET_TEXT_INPUT || type == TUI_WIDGET_DIALOG)
 		widget->flags |= TUI_FLAG_CAN_FOCUS;
 }
 

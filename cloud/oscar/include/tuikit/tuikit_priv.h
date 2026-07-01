@@ -40,6 +40,11 @@ typedef struct {
 	char * buffer;
 	byte buffer_size;
 	byte cursor;
+#if TUI_ENABLE_TABLE
+	const char * const * headers;
+	const byte * col_widths;
+	byte col_count;
+#endif
 	byte dropdown[TUI_MAX_MENU_ITEMS];
 	byte shortcut_key[TUI_MAX_MENU_ITEMS];
 	byte shortcut_mod[TUI_MAX_MENU_ITEMS];

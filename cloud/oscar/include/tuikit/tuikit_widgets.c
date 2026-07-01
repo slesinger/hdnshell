@@ -208,6 +208,55 @@ static void tui_draw_scrollbar(tui_context_t * ctx, tui_widget_t * w)
 		tui_put_raw(ctx, w->x, w->y + i, i == thumb ? TUI_SC_THUMB : TUI_SC_TRACK, ctx->theme->border);
 }
 
+#if TUI_ENABLE_TABLE
+static void tui_draw_table(tui_context_t * ctx, tui_widget_t * w)
+{
+	tui_widget_data_t * d = tui_data_get(w);
+	byte row, item, visible, cx, c, cw, k, ch, sel, hdr_color, cell_color;
+	const char * text;
+	tui_draw_frame(ctx, w->x, w->y, w->w, w->h, d ? d->text : nullptr, ctx->theme->border, ctx->theme->panel_bg);
+	if (!d || !d->col_widths || !d->col_count || w->h < 4)
+		return;
+	hdr_color = ctx->theme->focus_bg;
+	cx = w->x + 1;
+	for (c = 0; c < d->col_count; ++c) {
+		cw = d->col_widths[c];
+		text = d->headers ? d->headers[c] : nullptr;
+		for (k = 0; k < cw && cx + k < w->x + w->w - 1; ++k) {
+			ch = (text && text[k]) ? text[k] : TUI_SC_SPACE;
+			if (text && !text[k])
+				text = nullptr;
+			tui_put_raw(ctx, cx + k, w->y + 1, tui_reverse_ch(ch), hdr_color);
+		}
+		cx += cw + 1;
+	}
+	visible = w->h - 3;
+	for (row = 0; row < visible; ++row) {
+		item = d->top + row;
+		if (item >= d->count)
+			continue;
+		sel = item == d->selected;
+		cell_color = sel ? ctx->theme->selection_bg : ctx->theme->text;
+		if (sel) {
+			for (k = 0; k < w->w - 2; ++k)
+				tui_put_raw(ctx, w->x + 1 + k, w->y + 2 + row, tui_reverse_ch(TUI_SC_SPACE), cell_color);
+		}
+		cx = w->x + 1;
+		for (c = 0; c < d->col_count; ++c) {
+			cw = d->col_widths[c];
+			text = d->items ? d->items[(word)item * d->col_count + c] : nullptr;
+			for (k = 0; k < cw && cx + k < w->x + w->w - 1; ++k) {
+				ch = (text && text[k]) ? text[k] : TUI_SC_SPACE;
+				if (text && !text[k])
+					text = nullptr;
+				tui_put_raw(ctx, cx + k, w->y + 2 + row, sel ? tui_reverse_ch(ch) : ch, cell_color);
+			}
+			cx += cw + 1;
+		}
+	}
+}
+#endif
+
 static void tui_draw_text_input(tui_context_t * ctx, tui_widget_t * w)
 {
 	tui_widget_data_t * d = tui_data_get(w);
@@ -357,6 +406,11 @@ void tui_draw_widget(tui_context_t * ctx, byte index)
 		case TUI_WIDGET_PROGRESS:
 			tui_draw_progress(ctx, w);
 			break;
+#if TUI_ENABLE_TABLE
+		case TUI_WIDGET_TABLE:
+			tui_draw_table(ctx, w);
+			break;
+#endif
 	}
 	w->flags &= ~TUI_FLAG_DIRTY;
 }
@@ -440,6 +494,61 @@ byte tui_listbox_get_scroll(const tui_widget_t * w)
 	tui_widget_data_t * d = tui_data_get(w);
 	return d ? d->top : 0;
 }
+
+#if TUI_ENABLE_TABLE
+void tui_table_set_columns(tui_widget_t * w, const char * const * headers, const byte * widths, byte col_count)
+{
+	tui_widget_data_t * d = tui_data_get(w);
+	if (d) {
+		d->headers = headers;
+		d->col_widths = widths;
+		d->col_count = col_count;
+	}
+	tui_invalidate(w);
+}
+
+void tui_table_set_cells(tui_widget_t * w, const char * const * cells, byte row_count)
+{
+	tui_widget_data_t * d = tui_data_get(w);
+	if (d) {
+		d->items = cells;
+		d->count = row_count;
+		d->total = row_count;
+	}
+	tui_invalidate(w);
+}
+
+void tui_table_set_selected(tui_widget_t * w, byte row)
+{
+	tui_widget_data_t * d = tui_data_get(w);
+	if (d) {
+		d->selected = row;
+		if (row < d->top)
+			d->top = row;
+	}
+	tui_invalidate(w);
+}
+
+byte tui_table_get_selected(const tui_widget_t * w)
+{
+	tui_widget_data_t * d = tui_data_get(w);
+	return d ? d->selected : 0;
+}
+
+void tui_table_set_scroll(tui_widget_t * w, byte top)
+{
+	tui_widget_data_t * d = tui_data_get(w);
+	if (d)
+		d->top = top;
+	tui_invalidate(w);
+}
+
+byte tui_table_get_scroll(const tui_widget_t * w)
+{
+	tui_widget_data_t * d = tui_data_get(w);
+	return d ? d->top : 0;
+}
+#endif
 
 void tui_text_input_set_buffer(tui_widget_t * w, char * buf, byte size)
 {

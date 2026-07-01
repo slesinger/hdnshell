@@ -169,6 +169,24 @@ byte tui_widget_default_event(tui_context_t * ctx, tui_widget_t * w, const tui_e
 				return 1;
 			}
 			break;
+#if TUI_ENABLE_TABLE
+		case TUI_WIDGET_TABLE:
+			if (evt->key == TUI_KEY_CURSOR_DOWN && d->selected + 1 < d->count) {
+				++d->selected;
+				if (d->selected >= d->top + w->h - 3)
+					++d->top;
+				tui_invalidate(w);
+				return 1;
+			}
+			if (evt->key == TUI_KEY_CURSOR_UP && d->selected) {
+				--d->selected;
+				if (d->selected < d->top)
+					--d->top;
+				tui_invalidate(w);
+				return 1;
+			}
+			break;
+#endif
 		case TUI_WIDGET_TEXT_INPUT:
 			tui_text_insert(w, evt->key);
 			return 1;
@@ -272,6 +290,20 @@ byte tui_dispatch_mouse(tui_context_t * ctx, byte x, byte y, byte buttons)
 	}
 	if (hit != TUI_NONE && tui_widget_is_focusable(&ctx->widgets[hit]))
 		tui_focus_set(ctx, hit);
+#if TUI_ENABLE_TABLE
+	if (hit != TUI_NONE && ctx->widgets[hit].type == TUI_WIDGET_TABLE) {
+		tui_widget_data_t * td = tui_data_get(&ctx->widgets[hit]);
+		byte ty = ctx->widgets[hit].y;
+		byte r;
+		if (td && y >= ty + 2 && y < ty + ctx->widgets[hit].h - 1) {
+			r = td->top + (y - (ty + 2));
+			if (r < td->count) {
+				td->selected = r;
+				ctx->widgets[hit].flags |= TUI_FLAG_DIRTY;
+			}
+		}
+	}
+#endif
 	if (pressed || released) {
 		evt.type = pressed ? TUI_EVT_MOUSE_DOWN : TUI_EVT_MOUSE_UP;
 		evt.key = 0;

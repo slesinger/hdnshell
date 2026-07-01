@@ -323,6 +323,40 @@ Behavior notes:
 Less intuitive detail:
 - `set_scroll` does not clamp `top`; caller should provide sane values.
 
+### 6.6a Table (Grid)
+
+```c
+void tui_table_set_columns(tui_widget_t * w, const char * const * headers,
+                           const byte * widths, byte col_count);
+void tui_table_set_cells(tui_widget_t * w, const char * const * cells, byte row_count);
+void tui_table_set_selected(tui_widget_t * w, byte row);
+byte tui_table_get_selected(const tui_widget_t * w);
+void tui_table_set_scroll(tui_widget_t * w, byte top);
+byte tui_table_get_scroll(const tui_widget_t * w);
+```
+
+Config:
+- Compiled when `TUI_ENABLE_TABLE` is non-zero (default `1`). Adds `headers`, `col_widths`, `col_count` to the shared widget data; define `TUI_ENABLE_TABLE 0` to compile it (and those fields) out.
+
+Arguments:
+- `headers`: array of `col_count` column-title strings (screencodes). May be `NULL` for no header text (header bar still drawn).
+- `widths`: array of `col_count` byte column widths in cells.
+- `col_count`: number of columns.
+- `cells`: flat row-major array of `row_count * col_count` cell strings, indexed `row * col_count + col`. Borrowed pointers (not copied).
+- `row_count`: number of data rows.
+- `selected`, `top`: selected/first-visible data row indices.
+
+Behavior notes:
+- Bordered widget (optional title via `tui_button_set_label`). Row 0 inside the frame is a reverse-video header bar (`focus_bg` color); selected data row is highlighted with `selection_bg`.
+- Visible data rows = `h - 3` (top border, header, bottom border). Size the widget so `h >= 4`.
+- Cursor up/down move the selection and auto-scroll; Return/Space emit `TUI_EVT_ACTIVATE` so the app reads `tui_table_get_selected`.
+- Left mouse click selects the data row under the pointer; release activates.
+- Each cell is clipped/padded to its column width with a one-cell gutter between columns. The app must size columns to fit `w - 2`.
+
+Less intuitive detail:
+- Sync an optional `TUI_WIDGET_SCROLLBAR` with `visible = h - 3` and the table's `top` value, exactly like the list box pattern.
+- Column-cursor (per-cell horizontal focus) is intentionally not implemented in this version.
+
 ### 6.7 Scrollbar
 
 ```c

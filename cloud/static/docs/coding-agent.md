@@ -123,7 +123,6 @@ Type these commands at the input prompt and press `RETURN`:
 | `/skills` | List available skills and show which ones are active |
 | `/skill <name>` | Toggle a skill on or off |
 | `/skill clear` | Disable all active skills |
-| `/new-project <name>` | Create `workspace/oscar/<name>` with starter `.c` and `.md` files and select it as the active project |
 | `/files` | List all source files in the current project directory |
 | `/compile [file]` | Compile the project (optionally specify the main `.c` file) |
 | `/run` | Upload the last compiled `.prg` to the C64 Ultimate and run it |
@@ -136,7 +135,6 @@ Type these commands at the input prompt and press `RETURN`:
 - `/plan refactor the sprite loader into separate .c and .h files`
 - `/explore where is DMA screen upload handled`
 - `/code add joystick input to the current project`
-- `/new-project sprite-lab`
 - `/skill sprite_workflow`
 - `/status`
 
