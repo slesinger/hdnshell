@@ -168,6 +168,11 @@ class C64Server:
                     response_data = CommandHandler.handle_keypress(data)
                 elif cmd_id == CommandID.TEXT_INPUT:
                     response_data = CommandHandler.handle_text_input(data, session_id)
+                elif cmd_id == CommandID.COMMAND:
+                    # Local-shell commands (screen save/restore via DMA)
+                    response_data = CommandHandler.handle_local_command(
+                        data, session_id
+                    )
                 else:
                     logger.warning(f"Unknown command ID: {cmd_id}")
 

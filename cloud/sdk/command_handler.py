@@ -18,6 +18,10 @@ MAGIC_BYTES = bytes([0xFE])
 
 # Server command IDs (sent inside a COMMAND packet)
 SERVER_CMD_GET_SCREEN = 0x01
+# Console-0 (local shell) commands: the wedge asks the server to snapshot /
+# restore the C64's own screen via DMA, so the C64 side needs no buffer RAM.
+SERVER_CMD_SAVE_SCREEN = 0x02
+SERVER_CMD_RESTORE_SCREEN = 0x03
 
 
 class CommandID:
@@ -144,6 +148,53 @@ class CommandHandler:
         """
         dispatcher = CommandHandler.get_dispatcher()
         return dispatcher.dispatch(data, session_id)
+
+    @staticmethod
+    def handle_local_command(data: bytes, session_id: int = 0) -> Optional[bytes]:
+        """
+        Handle a COMMAND packet for console 0 (the local C64 shell).
+
+        SERVER_CMD_SAVE_SCREEN: DMA-read the C64's screen ($0400) and colour
+        ($D800) RAM and stash both in the session state.
+        SERVER_CMD_RESTORE_SCREEN: DMA-write the stashed buffers back.
+
+        Both return a short ack only after the DMA transfer has completed --
+        the C64 wedge blocks on that ack to sequence save -> screen switch
+        -> restore correctly (each packet arrives on its own connection, so
+        without the ack the transfers could race).
+
+        Args:
+            data:       Command payload (first byte is the command code).
+            session_id: Client session ID (stable per client IP).
+
+        Returns:
+            Raw PETSCII ack bytes, or None for unknown commands.
+        """
+        from .network_helper import dma_read_memory, read_last_c64_ip
+        from .shared_state import get_session_state_copy, update_session_state
+
+        state = get_session_state_copy(session_id)
+        host = state.get("client_ip") or read_last_c64_ip()
+
+        if data[0] == SERVER_CMD_SAVE_SCREEN:
+            logger.info(f"SAVE_SCREEN for session {session_id} (host {host})")
+            screen = dma_read_memory(host, 0x0400, 1000)
+            color = dma_read_memory(host, 0xD800, 1000)
+            update_session_state(session_id, saved_screen=screen, saved_color=color)
+            return b"00"
+
+        if data[0] == SERVER_CMD_RESTORE_SCREEN:
+            logger.info(f"RESTORE_SCREEN for session {session_id} (host {host})")
+            screen = state.get("saved_screen")
+            color = state.get("saved_color")
+            if screen and color:
+                send_screen_data(screen, color)
+            else:
+                logger.warning("RESTORE_SCREEN with no saved screen for session")
+            return b"00"
+
+        logger.warning(f"Unknown local command 0x{data[0]:02X}")
+        return None
 
     @staticmethod
     def create_response(response_type: int, data: bytes) -> bytes:

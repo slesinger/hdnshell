@@ -22,3 +22,24 @@ You can still use following prefixes to specify addresses in different formats:
 `g <address>` — Start executing machine code from the specified address.
 
 `r` — Display CPU registers (A, X, Y, PC, SP, P) and flags.
+
+## Saving and Restoring Memory Blocks (`memcpy`)
+
+`memcpy $start-$end filename` — Save the memory range `$start` to `$end` (inclusive) to `filename` on the current device.
+
+`memcpy filename $start` — Load `filename` back into memory starting at `$start`. This is a **relocatable** load: any load address stored inside the file itself is ignored, so you can save a block from one address and restore it somewhere else entirely.
+
+Examples:
+
+```
+memcpy $c000-$cfff screendump.bin
+memcpy screendump.bin $4000
+```
+
+The device follows the [current device](dos.md#current-device) (`#8`/`#9`/`#s`/`#h`/`#t`/`#f`), or you can target a specific device for just this one command by prefixing the filename with `#<device letter>:`, without switching your current device:
+
+```
+memcpy $1000-$2000 #t:backup.bin
+```
+
+`memcpy` is not available on the `c` (CSDB) or `n` (network drive) virtual devices — there is nothing on the server side for a raw memory range to be copied to or from there. Use `cp` (see [File Operations](file-operations.md)) to move whole files between those and the Ultimate filesystem instead.

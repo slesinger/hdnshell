@@ -2,13 +2,19 @@
 
 ## Commands
 
-`info` — Display detailed information about the system status, including cloud connection, Ultimate storage status, and more.
+`status` — Display the firmware identify string, local IP/netmask/gateway, and whether the cloud server is reachable.
 
 `time` — Display the current time from the C64U RTC (Real Time Clock). It may take a moment to fetch the time from the NTP Internet time.
 
 `reset` — Reset the C64, similar to pressing the reset button. Memory is preserved.
 
-`frz` — Freeze the current state of the CLI and enter the Ultimane menu.
+`menu` — Freeze the current state of the CLI and enter the Ultimate menu.
+
+`help` — Ask the cloud a question, or (if unreachable) print a short local pointer.
+
+For directory navigation (`cd`, `pwd`, `ll`/`dir`, `#<device>`), disk images (`mnt`/`umnt`), and file transfer (`mkdir`, `cp`), see [Navigating Disk Drives and Directories](dos.md). For saving/loading raw memory blocks, see [Memory Operations](memory-operations.md).
+
+Anything typed that isn't one of the commands above (or valid BASIC) is forwarded to the cloud chatbot automatically — there's no need to prefix it with anything.
 
 ## Terminal buffer
 

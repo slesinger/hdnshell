@@ -2421,7 +2421,22 @@ line_tap:
     plp
     jmp bank01_api_02
 lt_notempty:
-    plp                    // restore flags -- we're not scanning for a keyword anymore
+    // NOTE: flags stay pushed (not PLP'd here) -- bank01_sub_8407 branches on
+    // the CHRGET-derived carry (BCS = non-digit first char -> keyword scan,
+    // BCC = digit first char -> program-line entry) immediately on entry, but
+    // every CPY/CMP below (shadow-copy loop, IERROR-install checks) clobbers
+    // carry before we get there. PLP is deferred to just before the final jmp
+    // so bank01_sub_8407 sees the original flags, not leftover comparison
+    // residue. Root-caused 2026-07-04 hardware report: the very first typed
+    // line after a fresh boot silently vanished (no output, no READY) because
+    // lt_install's one-time vector-comparison chain left carry clear (an
+    // incidental byproduct of comparing the stock IERROR vector against
+    // ie_ram), sending "?10" down the digit/program-line path instead of the
+    // keyword-scan path; lt_installed's steady-state fast path happened to
+    // always leave carry set instead, which is why retyping the same line
+    // worked. Restoring flags right before the jump fixes both the first-line
+    // case and the latent bug (actual program-line entry, e.g. typing "10
+    // PRINT") that the always-set steady-state carry would otherwise break.
 
     // --- shadow-copy the raw typed line into RAM (before BASIC crunches it) ---
     ldy #$00
@@ -2460,6 +2475,8 @@ lt_ierrcopy:
     lda #>ie_ram
     sta $0301
 lt_installed:
+    jsr ie_ram + (xb2_rom - ierror_stub_rom)   // every line: (re)install the CINV console-switch hook via bank05
+    plp                      // restore the original CHRGET-derived flags now, right before bank01_sub_8407 needs them
     jmp bank01_sub_8407      // always fall through -- we never intercept here anymore
 
 // Relocated verbatim to ie_ram ($cf00) on first install and left resident --
@@ -2490,6 +2507,24 @@ ie_direct:
     jmp ($0302)               // re-enter BASIC's main loop cleanly (same convention
                                // the old hondani_check used) -- never falls through
                                // to the stock error message for this case
+
+// xb2 -- second entry in the same relocated RAM block ($cf00+): a fixed
+// trampoline that pages in bank05, calls its wedge_install entry ($9015 in
+// bank05's jump table: installs/refreshes the CINV keyboard-watch stub for
+// C=+digit console switching), and pages bank01 back in. It must run from
+// RAM because the $de00 write repages the very ROM window this template
+// lives in (same reasoning as the retired xb_stub, see wedge-analysis.md).
+// Called via jsr from lt_installed on every non-empty line, so the $0314
+// hook survives anything that resets the vector (RUN/STOP+RESTORE etc.).
+xb2_rom:
+    sei
+    lda #$88                 // bank05 select value
+    sta $de00
+    jsr $9015                // bank05 wedge_install (fixed jump-table entry)
+    lda #$08                 // bank01 select value -- restore
+    sta $de00
+    cli
+    rts
 ierror_stub_rom_end:
     .fill $9e10 - ierror_stub_rom_end, $00    // remaining confirmed-free bytes, unused so far
     .byte $a9, $20, $8d, $00    // data $9e10 (unchanged original code resumes here)

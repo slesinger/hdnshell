@@ -11,6 +11,7 @@ There are following devices available:
 - `t` — Temp folder in Ultimate storage
 - `s` — SoftIEC device (like SD2IEC) emulation storage in Ultimate
 - `c` — CSDB.dk API navigation
+- `n` — Network drive: browse and transfer files from the hondani cloud server's own workspace folder, as if it were just another local drive
 
 ## Current Device
 
@@ -56,12 +57,27 @@ Examples:
 
 ## Mounting and Unmounting Disk Images
 
-The `mount` command can mount disk images (D64/D71/D81) to a device 8 or 9. This allows you to use the contents of the disk image as if it were a real disk drive.
+The `mnt` command can mount disk images (D64/D71/D81) to device 8. This allows you to use the contents of the disk image as if it were a real disk drive.
 
 - `mnt myimage.d64` — Mount image in current directory
 - `mnt mydir/myimage.d64` — Mount image in subdirectory
 - `mnt /mydir/myimage.d64` — Mount image absolute from root
 - `umnt` — Unmount disk image (return to SD card directory)
+
+## Creating Directories
+
+`mkdir <name>` — Create a directory in the current location. Only supported on the Ultimate filesystem (`h`/`t`/`f`).
+
+## Copying Files (`cp`)
+
+`cp <name>` — Copy a file between the Ultimate filesystem's `/temp` folder and whichever server-backed device is currently active:
+
+- On `n` (network drive): downloads `<name>` from the current network-drive directory into `/temp`.
+- On `c` (CSDB): downloads `<name>` (e.g. a release's `.zip`) into `/temp` — see [CSDB](csdb.md) for the full workflow.
+- On `h`/`t`/`f`: uploads `<name>` from `/temp` into the current directory of whichever server-backed device (`n` or `c`) you last had active.
+- Not supported on `8`/`9`/`s` (no server-side session to bridge to).
+
+To save or load an arbitrary block of C64 memory (not a whole file already on a device), see [`memcpy`](memory-operations.md#saving-and-restoring-memory-blocks-memcpy) instead.
 
 ## SoftIEC (SD2IEC Emulation)
 

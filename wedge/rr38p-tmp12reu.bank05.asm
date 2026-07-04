@@ -41,362 +41,1747 @@ bank05_sub_801a:
     .byte $80    // undocumented opcode
     brk                    // 00
 
-// prints the low nibble of A as one hex digit (diagnostic use, see
-// hondani_shell_entry's error-code print). Relocated here from the $9e00
-// pocket, which didn't have room left after net_read_and_print grew.
-diag_hexdigit:
-    and #$0f
-    cmp #$0a
-    bcc !digit+
-    clc
-    adc #$37                 // 10-15 -> 'A'-'F'
-    jmp $ffd2
-!digit:
-    clc
-    adc #$30                 // 0-9 -> '0'-'9'
-    jmp $ffd2
-diag_hexdigit_end:
+// ===========================================================================
+// HONDANI SHELL (wedge edition)
+// ===========================================================================
+// Occupies the reclaimed flash-utility region $8023-$9011 (user-approved
+// takeover 2026-07-04: this virtual cartridge has no flash ROM, so the stock
+// FLASH UTIL / ZAP feature is dead weight; the rest of its code at
+// $9200-$9dff is left in place as inert bytes but is no longer functional).
+//
+// Entered only through the fixed jump table at $9012/$9015/$9018 (see below),
+// with bank05 paged into $8000-$9fff by one of the RAM stubs at $cf00+:
+//   - $9012 wedge_dispatch: every direct-mode line BASIC couldn't execute
+//     (via the IERROR RAM stub installed by bank01's line_tap). Recognized
+//     shell commands run locally; everything else goes to the cloud chatbot.
+//   - $9015 wedge_install: installs/refreshes the CINV ($0314) keyboard-watch
+//     stub for C=+CTRL+digit console switching (via bank01's xb2 RAM trampoline,
+//     called on every non-empty typed line).
+//   - $9018 console_switch: performs the actual console switch (via the CINV
+//     RAM stub, from IRQ context).
+// See wedge/wedge-analysis.md for the full architecture.
+// ===========================================================================
 
-    .fill $8100 - diag_hexdigit_end, $00    // remaining confirmed-free bytes, unused so far
-    .byte $4c, $b7, $80    // data $8100 (unchanged original code resumes here)
-    .byte $4c, $ea, $81, $01, $00, $54, $4d, $50, $20, $31, $2e, $32, $20, $20, $20, $52    // data $8103
-    .byte $45, $55, $20, $4c, $2f, $a2, $40, $01, $00, $00, $01, $0c, $0f, $07, $0b, $09    // data $8113
-    .byte $09, $ff, $ff, $2d, $2d, $2d, $2d, $02, $5f, $91, $20, $20, $20, $20, $20, $20    // data $8123
-    .byte $20, $20, $20, $20, $20, $20, $20, $02, $5f, $33, $20, $20, $20, $20, $20, $20    // data $8133
-    .byte $20, $20, $20, $20, $20, $20, $20, $02, $5f, $11, $20, $20, $20, $20, $20, $20    // data $8143
-    .byte $20, $20, $20, $20, $20, $20, $20, $02, $5f, $d2, $20, $20, $20, $20, $20, $20    // data $8153
-    .byte $20, $20, $20, $20, $20, $20, $20, $54, $55, $52, $42, $4f, $30, $00, $08, $00    // data $8163
-    .byte $ff, $0a, $18, $02, $00, $00, $eb, $17, $0f, $00, $00, $00, $00, $f8, $14, $00    // data $8173
-    .byte $00, $00, $ac, $8b, $02, $c0, $03, $90, $03, $ce, $8b, $02, $20, $9f, $ff, $4c    // data $8183
-    .byte $7e, $ea, $78, $a0, $31, $a2, $ea, $8c, $14, $03, $8e, $15, $03, $58, $60, $20    // data $8193
-    .byte $b8, $8c, $a2, $03, $20, $8b, $8e, $a9, $12, $20, $81, $92, $c9, $59, $f0, $01    // data $81a3
-    .byte $60, $8d, $ec, $7f, $78, $a9, $37, $85, $01, $20, $81, $ff, $20, $84, $ff, $a0    // data $81b3
-    .byte $85, $a2, $80, $8c, $14, $03, $8e, $15, $03, $a9, $36, $85, $01, $a9, $00, $8d    // data $81c3
-    .byte $03, $dd, $8d, $80, $84, $20, $bf, $e3, $ad, $01, $dc, $29, $20, $f0, $0d, $a0    // data $81d3
-    .byte $05, $88, $30, $0b, $b9, $6a, $80, $d9, $ec, $7f, $f0, $f5, $20, $68, $81, $78    // data $81e3
-    .byte $20, $a0, $a4, $a9, $80, $8d, $8a, $02, $20, $44, $e5, $a9, $0e, $20, $d2, $ff    // data $81f3
-    .byte $a2, $02, $20, $9c, $8e, $20, $70, $a1, $a2, $23, $20, $31, $8b, $20, $8e, $8e    // data $8203
-    .byte $20, $70, $a1, $e0, $02, $b0, $04, $a9, $00, $f0, $0a, $e0, $04, $b0, $04, $a9    // data $8213
-    .byte $03, $d0, $02, $a9, $07, $8d, $70, $80, $18, $69, $30, $8d, $a2, $91, $8d, $c6    // data $8223
-    .byte $91, $a5, $ba, $c9, $08, $b0, $04, $a9, $07, $85, $ba, $20, $84, $88, $90, $03    // data $8233
-    .byte $20, $3f, $88, $20, $02, $8e, $ad, $1b, $80, $8d, $20, $d0, $ad, $1c, $80, $8d    // data $8243
-    .byte $21, $d0, $a9, $00, $8d, $7e, $80, $8d, $11, $cb, $85, $c6, $20, $3a, $a1, $20    // data $8253
-    .byte $ba, $82, $4c, $45, $84, $a0, $04, $b9, $6a, $80, $99, $ec, $7f, $88, $10, $f7    // data $8263
-    .byte $c8, $8c, $04, $cb, $8c, $05, $cb, $8c, $0c, $cb, $8c, $0d, $cb, $8c, $06, $cb    // data $8273
-    .byte $8c, $07, $cb, $8c, $0a, $cb, $8c, $0b, $cb, $8c, $13, $cb, $ad, $24, $80, $8d    // data $8283
-    .byte $0f, $cb, $ad, $25, $80, $8d, $10, $cb, $ad, $22, $80, $8d, $00, $cb, $ad, $23    // data $8293
-    .byte $80, $8d, $0e, $cb, $a9, $60, $8d, $00, $ec, $a9, $ec, $8d, $30, $ec, $a9, $60    // data $82a3
-    .byte $8d, $19, $cb, $a9, $ec, $8d, $1a, $cb, $a9, $eb, $8d, $01, $cb, $a9, $7f, $8d    // data $82b3
-    .byte $02, $cb, $a0, $16, $8c, $12, $cb, $c8, $a9, $7f, $99, $28, $cb, $88, $10, $fa    // data $82c3
-    .byte $a0, $18, $a9, $00, $99, $00, $cc, $88, $10, $fa, $a0, $bf, $a9, $20, $99, $40    // data $82d3
-    .byte $cb, $88, $10, $fa, $4c, $c7, $97, $a5, $01, $48, $78, $a0, $00, $84, $01, $38    // data $82e3
-    .byte $ad, $06, $cb, $ed, $08, $cb, $48, $ad, $07, $cb, $ed, $09, $cb, $8d, $72, $80    // data $82f3
-    .byte $68, $aa, $b0, $16, $20, $2c, $82, $e8, $d0, $fa, $ee, $72, $80, $d0, $f5, $20    // data $8303
-    .byte $65, $82, $8d, $03, $cb, $68, $85, $01, $58, $60, $e8, $ca, $d0, $05, $ce, $72    // data $8313
-    .byte $80, $30, $ec, $20, $48, $82, $4c, $1e, $82, $ee, $06, $cb, $d0, $03, $ee, $07    // data $8323
-    .byte $cb, $20, $65, $82, $29, $3f, $18, $ed, $01, $cb, $49, $ff, $8d, $01, $cb, $90    // data $8333
-    .byte $03, $ce, $02, $cb, $60, $20, $65, $82, $29, $3f, $18, $6d, $01, $cb, $8d, $01    // data $8343
-    .byte $cb, $90, $03, $ee, $02, $cb, $ad, $06, $cb, $d0, $03, $ce, $07, $cb, $ce, $06    // data $8353
-    .byte $cb, $60, $18, $ad, $06, $cb, $85, $39, $ad, $07, $cb, $69, $cc, $85, $3a, $b1    // data $8363
-    .byte $39, $60, $20, $b8, $8c, $18, $ad, $0a, $cb, $6d, $0d, $cb, $aa, $ad, $0b, $cb    // data $8373
-    .byte $69, $00, $a8, $60, $20, $f0, $e9, $20, $24, $ea, $a0, $27, $b1, $3b, $c9, $20    // data $8383
-    .byte $f0, $12, $aa, $29, $1f, $8d, $a6, $82, $8a, $4a, $4a, $4a, $4a, $4a, $aa, $bd    // data $8393
-    .byte $b2, $82, $09, $00, $91, $d1, $ad, $7b, $80, $91, $f3, $88, $10, $de, $60, $80    // data $83a3
-    .byte $20, $00, $40, $c0, $60, $40, $60, $a9, $00, $8d, $7a, $80, $20, $cd, $82, $ee    // data $83b3
-    .byte $7a, $80, $ad, $7a, $80, $c9, $17, $90, $f3, $60, $48, $20, $de, $82, $68, $aa    // data $83c3
-    .byte $a9, $00, $a0, $02, $85, $3b, $84, $3c, $4c, $87, $82, $18, $6d, $0a, $cb, $8d    // data $83d3
-    .byte $08, $cb, $ad, $0b, $cb, $69, $00, $8d, $09, $cb, $20, $ea, $81, $20, $93, $a4    // data $83e3
-    .byte $b0, $33, $ad, $06, $cb, $cd, $3c, $cb, $ad, $07, $cb, $ed, $3d, $cb, $90, $1e    // data $83f3
-    .byte $ad, $13, $cb, $cd, $3f, $cb, $90, $16, $ad, $3e, $cb, $cd, $06, $cb, $ad, $3f    // data $8403
-    .byte $cb, $ed, $07, $cb, $90, $08, $18, $ad, $21, $80, $8d, $7b, $80, $60, $ad, $1f    // data $8413
-    .byte $80, $8d, $7b, $80, $60, $ad, $20, $80, $8d, $7b, $80, $60, $ad, $84, $80, $49    // data $8423
-    .byte $80, $8d, $84, $80, $60, $2c, $84, $80, $30, $60, $a9, $e6, $a0, $83, $85, $39    // data $8433
-    .byte $84, $3a, $20, $a4, $8e, $2c, $0f, $cb, $30, $05, $a9, $20, $8d, $1a, $01, $2c    // data $8443
-    .byte $10, $cb, $30, $05, $a9, $20, $8d, $18, $01, $a0, $00, $ad, $0c, $cb, $a2, $02    // data $8453
-    .byte $20, $31, $8b, $20, $36, $84, $8a, $a2, $07, $20, $31, $8b, $a2, $0f, $ad, $15    // data $8463
-    .byte $cb, $20, $0a, $8b, $ad, $14, $cb, $20, $0a, $8b, $a5, $ba, $a0, $00, $a2, $1d    // data $8473
-    .byte $20, $31, $8b, $ad, $07, $80, $a0, $00, $a2, $25, $20, $31, $8b, $ad, $06, $80    // data $8483
-    .byte $a0, $00, $a2, $27, $20, $31, $8b, $4c, $cf, $83, $a9, $0e, $a0, $84, $85, $39    // data $8493
-    .byte $84, $3a, $20, $a4, $8e, $ac, $05, $cb, $ad, $04, $cb, $a2, $04, $20, $31, $8b    // data $84a3
-    .byte $a2, $0a, $ad, $1a, $cb, $20, $0a, $8b, $ad, $19, $cb, $20, $0a, $8b, $a2, $24    // data $84b3
-    .byte $ad, $15, $cb, $20, $0a, $8b, $ad, $14, $cb, $20, $0a, $8b, $ad, $7b, $80, $48    // data $84c3
-    .byte $ad, $1e, $80, $8d, $7b, $80, $20, $24, $a1, $a2, $18, $20, $87, $82, $68, $8d    // data $84d3
-    .byte $7b, $80, $60, $58, $3a, $20, $20, $20, $4c, $3a, $20, $20, $20, $20, $20, $42    // data $84e3
-    .byte $3a, $24, $20, $20, $20, $20, $20, $49, $4e, $3a, $43, $2f, $4c, $20, $23, $3a    // data $84f3
-    .byte $20, $20, $20, $42, $41, $4e, $4b, $3a, $20, $2f, $a0, $4c, $42, $4c, $3a, $20    // data $8503
-    .byte $20, $20, $20, $2f, $24, $20, $20, $20, $20, $2d, $24, $46, $44, $33, $30, $20    // data $8513
-    .byte $20, $20, $20, $20, $53, $52, $43, $3a, $24, $30, $38, $30, $30, $2d, $24, $20    // data $8523
-    .byte $20, $20, $a0, $18, $ad, $0a, $cb, $6d, $0d, $cb, $aa, $ad, $0b, $cb, $69, $00    // data $8533
-    .byte $a8, $60, $a2, $fa, $9a, $a9, $06, $85, $01, $58, $20, $38, $83, $2c, $7e, $80    // data $8543
-    .byte $10, $06, $ae, $0d, $cb, $20, $d3, $82, $ae, $0d, $cb, $20, $7f, $84, $8d, $7c    // data $8553
-    .byte $80, $2c, $11, $cb, $30, $0c, $20, $ce, $84, $20, $23, $85, $20, $e8, $85, $4c    // data $8563
-    .byte $45, $84, $c9, $5f, $d0, $f6, $8d, $11, $cb, $4c, $45, $84, $a9, $00, $f0, $03    // data $8573
-    .byte $4c, $2a, $8a, $a9, $28, $8d, $05, $dc, $20, $f0, $e9, $a9, $00, $8d, $7c, $80    // data $8583
-    .byte $20, $bc, $84, $a9, $46, $2c, $11, $cb, $10, $01, $4a, $aa, $88, $d0, $03, $ca    // data $8593
-    .byte $f0, $ee, $a5, $c6, $f0, $f6, $20, $e4, $ff, $aa, $ad, $7c, $80, $f0, $03, $20    // data $85a3
-    .byte $bc, $84, $8a, $a2, $40, $8e, $05, $dc, $60, $ac, $0c, $cb, $b1, $d1, $49, $80    // data $85b3
-    .byte $91, $d1, $ad, $7c, $80, $49, $ff, $8d, $7c, $80, $60, $a2, $13, $ca, $30, $16    // data $85c3
-    .byte $dd, $ea, $84, $d0, $f8, $20, $de, $84, $4c, $45, $84, $8a, $0a, $aa, $bd, $fe    // data $85d3
-    .byte $84, $48, $bd, $fd, $84, $48, $60, $91, $11, $1d, $9d, $8d, $0d, $14, $94, $85    // data $85e3
-    .byte $88, $89, $8c, $86, $8a, $87, $8b, $13, $03, $93, $3b, $86, $85, $86, $d5, $86    // data $85f3
-    .byte $c6, $86, $05, $87, $eb, $86, $15, $87, $ed, $8b, $5d, $87, $88, $87, $7a, $87    // data $8603
-    .byte $b1, $87, $33, $87, $36, $87, $39, $87, $3c, $87, $0e, $87, $2e, $83, $e1, $94    // data $8613
-    .byte $c9, $5f, $d0, $21, $58, $20, $e4, $ff, $f0, $fb, $a2, $35, $ca, $30, $08, $dd    // data $8623
-    .byte $49, $85, $d0, $f8, $20, $3d, $85, $4c, $45, $84, $8a, $0a, $aa, $bd, $7f, $85    // data $8633
-    .byte $48, $bd, $7e, $85, $48, $60, $94, $41, $5f, $31, $20, $5a, $14, $43, $45, $57    // data $8643
-    .byte $33, $34, $35, $4d, $47, $46, $48, $4b, $42, $53, $4c, $2a, $40, $4e, $51, $9d    // data $8653
-    .byte $1d, $37, $38, $91, $11, $52, $54, $59, $3a, $3b, $0d, $5e, $5c, $3d, $2f, $55    // data $8663
-    .byte $d5, $cb, $49, $32, $2b, $2d, $36, $44, $21, $d2, $23, $e4, $8b, $f6, $8b, $08    // data $8673
-    .byte $8c, $34, $97, $10, $8c, $2f, $86, $1e, $8c, $a1, $80, $d7, $93, $5b, $94, $fc    // data $8683
-    .byte $8b, $9a, $8b, $0e, $97, $07, $95, $49, $95, $57, $96, $51, $96, $d2, $97, $54    // data $8693
-    .byte $98, $a2, $9a, $61, $9b, $9e, $88, $78, $9c, $ba, $9c, $54, $87, $54, $87, $57    // data $86a3
-    .byte $87, $83, $8b, $8a, $8b, $60, $87, $8b, $87, $85, $9d, $38, $9e, $35, $9e, $c6    // data $86b3
-    .byte $95, $ed, $94, $f3, $9e, $c4, $9e, $d3, $9e, $0e, $9f, $e2, $9e, $1a, $9f, $1d    // data $86c3
-    .byte $9f, $c1, $97, $5b, $a0, $6e, $89, $91, $89, $89, $89, $f3, $89, $3e, $88, $26    // data $86d3
-    .byte $89, $5b, $a2, $02, $8c, $20, $2b, $86, $2c, $10, $cb, $10, $17, $ad, $27, $02    // data $86e3
-    .byte $c9, $20, $d0, $44, $a2, $27, $bd, $ff, $01, $9d, $00, $02, $ca, $f0, $05, $ec    // data $86f3
-    .byte $0c, $cb, $b0, $f2, $ad, $7c, $80, $ae, $0c, $cb, $9d, $00, $02, $4c, $e1, $86    // data $8703
-    .byte $a6, $c6, $f0, $13, $a9, $00, $85, $c6, $bd, $76, $02, $c9, $03, $d0, $08, $20    // data $8713
-    .byte $8b, $95, $a2, $05, $4c, $60, $8e, $60, $ad, $7e, $80, $d0, $0b, $ad, $0d, $cb    // data $8723
-    .byte $20, $de, $82, $a9, $ff, $8d, $7e, $80, $60, $20, $b8, $8c, $ad, $0d, $cb, $c9    // data $8733
-    .byte $05, $b0, $26, $ac, $0a, $cb, $98, $0d, $0b, $cb, $f0, $18, $ce, $0a, $cb, $98    // data $8743
-    .byte $d0, $03, $ce, $0b, $cb, $a9, $04, $20, $70, $86, $a9, $d8, $20, $70, $86, $a9    // data $8753
-    .byte $00, $4c, $cd, $82, $ad, $0d, $cb, $f0, $03, $ce, $0d, $cb, $60, $a2, $00, $86    // data $8763
-    .byte $3d, $85, $3e, $a2, $70, $8e, $75, $80, $18, $69, $03, $8d, $76, $80, $a9, $28    // data $8773
-    .byte $4c, $36, $92, $20, $b8, $8c, $ad, $0d, $cb, $c9, $12, $90, $1d, $a9, $01, $20    // data $8783
-    .byte $3a, $a1, $b0, $0f, $a9, $04, $20, $b1, $86, $a9, $d8, $20, $b1, $86, $a9, $16    // data $8793
-    .byte $4c, $cd, $82, $ad, $0d, $cb, $c9, $16, $b0, $03, $ee, $0d, $cb, $60, $a2, $28    // data $87a3
-    .byte $86, $3d, $85, $3e, $a2, $98, $8e, $75, $80, $18, $69, $03, $8d, $76, $80, $a9    // data $87b3
-    .byte $28, $4c, $d8, $91, $ce, $0c, $cb, $10, $09, $20, $b8, $8c, $20, $58, $87, $4c    // data $87c3
-    .byte $3c, $86, $60, $ad, $0c, $cb, $c9, $27, $a9, $00, $90, $09, $b0, $28, $ad, $0c    // data $87d3
-    .byte $cb, $c9, $27, $b0, $1e, $ee, $0c, $cb, $60, $ad, $0e, $cb, $2c, $0f, $cb, $10    // data $87e3
-    .byte $15, $8d, $0c, $cb, $20, $2b, $86, $20, $b8, $8c, $20, $c0, $87, $9a, $92, $ca    // data $87f3
-    .byte $c9, $d3, $bf, $ee, $ee, $4a, $86, $ae, $8a, $d2, $bd, $8c, $d2, $8d, $8b, $01    // data $8803
-    .byte $e4, $b5, $92, $8f, $2d, $33, $ae, $96, $72, $2e, $73, $af, $97, $59, $85, $fb    // data $8813
-    .byte $58, $6b, $0c, $e1, $21, $00, $ca, $07, $01, $86, $2b, $f7, $7d, $85, $2c, $76    // data $8823
-    .byte $33, $a5, $2b, $a9, $bc, $71, $a8, $4c, $ae, $a7, $df, $03, $6a, $08, $b4, $3e    // data $8833
-    .byte $80, $88, $90, $98, $00, $ff, $10, $d0, $6a, $af, $3b, $10, $b6, $e2, $8e, $16    // data $8843
-    .byte $62, $85, $ad, $11, $14, $05, $92, $e4, $af, $97, $43, $31, $8e, $ed, $99, $36    // data $8853
-    .byte $8e, $30, $69, $05, $f2, $10, $69, $04, $45, $e5, $e6, $e4, $62, $91, $80, $91    // data $8863
-    .byte $9a, $15, $46, $05, $90, $f0, $1c, $cd, $9f, $43, $40, $89, $ff, $45, $55, $0e    // data $8873
-    .byte $85, $55, $c0, $38, $2c, $fb, $2d, $8e, $b2, $66, $14, $1a, $c4, $b8, $16, $f0    // data $8883
-    .byte $ba, $32, $2c, $4b, $b2, $75, $4c, $c1, $41, $cc, $69, $ac, $90, $0e, $b9, $96    // data $8893
-    .byte $4e, $11, $a6, $80, $8e, $c0, $37, $81, $1b, $c1, $8d, $c6, $82, $e3, $c2, $71    // data $88a3
-    .byte $83, $b8, $c3, $bd, $db, $b3, $9d, $00, $c4, $dd, $1a, $71, $df, $a8, $1f, $05    // data $88b3
-    .byte $8d, $d4, $16, $4d, $ea, $31, $51, $17, $cb, $32, $97, $4d, $f3, $54, $f1, $c9    // data $88c3
-    .byte $58, $e7, $ed, $ed, $08, $9b, $cc, $da, $d3, $3f, $e1, $d1, $c9, $bb, $ae, $9a    // data $88d3
-    .byte $22, $d0, $ce, $bf, $f3, $8c, $7d, $23, $4e, $dc, $4b, $f7, $65, $bc, $31, $32    // data $88e3
-    .byte $e4, $50, $99, $00, $c0, $f0, $cf, $f8, $61, $9e, $ee, $a1, $ad, $32, $b3, $37    // data $88f3
-    .byte $c5, $ee, $65, $a9, $15, $ed, $a6, $d0, $ee, $67, $64, $a6, $97, $ba, $32, $69    // data $8903
-    .byte $4f, $2b, $8c, $02, $d9, $4c, $8d, $ef, $d3, $9a, $2a, $17, $53, $12, $d2, $a8    // data $8913
-    .byte $cc, $4d, $17, $9d, $9d, $2e, $76, $26, $99, $c8, $41, $da, $f6, $e0, $07, $9f    // data $8923
-    .byte $6e, $24, $83, $77, $f0, $4a, $0b, $9d, $8a, $c9, $6c, $69, $31, $6e, $fa, $2a    // data $8933
-    .byte $bd, $be, $c5, $6f, $e8, $dd, $c8, $c0, $1d, $e0, $77, $a5, $a2, $86, $28, $5d    // data $8943
-    .byte $8b, $b8, $02, $56, $3e, $e0, $90, $d0, $d1, $ef, $71, $0e, $4b, $89, $17, $3e    // data $8953
-    .byte $a9, $17, $d4, $19, $fb, $97, $85, $2a, $6b, $b2, $86, $20, $e5, $87, $cb, $25    // data $8963
-    .byte $96, $91, $ec, $5d, $b9, $44, $72, $56, $58, $e5, $cb, $d0, $7d, $f0, $43, $ef    // data $8973
-    .byte $f9, $04, $1b, $25, $4f, $44, $21, $d0, $63, $50, $95, $95, $a2, $ee, $50, $ad    // data $8983
-    .byte $51, $d8, $3d, $e2, $31, $4c, $19, $ef, $38, $d8, $ba, $d6, $a9, $67, $f0, $5e    // data $8993
-    .byte $1f, $28, $a0, $03, $71, $40, $53, $e3, $a2, $27, $bd, $78, $04, $9d, $3f, $52    // data $89a3
-    .byte $c1, $ca, $ee, $f7, $bd, $ad, $bb, $37, $a9, $47, $07, $ca, $f5, $2d, $38, $1a    // data $89b3
-    .byte $51, $3d, $4c, $ef, $3b, $5f, $84, $c9, $09, $9d, $35, $d8, $17, $c6, $f2, $c2    // data $89c3
-    .byte $a8, $a3, $98, $56, $4c, $ad, $a6, $9f, $bd, $b6, $1f, $8d, $d8, $f9, $e0, $43    // data $89d3
-    .byte $cc, $fd, $75, $16, $22, $c4, $ef, $04, $75, $16, $83, $6e, $18, $a9, $a6, $6d    // data $89e3
-    .byte $a3, $ed, $19, $34, $82, $2e, $40, $b0, $1a, $1c, $22, $15, $a9, $a3, $ea, $fe    // data $89f3
-    .byte $86, $02, $dc, $36, $0c, $17, $06, $3d, $04, $34, $1b, $fa, $04, $ba, $37, $30    // data $8a03
-    .byte $fd, $ee, $ca, $c3, $be, $16, $b5, $f1, $bc, $0c, $fa, $c7, $bd, $84, $b7, $4c    // data $8a13
-    .byte $d8, $38, $ae, $bf, $62, $ac, $15, $76, $fc, $dd, $27, $c9, $ff, $ef, $14, $b8    // data $8a23
-    .byte $a4, $b7, $dc, $b4, $94, $6a, $da, $f8, $f7, $e0, $2e, $bb, $53, $76, $bc, $ca    // data $8a33
-    .byte $91, $de, $09, $eb, $40, $8c, $92, $1d, $47, $87, $58, $07, $15, $8d, $00, $de    // data $8a43
-    .byte $c7, $07, $92, $fe, $17, $0d, $32, $71, $51, $22, $d1, $18, $57, $4a, $10, $71    // data $8a53
-    .byte $aa, $d9, $4e, $30, $8a, $4b, $26, $99, $87, $0b, $28, $78, $30, $2b, $90, $0d    // data $8a63
-    .byte $fd, $b2, $03, $36, $f4, $b2, $1a, $30, $41, $45, $ea, $55, $84, $c9, $42, $d0    // data $8a73
-    .byte $e3, $fa, $08, $56, $a1, $09, $91, $02, $14, $10, $b3, $5d, $18, $22, $98, $38    // data $8a83
-    .byte $a9, $16, $35, $53, $7a, $4c, $c6, $ed, $9b, $8d, $b6, $03, $4c, $e5, $39, $b9    // data $8a93
-    .byte $85, $bb, $99, $9e, $9e, $a0, $f3, $fd, $cc, $90, $f3, $ae, $49, $23, $a0, $6f    // data $8aa3
-    .byte $53, $ba, $44, $c0, $48, $a2, $ae, $c6, $2d, $ff, $58, $e8, $20, $b9, $1d, $1e    // data $8ab3
-    .byte $8d, $9b, $68, $8b, $f0, $11, $df, $15, $90, $00, $c6, $02, $0e, $22, $a1, $0a    // data $8ac3
-    .byte $d9, $29, $3d, $f6, $96, $00, $87, $f6, $94, $86, $04, $01, $4d, $34, $55, $bd    // data $8ad3
-    .byte $87, $c0, $fe, $08, $d0, $2d, $b9, $b2, $3d, $65, $35, $4e, $f0, $23, $21, $bb    // data $8ae3
-    .byte $f5, $19, $01, $62, $f5, $c9, $28, $7c, $84, $a9, $91, $c8, $a9, $a9, $37, $ae    // data $8af3
-    .byte $4c, $e1, $3a, $a7, $fe, $4f, $4e, $93, $17, $ad, $bb, $16, $16, $dc, $a9, $84    // data $8b03
-    .byte $8d, $c5, $c0, $44, $a0, $88, $36, $03, $f7, $dd, $82, $de, $48, $22, $93, $38    // data $8b13
-    .byte $68, $9d, $ac, $c0, $f5, $6e, $49, $3e, $d0, $14, $43, $f0, $07, $c9, $53, $7d    // data $8b23
-    .byte $f9, $78, $2c, $a9, $58, $3c, $d1, $1a, $8d, $83, $11, $3e, $a9, $82, $e3, $cc    // data $8b33
-    .byte $ad, $01, $34, $a5, $00, $71, $cc, $da, $68, $79, $9d, $7a, $c1, $3f, $aa, $96    // data $8b43
-    .byte $3e, $79, $d0, $a9, $0d, $e5, $b9, $40, $3b, $03, $c8, $c8, $c4, $b7, $d0, $f5    // data $8b53
-    .byte $9f, $0d, $15, $20, $91, $89, $16, $ae, $a7, $27, $a8, $1e, $a0, $02, $cb, $2e    // data $8b63
-    .byte $5d, $48, $ef, $6e, $03, $ec, $60, $a9, $20, $37, $9d, $68, $a8, $b1, $d1, $8f    // data $8b73
-    .byte $53, $67, $68, $8b, $a0, $10, $76, $0b, $76, $2a, $00, $4a, $18, $6d, $47, $e2    // data $8b83
-    .byte $aa, $bd, $8e, $aa, $dc, $22, $bf, $3e, $58, $ce, $9e, $f3, $34, $06, $91, $8f    // data $8b93
-    .byte $95, $30, $4c, $68, $e6, $4e, $13, $ee, $85, $c9, $bc, $97, $91, $76, $2c, $7c    // data $8ba3
-    .byte $80, $18, $a8, $0a, $ee, $19, $60, $88, $38, $ea, $70, $78, $66, $71, $e9, $39    // data $8bb3
-    .byte $4f, $69, $95, $14, $55, $c9, $62, $b0, $10, $ad, $15, $f1, $22, $7b, $18, $86    // data $8bc3
-    .byte $24, $67, $b2, $6c, $18, $cf, $a1, $81, $20, $0a, $23, $9c, $55, $a3, $f0, $18    // data $8bd3
-    .byte $da, $84, $03, $52, $19, $ce, $a8, $61, $0e, $54, $68, $ad, $0f, $bd, $47, $0a    // data $8be3
-    .byte $aa, $ec, $aa, $24, $90, $50, $ba, $e4, $9a, $68, $67, $f0, $22, $cb, $25, $2b    // data $8bf3
-    .byte $38, $41, $3b, $a3, $ed, $c4, $1a, $2d, $3d, $b8, $7d, $8b, $14, $c9, $01, $f0    // data $8c03
-    .byte $fc, $57, $ed, $0e, $ad, $ec, $6b, $65, $18, $27, $91, $a2, $a9, $be, $5b, $59    // data $8c13
-    .byte $ae, $a2, $ca, $ed, $f0, $8a, $54, $29, $b6, $ee, $e7, $fe, $5c, $1e, $1d, $ba    // data $8c23
-    .byte $be, $e9, $e7, $f0, $69, $b1, $3e, $d1, $9a, $f9, $6d, $e6, $2d, $48, $20, $42    // data $8c33
-    .byte $f1, $5d, $59, $55, $67, $45, $3c, $c9, $4e, $4f, $d0, $f2, $e1, $ce, $25, $f5    // data $8c43
-    .byte $a0, $d5, $3b, $ff, $91, $fe, $88, $10, $be, $d2, $fc, $3c, $ee, $ab, $49, $64    // data $8c53
-    .byte $da, $cb, $30, $20, $ab, $2d, $e1, $cc, $64, $bc, $46, $77, $2e, $78, $20, $d8    // data $8c63
-    .byte $5f, $2d, $a1, $dc, $0f, $fd, $77, $46, $28, $32, $f0, $3e, $78, $3f, $4b, $1c    // data $8c73
-    .byte $fa, $a9, $a5, $ad, $21, $33, $29, $fe, $bb, $8d, $c9, $9d, $43, $fb, $69, $04    // data $8c83
-    .byte $aa, $42, $0d, $8a, $a8, $20, $a7, $b5, $2e, $cd, $5d, $e9, $5d, $ac, $b2, $a9    // data $8c93
-    .byte $10, $85, $ae, $a2, $1f, $80, $b1, $fa, $d1, $8a, $f0, $0a, $ca, $ff, $f7, $c6    // data $8ca3
-    .byte $cb, $ae, $aa, $f3, $4c, $03, $3d, $fc, $8a, $b4, $8b, $27, $fa, $d0, $02, $e6    // data $8cb3
-    .byte $2f, $a9, $d5, $03, $b2, $58, $69, $07, $64, $cd, $b8, $ee, $32, $a5, $6d, $f4    // data $8cc3
-    .byte $19, $ab, $a5, $f5, $8a, $20, $1a, $8b, $a9, $01, $8d, $7e, $47, $60, $00, $79    // data $8cd3
-    .byte $a5, $2b, $58, $78, $94, $e6, $ad, $e5, $02, $3d, $c8, $fb, $22, $42, $a5, $fa    // data $8ce3
-    .byte $62, $b6, $0d, $a9, $08, $bf, $5e, $e4, $e7, $ff, $36, $13, $24, $97, $38, $23    // data $8cf3
-    .byte $2b, $c6, $42, $4d, $ee, $28, $6b, $0a, $49, $aa, $9a, $88, $18, $d7, $01, $57    // data $8d03
-    .byte $98, $57, $ad, $19, $57, $69, $6a, $9d, $99, $2b, $75, $6d, $8d, $10, $3f, $be    // data $8d13
-    .byte $42, $37, $ad, $85, $af, $c0, $d0, $03, $e4, $88, $6a, $1a, $ad, $ee, $d0, $0b    // data $8d23
-    .byte $3b, $51, $f4, $3e, $37, $1b, $23, $b2, $20, $a9, $69, $0d, $c4, $17, $f9, $00    // data $8d33
-    .byte $58, $fc, $b9, $fe, $75, $40, $75, $fd, $78, $ae, $78, $0e, $a9, $80, $85, $ff    // data $8d43
-    .byte $bd, $06, $22, $8d, $ff, $01, $de, $a0, $00, $b1, $fe, $91, $fc, $ff, $c8, $da    // data $8d53
-    .byte $f9, $c5, $e6, $94, $d2, $ff, $aa, $a0, $aa, $ef, $e8, $a5, $fd, $af, $c9, $80    // data $8d63
-    .byte $d0, $dc, $a2, $fc, $58, $c0, $dc, $40, $6e, $c1, $37, $41, $1b, $c2, $8d, $c6    // data $8d73
-    .byte $42, $e3, $c3, $71, $43, $bd, $b4, $c4, $b4, $ae, $44, $e8, $d0, $df, $8e, $11    // data $8d83
-    .byte $fd, $58, $ad, $a5, $57, $0f, $8d, $12, $3f, $f7, $8e, $3c, $4c, $e8, $f1, $40    // data $8d93
-    .byte $69, $69, $4e, $07, $8a, $1e, $90, $cb, $cc, $cf, $d6, $c4, $2d, $c1, $97, $d9    // data $8da3
-    .byte $20, $a6, $d8, $e8, $38, $af, $4f, $a9, $46, $54, $c5, $0d, $9d, $35, $76, $5e    // data $8db3
-    .byte $4d, $a2, $da, $36, $b9, $d4, $58, $55, $43, $55, $5b, $42, $cd, $46, $46, $b5    // data $8dc3
-    .byte $49, $4c, $dd, $5c, $2d, $4f, $2c, $b9, $53, $50, $62, $19, $58, $d0, $ea, $c7    // data $8dd3
-    .byte $8a, $57, $49, $c2, $39, $18, $8c, $e2, $d9, $2f, $3d, $67, $44, $21, $b2, $54    // data $8de3
-    .byte $ce, $90, $c6, $24, $d0, $46, $13, $3d, $16, $63, $d5, $ce, $29, $be, $a9, $d3    // data $8df3
-    .byte $c5, $0c, $4c, $71, $d9, $1a, $cc, $c9, $e2, $3f, $e3, $d3, $2f, $c3, $b7, $29    // data $8e03
-    .byte $a2, $47, $30, $31, $5a, $d6, $41, $4c, $55, $af, $45, $f0, $33, $37, $a6, $9d    // data $8e13
-    .byte $16, $e4, $41, $88, $9b, $db, $48, $52, $4d, $15, $32, $55, $76, $3d, $50, $54    // data $8e23
-    .byte $49, $bc, $f2, $28, $31, $36, $79, $0e, $cd, $c1, $c2, $f5, $02, $52, $53, $29    // data $8e33
-    .byte $47, $89, $52, $cc, $75, $2c, $ca, $88, $54, $83, $b7, $a2, $41, $44, $3f, $4e    // data $8e43
-    .byte $53, $3a, $db, $24, $f5, $94, $d7, $95, $52, $4b, $49, $5d, $59, $28, $6c, $c6    // data $8e53
-    .byte $4c, $6b, $41, $53, $48, $d2, $cf, $cd, $fc, $d0, $1b, $96, $0d, $ce, $0b, $75    // data $8e63
-    .byte $43, $48, $ab, $41, $aa, $47, $ca, $53, $ca, $44, $4f, $4e, $e2, $20, $d3, $50    // data $8e73
-    .byte $41, $6f, $43, $45, $2e, $f0, $98, $fa, $45, $01, $ff, $39, $45, $4e, $44, $2b    // data $8e83
-    .byte $78, $07, $c0, $00, $35, $82, $52, $33, $38, $50, $2d, $fb, $ad, $55, $4e, $54    // data $8e93
-    .byte $20, $5a, $5f, $45, $52, $4f, $2f, $43, $50, $58, $2d, $ff, $bd, $42, $e5, $30    // data $8ea3
-    .byte $01, $c0, $4f, $00, $00, $54, $34, $48, $89, $11, $ee, $66, $aa, $28, $cc, $48    // data $8eb3
-    .byte $43, $3d, $99, $e1, $ee, $ea, $aa, $2c, $ca, $e6, $02, $46, $24, $c4, $48, $80    // data $8ec3
-    .byte $18, $01, $41, $e8, $a9, $00, $85, $fc, $85, $fb, $e0, $01, $90, $28, $a5, $fd    // data $8ed3
-    .byte $4a, $d0, $18, $ad, $23, $01, $d0, $0a, $c6, $01, $8e, $e7, $db, $e6, $01, $ce    // data $8ee3
-    .byte $24, $01, $ce, $23, $01, $ad, $d4, $28, $90, $1b, $6a, $26, $fc, $26, $fb, $ca    // data $8ef3
-    .byte $d0, $de, $85, $fd, $a5, $fc, $60, $c6, $01, $58, $4c, $10, $08, $ca, $c6, $ff    // data $8f03
-    .byte $c6, $af, $88, $b1, $ae, $91, $fe, $98, $d0, $f8, $8a, $d0, $f0, $20, $00, $01    // data $8f13
-    .byte $f0, $0a, $a5, $fe, $d0, $02, $c6, $ff, $c6, $fe, $90, $b7, $c8, $20, $00, $01    // data $8f23
-    .byte $f0, $fa, $c0, $11, $b0, $d1, $be, $33, $03, $20, $01, $01, $79, $67, $03, $85    // data $8f33
-    .byte $a7, $a5, $fb, $79, $9b, $03, $48, $d0, $06, $a4, $a7, $c0, $04, $90, $02, $a0    // data $8f43
-    .byte $03, $be, $b3, $01, $20, $01, $01, $79, $b6, $01, $a8, $38, $a5, $fe, $e5, $a7    // data $8f53
-    .byte $85, $fe, $b0, $02, $c6, $ff, $be, $34, $03, $20, $01, $01, $79, $68, $03, $90    // data $8f63
-    .byte $03, $e6, $fb, $18, $65, $fe, $85, $ae, $a5, $fb, $79, $9c, $03, $65, $ff, $85    // data $8f73
-    .byte $af, $a4, $a7, $68, $aa, $90, $90, $02, $04, $04, $30, $20, $10, $e8, $98, $29    // data $8f83
-    .byte $0f, $f0, $13, $8a, $4a, $a6, $fc, $2a, $26, $fb, $ca, $10, $fa, $79, $67, $03    // data $8f93
-    .byte $aa, $a5, $fb, $79, $9b, $03, $99, $9c, $03, $8a, $99, $68, $03, $a2, $04, $20    // data $8fa3
-    .byte $01, $01, $99, $34, $03, $c8, $c0, $34, $d0, $d3, $a0, $36, $b9, $cb, $29, $99    // data $8fb3
-    .byte $e6, $07, $88, $d0, $f7, $4c, $4a, $01, $80, $00, $a0, $2c, $ba, $d8, $5b, $d8    // data $8fc3
-    .byte $a9, $3d, $8d, $57, $19, $03, $d2, $21, $a1, $ae, $ee, $15, $ca, $88, $8c, $6b    // data $8fd3
-    .byte $26, $ce, $1b, $ae, $11, $d0, $b5, $dd, $78, $11, $af, $16, $34, $c6, $d7, $a2    // data $8fe3
-    .byte $18, $46, $1a, $1e, $d4, $88, $bf, $fa, $f6, $78, $3c, $81, $24, $5c, $00, $aa    // data $8ff3
-    .byte $aa, $aa, $aa, $aa, $aa, $aa, $aa, $aa, $aa, $aa, $aa, $aa, $aa, $aa, $aa    // data $9003 (unchanged filler, ends $9011)
-
-// ---------------------------------------------------------------------------
-// hondani_shell_entry -- minimal end-to-end cloud connectivity test.
-// Reached via bank01's xb_stub (jsr $9012) while bank01 is switched out and
-// this bank is paged in. Talks directly to the C64U/Ultimate command
-// interface at $DF1C-$DF1F (documented "Ultimate cartridge registers",
-// unrelated to this cart's own $DE00/$DE01 -- see wedge-analysis.md).
-// Purpose right now: prove $DF1C is reachable from within an actively
-// bank-switched RR-style cart context, which had NOT been confirmed before
-// this. Does a full connect/write/read/close round trip against the cloud
-// server with a fixed "PING" text-input message and streams whatever comes
-// back straight to the screen via CHROUT -- even a "processing error" reply
-// proves the wire works. Border flashes green on a clean protocol round
-// trip, red if any step fails at the protocol level (connect/write/read
-// erroring out, not the LLM's own reply content).
-// Uses no zero page at all -- all scratch state lives in RAM at $cf20+,
-// right after bank01's $cf00 xb_stub, both safely outside any bank-switched
-// window (see wedge-analysis.md §6a for why that matters).
-// ---------------------------------------------------------------------------
+// --- Ultimate command interface at $df1c-$df1f (unrelated to this cart's
+// --- own $de00/$de01 banking registers)
 .const UII_CONTROL = $df1c
 .const UII_STATUS  = $df1c
 .const UII_CMD     = $df1d
 .const UII_RESP    = $df1e
 .const UII_STATDAT = $df1f
-.const UII_ST_BUSY  = $01
-.const UII_ST_ERROR = $08
-.const UII_ST_STATE = $30
+.const UII_ST_ERROR  = $08
+.const UII_ST_STATE  = $30
 .const UII_ST_STATAV = $40
 .const UII_ST_DATAAV = $80
-.const UII_CTL_PUSH = $01
-.const UII_CTL_ACC  = $02
-.const NET_TARGET       = $03
-.const NET_TCP_CONNECT  = $07
-.const NET_SOCKET_CLOSE = $09
-.const NET_SOCKET_READ  = $10
-.const NET_SOCKET_WRITE = $11
-.const cf_socket_id    = $cf20
-.const cf_status0      = $cf21
-.const cf_status1      = $cf22
-.const cf_state        = $cf23   // net_read_and_print's framing state, see below
-.const cf_got_data     = $cf24   // scratch: did net_read_and_print see any byte at all this call? (0=no -> caller should spin)
-.const cf_spin_idx     = $cf25   // spinner animation frame index (0/1)
-.const cf_retries_lo   = $cf26   // 16-bit "give up waiting" counter, counts down each empty poll
-.const cf_retries_hi   = $cf27
-.const cf_msglen_lo    = $cf28   // 16-bit remaining-content-bytes countdown
-.const cf_msglen_hi    = $cf29
-// These three mirror bank01.asm's constants of the same name/address --
-// separate assembly units, same physical RAM, no shared symbol table.
-.const cf_shadow       = $cf32   // shadow copy of the raw typed line (set by bank01's line_tap)
-.const ie_orig_vec     = $cf80   // +$cf81: original IERROR vector (bank01-owned, unused here)
-.const ie_errcode      = $cf82   // BASIC error-table index that triggered this call (diagnostic)
-// Response framing -- CONFIRMED against a real hex dump of the wire data
-// (2026-07-03, screenshot from hardware), after four earlier rounds of
-// guessing from visual descriptions all landed on the wrong shape (the
-// $13/$5e marker/filler theory below was wrong). The real framing is:
-//   [N x $ff idle/filler bytes, N varies with network timing]
-//   [2-byte little-endian content length, e.g. 47 00 = 0x0047 = 71]
-//   [exactly that many content bytes -- verified byte-count-exact against
-//    a real reply: "Hello Honza!\r\rHow can I help you with your C64 and
-//    Hondani Shell today?", capital letters as PETSCII $c1-$da, lowercase
-//    as $41-$5a, both printable via CHROUT with no further translation]
-// cf_state: 0 = discarding $ff filler, first non-$ff byte is length lo
-//           1 = that byte was length lo, this one is length hi
-//           2 = printing content, counting cf_msglen_lo/hi down to zero
-//           3 = content fully printed, discard anything else this response
+.const UII_CTL_PUSH  = $01
+.const UII_CTL_ACC   = $02
 
-hondani_shell_entry:
-    // DIAGNOSTIC (temporary): print the BASIC error-table index that
-    // triggered this call, so the real SYNTAX error code can be confirmed
-    // from hardware before narrowing ierror_stub_rom's trigger condition
-    // in bank01 -- see wedge-analysis.md. ie_errcode = $cf82.
-    lda #$45                // 'E'
-    jsr $ffd2
-    lda #$52                // 'R'
-    jsr $ffd2
-    lda #$52                // 'R'
-    jsr $ffd2
-    lda #$3d                // '='
-    jsr $ffd2
-    lda #$24                // '$'
-    jsr $ffd2
-    lda $cf82                // ie_errcode
+// --- Ultimate command targets / command ids used here
+.const TARGET_DOS1     = $01
+.const TARGET_NETWORK  = $03
+.const TARGET_CONTROL  = $04
+.const DOS_CMD_IDENTIFY       = $01
+.const DOS_CMD_CHANGE_DIR     = $11
+.const DOS_CMD_GET_PATH       = $12
+.const DOS_CMD_OPEN_DIR       = $13
+.const DOS_CMD_READ_DIR       = $14
+.const DOS_CMD_COPY_HOME_PATH = $17
+.const DOS_CMD_CREATE_DIR     = $16
+.const DOS_CMD_MOUNT_DISK     = $23
+.const DOS_CMD_UMOUNT_DISK    = $24
+.const DOS_CMD_GET_TIME       = $26
+.const CTRL_CMD_FREEZE        = $05
+.const NET_CMD_GET_IP    = $05
+.const NET_TCP_CONNECT   = $07
+.const NET_SOCKET_CLOSE  = $09
+.const NET_SOCKET_READ   = $10
+.const NET_SOCKET_WRITE  = $11
+
+// --- KERNAL / BASIC ROM entries (both ROMs are visible in this cart's
+// --- standard "8K game" memory map, cart ROM only at $8000-$9fff)
+.const SCNKEY  = $ff9f
+.const SETLFS  = $ffba
+.const SETNAM  = $ffbd
+.const READST  = $ffb7
+.const OPEN    = $ffc0
+.const CLOSE   = $ffc3
+.const CHKIN   = $ffc6
+.const CHKOUT  = $ffc9
+.const CLRCHN  = $ffcc
+.const CHRIN   = $ffcf
+.const CHROUT  = $ffd2
+.const GETIN   = $ffe4
+.const LINPRT  = $bdcd            // BASIC: print A(hi)/X(lo) as unsigned decimal
+.const KERNAL_RESET = $fce2
+.const SHFLAG  = $028d            // modifier bits: 1=shift, 2=C=, 4=ctrl
+.const SFDX    = $cb              // matrix code of key currently held (64 = none)
+.const NDX     = $c6              // keyboard buffer length
+.const LOAD    = $ffd5            // A=0 load/1 verify; X/Y=start addr (used only if SA=0)
+.const SAVE    = $ffd8            // A=zp addr of 2-byte start ptr; X/Y=end+1 addr
+.const TXTTAB  = $2b              // +$2c: start-of-BASIC-program ptr -- SAVE's own default
+                                   // start-ptr slot (see cmd_memcpy); borrowed transiently
+
+// --- RAM state at $cf00-$cfff (plain C64 RAM, never repaged by any RR
+// --- banking -- survives all cartridge paging; see wedge-analysis.md).
+// --- $cf00-$cf2d is the resident block installed by bank01's line_tap
+// --- (IERROR stub + xb2 trampoline); those addresses and cf_shadow /
+// --- ie_orig_vec / ie_errcode must stay in sync with bank01's constants.
+.const cf_shadow    = $cf32   // raw typed line, null-terminated (bank01 line_tap)
+.const ie_orig_vec  = $cf80   // +$cf81: original IERROR vector (bank01-owned)
+.const ie_errcode   = $cf82   // BASIC error index that fired (kept, no longer printed)
+.const w_dev        = $cf83   // current device char: '8','9','S','C','H','T','F'
+.const w_console    = $cf84   // console id, upper nibble: $00=local, $20-$70=server
+.const w_cinv_orig  = $cf85   // +$cf86: original CINV ($0314) vector
+.const w_latch      = $cf87   // C=+CTRL+digit one-shot latch for the CINV stub
+.const w_parse_y    = $cf88   // dispatcher: cf_shadow offset of first non-space char
+.const w_arg        = $cf89   // dispatcher: cf_shadow offset of the command argument
+.const w_quiet      = $cf8a   // nonzero: net_read_and_print + net_spin stay silent
+.const w_bank       = $cf8b   // CINV stub: saved $de00 bank bits across the switch
+.const w_len        = $cf8c   // generic scratch
+.const w_jmp        = $cf8d   // +$cf8e: dispatcher's indirect handler vector
+.const w_new        = $cf8f   // console_switch: target console id scratch
+.const cinv_ram     = $cf90   // resident CINV keyboard-watch stub lives here
+// $cfd5-$cfdf: free gap between the CINV stub ($cf90-$cfd4) and the reset
+// stub ($cfe0-$cfe7) -- memcpy's scratch state, live only during cmd_memcpy.
+.const mc_start     = $cfd5  // +$cfd6: parsed $start address
+.const mc_end       = $cfd7  // +$cfd8: parsed $end address (inclusive)
+.const mc_savetxt   = $cfd9  // +$cfda: TXTTAB ($2b/$2c) saved across the SAVE call
+.const mc_devnum    = $cfdb  // resolved KERNAL device number (8/9/10)
+.const mc_hexval    = $cfdc  // +$cfdd: parse_hex16's accumulator
+.const mc_fnstart   = $cfde  // cf_shadow offset of the filename's first byte
+.const mc_fnlen     = $cfdf  // filename length in bytes
+.const reset_ram    = $cfe0   // cmd_reset relocates its bank0+reset stub here
+.const cf_socket_id  = $cff0
+.const cf_status0    = $cff1
+.const cf_status1    = $cff2
+.const cf_state      = $cff3  // net_read_and_print framing state (see there)
+.const cf_got_data   = $cff4
+.const cf_spin_idx   = $cff5
+.const cf_retries_lo = $cff6  // 16-bit "give up waiting" countdown
+.const cf_retries_hi = $cff7
+.const cf_msglen_lo  = $cff8  // 16-bit remaining-content countdown
+.const cf_msglen_hi  = $cff9
+.const w_dig1        = $cffa  // print_dec_byte scratch: hundreds digit
+.const w_dig2        = $cffb  // print_dec_byte scratch: tens digit
+.const w_hidx        = $cffc  // wc_match: haystack inner-compare index
+.const w_hstart      = $cffd  // wc_match: haystack outer try-start offset
+
+// --- ll/dir wildcard filtering (e.g. "ll outrun*") -- one directory-listing
+// entry (or entry chunk) is buffered here, then tested against the typed
+// argument before it's printed. Reuses the datassette buffer: this shell
+// never does tape I/O, so it's free scratch during a single command's
+// execution (same reasoning as reusing cf_shadow's neighbours elsewhere).
+.const wc_buf     = $033c
+.const wc_buf_max = 64
+
+// ===========================================================================
+// wedge_dispatch -- fixed jump-table entry ($9012, called from the IERROR
+// stub). Runs the real parser/dispatcher below, then prints "\rREADY.\r"
+// before returning -- the IERROR stub re-enters BASIC via jmp ($0302), which
+// is the *middle* of BASIC's warm-start (past the point that normally prints
+// READY.), so without this every recognized command and every cloud/CLI
+// reply would leave the prompt looking stuck (hardware-confirmed 2026-07-04
+// missing-READY report).
+// ===========================================================================
+wedge_dispatch:
+    jsr wedge_dispatch_body
+    jsr print_cr
+    lda #msg_ready - msg_blob
+    jsr print_msg
+    jmp print_cr
+
+// wedge_dispatch_body -- parse cf_shadow (the raw pre-crunch typed line).
+// Recognized commands run locally and rts back to the wrapper above;
+// anything unrecognized is forwarded to the cloud chatbot with the "I:"
+// routing prefix -- same fallback as before, the temporary ERR=$xx
+// diagnostic print is retired (mechanism is confirmed).
+wedge_dispatch_body:
+    ldy #$00
+wd_skipsp:
+    lda cf_shadow,y
+    bne wd_notend
+    rts                        // blank line: nothing to do
+wd_notend:
+    cmp #$20
+    bne wd_first
+    iny
+    bne wd_skipsp
+wd_first:
+    sty w_parse_y
+    cmp #$23                   // '#' -- device-switch family
+    bne wd_scan
+    jmp cmd_hash
+wd_scan:
+    ldx #$00                   // X walks the keyword table
+wd_next:
+    ldy w_parse_y
+wd_cmp:
+    lda wedge_words,x
+    bne wd_more
+    jmp wd_chat                // table end: no keyword matched
+wd_more:
+    and #$7f                   // case-blind: PETSCII $c1-$da folds onto $41-$5a
+    sta w_len
+    lda cf_shadow,y
+    and #$7f
+    cmp w_len
+    bne wd_mismatch
+    lda wedge_words,x          // chars match -- was that the final char (bit7)?
+    bmi wd_boundary
+    inx
+    iny
+    bne wd_cmp
+wd_boundary:
+    iny                        // word complete: typed char after it must end the word
+    lda cf_shadow,y
+    beq wd_hit
+    cmp #$20
+    beq wd_hit
+wd_mismatch:                   // skip to end of this table word + its address
+    lda wedge_words,x
+    bne wd_skip1
+    jmp wd_chat                // safety: ran off the table end
+wd_skip1:
+    inx
+    and #$80
+    beq wd_mismatch
+    inx                        // past the handler address
+    inx
+    jmp wd_next
+wd_hit:                        // Y is on the boundary char; skip spaces to the arg
+    lda cf_shadow,y
+    beq wd_argdone
+    cmp #$20
+    bne wd_argdone
+    iny
+    bne wd_hit
+wd_argdone:
+    sty w_arg
+    lda wedge_words+1,x        // X still on the final (bit7) char
+    sta w_jmp
+    lda wedge_words+2,x
+    sta w_jmp+1
+    jmp (w_jmp)
+
+// Keyword table: PETSCII word with bit7 set on the last char (same
+// convention as the cart's own table), then the handler address.
+// Exact match + word boundary only -- no 3-letter abbreviation quirk.
+wedge_words:
+    .byte $53,$54,$41,$54,$55,$d3            // STATUS
+    .byte <cmd_status, >cmd_status
+    .byte $54,$49,$4d,$c5                    // TIME
+    .byte <cmd_time, >cmd_time
+    .byte $52,$45,$53,$45,$d4                // RESET
+    .byte <cmd_reset, >cmd_reset
+    .byte $4d,$45,$4e,$d5                    // MENU (was FRZ -- renamed, see cmd_menu)
+    .byte <cmd_menu, >cmd_menu
+    .byte $4c,$cc                            // LL
+    .byte <cmd_dir, >cmd_dir
+    .byte $44,$49,$d2                        // DIR
+    .byte <cmd_dir, >cmd_dir
+    .byte $4d,$4e,$d4                        // MNT
+    .byte <cmd_mnt, >cmd_mnt
+    .byte $55,$4d,$4e,$d4                    // UMNT
+    .byte <cmd_umnt, >cmd_umnt
+    .byte $43,$c4                            // CD
+    .byte <cmd_cd, >cmd_cd
+    .byte $50,$57,$c4                        // PWD
+    .byte <cmd_pwd, >cmd_pwd
+    .byte $49,$4e,$46,$cf                    // INFO (the cart's own stock command;
+    .byte <cmd_info, >cmd_info               // see cmd_info -- recognized here purely so
+                                              // it's swallowed instead of chat-forwarded)
+    .byte $48,$45,$4c,$d0                    // HELP
+    .byte <cmd_help, >cmd_help
+    .byte $4d,$4b,$44,$49,$d2                // MKDIR
+    .byte <cmd_mkdir, >cmd_mkdir
+    .byte $43,$d0                            // CP
+    .byte <cmd_cp, >cmd_cp
+    .byte $4d,$45,$4d,$43,$50,$d9            // MEMCPY
+    .byte <cmd_memcpy, >cmd_memcpy
+    .byte $00
+
+// ===========================================================================
+// Command bodies
+// ===========================================================================
+
+// status -- firmware identify string, local IP, server host + reachability
+cmd_status:
+    lda #DOS_CMD_IDENTIFY
+    jsr dos_simple_print
+    jsr print_cr
+    lda #msg_ip - msg_blob
+    jsr print_msg
+    jsr net_print_ip
+    jsr print_cr
+    lda #msg_server - msg_blob
+    jsr print_msg
+    ldx #$00
+cst_host:
+    lda net_test_host,x
+    beq cst_probe
+    jsr CHROUT
+    inx
+    bne cst_host
+cst_probe:
+    jsr net_connect            // reachability probe: connect, then close
+    bcs cst_unreach
+    jsr net_close
+    lda #msg_ok - msg_blob
+    jmp print_msg
+cst_unreach:
+    lda #msg_unreach - msg_blob
+    jmp print_msg
+
+// info -- no-op: INFO is the cart's own stock command (prints "RR REV: ..."
+// straight from ROM, before BASIC ever reaches our IERROR hook). But its
+// completion still raises a direct-mode error same as any other cart command
+// (hardware-confirmed 2026-07-04: INFO's own output was followed by a stray
+// chat reply), which our "any direct-mode error" hook would otherwise forward
+// to the cloud as an unrecognized line. Recognizing INFO here just swallows
+// that forward -- the cart has already done all the real work by the time
+// this runs.
+cmd_info:
+    rts
+
+// time -- Ultimate RTC date/time string
+cmd_time:
+    lda #DOS_CMD_GET_TIME
+    jsr dos_simple_print
+    jmp print_cr
+
+// menu -- freeze the CLI's state and enter the Ultimate menu (control target
+// command $05, the only "freeze" the UCI/REST API exposes -- on this
+// platform freezing *is* dropping into the menu, there's no separate silent
+// freeze; renamed from "frz" since that name suggested otherwise).
+cmd_menu:
+    lda #CTRL_CMD_FREEZE
+    ldx #TARGET_CONTROL
+    jsr dos_begin
+    jmp dos_finish_quiet
+
+// reset -- select bank0 (so the CBM80 cold vector lands in the cart's own
+// menu, same as a hardware reset) and jump through the KERNAL reset. The
+// bank write repages this very ROM window, so the tail runs from RAM.
+cmd_reset:
+    ldx #reset_stub_end - reset_stub - 1
+crs_copy:
+    lda reset_stub,x
+    sta reset_ram,x
+    dex
+    bpl crs_copy
+    jmp reset_ram
+reset_stub:
+    lda #$00
+    sta $de00
+    jmp KERNAL_RESET
+reset_stub_end:
+
+// #<device> -- switch the current device; bare '#' prints it.
+// '8'/'9'/'S' are IEC devices (8/9/10), 'C' is the server-side CSDB module,
+// 'N' is the server-side network drive (proxy onto the hondani server's
+// workspace folder -- see cmd_cp), 'H'/'T'/'F' cd the Ultimate DOS filesystem
+// to home / /TEMP / /FLASH (improvement over the old hdnsh, which only
+// stored the marker).
+cmd_hash:
+    ldy w_parse_y
+    iny
+    lda cf_shadow,y
+    bne ch_notbare
+    lda w_dev                  // bare '#': print the current device letter
+    jsr CHROUT
+    jmp print_cr
+ch_notbare:
+    and #$7f
+    cmp #$38                   // '8'
+    beq ch_store
+    cmp #$39                   // '9'
+    beq ch_store
+    cmp #$53                   // 'S' -- SoftIEC (IEC device 10)
+    beq ch_store
+    cmp #$43                   // 'C' -- CSDB (server-side module)
+    beq ch_csdb
+    cmp #$4e                   // 'N' -- server-side network drive (same
+    beq ch_csdb                // "notify + forward raw line" mechanism as CSDB)
+    cmp #$48                   // 'H' -- Ultimate home directory
+    beq ch_home
+    cmp #$54                   // 'T' -- /TEMP
+    beq ch_temp
+    cmp #$46                   // 'F' -- /FLASH
+    beq ch_flash
+    jmp wd_chat                // unknown device letter: let the cloud answer
+ch_store:
+    sta w_dev
+    rts
+ch_csdb:
+    sta w_dev
+    jmp send_cli               // server activates its CSDB module and replies
+ch_home:
+    sta w_dev
+    lda #DOS_CMD_COPY_HOME_PATH
+    jsr dos_simple_quiet
+    jmp ch_pwd
+ch_temp:
+    sta w_dev
+    ldy #txt_temp - path_blob
+    jsr dos_chdir_blob
+    jmp ch_pwd
+ch_flash:
+    sta w_dev
+    ldy #txt_flash - path_blob
+    jsr dos_chdir_blob
+ch_pwd:
+    lda #DOS_CMD_GET_PATH      // show where we landed
+    jsr dos_simple_print
+    jmp print_cr
+
+// cd <path> -- change directory on whichever device w_dev currently selects.
+// 'C'/'N' forward the raw line to the server's active module (CSDB / network
+// drive, respectively); '8'/'9'/'S' send a "CD:<path>" command-channel string
+// (works on IEC drives/servers that support subdirectories, e.g. CMD/SD2IEC-
+// style firmware, same convention as the old src/cmd_cd.asm); 'H'/'T'/'F' use
+// the Ultimate DOS CHANGE_DIR command with the typed path (unlike #h/#t/#f,
+// which only cd to fixed locations).
+cmd_cd:
+    ldy w_arg
+    lda cf_shadow,y
+    bne ccd_hasarg
+    lda #msg_err - msg_blob    // no argument
+    jmp print_msg
+ccd_hasarg:
+    lda w_dev
+    cmp #$43                   // 'C' -- CSDB: raw line to the server
+    beq ccd_csdb
+    cmp #$4e                   // 'N' -- network drive: same, server tracks its own cwd
+    beq ccd_csdb
+    cmp #$38                   // '8'
+    beq ccd_iec
+    cmp #$39                   // '9'
+    beq ccd_iec
+    cmp #$53                   // 'S' (SoftIEC = IEC device 10)
+    beq ccd_iec
+    lda #DOS_CMD_CHANGE_DIR    // 'H'/'T'/'F': Ultimate DOS filesystem
+    ldx #TARGET_DOS1
+    jsr dos_begin
+    ldy w_arg
+ccd_path:
+    lda cf_shadow,y
+    beq ccd_send
+    sta UII_CMD
+    iny
+    bne ccd_path
+ccd_send:
+    jsr dos_finish_quiet
+    lda #DOS_CMD_GET_PATH      // show where we landed
+    jsr dos_simple_print
+    jmp print_cr
+ccd_csdb:
+    jmp send_cli
+ccd_iec:
+    ldx #$08                   // device number for SETLFS
+    cmp #$39
+    bne ccd_not9
+    ldx #$09
+ccd_not9:
+    cmp #$53
+    bne ccd_notS
+    ldx #$0a
+ccd_notS:
+    stx w_len
+    lda #15                    // logical file 15, secondary address 15 (command channel)
+    ldy #15
+    jsr SETLFS
+    lda #$00
+    jsr SETNAM
+    jsr OPEN
+    bcs ccd_err
+    ldx #15
+    jsr CHKOUT
+    lda #$43                   // "CD:"
+    jsr CHROUT
+    lda #$44
+    jsr CHROUT
+    lda #$3a
+    jsr CHROUT
+    ldy w_arg
+ccd_iloop:
+    lda cf_shadow,y
+    beq ccd_idone
+    jsr CHROUT
+    iny
+    bne ccd_iloop
+ccd_idone:
+    jsr CLRCHN
+    lda #15
+    jsr CLOSE
+    jmp print_cr
+ccd_err:
+    lda #msg_err - msg_blob
+    jmp print_msg
+
+// pwd -- print the current directory. 'C'/'N' forward to the server's
+// active module (CSDB / network drive); 'H'/'T'/'F' ask the Ultimate DOS
+// filesystem (same GET_PATH used internally by #h/#t/#f); '8'/'9'/'S' have no
+// queryable path over plain IEC command-channel conventions, so this reports
+// "NOT SUPPORTED" there (same as the old hdnsh's cmd_pwd.asm).
+cmd_pwd:
+    lda w_dev
+    cmp #$43                   // 'C' -- CSDB: raw line to the server
+    beq cpw_csdb
+    cmp #$4e                   // 'N' -- network drive: same
+    beq cpw_csdb
+    cmp #$38                   // '8'
+    beq cpw_nosup
+    cmp #$39                   // '9'
+    beq cpw_nosup
+    cmp #$53                   // 'S' (SoftIEC = IEC device 10)
+    beq cpw_nosup
+    lda #DOS_CMD_GET_PATH      // 'H'/'T'/'F'
+    jsr dos_simple_print
+    jmp print_cr
+cpw_csdb:
+    jmp send_cli
+cpw_nosup:
+    lda #msg_nosup - msg_blob
+    jmp print_msg
+
+// ll / dir -- list the current device
+cmd_dir:
+    lda w_dev
+    cmp #$43                   // 'C': ask the server's CSDB module
+    beq cd_server
+    cmp #$4e                   // 'N': ask the server's network-drive module
+    beq cd_server
+    jmp cd_notc
+cd_server:
+    jmp send_cli
+cd_notc:
+    cmp #$38                   // '8'
+    beq cd_kern
+    cmp #$39                   // '9'
+    beq cd_kern
+    cmp #$53                   // 'S' (SoftIEC = IEC device 10)
+    beq cd_kern
+    jmp wd_uii_dir             // 'H'/'T'/'F': Ultimate DOS current directory
+cd_kern:
+    jmp kernal_dir
+
+// mnt <image path> -- mount a disk image (on the Ultimate filesystem,
+// relative to its current directory) as drive 8
+cmd_mnt:
+    ldy w_arg
+    lda cf_shadow,y
+    bne cm_hasarg
+    lda #msg_err - msg_blob    // no argument
+    jmp print_msg
+cm_hasarg:
+    lda #DOS_CMD_MOUNT_DISK
+    ldx #TARGET_DOS1
+    jsr dos_begin
+    lda #$08                   // drive 8
+    sta UII_CMD
+    ldy w_arg
+cm_path:
+    lda cf_shadow,y
+    beq cm_send
+    sta UII_CMD
+    iny
+    bne cm_path
+cm_send:
+    jmp dos_finish_quiet
+
+// umnt -- unmount drive 8's image
+cmd_umnt:
+    lda #DOS_CMD_UMOUNT_DISK
+    ldx #TARGET_DOS1
+    jsr dos_begin
+    lda #$08                   // drive 8
+    sta UII_CMD
+    jmp dos_finish_quiet
+
+// mkdir <name> -- create a directory on the Ultimate filesystem, relative to
+// the current directory. Only meaningful for 'H'/'T'/'F' -- classic IEC
+// drives/servers (8/9/S) and the CSDB module (C) have no create-directory
+// convention here, so those report "NOT SUPPORTED" (same as the old hdnsh's
+// cmd_mkdir.asm).
+cmd_mkdir:
+    ldy w_arg
+    lda cf_shadow,y
+    bne cmk_hasarg
+    lda #msg_err - msg_blob    // no argument
+    jmp print_msg
+cmk_hasarg:
+    lda w_dev
+    cmp #$48                   // 'H'
+    beq cmk_uii
+    cmp #$54                   // 'T'
+    beq cmk_uii
+    cmp #$46                   // 'F'
+    beq cmk_uii
+    lda #msg_nosup - msg_blob
+    jmp print_msg
+cmk_uii:
+    lda #DOS_CMD_CREATE_DIR
+    ldx #TARGET_DOS1
+    jsr dos_begin
+    ldy w_arg
+cmk_path:
+    lda cf_shadow,y
+    beq cmk_send
+    sta UII_CMD
+    iny
+    bne cmk_path
+cmk_send:
+    jmp dos_finish_quiet
+
+// cp <name> -- copy a file between the Ultimate filesystem and either the
+// current network-drive (#n) directory or CSDB (#c), via the server's own
+// FTP round trip onto this C64U's built-in FTP server (the same mechanism
+// cloud/handlers/csdb_handler.py's cp already uses to push release files
+// here -- see wedge-analysis.md). 'N'/'C' (GET): forward the typed line
+// as-is ("cp <name>") -- the server's currently active module (netdrive or
+// CSDB) decides what it means: netdrive FTPs a workspace file, CSDB
+// downloads/unzips a release file -- either way it lands in this C64U's own
+// /TEMP (use #t + the filename afterward; this is also the long-documented
+// CSDB workflow, see docs/user_manual/csdb.md). 'H'/'T'/'F' (PUT): rewrite
+// the line as "PUT <name>" -- the server FTP-pulls the file from this
+// C64U's /TEMP and drops it into the #n session's current server-side
+// directory (CSDB has no PUT direction). Deliberately always anchored on
+// /TEMP for the local side rather than "wherever cd took you": the wire
+// protocol has no way to query the Ultimate DOS current directory from the
+// server side, so relaying an arbitrary local path isn't possible without a
+// new query round trip -- not attempted in this first pass. '8'/'9'/'S'
+// have no local filesystem/session to bridge, so those report
+// "NOT SUPPORTED".
+cmd_cp:
+    ldy w_arg
+    lda cf_shadow,y
+    bne ccp_hasarg
+    lda #msg_err - msg_blob    // no argument
+    jmp print_msg
+ccp_hasarg:
+    lda w_dev
+    cmp #$4e                   // 'N': GET -- typed line is already "cp <name>"
+    beq ccp_get
+    cmp #$43                   // 'C': CSDB's own long-documented "cp <name>"
+    beq ccp_get                // download (see docs/user_manual/csdb.md) --
+                                // same raw-forward mechanism as 'N', the
+                                // server's active module (CSDB vs netdrive)
+                                // decides what it means
+    cmp #$48                   // 'H'
+    beq ccp_put
+    cmp #$54                   // 'T'
+    beq ccp_put
+    cmp #$46                   // 'F'
+    beq ccp_put
+    lda #msg_nosup - msg_blob
+    jmp print_msg
+ccp_get:
+    jmp send_cli
+ccp_put:
+    // stash the filename argument (wc_buf is free here -- no ll/dir listing
+    // in progress), then rebuild cf_shadow as "PUT <name>" before forwarding.
+    ldy w_arg
+    ldx #$00
+ccp_savearg:
+    lda cf_shadow,y
+    sta wc_buf,x
+    beq ccp_saved
+    iny
+    inx
+    cpx #wc_buf_max
+    bne ccp_savearg
+    lda #$00
+    sta wc_buf,x
+ccp_saved:
+    ldx #$00
+ccp_pfx:
+    lda ccp_put_pfx,x
+    beq ccp_copyarg
+    sta cf_shadow,x
+    inx
+    bne ccp_pfx
+ccp_copyarg:
+    ldy #$00
+ccp_argloop:
+    lda wc_buf,y
+    sta cf_shadow,x
+    beq ccp_argdone
+    inx
+    iny
+    bne ccp_argloop
+ccp_argdone:
+    jmp send_cli
+ccp_put_pfx:
+    .byte $50,$55,$54,$20,$00  // "PUT "
+
+// memcpy $start-$end filename  -- save a memory range to a file
+// memcpy filename $start       -- load a file into memory at an explicit
+//                                  start address (relocatable: any load
+//                                  address embedded in the file is ignored)
+//
+// Device is whichever w_dev currently selects (H/T/F/8 all resolve to
+// KERNAL device 8 -- the same physical Ultimate drive #h/#t/#f already just
+// cd on; 9->9, S->10), or an explicit "#X:" prefix on the filename overrides
+// it for this one command only (w_dev itself is left untouched). C/N have no
+// local-memory bridge (yet) -- NOT SUPPORTED, same scoping decision as cp.
+//
+// This is exactly the technique BASIC's own SAVE/LOAD tokens use under the
+// hood (see docs/inspiration/c64/mapc6411.txt's $E156/$E168 writeups):
+// temporarily repoint TXTTAB ($2b/$2c) at the requested start address for
+// SAVE (restored after, regardless of success), and pass the start address
+// directly in X/Y for LOAD with SA=0 (tells LOAD to ignore any embedded
+// address and use X/Y instead -- this is what makes the restore relocatable).
+// Straight KERNAL SETLFS/SETNAM/LOAD/SAVE, no new file I/O of our own --
+// bank01's ILOAD/ISAVE patch already fast-paths these through Ultimate DOS
+// for device 8, same as a plain "SAVE"..",8,1" typed at the BASIC prompt.
+cmd_memcpy:
+    ldy w_arg
+    lda cf_shadow,y
+    bne cmc_hasarg
+    lda #msg_err - msg_blob
+    jmp print_msg
+cmc_hasarg:
+    cmp #$24                   // '$' -- "$start-$end filename" (SAVE form)
+    beq cmc_save
+    jmp cmc_load                // else "filename $start" (LOAD form)
+
+// --- SAVE form: $start-$end filename ---
+cmc_save:
+    ldy w_arg
+    iny                         // skip '$'
+    jsr parse_hex16
+    lda mc_hexval
+    sta mc_start
+    lda mc_hexval+1
+    sta mc_start+1
+    lda cf_shadow,y
+    cmp #$2d                    // '-'
+    beq cmc_save_dash
+    jmp cmc_synerr
+cmc_save_dash:
+    iny
+    jsr parse_hex16
+    lda mc_hexval
+    sta mc_end
+    lda mc_hexval+1
+    sta mc_end+1
+cmc_save_sp:
+    lda cf_shadow,y
+    bne cmc_save_spchk           // no filename
+    jmp cmc_synerr
+cmc_save_spchk:
+    cmp #$20
+    bne cmc_save_fn
+    iny
+    bne cmc_save_sp
+cmc_save_fn:
+    jsr cmc_parse_dev           // A=device letter (override or w_dev); Y past any "#X:"
+    sty mc_fnstart
+    jsr resolve_devnum
+    bcc cmc_save_devok
+    jmp cmc_nosup
+cmc_save_devok:
+    sta mc_devnum
+    ldy mc_fnstart
+    jsr cmc_fnlen               // X=filename length
+    stx mc_fnlen
+    lda #$02                    // logical file 2
+    ldx mc_devnum
+    ldy #$01                    // SA=1: embed the load address in the file (standard convention)
+    jsr SETLFS
+    lda #<cf_shadow
+    clc
+    adc mc_fnstart
+    tax
+    lda #>cf_shadow
+    adc #$00
+    tay
+    lda mc_fnlen
+    jsr SETNAM
+    lda TXTTAB
+    sta mc_savetxt
+    lda TXTTAB+1
+    sta mc_savetxt+1
+    lda mc_start
+    sta TXTTAB
+    lda mc_start+1
+    sta TXTTAB+1
+    lda mc_end                  // SAVE wants X/Y = address of the byte AFTER
+    clc                         // the last byte to save (end is inclusive)
+    adc #$01
+    tax
+    lda mc_end+1
+    adc #$00
+    tay
+    lda #$2b
+    jsr SAVE
+    php
+    lda mc_savetxt
+    sta TXTTAB
+    lda mc_savetxt+1
+    sta TXTTAB+1
+    plp
+    bcc cmc_save_ok
+    jmp cmc_err
+cmc_save_ok:
+    lda #msg_ok - msg_blob
+    jmp print_msg
+
+// --- LOAD form: filename $start ---
+cmc_load:
+    ldy w_arg
+    jsr cmc_parse_dev
+    sty mc_fnstart
+    jsr resolve_devnum
+    bcc cmc_load_devok
+    jmp cmc_nosup
+cmc_load_devok:
+    sta mc_devnum
+    ldy mc_fnstart
+    jsr cmc_fnlen                // X=filename length; Y left at the terminator
+    stx mc_fnlen
+cmc_load_sp:
+    lda cf_shadow,y
+    bne cmc_load_spchk           // no address given
+    jmp cmc_synerr
+cmc_load_spchk:
+    cmp #$20
+    bne cmc_load_dollar
+    iny
+    bne cmc_load_sp
+cmc_load_dollar:
+    cmp #$24                     // '$'
+    beq cmc_load_isdollar
+    jmp cmc_synerr
+cmc_load_isdollar:
+    iny
+    jsr parse_hex16
+    lda #$02                     // logical file 2
+    ldx mc_devnum
+    ldy #$00                     // SA=0: ignore any embedded load address, use X/Y (relocatable)
+    jsr SETLFS
+    lda #<cf_shadow
+    clc
+    adc mc_fnstart
+    tax
+    lda #>cf_shadow
+    adc #$00
+    tay
+    lda mc_fnlen
+    jsr SETNAM
+    lda #$00                     // 0 = LOAD (not verify)
+    ldx mc_hexval
+    ldy mc_hexval+1
+    jsr LOAD
+    bcc cmc_load_ok
+    jmp cmc_err
+cmc_load_ok:
+    lda #msg_ok - msg_blob
+    jmp print_msg
+
+cmc_nosup:
+    lda #msg_nosup - msg_blob
+    jmp print_msg
+cmc_synerr:
+cmc_err:
+    lda #msg_err - msg_blob
+    jmp print_msg
+
+// cmc_parse_dev -- Y = cf_shadow offset of a filename token (leading spaces
+// already skipped). If it starts "#X:" (X = a device letter), returns A=X
+// and advances Y past the 3-char prefix; otherwise returns A=w_dev and Y
+// unchanged. Never touches w_dev itself -- this is a one-command override.
+cmc_parse_dev:
+    lda cf_shadow,y
+    cmp #$23                     // '#'
+    bne cmc_pd_default
+    lda cf_shadow+2,y            // char after the letter must be ':'
+    cmp #$3a
+    bne cmc_pd_default
+    lda cf_shadow+1,y
     pha
-    lsr
-    lsr
-    lsr
-    lsr
-    jsr diag_hexdigit
+    tya
+    clc
+    adc #$03
+    tay
     pla
-    and #$0f
-    jsr diag_hexdigit
-    lda #$20                 // space
-    jsr $ffd2
+    rts
+cmc_pd_default:
+    lda w_dev
+    rts
 
-    // --- TCP connect ---
+// cmc_fnlen -- Y = start offset; returns X = length up to the next space or
+// null. Y ends up on that terminator (space or null), which the LOAD-form
+// caller relies on to continue parsing the address token right after.
+cmc_fnlen:
+    ldx #$00
+cmc_fl_loop:
+    lda cf_shadow,y
+    beq cmc_fl_done
+    cmp #$20
+    beq cmc_fl_done
+    iny
+    inx
+    bne cmc_fl_loop
+cmc_fl_done:
+    rts
+
+// resolve_devnum -- A=device letter in; on return, carry clear and A=KERNAL
+// device number (H/T/F/8->8, 9->9, S->10), or carry set (unsupported: C/N/
+// anything else -- no local-memory bridge for those).
+resolve_devnum:
+    cmp #$48                     // 'H'
+    beq rdn_8
+    cmp #$54                     // 'T'
+    beq rdn_8
+    cmp #$46                     // 'F'
+    beq rdn_8
+    cmp #$38                     // '8'
+    beq rdn_8
+    cmp #$39                     // '9'
+    beq rdn_9
+    cmp #$53                     // 'S'
+    beq rdn_10
+    sec
+    rts
+rdn_8:
+    lda #$08
+    clc
+    rts
+rdn_9:
+    lda #$09
+    clc
+    rts
+rdn_10:
+    lda #$0a
+    clc
+    rts
+
+// parse_hex16 -- Y = index of the first hex digit in cf_shadow. Parses as
+// many hex digits (0-9, A-F, uppercase only) as are present into mc_hexval
+// (16-bit, big-endian typing order), leaving Y on the first non-hex-digit
+// character (the caller's terminator check).
+parse_hex16:
+    lda #$00
+    sta mc_hexval
+    sta mc_hexval+1
+ph_loop:
+    lda cf_shadow,y
+    jsr hex_digit_val
+    bcs ph_done
+    pha
+    asl mc_hexval
+    rol mc_hexval+1
+    asl mc_hexval
+    rol mc_hexval+1
+    asl mc_hexval
+    rol mc_hexval+1
+    asl mc_hexval
+    rol mc_hexval+1
+    pla
+    ora mc_hexval
+    sta mc_hexval
+    iny
+    bne ph_loop
+ph_done:
+    rts
+
+// hex_digit_val -- A = char in; returns A=0-15/carry clear if 0-9 or A-F,
+// or carry set (not a hex digit, A unchanged in meaning -- caller only acts
+// on carry).
+hex_digit_val:
+    cmp #$30
+    bcc hdv_bad
+    cmp #$3a
+    bcc hdv_digit
+    cmp #$41
+    bcc hdv_bad
+    cmp #$47
+    bcs hdv_bad
+    sec
+    sbc #$37
+    clc
+    rts
+hdv_digit:
+    sec
+    sbc #$30
+    clc
+    rts
+hdv_bad:
+    sec
+    rts
+
+// help -- if the cloud is reachable, forward the whole typed line (bare
+// "help", "help topics", or "help <question>") to the chatbot exactly like
+// an unrecognized command, so the server can answer contextually (see
+// docs/user_manual/user_manual.md's "Getting Help" section: help behaves
+// differently connected vs. not). If unreachable, wd_chat's own fallback
+// (net_fail) is completely silent, which would leave "help" looking like it
+// did nothing -- print a local, static pointer instead.
+cmd_help:
+    jsr net_connect
+    bcs chp_local
+    jsr net_close
+    jmp wd_chat
+chp_local:
+    lda #msg_help - msg_blob
+    jmp print_msg
+
+// ---------------------------------------------------------------------------
+// wc_match -- does the pattern typed as this command's argument (w_arg,
+// offset into cf_shadow; may be empty) occur as a substring of the
+// null-terminated line buffered at wc_buf? A trailing '*' in the pattern
+// matches any remainder, giving the "outrun*" prefix convention; a pattern
+// with no '*' still matches anywhere in the line rather than requiring an
+// exact whole-line match, since we don't know the exact column layout of
+// every listing source (KERNAL block-count-prefixed names vs. Ultimate DOS
+// entries) -- substring search works either way without needing to know it.
+// Output: carry clear = match (including an empty pattern -- no filter
+// means show everything), carry set = no match anywhere in the line.
+// ---------------------------------------------------------------------------
+wc_match:
+    ldy w_arg
+    lda cf_shadow,y
+    bne wcm_haspat
+    clc                        // empty pattern: always matches
+    rts
+wcm_haspat:
+    lda #$00
+    sta w_hstart
+wcm_outer:
+    ldx w_hstart
+    lda wc_buf,x
+    beq wcm_nomatch            // haystack exhausted: no match found anywhere
+    stx w_hidx
+    ldy w_arg
+wcm_inner:
+    lda cf_shadow,y
+    cmp #$2a                   // '*' in pattern: matches regardless of the rest
+    beq wcm_yes
+    ldx w_hidx
+    cmp wc_buf,x
+    beq wcm_advance
+    inc w_hstart                // mismatch: retry starting one byte further in
+    jmp wcm_outer
+wcm_advance:
+    iny
+    inc w_hidx
+    ldx w_hidx
+    lda wc_buf,x
+    beq wcm_hend                // haystack ends exactly here
+    jmp wcm_inner
+wcm_hend:
+    lda cf_shadow,y
+    beq wcm_yes                 // pattern also ends here: exact match
+    cmp #$2a
+    beq wcm_yes                 // pattern's only left is '*': still a match
+    inc w_hstart
+    jmp wcm_outer
+wcm_yes:
+    clc
+    rts
+wcm_nomatch:
+    sec
+    rts
+
+// ---------------------------------------------------------------------------
+// Directory listing over the Ultimate DOS (devices H/T/F): OPEN_DIR, then
+// READ_DIR and print entry chunks until the data queue stays empty --
+// same accept-loop shape as the old src/cmd_lsll.asm. Each chunk is now
+// buffered into wc_buf and matched against w_arg (see wc_match) before
+// printing, so "ll outrun*" only shows matching entries.
+// ---------------------------------------------------------------------------
+wd_uii_dir:
+    lda #DOS_CMD_OPEN_DIR
+    jsr dos_simple_quiet
+    lda #DOS_CMD_READ_DIR
+    ldx #TARGET_DOS1
+    jsr dos_begin
+    jsr net_push_and_check
+    bcc wud_pushok
+    jmp dos_fail
+wud_pushok:
+    jsr net_wait_not_busy
+    jsr dos_print_data_filtered  // first entry chunk
+    jsr dos_status_report
+    jsr net_accept
+wud_more:
+    lda UII_STATUS
+    and #UII_ST_DATAAV
+    beq wud_done
+    jsr dos_print_data_filtered
+    jsr net_accept
+    jmp wud_more
+wud_done:
+    rts
+
+// Buffer one response chunk into wc_buf (bounded to wc_buf_max, draining any
+// overflow unread so the queue stays in sync), then print it + CR only if it
+// matches w_arg's pattern (wc_match) -- otherwise the chunk is discarded
+// silently. Y is the fill count.
+dos_print_data_filtered:
+    ldy #$00
+dpdf_loop:
+    lda UII_STATUS
+    and #UII_ST_DATAAV
+    beq dpdf_term
+    lda UII_RESP
+    cpy #wc_buf_max
+    bcs dpdf_loop              // buffer full: keep draining, stop storing
+    sta wc_buf,y
+    iny
+    jmp dpdf_loop
+dpdf_term:
+    cpy #wc_buf_max
+    bcc dpdf_null
+    ldy #wc_buf_max - 1
+dpdf_null:
+    lda #$00
+    sta wc_buf,y
+    jsr wc_match
+    bcs dpdf_done              // no match: print nothing for this chunk
+    ldx #$00
+dpdf_print:
+    lda wc_buf,x
+    beq dpdf_cr
+    jsr CHROUT
+    inx
+    jmp dpdf_print
+dpdf_cr:
+    jmp print_cr
+dpdf_done:
+    rts
+
+// ---------------------------------------------------------------------------
+// Directory listing via the KERNAL (devices 8/9/S): open "$" and decode the
+// BASIC-program-shaped listing (link word, block count, name chars).
+// Input: A = device char ('8'/'9'/'S').
+// ---------------------------------------------------------------------------
+kernal_dir:
+    ldx #$08
+    cmp #$39
+    bne kd_not9
+    ldx #$09
+kd_not9:
+    cmp #$53
+    bne kd_notS
+    ldx #$0a
+kd_notS:
+    stx w_len                  // device number
+    lda #$01
+    ldx #<kd_dollar
+    ldy #>kd_dollar
+    jsr SETNAM
+    lda #$02                   // logical file 2
+    ldx w_len
+    ldy #$00                   // SA 0: "$" arrives as a BASIC program image
+    jsr SETLFS
+    jsr OPEN
+    bcs kd_err
+    ldx #$02
+    jsr CHKIN
+    bcs kd_err
+    jsr CHRIN                  // skip the 2-byte load address
+    jsr CHRIN
+kd_line:
+    jsr CHRIN                  // line link lo
+    sta w_len
+    jsr CHRIN                  // line link hi
+    ora w_len
+    beq kd_done                // null link: end of listing
+    jsr READST
+    bne kd_done
+    jsr CHRIN                  // block count lo
+    sta w_dig1                 // stashed until the filter decision is made
+    jsr CHRIN                  // block count hi
+    sta w_dig2
+    ldy #$00                   // Y = wc_buf fill count for this entry's name
+kd_chars:
+    jsr CHRIN
+    beq kd_nameend
+    pha
+    jsr READST
+    bne kd_done_pla
+    pla
+    cpy #wc_buf_max
+    bcs kd_chars               // buffer full: keep reading/discarding the rest
+    sta wc_buf,y
+    iny
+    jmp kd_chars
+kd_nameend:
+    lda #$00
+    sta wc_buf,y
+    jsr wc_match
+    bcs kd_eol                 // no match: skip printing this entry entirely
+    ldx w_dig1
+    lda w_dig2
+    jsr LINPRT                 // print A:X as decimal
+    lda #$20
+    jsr CHROUT
+    ldx #$00
+kd_print:
+    lda wc_buf,x
+    beq kd_pdone
+    jsr CHROUT
+    inx
+    jmp kd_print
+kd_pdone:
+    jsr print_cr
+kd_eol:
+    jmp kd_line
+kd_done_pla:
+    pla
+kd_done:
+    lda #$02
+    jsr CLOSE
+    jsr CLRCHN
+    rts
+kd_err:
+    lda #$02
+    jsr CLOSE
+    jsr CLRCHN
+    lda #msg_err - msg_blob
+    jmp print_msg
+kd_dollar:
+    .byte $24                  // "$"
+
+// ===========================================================================
+// Cloud paths: chatbot fallback and raw-CLI forwarding
+// ===========================================================================
+
+// Unrecognized line -> "I:" + line to the ChatHandler; print the reply.
+wd_chat:
+    jsr net_connect
+    bcs net_fail
+    lda #$02                   // CommandID.TEXT_INPUT | console 0
+    jsr nw_start
+    lda #$49                   // 'I'
+    sta UII_CMD
+    lda #$3a                   // ':'
+    sta UII_CMD
+    jsr nw_send_shadow
+    jsr nw_finish
+    bcs net_fail
+    lda #$00
+    sta w_quiet
+    jsr net_read_response
+    bcs net_fail
+    jsr net_close
+    rts
+net_fail:
+    rts
+
+// Raw line to the server's request dispatcher (server-side module routing:
+// "#c" activates CSDB, "dir"/"ll"/free text go to the active module).
+send_cli:
+    jsr net_connect
+    bcs net_fail
+    lda #$02                   // CommandID.TEXT_INPUT | console 0
+    jsr nw_start
+    jsr nw_send_shadow
+    jsr nw_finish
+    bcs net_fail
+    lda #$00
+    sta w_quiet
+    jsr net_read_response
+    jsr net_close
+    jmp print_cr
+
+// ===========================================================================
+// Console switching (C=+CTRL + 1..7)
+// ===========================================================================
+// console_switch runs in IRQ context (I flag set), reached from the CINV RAM
+// stub with X = digit index 0..6 (C=+CTRL+1 .. C=+CTRL+7 -- plain C=+digit
+// was the first cut, but on hardware that combo also fires the KERNAL's own
+// colour-select decode, so a qualifier was needed; C=+SHIFT was tried next but
+// that combo turned out to flip the character set (hardware-confirmed
+// 2026-07-04), so CTRL is used instead -- CTRL has decode priority in the
+// KERNAL's own table and carries no such side effect). C=+CTRL+1
+// returns to the local shell; 2..7 select the server-side consoles. While a
+// server console is
+// active this loops modally: it scans the keyboard itself (SCNKEY/GETIN,
+// interrupts stay off) and forwards every key to the server, which paints
+// the 40x25 screen straight into $0400/$d800 via the Ultimate DMA service.
+// The local screen is saved/restored by the *server* too (SAVE_SCREEN/
+// RESTORE_SCREEN commands DMA-read/-write it), so no C64 RAM buffer at all.
+console_switch:
+    cpx #$00
+    bne cs_to_server
+    lda w_console              // C=+CTRL+1: back to local
+    bne cs_go_local
+cs_ret:
+    rts                        // already local -- nothing to do
+cs_go_local:
+    lda #$00
+    sta w_console
+    jsr cs_wait_release
+    jmp scr_restore            // restore screen; rts unwinds to the IRQ chain
+cs_to_server:
+    txa                        // target console id nibble = (digit index + 1) << 4
+    clc
+    adc #$01
+    asl
+    asl
+    asl
+    asl
+    sta w_new
+    cmp w_console
+    beq cs_ret                 // already on that console
+    lda w_console
+    bne cs_already_remote
+    jsr scr_save               // leaving the local screen: server snapshots it
+    bcs cs_ret                 // server unreachable: stay local, ignore the key
+cs_already_remote:
+    lda w_new
+    sta w_console
+    jsr cs_wait_release
+    jsr scr_get
+cs_modal:
+    jsr SCNKEY                 // interrupts are off: scan the keyboard ourselves
+    lda SHFLAG
+    and #$06                   // C=+CTRL both held? (plain C=+digit changes colour, C=+SHIFT flips charset)
+    cmp #$06
+    bne cs_nodigit
+    lda SFDX
+    ldx #$06
+cs_dchk:
+    cmp cs_digit_tbl,x
+    beq cs_dmatch
+    dex
+    bpl cs_dchk
+    bmi cs_nodigit
+cs_dmatch:
+    cpx #$00
+    bne cs_dserver
+    lda #$00                   // C=+CTRL+1: leave modal mode, back to BASIC
+    sta w_console
+    jsr cs_wait_release
+    jmp scr_restore
+cs_dserver:
+    txa                        // hop directly to another server console
+    clc
+    adc #$01
+    asl
+    asl
+    asl
+    asl
+    cmp w_console
+    beq cs_modal               // same console: ignore
+    sta w_console
+    jsr cs_wait_release
+    jsr scr_get
+    jmp cs_modal
+cs_nodigit:
+    jsr GETIN
+    cmp #$00
+    beq cs_modal
+    cmp #$81                   // safety net: swallow stray colour codes if any leak through
+    beq cs_modal
+    cmp #$95
+    bcc cs_fwd
+    cmp #$9b
+    bcc cs_modal
+cs_fwd:
+    jsr key_send
+    jmp cs_modal
+
+// wait until no key is held, then flush the type-ahead buffer (drops the
+// stray colour code, if any, the combo itself produced)
+cs_wait_release:
+    jsr SCNKEY
+    lda SFDX
+    cmp #$40                   // 64 = no key down
+    bne cs_wait_release
+    lda #$00
+    sta NDX
+    rts
+
+cs_digit_tbl:
+    .byte 56, 59, 8, 11, 16, 19, 24    // matrix codes for keys 1-7
+
+// --- server screen commands (console 0 = local shell) --------------------
+// scr_save/scr_restore block on the server's ack (the DMA transfer has
+// finished by then), so save -> repaint -> restore can't race even though
+// every packet rides its own TCP connection.
+scr_save:
+    lda #$02                   // SERVER_CMD_SAVE_SCREEN
+    bne scr_cmd0               // (always)
+scr_restore:
+    lda #$03                   // SERVER_CMD_RESTORE_SCREEN
+scr_cmd0:
+    sta w_len
+    jsr net_connect
+    bcs scr_fail
+    lda #$00                   // CommandID.COMMAND | console 0
+    jsr nw_start
+    lda w_len
+    sta UII_CMD
+    lda #$00
+    sta UII_CMD
+    jsr nw_finish
+    bcs scr_fail_close
+    lda #$01
+    sta w_quiet                // wait for the ack, discard its text
+    jsr net_read_response
+    lda #$00
+    sta w_quiet
+    jsr net_close
+    clc
+    rts
+scr_fail_close:
+    jsr net_close
+scr_fail:
+    sec
+    rts
+
+// ask the server to DMA-paint w_console's full screen (no TCP response)
+scr_get:
+    jsr net_connect
+    bcs scr_get_done
+    lda w_console              // CommandID.COMMAND | console nibble
+    jsr nw_start
+    lda #$01                   // SERVER_CMD_GET_SCREEN
+    sta UII_CMD
+    lda #$00
+    sta UII_CMD
+    jsr nw_finish
+    jsr net_close
+scr_get_done:
+    rts
+
+// forward one key (A = PETSCII) + live modifier bits to w_console; the
+// server repaints the screen via DMA in response
+key_send:
+    sta w_len
+    jsr net_connect
+    bcs key_send_done
+    lda w_console
+    ora #$01                   // CommandID.KEYPRESS
+    jsr nw_start
+    lda w_len
+    sta UII_CMD
+    lda SHFLAG                 // raw modifier bits, same wire format as hdnsh
+    sta UII_CMD
+    lda #$00
+    sta UII_CMD
+    jsr nw_finish
+    jsr net_close
+key_send_done:
+    rts
+
+// ===========================================================================
+// wedge_install -- called (via bank01's xb2 RAM trampoline, under SEI) on
+// every non-empty typed line: installs the CINV keyboard-watch stub and
+// one-time defaults, or returns immediately if already in place. Re-running
+// every line means the hook survives anything that resets $0314 (RUN/STOP+
+// RESTORE, for one) -- same self-healing idea as the IERROR hook.
+// ===========================================================================
+wedge_install:
+    lda $0314
+    cmp #<cinv_ram
+    bne wi_install
+    lda $0315
+    cmp #>cinv_ram
+    beq wi_done
+wi_install:
+    lda $0314                  // save the original vector for chaining
+    sta w_cinv_orig
+    lda $0315
+    sta w_cinv_orig+1
+    ldx #cinv_stub_rom_end - cinv_stub_rom - 1
+wi_copy:
+    lda cinv_stub_rom,x
+    sta cinv_ram,x
+    dex
+    bpl wi_copy
+    lda #$00                   // one-time state defaults
+    sta w_console
+    sta w_latch
+    sta w_quiet
+    lda #$48                   // 'H': default device is the Ultimate home dir
+    sta w_dev
+    lda #<cinv_ram
+    sta $0314
+    lda #>cinv_ram
+    sta $0315
+wi_done:
+    rts
+
+// ---------------------------------------------------------------------------
+// CINV keyboard-watch stub -- relocated to cinv_ram ($cf90) and left
+// resident. Runs on every IRQ, from RAM, because the IRQ can fire while any
+// cartridge bank is paged in. Checks for C= + 1..7 (matrix code in SFDX,
+// C= bit in SHFLAG); on a fresh match it saves the current bank via the RR
+// status register's banking-feedback bits, pages in bank05, and calls
+// console_switch with X = digit index. w_latch makes it one-shot per press.
+// ---------------------------------------------------------------------------
+cinv_stub_rom:
+.pseudopc cinv_ram {
+    lda SHFLAG
+    and #$06                   // C=+CTRL both held? (plain C=+digit changes colour, C=+SHIFT flips charset)
+    cmp #$06
+    bne cvr_clear
+    lda SFDX
+    ldx #$06
+cvr_chk:
+    cmp cs_ram_digits,x
+    beq cvr_match
+    dex
+    bpl cvr_chk
+cvr_clear:
+    lda #$00
+    sta w_latch
+cvr_chain:
+    jmp (w_cinv_orig)
+cvr_match:
+    lda w_latch
+    bne cvr_chain              // still held from the last switch: ignore
+    lda #$01
+    sta w_latch
+    lda $de00                  // RR status read: bits 3/4/7 = bank feedback
+    and #$98
+    sta w_bank
+    lda #$88                   // page in bank05
+    sta $de00
+    jsr console_switch         // X = digit index 0..6
+    lda w_bank                 // restore whatever bank was live before
+    sta $de00
+    jmp (w_cinv_orig)
+cs_ram_digits:
+    .byte 56, 59, 8, 11, 16, 19, 24    // matrix codes for keys 1-7
+}
+cinv_stub_rom_end:
+
+// ===========================================================================
+// Ultimate DOS helpers (command interface, TARGET_DOS1/CONTROL)
+// ===========================================================================
+
+// A = DOS command id, no payload; print the response data
+dos_simple_print:
+    ldx #TARGET_DOS1
+    jsr dos_begin
+    jmp dos_finish_print
+
+// A = DOS command id, no payload; discard the response data
+dos_simple_quiet:
+    ldx #TARGET_DOS1
+    jsr dos_begin
+    jmp dos_finish_quiet
+
+// X = target, A = command id; leaves the UCI ready for payload bytes
+dos_begin:
+    pha
     jsr net_wait_idle
-    lda #NET_TARGET
+    txa
+    sta UII_CMD
+    pla
+    sta UII_CMD
+    rts
+
+dos_finish_print:              // push; print response data; report status
+    jsr net_push_and_check
+    bcs dos_fail
+    jsr net_wait_not_busy
+    jsr dos_print_data
+    jmp dos_status_finish
+dos_finish_quiet:              // push; discard response data; report status
+    jsr net_push_and_check
+    bcs dos_fail
+    jsr net_wait_not_busy
+    jsr net_drain_data
+dos_status_finish:
+    jsr dos_status_report
+    jmp net_accept
+dos_fail:
+    lda #msg_err - msg_blob    // the UCI rejected the command outright
+    jmp print_msg
+
+// print the whole response-data queue via CHROUT
+dos_print_data:
+dpd_loop:
+    lda UII_STATUS
+    and #UII_ST_DATAAV
+    beq dpd_done
+    lda UII_RESP
+    jsr CHROUT
+    jmp dpd_loop
+dpd_done:
+    rts
+
+// Drain the status queue. Success ("00...") stays silent; anything else is
+// printed as-is (e.g. "05,DIRECTORY NOT FOUND") plus CR. The first two chars
+// land in cf_status0/1 so net_accept's carry convention keeps working.
+dos_status_report:
+    lda #$00
+    sta cf_status0
+    sta cf_status1
+    lda UII_STATUS
+    and #UII_ST_STATAV
+    beq dsr_ok
+    lda UII_STATDAT
+    sta cf_status0
+    lda UII_STATUS
+    and #UII_ST_STATAV
+    beq dsr_check
+    lda UII_STATDAT
+    sta cf_status1
+dsr_check:
+    lda cf_status0
+    cmp #$30
+    bne dsr_bad
+    lda cf_status1
+    cmp #$30
+    bne dsr_bad
+dsr_drain:                     // success: swallow the rest silently
+    lda UII_STATUS
+    and #UII_ST_STATAV
+    beq dsr_ok
+    lda UII_STATDAT
+    jmp dsr_drain
+dsr_ok:
+    rts
+dsr_bad:
+    lda cf_status0
+    jsr CHROUT
+    lda cf_status1
+    beq dsr_cr
+    jsr CHROUT
+dsr_rest:
+    lda UII_STATUS
+    and #UII_ST_STATAV
+    beq dsr_cr
+    lda UII_STATDAT
+    jsr CHROUT
+    jmp dsr_rest
+dsr_cr:
+    jmp print_cr
+
+// Y = offset of a null-terminated path inside path_blob: DOS CHANGE_DIR
+dos_chdir_blob:
+    sty w_len
+    lda #DOS_CMD_CHANGE_DIR
+    ldx #TARGET_DOS1
+    jsr dos_begin
+    ldy w_len
+dcb_loop:
+    lda path_blob,y
+    beq dcb_send
+    sta UII_CMD
+    iny
+    bne dcb_loop
+dcb_send:
+    jmp dos_finish_quiet
+
+// NETWORK GET_IP_ADDRESS. Response is 12 raw binary bytes, not text --
+// [0-3]=IP, [4-7]=netmask, [8-11]=gateway, one byte per octet (confirmed
+// against docs/inspiration/ultimatedos-samples/u-sample.c's uii_getipaddress()
+// callers, which all index uii_data[0..11] the same way). Streaming those
+// bytes through CHROUT as if they were text (the old behaviour) printed
+// garbage control characters instead of an address -- hardware-confirmed
+// 2026-07-04. Y tracks the octet position (0-11) so dots/labels land right;
+// print_dec_byte does the actual decimal formatting.
+net_print_ip:
+    jsr net_wait_idle
+    lda #TARGET_NETWORK
+    sta UII_CMD
+    lda #NET_CMD_GET_IP
+    sta UII_CMD
+    lda #$00
+    sta UII_CMD
+    jsr net_push_and_check
+    bcs npi_done
+    jsr net_wait_not_busy
+    ldy #$00
+npi_loop:
+    lda UII_STATUS
+    and #UII_ST_DATAAV
+    beq npi_status
+    lda UII_RESP
+    jsr print_dec_byte
+    cpy #$03
+    beq npi_lbl_mask
+    cpy #$07
+    beq npi_lbl_gw
+    cpy #$0b
+    beq npi_next               // last byte (gateway's 4th octet): no trailing dot
+    lda #$2e                   // '.'
+    jsr CHROUT
+    jmp npi_next
+npi_lbl_mask:
+    jsr print_cr
+    lda #msg_netmask - msg_blob
+    jsr print_msg
+    jmp npi_next
+npi_lbl_gw:
+    jsr print_cr
+    lda #msg_gateway - msg_blob
+    jsr print_msg
+npi_next:
+    iny
+    jmp npi_loop
+npi_status:
+    jsr net_read_status
+    jsr net_accept
+npi_done:
+    rts
+
+// A = 0..255; prints decimal digits via CHROUT, no leading zeros/spaces.
+// Classic "subtract until borrow" 6502 byte-to-decimal conversion (X counts
+// how many times 100/10 divide in); w_dig1/w_dig2 hold the hundreds/tens
+// digit across the two passes, w_bank is reused as a transient "already
+// printed a digit" flag so e.g. "105" doesn't come out as "15".
+print_dec_byte:
+    ldx #$ff
+    sec
+pdb_hloop:
+    inx
+    sbc #100
+    bcs pdb_hloop
+    adc #100
+    stx w_dig1
+    ldx #$ff
+    sec
+pdb_tloop:
+    inx
+    sbc #10
+    bcs pdb_tloop
+    adc #10
+    stx w_dig2
+    sta w_len                  // units digit, stashed while the others print
+    lda #$00
+    sta w_bank                 // "printed something yet" flag
+    lda w_dig1
+    beq pdb_no100
+    clc
+    adc #$30
+    jsr CHROUT
+    inc w_bank
+pdb_no100:
+    lda w_dig2
+    bne pdb_have10
+    lda w_bank
+    beq pdb_no10
+pdb_have10:
+    lda w_dig2
+    clc
+    adc #$30
+    jsr CHROUT
+pdb_no10:
+    lda w_len
+    clc
+    adc #$30
+    jmp CHROUT
+
+// ===========================================================================
+// Cloud TCP helpers (network target; framing confirmed on hardware, see
+// wedge-analysis.md §8)
+// ===========================================================================
+
+// Open a TCP connection to the cloud server.
+// Output: carry clear on success (socket id in cf_socket_id), set on failure.
+net_connect:
+    jsr net_wait_idle
+    lda #TARGET_NETWORK
     sta UII_CMD
     lda #NET_TCP_CONNECT
     sta UII_CMD
@@ -405,140 +1790,133 @@ hondani_shell_entry:
     lda #>6464
     sta UII_CMD
     ldx #$00
-!send_ip:
+nc_ip:
     lda net_test_host,x
     sta UII_CMD
     inx
     cmp #$00
-    bne !send_ip-
+    bne nc_ip
     jsr net_push_and_check
-    bcc !pushok1+
-    jmp net_fail
-!pushok1:
+    bcs nc_fail
     jsr net_wait_not_busy
-    lda UII_RESP           // response data queue: socket_id
+    lda UII_RESP               // response data: socket id
     sta cf_socket_id
     jsr net_drain_data
     jsr net_read_status
-    jsr net_accept
-    bcc !connect_ok+
-    jmp net_fail
-!connect_ok:
+    jmp net_accept             // carry clear iff status was "00"
+nc_fail:
+    sec
+    rts
 
-    // --- send "I:" + the shadow-copied line (TEXT_INPUT cmd, console 0) ---
-    // cf_shadow ($cf32, bank01) holds the raw typed line, null-terminated;
-    // "I:" is ChatHandler's routing prefix (confirmed against cloud/handlers/
-    // chat_handler.py -- see wedge-analysis.md). The terminating null is
-    // sent too, matching the wire convention request_dispatcher.py expects
-    // (it rstrips trailing nulls on receipt).
+// A = packet command byte (CommandID | console nibble): start a SOCKET_WRITE
+// and emit the $fe packet magic + command byte; caller streams the payload
+// into UII_CMD, then calls nw_finish.
+nw_start:
+    pha
     jsr net_wait_idle
-    lda #NET_TARGET
+    lda #TARGET_NETWORK
     sta UII_CMD
     lda #NET_SOCKET_WRITE
     sta UII_CMD
     lda cf_socket_id
     sta UII_CMD
-    lda #$fe                // packet magic byte
+    lda #$fe                   // packet magic byte
     sta UII_CMD
-    lda #$02                // CommandID.TEXT_INPUT | console_id(0)
+    pla
     sta UII_CMD
-    lda #$49                // 'I'
-    sta UII_CMD
-    lda #$3a                // ':'
-    sta UII_CMD
+    rts
+
+// stream the raw typed line (cf_shadow) including its terminating null
+nw_send_shadow:
     ldy #$00
-!send_msg:
+nws_loop:
     lda cf_shadow,y
     sta UII_CMD
     iny
     cmp #$00
-    bne !send_msg-
+    bne nws_loop
+    rts
+
+// push the assembled SOCKET_WRITE and settle its response/status.
+// Output: carry clear ok, set on failure.
+nw_finish:
     jsr net_push_and_check
-    bcc !pushok2+
-    jmp net_fail
-!pushok2:
+    bcs nwf_done
     jsr net_wait_not_busy
     jsr net_drain_data
     jsr net_read_status
-    jsr net_accept
-    bcc !write_ok+
-    jmp net_fail
-!write_ok:
-    lda #$00
-    sta cf_state            // fresh response cycle: start by discarding $ff filler
-    sta cf_spin_idx
-    lda #<8000              // ~8000-iteration "give up waiting" budget -- generous
-    sta cf_retries_lo       // on purpose, since LLM replies can take several
-    lda #>8000               // seconds; each iteration is a fast register poll
-    sta cf_retries_hi        // except when it genuinely has to wait on the network
+    jmp net_accept
+nwf_done:
+    rts
 
-    // --- read the reply and print it straight to the screen ---
-    // A single SOCKET_READ only drains whatever's queued *right now* -- the
-    // original src/hdncloud.asm's send_cmd_to_hdn_cloud loops
-    // (!repeat_until_00data) reissuing SOCKET_READ until the status comes
-    // back "00" (done).
-!read_loop:
+// Poll SOCKET_READ until the length-prefixed response has fully arrived (or
+// the ~8000-iteration budget runs out), streaming content through
+// net_read_and_print (silent when w_quiet is set).
+// Output: carry clear = finished/normal, carry set = a read push failed.
+net_read_response:
+    lda #$00
+    sta cf_state               // fresh response: discard $ff filler first
+    sta cf_spin_idx
+    lda #<8000
+    sta cf_retries_lo
+    lda #>8000
+    sta cf_retries_hi
+nrr_loop:
     jsr net_wait_idle
-    lda #NET_TARGET
+    lda #TARGET_NETWORK
     sta UII_CMD
     lda #NET_SOCKET_READ
     sta UII_CMD
     lda cf_socket_id
     sta UII_CMD
-    lda #$e8                // read block length lo
+    lda #$e8                   // read block length lo
     sta UII_CMD
-    lda #$00                // read block length hi
+    lda #$00                   // read block length hi
     sta UII_CMD
     jsr net_push_and_check
-    bcc !pushok3+
-    jmp net_fail
-!pushok3:
-    jsr net_wait_not_busy_spin  // animates while the Ultimate is busy -- this
-                                 // is where a slow LLM's latency actually shows up
-    jsr net_read_and_print  // strip framing, stream real content to CHROUT;
-    bcs !had_data+          // carry set = at least one byte was seen this poll
-    jsr net_spin            // nothing new yet -- animate the "still waiting" indicator
-!had_data:
+    bcs nrr_fail
+    jsr net_wait_not_busy_spin // the wait where LLM latency actually shows up
+    jsr net_read_and_print
+    bcs nrr_had_data
+    jsr net_spin               // nothing new yet: animate the wait
+nrr_had_data:
     jsr net_read_status
     jsr net_accept
-    bcc !read_done+         // carry clear = status was "00" = fully drained
-    lda cf_state            // also stop early once the full content length has
-    cmp #$03                // been printed, regardless of what status says --
-    beq !read_done+         // no point retrying further once the message is done
-    lda cf_retries_lo       // count down the 16-bit retry budget; give up
-    bne !dec_lo+            // (fall through to close) once it hits zero
+    bcc nrr_done               // status "00": socket fully drained
+    lda cf_state
+    cmp #$03
+    beq nrr_done               // full content printed: stop early
+    lda cf_retries_lo
+    bne nrr_declo
     dec cf_retries_hi
-!dec_lo:
+nrr_declo:
     dec cf_retries_lo
     lda cf_retries_lo
     ora cf_retries_hi
-    bne !read_loop-
-!read_done:
+    bne nrr_loop
+nrr_done:
+    clc
+    rts
+nrr_fail:
+    sec
+    rts
 
-    // --- close the socket ---
+// close the socket in cf_socket_id
+net_close:
     jsr net_wait_idle
-    lda #NET_TARGET
+    lda #TARGET_NETWORK
     sta UII_CMD
     lda #NET_SOCKET_CLOSE
     sta UII_CMD
     lda cf_socket_id
     sta UII_CMD
     jsr net_push_and_check
-    bcc !pushok4+
-    jmp net_fail
-!pushok4:
+    bcs ncl_done
     jsr net_wait_not_busy
     jsr net_drain_data
     jsr net_read_status
     jsr net_accept
-
-    lda #$05                // green: full protocol round trip completed
-    sta $d020
-    rts
-
-net_fail:
-    lda #$02                // red: a protocol step failed (connect/write/read/push)
-    sta $d020
+ncl_done:
     rts
 
 // pushes the command just written to UII_CMD, then checks the ERROR status
@@ -549,104 +1927,247 @@ net_push_and_check:
     sta UII_CONTROL
     lda UII_STATUS
     and #UII_ST_ERROR
-    beq !ok+
+    beq npc_ok
     sec
     rts
-!ok:
+npc_ok:
     clc
     rts
 
 net_wait_idle:
-!loop:
     lda UII_STATUS
     and #UII_ST_STATE
-    bne !loop-
+    bne net_wait_idle
     rts
 
 net_wait_not_busy:
-!loop:
     lda UII_STATUS
     and #UII_ST_STATE
     cmp #$10
-    beq !loop-
+    beq net_wait_not_busy
     rts
 
-// net_wait_not_busy_spin lives further down in this file, relocated into
-// the same $9e00 free pocket as net_spin (see the comment there) -- it
-// didn't fit here alongside everything else in the smaller $9012 pocket.
+// Same as net_wait_not_busy, but advances the "still waiting" spinner every
+// 256 poll iterations (Y is free here).
+net_wait_not_busy_spin:
+    ldy #$00
+nwbs_loop:
+    lda UII_STATUS
+    and #UII_ST_STATE
+    cmp #$10
+    bne nwbs_done
+    iny
+    bne nwbs_loop
+    jsr net_spin
+    jmp nwbs_loop
+nwbs_done:
+    rts
 
-// drains the response-data queue without printing (used after
-// connect/write/close, whose response payload we don't care about here)
+// drains the response-data queue without printing
 net_drain_data:
-!loop:
     lda UII_STATUS
     and #UII_ST_DATAAV
-    beq !done+
+    beq ndd_done
     lda UII_RESP
-    jmp !loop-
-!done:
+    jmp net_drain_data
+ndd_done:
     rts
 
-// net_read_and_print lives further down in this file, relocated into the
-// same $9e00 free pocket as net_spin -- didn't fit here alongside
-// everything else in the smaller $9012 pocket.
-
-// net_spin lives further down in this file, relocated into a separate free
-// pocket at $9e00 -- see the comment there. (Kept as a plain jsr target;
-// Kick Assembler doesn't care about source-file ordering vs. final address.)
-
 // drains the status queue, keeping only the first two bytes (the "00"/error
-// code convention used by uii_success in the original src/c64u_common.asm)
+// code convention from the original src/c64u_common.asm)
 net_read_status:
     lda #$00
     sta cf_status0
     sta cf_status1
     ldx #$00
-!loop:
+nrs_loop:
     lda UII_STATUS
     and #UII_ST_STATAV
-    beq !done+
+    beq nrs_done
     lda UII_STATDAT
     cpx #$00
-    bne !not0+
+    bne nrs_not0
     sta cf_status0
-    jmp !next+
-!not0:
+    jmp nrs_next
+nrs_not0:
     cpx #$01
-    bne !next+
+    bne nrs_next
     sta cf_status1
-!next:
+nrs_next:
     inx
-    jmp !loop-
-!done:
+    jmp nrs_loop
+nrs_done:
     rts
 
-// Output: carry clear if last read_status was "00" (success), set otherwise
+// Output: carry clear if the last read status was "00", set otherwise
 net_accept:
     lda UII_CONTROL
     ora #UII_CTL_ACC
     sta UII_CONTROL
-!wait:
+na_wait:
     lda UII_STATUS
     and #UII_CTL_ACC
-    bne !wait-
+    bne na_wait
     lda cf_status0
     cmp #$30
-    bne !fail+
+    bne na_fail
     lda cf_status1
     cmp #$30
-    bne !fail+
+    bne na_fail
     clc
     rts
-!fail:
+na_fail:
     sec
     rts
 
-net_test_host:
-    .byte $31, $39, $32, $2e, $31, $36, $38, $2e, $31, $2e, $32, $00    // "192.168.1.2\0" -- FIXME hardcoded test address, confirm this matches your cloud_server.py host
-net_test_msg_end:                // kept as a label for the .fill boundary below; the fixed test message itself is gone now that we send cf_shadow instead
+// 2-frame blinking wait indicator, overwriting itself via cursor-left.
+// Silent while w_quiet is set (screen save/restore acks must not draw).
+net_spin:
+    lda w_quiet
+    beq ns_go
+    rts
+ns_go:
+    ldx cf_spin_idx
+    lda spin_chars,x
+    jsr CHROUT
+    lda #$9d                   // cursor left
+    jsr CHROUT
+    inx
+    cpx #spin_chars_end - spin_chars
+    bne ns_nowrap
+    ldx #$00
+ns_nowrap:
+    stx cf_spin_idx
+    rts
+spin_chars:
+    .byte $2e, $3a             // '.' ':'
+spin_chars_end:
 
-    .fill $9200 - net_test_msg_end, $00    // remaining confirmed-free bytes, unused so far
+// Response framing (confirmed against a hardware hex dump, 2026-07-03):
+//   [N x $ff idle/filler bytes] [len lo] [len hi] [exactly len content bytes]
+// cf_state: 0 = discarding filler (first other byte = len lo), 1 = len hi,
+//           2 = printing content (16-bit countdown), 3 = done, discard rest.
+// Output: carry set if any byte was seen this call, clear if queue was empty.
+net_read_and_print:
+    lda #$00
+    sta cf_got_data
+nrp_loop:
+    lda UII_STATUS
+    and #UII_ST_DATAAV
+    beq nrp_done
+    inc cf_got_data
+    lda UII_RESP
+    ldx cf_state
+    cpx #$03
+    beq nrp_loop               // message finished: discard the rest
+    cpx #$02
+    beq nrp_content
+    cpx #$01
+    beq nrp_lenhi
+    cmp #$ff                   // state 0: skip filler
+    beq nrp_loop
+    sta cf_msglen_lo
+    ldx #$01
+    stx cf_state
+    jmp nrp_loop
+nrp_lenhi:
+    sta cf_msglen_hi
+    ldx #$02
+    stx cf_state
+    jmp nrp_loop
+nrp_content:
+    ldx w_quiet
+    bne nrp_count
+    jsr CHROUT
+nrp_count:
+    lda cf_msglen_lo
+    bne nrp_declo
+    dec cf_msglen_hi
+nrp_declo:
+    dec cf_msglen_lo
+    lda cf_msglen_lo
+    ora cf_msglen_hi
+    bne nrp_loop
+    ldx #$03
+    stx cf_state               // fully printed
+    jmp nrp_loop
+nrp_done:
+    lda cf_got_data
+    bne nrp_got
+    clc
+    rts
+nrp_got:
+    sec
+    rts
+
+// ===========================================================================
+// Small print helpers + string data
+// ===========================================================================
+print_cr:
+    lda #$0d
+    jmp CHROUT
+
+// A = offset of a null-terminated message inside msg_blob
+print_msg:
+    tax
+pm_loop:
+    lda msg_blob,x
+    beq pm_done
+    jsr CHROUT
+    inx
+    bne pm_loop
+pm_done:
+    rts
+
+msg_blob:
+msg_ip:
+    .byte $49,$50,$20,$41,$44,$44,$52,$3a,$20,$00                  // "IP ADDR: "
+msg_server:
+    .byte $53,$45,$52,$56,$45,$52,$20,$00                          // "SERVER "
+msg_ok:
+    .byte $20,$4f,$4b,$0d,$00                                      // " OK" + CR
+msg_unreach:
+    .byte $20,$4e,$4f,$54,$20,$52,$45,$41,$43,$48,$41,$42,$4c,$45,$0d,$00  // " NOT REACHABLE" + CR
+msg_err:
+    .byte $3f,$45,$52,$52,$0d,$00                                  // "?ERR" + CR
+msg_ready:
+    .byte $52,$45,$41,$44,$59,$2e,$00                              // "READY."
+msg_netmask:
+    .byte $4e,$45,$54,$4d,$41,$53,$4b,$3a,$20,$00                  // "NETMASK: " (own line, see npi_lbl_mask)
+msg_gateway:
+    .byte $47,$41,$54,$45,$57,$41,$59,$3a,$20,$00                  // "GATEWAY: " (own line, see npi_lbl_gw)
+msg_nosup:
+    .byte $4e,$4f,$54,$20,$53,$55,$50,$50,$4f,$52,$54,$45,$44,$0d,$00  // "NOT SUPPORTED" + CR
+msg_help:
+    .byte $4e,$4f,$20,$43,$4c,$4f,$55,$44,$20,$43,$4f,$4e,$4e,$45,$43,$54,$49,$4f,$4e,$0d  // "NO CLOUD CONNECTION" + CR
+    .byte $43,$48,$45,$43,$4b,$20,$4e,$45,$54,$57,$4f,$52,$4b,$2c,$20,$53,$54,$41,$54,$55,$53,$0d  // "CHECK NETWORK, STATUS" + CR
+    .byte $53,$45,$45,$20,$55,$53,$45,$52,$20,$4d,$41,$4e,$55,$41,$4c,$0d,$00  // "SEE USER MANUAL" + CR
+
+path_blob:
+txt_temp:
+    .byte $2f,$54,$45,$4d,$50,$00                                  // "/TEMP"
+txt_flash:
+    .byte $2f,$46,$4c,$41,$53,$48,$00                              // "/FLASH"
+
+net_test_host:
+    .byte $31,$39,$32,$2e,$31,$36,$38,$2e,$31,$2e,$32,$00          // "192.168.1.2" -- FIXME hardcoded, confirm it matches your cloud_server.py host
+
+wedge_code_end:
+    .fill $9012 - wedge_code_end, $00    // free space up to the jump table; a negative count here means the module outgrew $8023-$9011 -- the build fails loudly instead of shifting bytes
+
+// ---------------------------------------------------------------------------
+// Fixed entry points into this bank -- bank01's RAM stubs jsr to these
+// absolute addresses, so this table must stay at $9012/$9015/$9018 forever.
+// $9012 is the same entry the retired hondani_shell_entry lived at.
+// ---------------------------------------------------------------------------
+wedge_entry_tab:
+    jmp wedge_dispatch         // $9012: typed-line fallback (from the IERROR stub)
+    jmp wedge_install          // $9015: install/refresh the CINV hook (from xb2)
+    jmp console_switch         // $9018: C=+CTRL+digit console switch (from the CINV stub, X=digit)
+wedge_entry_tab_end:
+
+    .fill $9200 - wedge_entry_tab_end, $00    // rest of the old $9012-$91ff pocket, free again
+
     .byte $a9, $00, $8d    // data $91f3 (unchanged original code resumes here)
     .byte $20, $d0, $8d, $21, $d0, $a9, $0f, $8d, $86, $02, $a2, $00, $9d, $00, $d8, $9d    // data $9203
     .byte $00, $d9, $9d, $00, $da, $9d, $00, $db, $e8, $d0, $f1, $bd, $00, $69, $9d, $00    // data $9213
@@ -841,113 +2362,12 @@ net_test_msg_end:                // kept as a label for the .fill boundary below
     .byte $09, $b3, $8d, $22, $b3, $ad, $23, $b3, $8d, $20, $b3, $ad, $24, $b3, $8d, $21    // data $9de3
     .byte $b3, $20, $51, $c4, $ad, $1f, $b3, $d0, $1a, $ad, $22, $b3, $c9    // data $9df3 (unchanged, ends $9dff)
 
-// relocated here from the $9012 pocket (which overflowed by 8 bytes once
-// the retry-budget/spin additions were added) -- this pocket is otherwise
-// completely free (confirmed-zero $9e00-$9e9c), plenty of room to spare.
-net_spin:
-    ldx cf_spin_idx
-    lda spin_chars,x
-    jsr $ffd2
-    lda #$9d
-    jsr $ffd2
-    inx
-    cpx #spin_chars_end-spin_chars
-    bne !nowrap+
-    ldx #$00
-!nowrap:
-    stx cf_spin_idx
-    rts
-spin_chars:
-    .byte $2e, $3a    // '.' ':'
-spin_chars_end:
+// The $9e00-$9e9c pocket is free again -- net_spin / net_wait_not_busy_spin /
+// net_read_and_print moved into the main module region at $8023+ along with
+// everything else (see the HONDANI SHELL module above).
+free_9e00:
+    .fill $9e9d - free_9e00, $00
 
-// Same as net_wait_not_busy, but advances the "still waiting" spinner every
-// 256 poll iterations. Used only for the SOCKET_READ step: that's where an
-// LLM's real latency actually shows up (the Ultimate command interface
-// stays "busy" until the reply data is ready), whereas the plain
-// net_wait_not_busy is normally near-instant for connect/write/close. Y is
-// free to use as the pacing counter here -- nothing in this loop or
-// net_spin needs it preserved.
-net_wait_not_busy_spin:
-    ldy #$00
-!loop:
-    lda UII_STATUS
-    and #UII_ST_STATE
-    cmp #$10
-    bne !done+
-    iny
-    bne !loop-               // only spin once per 256 poll iterations
-    jsr net_spin
-    jmp !loop-
-!done:
-    rts
-net_wait_not_busy_spin_end:
-
-// Drains whatever's currently queued, discarding the leading $ff filler and
-// the 2-byte little-endian length field, then printing exactly that many
-// content bytes via CHROUT (see cf_state's definition near hondani_shell_entry
-// for the exact framing -- confirmed against a real hardware hex dump,
-// 2026-07-03). cf_state/cf_msglen_lo/cf_msglen_hi persist across calls
-// (reset once per response cycle by the caller, right after the write step)
-// since the filler run or even the content itself can span more than one
-// SOCKET_READ call.
-// Output: carry set if at least one byte was seen this call (filler,
-// length, or content -- either way, something happened), carry clear if
-// this poll found nothing queued at all (caller should animate the wait).
-net_read_and_print:
-    lda #$00
-    sta cf_got_data
-!loop:
-    lda UII_STATUS
-    and #UII_ST_DATAAV
-    beq !done+
-    inc cf_got_data
-    lda UII_RESP
-    ldx cf_state
-    cpx #$03
-    beq !loop-                // already printed the full message -- discard the rest
-    cpx #$02
-    beq !content+
-    cpx #$01
-    beq !lenhi+
-    // state 0: discard $ff filler; first non-$ff byte is the length lo byte
-    cmp #$ff
-    beq !loop-
-    sta cf_msglen_lo
-    ldx #$01
-    stx cf_state
-    jmp !loop-
-!lenhi:
-    sta cf_msglen_hi
-    ldx #$02
-    stx cf_state
-    jmp !loop-
-!content:
-    jsr $ffd2                 // CHROUT
-    lda cf_msglen_lo          // 16-bit countdown of remaining content bytes
-    bne !declo+
-    dec cf_msglen_hi
-!declo:
-    dec cf_msglen_lo
-    lda cf_msglen_lo
-    ora cf_msglen_hi
-    bne !loop-                 // more content still expected
-    ldx #$03
-    stx cf_state               // fully printed -- ignore anything else this response
-    jmp !loop-
-!done:
-    lda cf_got_data
-    bne !gotdata+
-    clc
-    rts
-!gotdata:
-    sec
-    rts
-net_read_and_print_end:
-// diag_hexdigit is relocated to the $8022 pocket now (see there) -- didn't
-// fit here alongside everything else in this pocket.
-
-    .fill $9e9d - net_read_and_print_end, $00    // remaining confirmed-free bytes, unused so far
     .byte $20, $ba, $de, $ea, $ea, $ea    // data $9e9d (unchanged original code resumes here)
     .byte $ea, $ea, $ea, $ea, $ea, $ea, $20, $ba, $de, $ea, $ea, $ea, $ea, $ea, $ea, $ea    // data $9ea3
     .byte $ea, $ea, $8d, $00, $de, $68, $60, $48, $78, $a9, $88, $48, $a9, $20, $8d, $00    // data $9eb3

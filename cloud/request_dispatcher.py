@@ -22,6 +22,7 @@ ChatHandler = importlib.import_module("chat_handler").ChatHandler
 HelpHandler = importlib.import_module("help_handler").HelpHandler
 PythonEvalHandler = importlib.import_module("python_eval_handler").PythonEvalHandler
 CSDBHandler = importlib.import_module("csdb_handler").CSDBHandler
+NetDriveHandler = importlib.import_module("netdrive_handler").NetDriveHandler
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ class RequestDispatcher:
                 PythonEvalHandler(),
                 ChatHandler(),
                 CSDBHandler(),
+                NetDriveHandler(),
             ]
             logger.info(f"Initialized {len(self.handlers)} request handlers")
         except Exception:
@@ -80,8 +82,10 @@ class RequestDispatcher:
             if active_module:
                 for handler in self.handlers:
                     # A bit of a hack to see which handler corresponds to the module
-                    if (active_module == "c" and isinstance(handler, CSDBHandler)) or (
-                        active_module == "i" and isinstance(handler, ChatHandler)
+                    if (
+                        (active_module == "c" and isinstance(handler, CSDBHandler))
+                        or (active_module == "n" and isinstance(handler, NetDriveHandler))
+                        or (active_module == "i" and isinstance(handler, ChatHandler))
                     ):
                         logger.info(
                             f"Dispatching to active module handler {handler.__class__.__name__}"
