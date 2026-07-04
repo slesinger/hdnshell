@@ -2407,11 +2407,21 @@ bank01_sub_9c1c:
 // hook (ierror_stub_rom below), which only fires when BASIC itself decides
 // a direct-mode line couldn't be parsed -- a true fallback, not a keyword.
 // ---------------------------------------------------------------------------
-.const cf_shadow = $cf32          // shadow copy of the raw typed line (up to 77 chars + null)
-.const cf_shadow_max = 77
-.const ie_ram = $cf00             // ierror_stub_rom is relocated here (reuses the old xb_stub slot)
-.const ie_orig_vec = $cf80        // +$cf81: original $0300/$0301 value, saved on first install
-.const ie_errcode = $cf82         // stashed BASIC error-table index (X), diagnostic use for now
+// Round 6: all RAM moved out of $cf00-$cfff (prime game RAM -- real loads
+// trampled it) into the pages 2/3 system areas no LOADable program reaches.
+// Keep these in sync with the duplicated block in rr38p-tmp12reu.bank05.asm.
+.const cf_shadow = $02a7          // shadow copy of the raw typed line (73 chars + null,
+                                   // $02a7-$02f0; the freezer's resume path scribbles
+                                   // $02a7-$02ca -- harmless, rewritten every line)
+.const cf_shadow_max = 73
+.const ie_ram = $0340             // ierror_stub_rom is relocated here (datassette buffer,
+                                   // past the freezer's $0334/35 vector and the ML
+                                   // monitor's $0336-$033b state)
+.const ie_orig_vec = $03e7        // +$03e8: original $0300/$0301 value, saved on first install
+.const ie_errcode = $03e9         // stashed BASIC error-table index (X), diagnostic use for now
+.const w_skip = $03f7             // set by bank05's wedge_install: 1 = launch line
+                                   // (RUN/SYS/MON/...), hooks were removed instead of
+                                   // armed and the shadow copy must be skipped too
 
 line_tap:
     tax                    // replicate the original TAX (X=char, sets Z; carry from CHRGET untouched)
@@ -2438,21 +2448,12 @@ lt_notempty:
     // case and the latent bug (actual program-line entry, e.g. typing "10
     // PRINT") that the always-set steady-state carry would otherwise break.
 
-    // --- shadow-copy the raw typed line into RAM (before BASIC crunches it) ---
-    ldy #$00
-lt_copyloop:
-    cpy #cf_shadow_max
-    beq lt_copyterm
-    lda ($7a),y
-    beq lt_copyterm
-    sta cf_shadow,y
-    iny
-    jmp lt_copyloop
-lt_copyterm:
-    lda #$00
-    sta cf_shadow,y
-
     // --- idempotently install the IERROR hook (skip if already installed) ---
+    // This runs BEFORE the launch-line sniff (bank05 can only be reached via
+    // the xb2 trampoline, which lives inside this very block) -- on a launch
+    // line the disarm in wedge_install immediately undoes the vector again,
+    // and the stub-copy writes land in the datassette buffer, which no
+    // loaded program's data occupies.
     lda $0301
     cmp #>ie_ram
     bne lt_install
@@ -2475,11 +2476,29 @@ lt_ierrcopy:
     lda #>ie_ram
     sta $0301
 lt_installed:
-    jsr ie_ram + (xb2_rom - ierror_stub_rom)   // every line: (re)install the CINV console-switch hook via bank05
+    jsr ie_ram + (xb2_rom - ierror_stub_rom)   // every line: bank05 sniffs the line, then arms
+                                                // (CINV + ILOAD shim) or disarms everything
+    lda w_skip               // launch line (RUN/SYS/MON/...)? then no shadow
+    bne lt_skipshadow        // copy either -- hand over an untouched machine
+
+    // --- shadow-copy the raw typed line into RAM (before BASIC crunches it) ---
+    ldy #$00
+lt_copyloop:
+    cpy #cf_shadow_max
+    beq lt_copyterm
+    lda ($7a),y
+    beq lt_copyterm
+    sta cf_shadow,y
+    iny
+    jmp lt_copyloop
+lt_copyterm:
+    lda #$00
+    sta cf_shadow,y
+lt_skipshadow:
     plp                      // restore the original CHRGET-derived flags now, right before bank01_sub_8407 needs them
     jmp bank01_sub_8407      // always fall through -- we never intercept here anymore
 
-// Relocated verbatim to ie_ram ($cf00) on first install and left resident --
+// Relocated verbatim to ie_ram ($0340) on first install and left resident --
 // unlike xb_stub (copied fresh every call), this must persist between calls
 // since it's reached via JMP ($0300) from anywhere, at unpredictable times,
 // not via our own jsr. Runs from RAM so it works regardless of which
@@ -2488,9 +2507,15 @@ lt_installed:
 // X = BASIC's error-table index at entry (must be preserved untouched on
 // the fall-through path -- the original handler depends on it).
 ierror_stub_rom:
+    txa                     // X bit7 set = "print READY, no error" -- BASIC's warm
+    bmi ie_fall              // start ($e37b) ends with LDX #$80 / JMP ($0300), and
+                             // every cart wedge command (the `$` directory, INFO,
+                             // F3's macro, STOP+RESTORE...) terminates through it.
+                             // Never ours: fall through so READY prints normally.
     lda $3a                 // CURLIN high byte: $ff means direct/immediate mode
     cmp #$ff
     beq ie_direct
+ie_fall:
     jmp (ie_orig_vec)        // program-mode error -- not ours, fall through untouched
 ie_direct:
     // DIAGNOSTIC ROUND: fires for every direct-mode error (not narrowed to
@@ -2508,7 +2533,7 @@ ie_direct:
                                // the old hondani_check used) -- never falls through
                                // to the stock error message for this case
 
-// xb2 -- second entry in the same relocated RAM block ($cf00+): a fixed
+// xb2 -- second entry in the same relocated RAM block (ie_ram+): a fixed
 // trampoline that pages in bank05, calls its wedge_install entry ($9015 in
 // bank05's jump table: installs/refreshes the CINV keyboard-watch stub for
 // C=+digit console switching), and pages bank01 back in. It must run from
@@ -2526,6 +2551,9 @@ xb2_rom:
     cli
     rts
 ierror_stub_rom_end:
+// Layout guard: the relocated block ($0340+) must end before the ILOAD shim
+// slot at $0372 (bank05's il_shim_ram -- keep in sync).
+.errorif ie_ram + (ierror_stub_rom_end - ierror_stub_rom) > $0372, "ie_ram block overruns il_shim_ram"
     .fill $9e10 - ierror_stub_rom_end, $00    // remaining confirmed-free bytes, unused so far
     .byte $a9, $20, $8d, $00    // data $9e10 (unchanged original code resumes here)
     .byte $de, $a5, $01, $8d, $2e, $de, $09, $03, $85, $01, $a9, $08, $8d, $00, $de, $68    // data $9e14

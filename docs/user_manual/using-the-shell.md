@@ -16,6 +16,12 @@ For directory navigation (`cd`, `pwd`, `ll`/`dir`, `#<device>`), disk images (`m
 
 Anything typed that isn't one of the commands above (or valid BASIC) is forwarded to the cloud chatbot automatically — there's no need to prefix it with anything.
 
+## Game and Program Compatibility
+
+The shell is designed to be invisible to the software you run. The moment you load anything (`LOAD`, the cartridge's `/`, `%`, `^` commands, or the F1 key) or type `RUN`, `SYS`, `MON` or `TASS`, the shell steps completely out of the way — the machine the program sees is identical to a stock Retro Replay setup. The shell wakes up again automatically on the next line you type at the BASIC prompt.
+
+One side effect: the [console-switching keys](cloud-apps.md) (`C=+CTRL+1..7`) are inactive right after a load or `RUN` until you type any line at the prompt.
+
 ## Terminal buffer
 
 Like in modern terminal emulators, the HDN Shell has a scrollable terminal buffer. This means that when the output exceeds the visible screen area, it will automatically scroll up to accommodate new lines. You can scroll back through the history of commands and outputs using the keyboard shortcuts.

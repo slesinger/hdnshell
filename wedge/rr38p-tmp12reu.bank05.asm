@@ -50,7 +50,7 @@ bank05_sub_801a:
 // $9200-$9dff is left in place as inert bytes but is no longer functional).
 //
 // Entered only through the fixed jump table at $9012/$9015/$9018 (see below),
-// with bank05 paged into $8000-$9fff by one of the RAM stubs at $cf00+:
+// with bank05 paged into $8000-$9fff by one of the RAM stubs at ie_ram+:
 //   - $9012 wedge_dispatch: every direct-mode line BASIC couldn't execute
 //     (via the IERROR RAM stub installed by bank01's line_tap). Recognized
 //     shell commands run locally; everything else goes to the cloud chatbot.
@@ -121,58 +121,77 @@ bank05_sub_801a:
 .const TXTTAB  = $2b              // +$2c: start-of-BASIC-program ptr -- SAVE's own default
                                    // start-ptr slot (see cmd_memcpy); borrowed transiently
 
-// --- RAM state at $cf00-$cfff (plain C64 RAM, never repaged by any RR
-// --- banking -- survives all cartridge paging; see wedge-analysis.md).
-// --- $cf00-$cf2d is the resident block installed by bank01's line_tap
-// --- (IERROR stub + xb2 trampoline); those addresses and cf_shadow /
-// --- ie_orig_vec / ie_errcode must stay in sync with bank01's constants.
-.const cf_shadow    = $cf32   // raw typed line, null-terminated (bank01 line_tap)
-.const ie_orig_vec  = $cf80   // +$cf81: original IERROR vector (bank01-owned)
-.const ie_errcode   = $cf82   // BASIC error index that fired (kept, no longer printed)
-.const w_dev        = $cf83   // current device char: '8','9','S','C','H','T','F'
-.const w_console    = $cf84   // console id, upper nibble: $00=local, $20-$70=server
-.const w_cinv_orig  = $cf85   // +$cf86: original CINV ($0314) vector
-.const w_latch      = $cf87   // C=+CTRL+digit one-shot latch for the CINV stub
-.const w_parse_y    = $cf88   // dispatcher: cf_shadow offset of first non-space char
-.const w_arg        = $cf89   // dispatcher: cf_shadow offset of the command argument
-.const w_quiet      = $cf8a   // nonzero: net_read_and_print + net_spin stay silent
-.const w_bank       = $cf8b   // CINV stub: saved $de00 bank bits across the switch
-.const w_len        = $cf8c   // generic scratch
-.const w_jmp        = $cf8d   // +$cf8e: dispatcher's indirect handler vector
-.const w_new        = $cf8f   // console_switch: target console id scratch
-.const cinv_ram     = $cf90   // resident CINV keyboard-watch stub lives here
-// $cfd5-$cfdf: free gap between the CINV stub ($cf90-$cfd4) and the reset
-// stub ($cfe0-$cfe7) -- memcpy's scratch state, live only during cmd_memcpy.
-.const mc_start     = $cfd5  // +$cfd6: parsed $start address
-.const mc_end       = $cfd7  // +$cfd8: parsed $end address (inclusive)
-.const mc_savetxt   = $cfd9  // +$cfda: TXTTAB ($2b/$2c) saved across the SAVE call
-.const mc_devnum    = $cfdb  // resolved KERNAL device number (8/9/10)
-.const mc_hexval    = $cfdc  // +$cfdd: parse_hex16's accumulator
-.const mc_fnstart   = $cfde  // cf_shadow offset of the filename's first byte
-.const mc_fnlen     = $cfdf  // filename length in bytes
-.const reset_ram    = $cfe0   // cmd_reset relocates its bank0+reset stub here
-.const cf_socket_id  = $cff0
-.const cf_status0    = $cff1
-.const cf_status1    = $cff2
-.const cf_state      = $cff3  // net_read_and_print framing state (see there)
-.const cf_got_data   = $cff4
-.const cf_spin_idx   = $cff5
-.const cf_retries_lo = $cff6  // 16-bit "give up waiting" countdown
-.const cf_retries_hi = $cff7
-.const cf_msglen_lo  = $cff8  // 16-bit remaining-content countdown
-.const cf_msglen_hi  = $cff9
-.const w_dig1        = $cffa  // print_dec_byte scratch: hundreds digit
-.const w_dig2        = $cffb  // print_dec_byte scratch: tens digit
-.const w_hidx        = $cffc  // wc_match: haystack inner-compare index
-.const w_hstart      = $cffd  // wc_match: haystack outer try-start offset
-
-// --- ll/dir wildcard filtering (e.g. "ll outrun*") -- one directory-listing
-// entry (or entry chunk) is buffered here, then tested against the typed
-// argument before it's printed. Reuses the datassette buffer: this shell
-// never does tape I/O, so it's free scratch during a single command's
-// execution (same reasoning as reusing cf_shadow's neighbours elsewhere).
-.const wc_buf     = $033c
-.const wc_buf_max = 64
+// --- RAM layout (2026-07-04 round 6): everything lives in the pages 1-3
+// --- system areas, so that no LOADable program address ($0400+, in practice
+// --- $0801+) ever overlaps wedge state -- $cf00-$cfff is completely vacated
+// --- (it was prime game RAM and got trampled by real loads). All of this is
+// --- plain C64 RAM, never repaged by RR banking. The resident stubs sit in
+// --- the datassette buffer past the freezer's $0334/$0335 resume vector and
+// --- the ML monitor's $0336-$033b state (MON/TASS lines disarm the hooks
+// --- anyway, see wi_sniff). Keep every constant here in sync with the
+// --- duplicated block in rr38p-tmp12reu.bank01.asm.
+//
+// Transient per-line / per-command scratch (fine to be trampled between
+// lines -- rewritten before every use):
+.const wc_buf     = $0110     // ll/dir entry buffer; $0100-$010f is skipped
+.const wc_buf_max = 64        //   because BASIC's FOUT/LINPRT builds number
+                              //   strings there (ll prints block counts!)
+.const cf_shadow    = $02a7   // raw typed line, null-terminated (bank01 line_tap)
+                              //   ($02a7-$02f0: 73 chars + null; the freeze
+                              //   button's resume path scribbles $02a7-$02ca,
+                              //   harmless -- rewritten on the next line)
+// $02f1-$02fb: overlay union -- these three sets are never live at the same
+// time (memcpy does no network I/O, reset never returns, net commands never
+// run inside either):
+.const cf_socket_id  = $02f1
+.const cf_status0    = $02f2
+.const cf_status1    = $02f3
+.const cf_state      = $02f4  // net_read_and_print framing state (see there)
+.const cf_got_data   = $02f5
+.const cf_spin_idx   = $02f6
+.const cf_retries_lo = $02f7  // 16-bit "give up waiting" countdown
+.const cf_retries_hi = $02f8
+.const cf_msglen_lo  = $02f9  // 16-bit remaining-content countdown
+.const cf_msglen_hi  = $02fa
+.const mc_start     = $02f1  // +$02f2: parsed $start address (memcpy)
+.const mc_end       = $02f3  // +$02f4: parsed $end address (inclusive)
+.const mc_savetxt   = $02f5  // +$02f6: TXTTAB ($2b/$2c) saved across SAVE
+.const mc_devnum    = $02f7  // resolved KERNAL device number (8/9/10)
+.const mc_hexval    = $02f8  // +$02f9: parse_hex16's accumulator
+.const mc_fnstart   = $02fa  // cf_shadow offset of the filename's first byte
+.const mc_fnlen     = $02fb  // filename length in bytes
+.const reset_ram    = $02f1  // cmd_reset relocates its bank0+reset stub here
+// $02fc-$02ff: scratch that IS live concurrently with the net set above:
+.const w_dig1        = $02fc  // print_dec_byte scratch: hundreds digit
+.const w_dig2        = $02fd  // print_dec_byte scratch: tens digit
+.const w_hidx        = $02fe  // wc_match: haystack inner-compare index
+.const w_hstart      = $02ff  // wc_match: haystack outer try-start offset
+//
+// Resident block (datassette buffer $0340-$03f9) -- must be intact whenever
+// the hooks are armed; refreshed from ROM templates on every typed line:
+.const ie_ram       = $0340   // IERROR stub + xb2 trampoline (bank01 copies it)
+.const il_shim_ram  = $0372   // ILOAD shim: first KERNAL LOAD disarms all hooks
+.const cinv_ram     = $03a0   // CINV keyboard-watch stub ($03a0-$03e6, 71 bytes)
+// State ($03e7-$03fb -- ends exactly at the last datassette-buffer byte):
+.const ie_orig_vec  = $03e7   // +$03e8: original IERROR vector (bank01-owned)
+.const ie_errcode   = $03e9   // BASIC error index that fired (kept, not printed)
+.const w_dev        = $03ea   // current device char: '8','9','S','C','H','T','F'
+.const w_console    = $03eb   // console id, upper nibble: $00=local, $20-$70=server
+.const w_cinv_orig  = $03ec   // +$03ed: original CINV ($0314) vector
+.const w_latch      = $03ee   // C=+CTRL+digit one-shot latch for the CINV stub
+.const w_parse_y    = $03ef   // dispatcher: cf_shadow offset of first non-space char
+.const w_arg        = $03f0   // dispatcher: cf_shadow offset of the command argument
+.const w_quiet      = $03f1   // nonzero: net_read_and_print + net_spin stay silent
+.const w_bank       = $03f2   // CINV stub: saved $de00 bank bits across the switch
+.const w_len        = $03f3   // generic scratch
+.const w_jmp        = $03f4   // +$03f5: dispatcher's indirect handler vector
+.const w_new        = $03f6   // console_switch: target console id scratch
+.const w_skip       = $03f7   // wi_sniff verdict: 1 = launch line, bank01 must
+                              //   skip the shadow copy (read by line_tap)
+.const il_orig      = $03f8   // +$03f9: original ILOAD ($0330) vector
+.const w_magic      = $03fa   // +$03fb: $a5,$c3 once one-time defaults (w_dev,
+                              //   w_console, ...) have been set -- survives
+                              //   disarm/rearm cycles so `#t` etc. stick
 
 // ===========================================================================
 // wedge_dispatch -- fixed jump-table entry ($9012, called from the IERROR
@@ -1471,44 +1490,249 @@ key_send_done:
 
 // ===========================================================================
 // wedge_install -- called (via bank01's xb2 RAM trampoline, under SEI) on
-// every non-empty typed line: installs the CINV keyboard-watch stub and
-// one-time defaults, or returns immediately if already in place. Re-running
-// every line means the hook survives anything that resets $0314 (RUN/STOP+
-// RESTORE, for one) -- same self-healing idea as the IERROR hook.
+// every non-empty typed line. Round 6: this is now the arm/disarm decision
+// point. It first sniffs the raw input buffer ($0200): a line that hands the
+// machine over to a program (RUN/SYS, or the cart's own MONITOR/TASS/BOOT
+// entries) must run on a bit-for-bit stock machine, so the hooks are
+// *removed* instead of installed and w_skip tells bank01 to skip the shadow
+// copy too. Every other line (re)arms: the CINV stub, the ILOAD shim and the
+// stub bytes are refreshed from ROM templates unconditionally, so any
+// corruption (monitor session, freeze/resume, a program that scribbled the
+// datassette buffer) heals on the next typed line.
 // ===========================================================================
 wedge_install:
-    lda $0314
-    cmp #<cinv_ram
-    bne wi_install
-    lda $0315
-    cmp #>cinv_ram
-    beq wi_done
-wi_install:
-    lda $0314                  // save the original vector for chaining
-    sta w_cinv_orig
-    lda $0315
-    sta w_cinv_orig+1
+    jsr wi_sniff
+    bcc wi_arm
+    jsr disarm_hooks           // launch line: hand over a stock machine
+    lda #$01
+    sta w_skip
+    rts
+wi_arm:
+    lda #$00
+    sta w_skip
     ldx #cinv_stub_rom_end - cinv_stub_rom - 1
 wi_copy:
-    lda cinv_stub_rom,x
+    lda cinv_stub_rom,x        // refresh the stub bytes every line
     sta cinv_ram,x
     dex
     bpl wi_copy
-    lda #$00                   // one-time state defaults
+    ldx #il_shim_rom_end - il_shim_rom - 1
+wi_scopy:
+    lda il_shim_rom,x          // refresh the ILOAD shim bytes every line
+    sta il_shim_ram,x
+    dex
+    bpl wi_scopy
+    lda w_magic                // one-time state defaults, keyed on a magic
+    cmp #$a5                   // pair so they survive disarm/rearm cycles
+    bne wi_defaults            // (w_dev must not reset to 'H' after every RUN)
+    lda w_magic+1
+    cmp #$c3
+    beq wi_vec
+wi_defaults:
+    lda #$00
     sta w_console
     sta w_latch
     sta w_quiet
     lda #$48                   // 'H': default device is the Ultimate home dir
     sta w_dev
+    lda #$a5
+    sta w_magic
+    lda #$c3
+    sta w_magic+1
+wi_vec:
+    lda $0314                  // hook CINV (save the original for chaining,
+    cmp #<cinv_ram             // but never save ourselves)
+    bne wi_cinstall
+    lda $0315
+    cmp #>cinv_ram
+    beq wi_iload
+wi_cinstall:
+    lda $0314
+    sta w_cinv_orig
+    lda $0315
+    sta w_cinv_orig+1
     lda #<cinv_ram
     sta $0314
     lda #>cinv_ram
     sta $0315
+wi_iload:
+    lda $0330                  // hook ILOAD with the disarm shim (same
+    cmp #<il_shim_ram          // never-save-ourselves rule)
+    bne wi_linstall
+    lda $0331
+    cmp #>il_shim_ram
+    beq wi_done
+wi_linstall:
+    lda $0330
+    sta il_orig
+    lda $0331
+    sta il_orig+1
+    lda #<il_shim_ram
+    sta $0330
+    lda #>il_shim_ram
+    sta $0331
 wi_done:
     rts
 
 // ---------------------------------------------------------------------------
-// CINV keyboard-watch stub -- relocated to cinv_ram ($cf90) and left
+// wi_sniff -- classify the just-typed line (raw text in the $0200 input
+// buffer). Returns carry SET if it hands control to a program and the hooks
+// must come off first. Two match classes:
+//   - word:   RUN, SYS -- full word, or BASIC's crunch-rule abbreviation (a
+//             SHIFTed char completes the keyword: rU, sY, rUN); after a full
+//             word the next char must not be a letter, so chat lines like
+//             "running late?" still reach the cloud fallback.
+//   - prefix: MON, TAS, BOO -- mirrors the cart scanner's own 3-chars-then-
+//             swallow-letters quirk (MONITOR, TASS/TASM, BOOT), since those
+//             take over the machine the same way a launched program does.
+// ---------------------------------------------------------------------------
+.const WSF_WORD   = $01
+.const WSF_PREFIX = $02
+wi_sniff:
+    ldy #$00
+ws_sp:
+    lda $0200,y                // skip leading spaces
+    cmp #$20
+    bne ws_start
+    iny
+    bne ws_sp
+ws_start:
+    sty w_len                  // w_len = offset of the first real char
+    ldx #$00                   // x walks ws_tab
+ws_word:
+    ldy w_len
+ws_char:
+    lda ws_tab,x
+    bmi ws_last                // bit7 set: final char of the table word
+    cmp $0200,y
+    beq ws_adv
+    ora #$80                   // typed SHIFTed char = crunch-rule completion
+    cmp $0200,y
+    beq ws_hit
+    bne ws_next
+ws_adv:
+    inx
+    iny
+    jmp ws_char
+ws_last:
+    and #$7f
+    cmp $0200,y
+    beq ws_bound
+    ora #$80                   // SHIFTed final char also completes the word
+    cmp $0200,y
+    bne ws_next
+ws_hit:
+    sec
+    rts
+ws_bound:
+    inx                        // final char matched: X -> the class flag
+    lda ws_tab,x
+    and #WSF_PREFIX
+    bne ws_hit                 // prefix class: 3 chars are enough (cart rule)
+    iny                        // word class: next char must not be a letter
+    lda $0200,y
+    cmp #$41
+    bcc ws_hit
+    cmp #$5b
+    bcs ws_hit
+    bcc ws_flagnext            // a letter follows ("running..."): no match
+ws_next:                       // mismatch mid-word: X is on or before the
+    lda ws_tab,x               // end marker -- scan forward past it
+    inx
+    bpl ws_next
+ws_flagnext:                   // X -> the class-flag byte of the failed word
+    inx
+    lda ws_tab,x
+    bne ws_word
+    clc                        // table exhausted: ordinary line
+    rts
+ws_tab:
+    .byte $52,$55,$4e+$80, WSF_WORD      // RUN
+    .byte $53,$59,$53+$80, WSF_WORD      // SYS
+    .byte $4d,$4f,$4e+$80, WSF_PREFIX    // MON(ITOR)
+    .byte $54,$41,$53+$80, WSF_PREFIX    // TAS(S/M)
+    .byte $42,$4f,$4f+$80, WSF_PREFIX    // BOO(T)
+    .byte $00
+
+// ---------------------------------------------------------------------------
+// disarm_hooks -- restore every vector we own to its saved original, but
+// only if it still points at us (never clobber someone else's hook). Runs
+// under SEI (xb2 guarantees it). Also the shared teardown for the ILOAD
+// shim's job, except the shim does it from RAM with constants baked in.
+// ---------------------------------------------------------------------------
+disarm_hooks:
+    lda $0315
+    cmp #>cinv_ram
+    bne dh_ierr
+    lda $0314
+    cmp #<cinv_ram
+    bne dh_ierr
+    lda w_cinv_orig
+    sta $0314
+    lda w_cinv_orig+1
+    sta $0315
+dh_ierr:
+    lda $0301
+    cmp #>ie_ram
+    bne dh_iload
+    lda $0300
+    cmp #<ie_ram
+    bne dh_iload
+    lda ie_orig_vec
+    sta $0300
+    lda ie_orig_vec+1
+    sta $0301
+dh_iload:
+    lda $0331
+    cmp #>il_shim_ram
+    bne dh_done
+    lda $0330
+    cmp #<il_shim_ram
+    bne dh_done
+    lda il_orig
+    sta $0330
+    lda il_orig+1
+    sta $0331
+dh_done:
+    rts
+
+// ---------------------------------------------------------------------------
+// ILOAD shim -- relocated to il_shim_ram and left resident while armed.
+// KERNAL LOAD ($f49e) enters via jmp ($0330) with A/X/Y live, so both are
+// preserved. The moment *any* load starts -- BASIC LOAD, the cart's own
+// / % ^ fastload commands (they call $ffd5 too), a chain loader, memcpy --
+// it restores CINV, IERROR and ILOAD itself to the saved originals and
+// chains to the real loader. Whatever gets loaded therefore always runs on
+// a stock machine; the next typed line re-arms everything. No branches, so
+// it's freely relocatable.
+// ---------------------------------------------------------------------------
+il_shim_rom:
+    php
+    sei
+    pha
+    lda w_cinv_orig
+    sta $0314
+    lda w_cinv_orig+1
+    sta $0315
+    lda ie_orig_vec
+    sta $0300
+    lda ie_orig_vec+1
+    sta $0301
+    lda il_orig
+    sta $0330
+    lda il_orig+1
+    sta $0331
+    pla
+    plp
+    jmp ($0330)                // chain to the real (restored) loader
+il_shim_rom_end:
+// Layout guards -- the resident block must fit its slots exactly; a template
+// growing past its slot corrupts the next one at runtime, silently.
+.errorif il_shim_ram + (il_shim_rom_end - il_shim_rom) > cinv_ram, "il_shim overruns cinv_ram"
+.errorif cinv_ram + (cinv_stub_rom_end - cinv_stub_rom) > ie_orig_vec, "cinv stub overruns the state block"
+
+// ---------------------------------------------------------------------------
+// CINV keyboard-watch stub -- relocated to cinv_ram ($03a0) and left
 // resident. Runs on every IRQ, from RAM, because the IRQ can fire while any
 // cartridge bank is paged in. Checks for C= + 1..7 (matrix code in SFDX,
 // C= bit in SHFLAG); on a fresh match it saves the current bank via the RR
