@@ -212,3 +212,103 @@
   color: #ffdc64; /* C64 yellow for search matches */
   border-radius: 2px;
 }
+
+/* ── File manager drop zone ─────────────────────────────────────────────── */
+.file-drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  cursor: grab;
+  background-color: transparent;
+  color: #6c757d;
+  transition: color 0.2s ease;
+}
+
+.file-drop-zone-active {
+  border-style: dashed;
+  border-width: 3px;
+  color: #3535b0;
+  font-family: "C64ProMono", monospace;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(53, 53, 176, 0.12),
+    rgba(53, 53, 176, 0.12) 12px,
+    rgba(160, 168, 232, 0.12) 12px,
+    rgba(160, 168, 232, 0.12) 24px
+  );
+  background-size: 68px 68px;
+  animation:
+    file-drop-border-cycle 1.4s linear infinite,
+    file-drop-stripes 1.1s linear infinite;
+}
+
+.file-drop-zone-active p {
+  animation: file-drop-blink 0.8s steps(1) infinite;
+}
+
+.file-drop-zone-over {
+  color: #1c1c6e;
+  background-color: rgba(255, 220, 100, 0.25) !important;
+  box-shadow: 0 0 18px rgba(255, 220, 100, 0.7);
+}
+
+.file-drop-zone-over p {
+  animation: file-drop-blink-fast 0.4s steps(1) infinite;
+}
+
+@keyframes file-drop-border-cycle {
+  0% {
+    border-color: #3535b0;
+    box-shadow: 0 0 6px rgba(53, 53, 176, 0.5);
+  }
+  33% {
+    border-color: #a0a8e8;
+    box-shadow: 0 0 10px rgba(160, 168, 232, 0.7);
+  }
+  66% {
+    border-color: #ffdc64;
+    box-shadow: 0 0 10px rgba(255, 220, 100, 0.7);
+  }
+  100% {
+    border-color: #3535b0;
+    box-shadow: 0 0 6px rgba(53, 53, 176, 0.5);
+  }
+}
+
+@keyframes file-drop-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 68px 0;
+  }
+}
+
+@keyframes file-drop-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes file-drop-blink-fast {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .file-drop-zone-active,
+  .file-drop-zone-active p,
+  .file-drop-zone-over p {
+    animation: none;
+  }
+}

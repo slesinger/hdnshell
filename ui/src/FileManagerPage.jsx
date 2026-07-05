@@ -5,7 +5,7 @@ const TEXT_FILE_EXTENSIONS = new Set([".txt", ".cfg", ".c", ".h", ".bas", ".asm"
 const DISK_IMAGE_EXTENSIONS = new Set([".d64", ".d71", ".d81"]);
 const DEFAULT_OPEN_EXTENSIONS = new Set([".tap", ".sid", ".mod"]);
 const FILE_MANAGER_LAST_PATH_KEY = "hdnsh.fileManager.lastPath";
-const DEFAULT_FILE_MANAGER_PATH = "/Flash/roms";
+const DEFAULT_FILE_MANAGER_PATH = "/Flash/carts";
 
 function getFileExtension(filename) {
   const lastDot = filename.lastIndexOf(".");
@@ -65,7 +65,9 @@ function FileManagerPage({ lastC64Ip }) {
   const [editingFile, setEditingFile] = useState(null);
   const [editContent, setEditContent] = useState("");
   const [showEditor, setShowEditor] = useState(false);
-  const dragOverRef = useRef(false);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const dragCounterRef = useRef(0);
 
   // Load initial directory
   useEffect(() => {
@@ -81,6 +83,45 @@ function FileManagerPage({ lastC64Ip }) {
       // Ignore storage errors.
     }
   }, [currentPath]);
+
+  // Detect a file drag anywhere on the window so the drop zone can start
+  // attracting attention before the cursor actually reaches it.
+  useEffect(() => {
+    const isFileDrag = (e) => Array.from(e.dataTransfer?.types || []).includes("Files");
+
+    const handleWindowDragEnter = (e) => {
+      if (!isFileDrag(e)) return;
+      e.preventDefault();
+      dragCounterRef.current += 1;
+      setIsDraggingFile(true);
+    };
+    const handleWindowDragOver = (e) => {
+      if (!isFileDrag(e)) return;
+      e.preventDefault();
+    };
+    const handleWindowDragLeave = (e) => {
+      if (!isFileDrag(e)) return;
+      dragCounterRef.current = Math.max(0, dragCounterRef.current - 1);
+      if (dragCounterRef.current === 0) {
+        setIsDraggingFile(false);
+      }
+    };
+    const handleWindowDrop = () => {
+      dragCounterRef.current = 0;
+      setIsDraggingFile(false);
+    };
+
+    window.addEventListener("dragenter", handleWindowDragEnter);
+    window.addEventListener("dragover", handleWindowDragOver);
+    window.addEventListener("dragleave", handleWindowDragLeave);
+    window.addEventListener("drop", handleWindowDrop);
+    return () => {
+      window.removeEventListener("dragenter", handleWindowDragEnter);
+      window.removeEventListener("dragover", handleWindowDragOver);
+      window.removeEventListener("dragleave", handleWindowDragLeave);
+      window.removeEventListener("drop", handleWindowDrop);
+    };
+  }, []);
 
   // Load directory from C64
   const loadDirectory = async () => {
@@ -187,17 +228,19 @@ function FileManagerPage({ lastC64Ip }) {
   // Drag and drop handlers
   const handleDragOver = (e) => {
     e.preventDefault();
-    dragOverRef.current = true;
+    setIsDragOver(true);
   };
 
   const handleDragLeave = (e) => {
     e.preventDefault();
-    dragOverRef.current = false;
+    setIsDragOver(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    dragOverRef.current = false;
+    setIsDragOver(false);
+    setIsDraggingFile(false);
+    dragCounterRef.current = 0;
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       handleUpload(files);
@@ -577,18 +620,14 @@ function FileManagerPage({ lastC64Ip }) {
       {/* Drag and drop zone */}
       {c64Ip && (
         <div
-          className={`border-2 border-dashed p-4 mb-3 text-center ${dragOverRef.current ? "bg-light" : ""}`}
-          style={{
-            borderColor: "#ccc",
-            borderRadius: "4px",
-            cursor: "grab",
-            backgroundColor: dragOverRef.current ? "#f0f0f0" : "transparent"
-          }}
+          className={`file-drop-zone p-4 mb-3 text-center${isDraggingFile ? " file-drop-zone-active" : ""}${isDragOver ? " file-drop-zone-over" : ""}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <p className="mb-0 text-muted">📂 Drag and drop files here to upload</p>
+          <p className="mb-0">
+            {isDraggingFile ? "💾 RELEASE TO UPLOAD" : "📂 Drag and drop files here to upload"}
+          </p>
         </div>
       )}
 

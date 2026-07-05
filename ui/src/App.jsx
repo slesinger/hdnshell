@@ -29,9 +29,7 @@ export default function App() {
     setDocsSlug(slug);
     setPage("docs");
   };
-  const [basicStatus, setBasicStatus] = useState(null);
-  const [basicAvailable, setBasicAvailable] = useState(false);
-  const [basicActionLoading, setBasicActionLoading] = useState(false);
+  const [cartActionLoading, setCartActionLoading] = useState(false);
   const [powerOffLoading, setPowerOffLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [rebootLoading, setRebootLoading] = useState(false);
@@ -77,51 +75,32 @@ export default function App() {
     };
   }, []);
 
-  const fetchBasicStatus = async () => {
+  // Enable Shell = start the HDN Shell RR cartridge (run_crt). This resets the
+  // machine with the cartridge active but does not persist in the Ultimate's
+  // config, so Disable Shell simply resets back to stock BASIC.
+  const handleCartRun = async () => {
+    setCartActionLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/c64/basic/enabled`, { method: "GET" });
-      if (response.ok) {
-        setBasicStatus(await response.json());
-        setBasicAvailable(true);
-      } else {
-        setBasicAvailable(false);
-        setBasicStatus(null);
-      }
-    } catch {
-      setBasicAvailable(false);
-      setBasicStatus(null);
-    }
-  };
-
-  useEffect(() => {
-    fetchBasicStatus();
-  }, []);
-
-  const handleBasicEnable = async () => {
-    setBasicActionLoading(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/c64/basic/enable`, { method: "PUT" });
+      const response = await fetch(`${API_BASE_URL}/c64/cart/run`, { method: "PUT" });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload?.error || "Failed to enable Basic ROM");
-      await fetchBasicStatus();
+      if (!response.ok) throw new Error(payload?.error || "Failed to start cartridge");
     } catch {
       // ignore
     } finally {
-      setBasicActionLoading(false);
+      setCartActionLoading(false);
     }
   };
 
-  const handleBasicDisable = async () => {
-    setBasicActionLoading(true);
+  const handleCartStop = async () => {
+    setCartActionLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/c64/basic/disable`, { method: "PUT" });
+      const response = await fetch(`${API_BASE_URL}/c64/cart/stop`, { method: "PUT" });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload?.error || "Failed to disable Basic ROM");
-      await fetchBasicStatus();
+      if (!response.ok) throw new Error(payload?.error || "Failed to reset to BASIC");
     } catch {
       // ignore
     } finally {
-      setBasicActionLoading(false);
+      setCartActionLoading(false);
     }
   };
 
@@ -169,10 +148,11 @@ export default function App() {
     }
   };
 
-  const isHdnshActive = basicStatus?.current_rom === "hdnsh.bin";
-  const enableButtonDisabled = !basicAvailable || basicActionLoading || isHdnshActive;
-  const disableButtonDisabled = !basicAvailable || basicActionLoading || !isHdnshActive;
-  const rebootButtonDisabled = !basicAvailable || rebootLoading;
+  // run_crt is non-persistent so there is no cartridge-active state to query;
+  // the cartridge controls are available whenever the C64U is connected.
+  const enableButtonDisabled = !connected || cartActionLoading;
+  const disableButtonDisabled = !connected || cartActionLoading;
+  const rebootButtonDisabled = !connected || rebootLoading;
 
   const hasLastIp = lastC64Ip.trim().length > 0;
   let statusLabel = "Find your C64U";
@@ -229,7 +209,7 @@ export default function App() {
               <button
                 type="button"
                 className="btn btn-sm btn-success"
-                onClick={handleBasicEnable}
+                onClick={handleCartRun}
                 disabled={enableButtonDisabled}
               >
                 Enable Shell
@@ -237,7 +217,7 @@ export default function App() {
               <button
                 type="button"
                 className="btn btn-sm btn-danger"
-                onClick={handleBasicDisable}
+                onClick={handleCartStop}
                 disabled={disableButtonDisabled}
               >
                 Disable Shell

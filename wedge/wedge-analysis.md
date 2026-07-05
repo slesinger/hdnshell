@@ -51,8 +51,8 @@ Status as of this writing: **the wedge is a real shell now; round 6 made it game
 - `rr38p-tmp12reu.bin` — the **original, unmodified** stock ROM dump. Kept as a reference/diff baseline — do not edit.
 - `rr38p-tmp12reu.bank00.asm` … `bank07.asm` — Kick Assembler source for each 8KB bank, disassembled from the stock ROM. **These are the live source of truth** — edit these, then rebuild.
 - `rr38p-tmp12reu.bank00.md` … `bank07.md` / `rr38p-tmp12reu.analysis.md` — auto-generated symbol tables/notes from the original disassembly pass. Background reference only, not updated as the source evolves.
-- `build.sh` — rebuilds all 8 banks with Kick Assembler, concatenates them, and packages a `.crt`. See §5 for its quirks.
-- `build/rr38p-tmp12reu.rebuilt.bin` / `.crt` — build output (gitignored-style scratch, regenerate as needed).
+- `build.sh` — rebuilds all 8 banks with Kick Assembler, concatenates them, and packages the cartridge as `build/hdn-rr38p-tmp12reu.crt`. See §5 for its quirks.
+- `build/rr38p-tmp12reu.rebuilt.bin` / `build/hdn-rr38p-tmp12reu.crt` — build output (gitignored-style scratch, regenerate as needed). The distributable cartridge filename is `hdn-rr38p-tmp12reu.crt`; the HDN Server installs it to `/Flash/carts` and starts it via `run_crt`.
 
 ## 2. How the cartridge's own wedge works (confirmed by tracing, not guessed)
 
@@ -136,7 +136,7 @@ Full current source of the routine lives in `rr38p-tmp12reu.bank01.asm` at the `
 Assembles all 8 banks with Kick Assembler, concatenates them, and **compares the result against the original `rr38p-tmp12reu.bin`**. If they differ (which they will, intentionally, once you've added commands), the script prints `MISMATCH` and exits 1 **before** packaging the `.crt`. This is a safety check for verifying a null round-trip, not a build failure — when you've deliberately changed the ROM, package manually:
 
 ```
-cartconv -t rr -i build/rr38p-tmp12reu.rebuilt.bin -o build/rr38p-tmp12reu.rebuilt.crt -n "CYBERPUNX RETRO REPLAY"
+cartconv -t rr -i build/rr38p-tmp12reu.rebuilt.bin -o build/hdn-rr38p-tmp12reu.crt -n "CYBERPUNX RETRO REPLAY"
 ```
 
 **Always verify the diff is localized** after a change, before flashing/loading:

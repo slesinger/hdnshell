@@ -34,6 +34,7 @@ from sdk.network_helper import (
     send_c64_keyboard_input,
     SOCKET_CMD_RUN_IMG,
     SOCKET_CMD_RUN_CRT,
+    SOCKET_CMD_RESET,
 )
 from sdk.config_manager import (
     read_config,
@@ -157,28 +158,34 @@ def is_port_open(host, port, timeout=2):
         return False
 
 
+# The HDN Shell RR cartridge lives in /Flash/carts on the Ultimate storage.
+CARTRIDGE_FILENAME = "hdn-rr38p-tmp12reu.crt"
+CARTRIDGE_DIR = "/Flash/carts"
+CARTRIDGE_PATH = f"{CARTRIDGE_DIR}/{CARTRIDGE_FILENAME}"
+
+
 def check_ftp_files(host):
     ftp_file_service_enabled = False
-    hdnsh_bin_present = False
+    cartridge_present = False
     hdnsh_cfg_present = False
 
     try:
         with ftplib.FTP() as ftp:
             ftp.connect(host, 21, timeout=3)
             ftp.login()
-            ftp.cwd("/Flash/roms")
+            ftp.cwd("/Flash/carts")
             entries = ftp.nlst()
         ftp_file_service_enabled = True
         normalized = {entry.lower() for entry in entries}
-        hdnsh_bin_present = "hdnsh.bin" in normalized
+        cartridge_present = CARTRIDGE_FILENAME.lower() in normalized
         hdnsh_cfg_present = "hdnsh.cfg" in normalized
     except Exception:
         logger.warning("FTP status probe failed for %s", host, exc_info=True)
         ftp_file_service_enabled = False
-        hdnsh_bin_present = False
+        cartridge_present = False
         hdnsh_cfg_present = False
 
-    return ftp_file_service_enabled, hdnsh_bin_present, hdnsh_cfg_present
+    return ftp_file_service_enabled, cartridge_present, hdnsh_cfg_present
 
 
 @app.route("/c64/status_extended")
@@ -188,7 +195,7 @@ def c64_status_extended():
     ultimate_dma_service_enabled = False
     ftp_file_service_enabled = False
     web_remote_control_enabled = False
-    hdnsh_bin_present = False
+    cartridge_present = False
     hdnsh_cfg_present = False
 
     if last_c64_ip:
@@ -197,7 +204,7 @@ def c64_status_extended():
         web_remote_control_enabled = is_port_open(last_c64_ip, 80, timeout=2)
         (
             ftp_file_service_enabled,
-            hdnsh_bin_present,
+            cartridge_present,
             hdnsh_cfg_present,
         ) = check_ftp_files(last_c64_ip)
 
@@ -207,13 +214,13 @@ def c64_status_extended():
             "ultimate_dma_service_enabled": ultimate_dma_service_enabled,
             "ftp_file_service_enabled": ftp_file_service_enabled,
             "web_remote_control_enabled": web_remote_control_enabled,
-            "hdnsh.bin_present": hdnsh_bin_present,
+            "cartridge_present": cartridge_present,
             "hdnsh.cfg_present": hdnsh_cfg_present,
         }
     )
 
 
-def download_latest_rom(target_dir: str) -> tuple[str, str]:
+def download_latest_cartridge(target_dir: str) -> tuple[str, str]:
     api_url = "https://api.github.com/repos/slesinger/hdnshell/releases/latest"
     response = requests.get(api_url, timeout=10)
     response.raise_for_status()
@@ -225,25 +232,25 @@ def download_latest_rom(target_dir: str) -> tuple[str, str]:
     chosen_asset = None
     for asset in assets:
         name = asset.get("name", "")
-        if name.lower() == "hdnsh.bin":
+        if name.lower() == CARTRIDGE_FILENAME.lower():
             chosen_asset = asset
             break
     if chosen_asset is None:
         for asset in assets:
             name = asset.get("name", "")
-            if name.lower().endswith(".bin"):
+            if name.lower().endswith(".crt"):
                 chosen_asset = asset
                 break
 
     if chosen_asset is None:
-        raise RuntimeError("No ROM .bin asset found in the latest release")
+        raise RuntimeError("No cartridge .crt asset found in the latest release")
 
     download_url = chosen_asset.get("browser_download_url")
     if not download_url:
         raise RuntimeError("Release asset missing download URL")
 
     os.makedirs(target_dir, exist_ok=True)
-    local_path = os.path.join(target_dir, "hdnsh.bin")
+    local_path = os.path.join(target_dir, CARTRIDGE_FILENAME)
 
     with requests.get(download_url, stream=True, timeout=20) as download:
         download.raise_for_status()
@@ -252,7 +259,7 @@ def download_latest_rom(target_dir: str) -> tuple[str, str]:
                 if chunk:
                     f.write(chunk)
 
-    return local_path, chosen_asset.get("name", "hdnsh.bin")
+    return local_path, chosen_asset.get("name", CARTRIDGE_FILENAME)
 
 
 def download_latest_cfg(target_dir: str) -> str:
@@ -274,8 +281,9 @@ def download_latest_cfg(target_dir: str) -> str:
     return local_path
 
 
-# Placeholder IP compiled into hdnsh.bin (see src/utils.asm host_ip label).
-# The label reserves 16 bytes: 11 chars "192.168.1.2" + 5 null-padding bytes.
+# Placeholder IP compiled into the cartridge (see wedge/rr38p-tmp12reu.bank05.asm
+# net_test_host label — "192.168.1.2\0" followed by zero-fill up to the jump
+# table, so a 16-byte slot fits any dotted-decimal IPv4 address).
 _ROM_IP_PLACEHOLDER = b"192.168.1.2"
 _ROM_IP_SLOT_SIZE = 16  # total bytes available for IP + null terminator
 
@@ -315,16 +323,16 @@ def patch_server_ip(rom_path: str, server_ip: str) -> None:
     )
 
 
-def upload_rom_via_ftp(host: str, rom_path: str) -> None:
+def upload_cartridge_via_ftp(host: str, cart_path: str) -> None:
     with ftplib.FTP() as ftp:
         ftp.connect(host, 21, timeout=5)
         ftp.login()
-        ftp.cwd("/Flash/roms")
-        # Upload hdnsh.bin
-        with open(rom_path, "rb") as f:
-            ftp.storbinary("STOR hdnsh.bin", f)
-        # If hdnsh.cfg exists in the same directory as rom_path, upload it too
-        cfg_path = os.path.join(os.path.dirname(rom_path), "hdnsh.cfg")
+        ftp.cwd(CARTRIDGE_DIR)
+        # Upload the cartridge image
+        with open(cart_path, "rb") as f:
+            ftp.storbinary(f"STOR {CARTRIDGE_FILENAME}", f)
+        # If hdnsh.cfg exists in the same directory as cart_path, upload it too
+        cfg_path = os.path.join(os.path.dirname(cart_path), "hdnsh.cfg")
         if os.path.exists(cfg_path):
             with open(cfg_path, "rb") as f:
                 ftp.storbinary("STOR hdnsh.cfg", f)
@@ -348,11 +356,11 @@ def ensure_rom():
         return jsonify({"error": "No C64 IP found. Run scan first."}), 400
 
     try:
-        rom_path, asset_name = download_latest_rom("/tmp/hdnshell")
-        # Download hdnsh.cfg from GitHub master branch alongside the ROM
-        download_latest_cfg(os.path.dirname(rom_path))
+        cart_path, asset_name = download_latest_cartridge("/tmp/hdnshell")
+        # Download hdnsh.cfg from GitHub master branch alongside the cartridge
+        download_latest_cfg(os.path.dirname(cart_path))
 
-        # Determine server IP to patch into the ROM
+        # Determine server IP to patch into the cartridge
         cfg = read_config()
         server_ip = cfg.get("server_ip", "").strip()
         if not server_ip:
@@ -368,16 +376,16 @@ def ensure_rom():
                 400,
             )
 
-        patch_server_ip(rom_path, server_ip)
-        upload_rom_via_ftp(last_c64_ip, rom_path)
+        patch_server_ip(cart_path, server_ip)
+        upload_cartridge_via_ftp(last_c64_ip, cart_path)
         return jsonify(
             {
                 "status": "ok",
-                "message": f"Uploaded {asset_name} (server IP {server_ip}) and hdnsh.cfg to ftp://{last_c64_ip}/Flash/roms",
+                "message": f"Uploaded {asset_name} (server IP {server_ip}) and hdnsh.cfg to ftp://{last_c64_ip}{CARTRIDGE_DIR}",
             }
         )
     except Exception as exc:
-        logger.exception("Failed to ensure ROM")
+        logger.exception("Failed to ensure cartridge")
         return jsonify({"error": str(exc)}), 500
 
 
@@ -540,58 +548,42 @@ def self_update():
         return jsonify({"error": str(exc)}), 500
 
 
-@app.route("/c64/basic/enabled", methods=["GET"])
-def c64_basic_enabled():
+@app.route("/c64/cart/run", methods=["PUT"])
+def c64_cart_run():
+    """Enable the HDN Shell: start the cartridge from /Flash/carts.
+
+    Uses the Ultimate's run_crt path (SOCKET_CMD_RUN_CRT), which resets the
+    machine with the cartridge active. It does not alter the Ultimate's
+    configuration, so a plain reset/reboot returns to stock BASIC.
+    """
     last_c64_ip = read_last_c64_ip()
     if not last_c64_ip:
         return jsonify({"error": "No C64 IP found. Run scan first."}), 400
     try:
-        url = f"http://{last_c64_ip}/v1/configs/C64%20and%20Cartridge%20Settings/Basic%20ROM"
-        response = requests.get(url, timeout=5)
-        response.raise_for_status()
-        data = response.json()
-        current = (
-            data.get("C64 and Cartridge Settings", {})
-            .get("Basic ROM", {})
-            .get("current", None)
+        _send_tcp_cmd(last_c64_ip, SOCKET_CMD_RUN_CRT, CARTRIDGE_PATH.encode())
+        return jsonify(
+            {"status": "ok", "message": f"Started cartridge {CARTRIDGE_FILENAME}"}
         )
-        if current is None:
-            return jsonify({"error": "Unexpected response from C64"}), 502
-        # Empty string means the default/stock BASIC ROM is active (basic enabled)
-        enabled = current == ""
-        return jsonify({"enabled": enabled, "current_rom": current})
-    except requests.RequestException as exc:
-        logger.exception("Failed to query Basic ROM config")
+    except Exception as exc:
+        logger.exception("Failed to run cartridge")
         return jsonify({"error": str(exc)}), 502
 
 
-@app.route("/c64/basic/enable", methods=["PUT"])
-def c64_basic_enable():
+@app.route("/c64/cart/stop", methods=["PUT"])
+def c64_cart_stop():
+    """Disable the HDN Shell: reset the machine back to stock BASIC.
+
+    run_crt does not persist in the Ultimate's configuration, so a reset is
+    enough to drop the cartridge and return to the plain C64.
+    """
     last_c64_ip = read_last_c64_ip()
     if not last_c64_ip:
         return jsonify({"error": "No C64 IP found. Run scan first."}), 400
     try:
-        url = f"http://{last_c64_ip}/v1/configs/C64%20and%20Cartridge%20Settings/Basic%20ROM"
-        response = requests.put(url, params={"value": "hdnsh.bin"}, timeout=5)
-        response.raise_for_status()
-        return jsonify(response.json())
-    except requests.RequestException as exc:
-        logger.exception("Failed to enable Basic ROM")
-        return jsonify({"error": str(exc)}), 502
-
-
-@app.route("/c64/basic/disable", methods=["PUT"])
-def c64_basic_disable():
-    last_c64_ip = read_last_c64_ip()
-    if not last_c64_ip:
-        return jsonify({"error": "No C64 IP found. Run scan first."}), 400
-    try:
-        url = f"http://{last_c64_ip}/v1/configs/C64%20and%20Cartridge%20Settings/Basic%20ROM"
-        response = requests.put(url, params={"value": ""}, timeout=5)
-        response.raise_for_status()
-        return jsonify(response.json())
-    except requests.RequestException as exc:
-        logger.exception("Failed to disable Basic ROM")
+        _send_tcp_cmd(last_c64_ip, SOCKET_CMD_RESET)
+        return jsonify({"status": "ok", "message": "Reset to stock BASIC"})
+    except Exception as exc:
+        logger.exception("Failed to stop cartridge")
         return jsonify({"error": str(exc)}), 502
 
 

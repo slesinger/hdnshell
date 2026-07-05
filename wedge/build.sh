@@ -25,6 +25,6 @@ echo "Built: $OUT/rr38p-tmp12reu.rebuilt.bin"
 
 # Package as a Retro Replay .crt (VICE cartconv, cart type 36/"rr") for flashing on Ultimate64/C64U.
 CARTCONV="${CARTCONV:-cartconv}"
-"$CARTCONV" -t rr -i "$OUT/rr38p-tmp12reu.rebuilt.bin" -o "$OUT/rr38p-tmp12reu.rebuilt.crt" \
+"$CARTCONV" -t rr -i "$OUT/rr38p-tmp12reu.rebuilt.bin" -o "$OUT/hdn-rr38p-tmp12reu.crt" \
     -n "CYBERPUNX RETRO REPLAY" >/dev/null
-echo "Built: $OUT/rr38p-tmp12reu.rebuilt.crt"
+echo "Built: $OUT/hdn-rr38p-tmp12reu.crt"

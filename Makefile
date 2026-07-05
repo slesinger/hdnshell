@@ -3,10 +3,16 @@
 
 # Paths
 KICKASS_JAR = /home/honza/projects/c64/pc-tools/kickass/KickAss.jar
-SRC_DIR = src
+# ROM v1 is discontinued; its sources now live in src-discontinued and are only
+# built by the legacy targets below.
+SRC_DIR = src-discontinued
 BIN_DIR = binaries
 ASM_SRC = $(SRC_DIR)/hdnsh.asm
 BIN_OUT = $(BIN_DIR)/hdnsh.bin
+
+# Cartridge wedge (the current product)
+WEDGE_DIR = wedge
+CRT_OUT = $(WEDGE_DIR)/build/hdn-rr38p-tmp12reu.crt
 
 # Cloud/UI packaging
 UI_DIR = ui
@@ -24,7 +30,7 @@ FS11_OPTS = -iecdevice11 -device11 1 -fs11 data/
 VICE_OPTS = $(REU_OPTS) $(DISK_OPTS) $(FS11_OPTS)
 
 
-.PHONY: build-basic run-hdn-vice run-c64u run-std-vice run-test_net clean
+.PHONY: build-crt build-basic-legacy run-hdn-vice run-c64u run-std-vice run-test_net clean
 .PHONY: build-ui run-ui run-server test-server test-client
 .PHONY: clean-dist copy-to-release package-win package-linux package-mac
 .PHONY: github-release release
@@ -35,17 +41,20 @@ clean:
 	rm -f ${SRC_DIR}/*.sym
 
 
-# BASIC
+# Cartridge (current product) — reassemble the RR wedge banks and package the .crt
+build-crt:
+	$(WEDGE_DIR)/build.sh
 
-build-basic:
+# BASIC ROM v1 (discontinued) — kept only for the legacy VICE/C64U run targets below
+build-basic-legacy:
 	mkdir -p $(BIN_DIR)
 	rm -f $(BIN_OUT) $(BIN_DIR)/*.dbg $(BIN_DIR)/*.sym $(BIN_DIR)/*.vs $(BIN_DIR)/*.prg
 	java -jar $(KICKASS_JAR) $(ASM_SRC) -afo -libdir $(SRC_DIR) -o $(BIN_OUT) -vicesymbols
 
-run-hdn-vice: build-basic
+run-hdn-vice: build-basic-legacy
 	x64sc -basic $(BIN_OUT) $(VICE_OPTS)
 
-run-c64u: build-basic
+run-c64u: build-basic-legacy
 	curl -T binaries/hdnsh.bin ftp://192.168.1.65/Flash/roms/
 	python test/test_dmaservice.py
 	sleep 5
@@ -134,8 +143,9 @@ package-mac:
 	$(MAKE) copy-to-release
 
 
-# Full build: binary + linux server + copy to release
-release: build-basic package-linux copy-to-release
+# Full build: linux server + copy to release.
+# The cartridge (.crt) is built separately via `make build-crt` and published by hand.
+release: package-linux copy-to-release
 
 
 # Create a git tag, build everything, and publish a GitHub release with all assets in release/

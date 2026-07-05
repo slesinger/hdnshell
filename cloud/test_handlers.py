@@ -197,6 +197,25 @@ class TestPythonEvalHandler:
         response = handler.handle(":")
         assert "provide" in response.lower()
 
+    def test_import_allowed_module(self):
+        """Test that whitelisted modules can be imported"""
+        handler = PythonEvalHandler()
+        response = handler.handle(": import random; print(1)")
+        assert response == "1"
+
+    def test_import_used_after_import(self):
+        """Test that an imported module is usable in the same snippet"""
+        handler = PythonEvalHandler()
+        response = handler.handle(": import statistics; print(statistics.mean([2, 4]))")
+        assert response == "3"
+
+    def test_import_blocked_module(self):
+        """Test that unsafe modules are blocked"""
+        handler = PythonEvalHandler()
+        response = handler.handle(": import os")
+        assert "error" in response.lower()
+        assert "not allowed" in response.lower()
+
 
 class TestCSDBHandler:
     """Test CSDBHandler"""

@@ -7,7 +7,7 @@ const normalizeStatus = (payload) => ({
   ultimate_dma_service_enabled: Boolean(payload?.ultimate_dma_service_enabled),
   ftp_file_service_enabled: Boolean(payload?.ftp_file_service_enabled),
   web_remote_control_enabled: Boolean(payload?.web_remote_control_enabled),
-  "hdnsh.bin_present": Boolean(payload?.["hdnsh.bin_present"]),
+  cartridge_present: Boolean(payload?.cartridge_present),
   "hdnsh.cfg_present": Boolean(payload?.["hdnsh.cfg_present"]),
 });
 
@@ -16,7 +16,7 @@ const EMPTY_STATUS = {
   ultimate_dma_service_enabled: false,
   ftp_file_service_enabled: false,
   web_remote_control_enabled: false,
-  "hdnsh.bin_present": false,
+  cartridge_present: false,
   "hdnsh.cfg_present": false
 };
 
@@ -91,7 +91,7 @@ export default function StatusExtended({ lastC64Ip }) {
   const hasIp = lastC64Ip?.trim().length > 0 && status.connected;
   const needsNetworkServices =
     !status.ftp_file_service_enabled || !status.ultimate_dma_service_enabled;
-  const needsRom = !status["hdnsh.bin_present"];
+  const needsCart = !status.cartridge_present;
 
   return (
     <section className="status-extended">
@@ -158,16 +158,16 @@ export default function StatusExtended({ lastC64Ip }) {
           </div>
           <div className="col-12 col-lg-4">
             <div className="border rounded-4 p-3 h-100">
-              <h3 className="h6">Step 3 &mdash; ROM files</h3>
+              <h3 className="h6">Step 3 &mdash; Cartridge files</h3>
               <div className="d-flex align-items-start justify-content-between gap-2">
                 <ul className="list-unstyled mb-0">
                   <li className="d-flex align-items-center gap-2 mb-2">
                     <span
                       className={`status-dot ${
-                        status["hdnsh.bin_present"] ? "ok" : "danger"
+                        status.cartridge_present ? "ok" : "danger"
                       }`}
                     />
-                    <span>hdnsh.bin</span>
+                    <span>hdn-rr38p-tmp12reu.crt</span>
                   </li>
                   <li className="d-flex align-items-center gap-2">
                     <span
@@ -220,10 +220,10 @@ export default function StatusExtended({ lastC64Ip }) {
         </div>
       ) : null}
 
-      {hasIp && needsRom && !needsNetworkServices ? (
+      {hasIp && needsCart && !needsNetworkServices ? (
           <div className="alert alert-warning mt-4">
           <p className="mb-3">
-            HDN Shell ROM needs to be uploaded in <strong>/Flash/roms</strong>&nbsp;
+            The HDN Shell RR cartridge needs to be uploaded in <strong>/Flash/carts</strong>&nbsp;
             directory. You can put the file there or let me do it for you.
           </p>
           <button
@@ -234,7 +234,7 @@ export default function StatusExtended({ lastC64Ip }) {
           >
             {ensureRomLoading
               ? "Downloading and uploading..."
-              : "Download latest ROM and put it in my C64 Ultimate"}
+              : "Download latest cartridge and put it in my C64 Ultimate"}
           </button>
           {ensureRomMessage ? (
             <div className="mt-3 small">{ensureRomMessage}</div>

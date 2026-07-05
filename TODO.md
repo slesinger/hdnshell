@@ -5,33 +5,18 @@ FEEDBACK
 
 
 
-pysic syntax is what ever starts with ? will get executed in python on the server but ? is a BASIC equivalent of PRINT. Let's change the ? prefix to : prefix. Update the wedge, the server and the documentation.
-Introduce pysic understanding of the following commands:
-:print(ram[0400:0800]) - print memory from 0x0400 to 0x0800. Print is the python command, ram will be a lazy loaded memory view of the C64 RAM. The wedge will send the command to the server which will execute it and return the result to the wedge which will print it on the C64 screen.
-The ram command will be also used to store values to memory. For example :ram[0400:0800] = [0,1,2,3,4,5,6,7] will store the values 0 to 7 in memory from 0x0400 to 0x0800. The wedge will send the command to the server which will execute it and return the result to the wedge which will print it on the C64 screen. Suggest improvements so that the syntax is nice and pythonic.
-As example, this will set border to white color:
-:ram[0xd020] = 1
-Ask me any questions before you proceed to ensure you understand the task well.
 
 
 
 ----
 READY
 
-opus
-Discontinue ROM v1 located in folder src and move it to src-discontinued. Look for the UI, it contains an easy install option where ROM is downloaded to /flash/roms in the C64U. Change the procedure to download like that, just place it /flash/carts. Ensure the new name of the cartridge will be hdn-rr38p-tmp12reu.crt. That is in the build.sh, in documentation, in all related places. The UI also allows to easily enable/dasable the ROM/cartridge. Adjust the procedure.
-Update Makefile where the build-basic is no longer useful. Insted replace it by build-crt to do wedge/build.sh. Are there any other related changes needed in the Makefile? Also look to the release.ps1 which is similar but is used for windows build.
-Ask me any questions before you proceed to ensure you understand the task well.
 
-
-fable
+fable - night
 Review the coding agent harness. Improve it to provide high performance coding capabilities focused on C development for the C64 Ultimate. Review existing prompts, skills, tools, available documentation within this project, includeing the TUIkit library. The development is strictly focused on the C64 Ultimate. Enable most useful documentation sources from public sources and locally.
 It should be able to use git cli command provided that it is installed in the server system.
-Ask me any questions before you proceed to ensure you understand the task well.
-
-
-Sonnet
-When dragging a file onto the UI Filemanager page, there is an area labeled  Drag and drop files here to upload. Make the area more visible. Make an animated background to attract the user to drop the file there.
+Generate coding tutorials for C64 Ultimate development. The tutorials should be interactive and provide step by step instructions. The tutorials should be able to use the coding agent to provide hints and guidance. The tutorials should be able to use the coding agent to provide code snippets and examples. The tutorials should be able to use the coding agent to provide code reviews and feedback. Make example projects in the workspace oscar directory. Also expand on the docs/user_manual coding tutorials.
+Suggest 3 coding tutorial videos with scripts and assets. I will then follow it and record it.
 Ask me any questions before you proceed to ensure you understand the task well.
 
 
@@ -78,11 +63,16 @@ QUEUE
 
 memcpy zatuhava
 
+
 test deleting files
+
 
 jak fubnguje ukladani home v c64u? se to vzdycky nejak resetuje
 
 
+AZ UPLOADUJI crt na GIHUB
+The UI also allows to easily enable/dasable the ROM/cartridge. The UI button Download&Update must work with the crt and cfg in the cart filder. Adjust the procedure.
+Ask me any questions before you proceed to ensure you understand the task well.
 
 
 

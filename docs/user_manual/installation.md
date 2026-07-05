@@ -48,7 +48,11 @@ At least `FTP file service` and `Ultimate DMA Service` should be enabled — the
 
 ### 5. Attach the HDN Shell RR cartridge
 
-HDN Shell RR ships as a Retro Replay cartridge image (`.crt`). Download the latest cartridge image from the [Releases](https://github.com/slesinger/hdnshell/releases/latest) page, copy it onto the Ultimate storage (the web UI's [File Manager](file-manager.md) can upload it for you), then in the Ultimate menu select the `.crt` file and choose `Run Cartridge`. To make it permanent, set it as the cartridge under `Settings` -> `C64 and Cartridge Settings` -> `Cartridge`.
+HDN Shell RR ships as a Retro Replay cartridge image, `hdn-rr38p-tmp12reu.crt`. The easiest way is to let the web UI do it: on the main page, once your C64U is detected and the network services are enabled, use **Download latest cartridge and put it in my C64 Ultimate** — it downloads the cartridge, patches in your HDN Server IP, and uploads it to `/Flash/carts`.
+
+To do it by hand instead, download the latest `hdn-rr38p-tmp12reu.crt` from the [Releases](https://github.com/slesinger/hdnshell/releases/latest) page, copy it into `/Flash/carts` on the Ultimate storage (the web UI's [File Manager](file-manager.md) can upload it for you), then in the Ultimate menu select the `.crt` file and choose `Run Cartridge`.
+
+Once installed, the web UI's **Enable Shell** / **Disable Shell** buttons start the cartridge (Run Cartridge) or reset back to stock BASIC. Because Run Cartridge does not change the Ultimate's saved configuration, a plain reset always returns you to the ordinary C64.
 
 After a reset you land at the ordinary BASIC `READY.` prompt — that is correct: BASIC stays, the shell wedges in. Type `status` to verify the shell answers and to see whether the HDN Server is reachable.
 

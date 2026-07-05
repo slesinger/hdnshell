@@ -1589,11 +1589,30 @@ wait_frames:
 // real time whether the CPU is running stock or overclocked. Clobbers A.
 wait_vbl:
 !leave0:
-    lda $d012
+    jsr wv_is_line0
     beq !leave0-                // if currently on line 0, wait to leave it
 !reach0:
-    lda $d012
+    jsr wv_is_line0
     bne !reach0-                // wait to reach line 0 (top of next frame)
+    rts
+
+// Sets Z if the raster is exactly at line 0 -- a full 9-bit compare
+// ($d011 bit 7 is the raster line's MSB, $d012 the low 8 bits). Checking
+// $d012==0 alone (as this used to) aliases with line 256 (PAL) / line
+// ~256-261 (NTSC), which also read $d012==0 -- so the old check fired
+// early about half the time, turning the "wait one frame" delay into
+// anywhere from ~1 to ~255 lines depending on raster phase at entry. That
+// was the cause of repeat pacing feeling inconsistent (sometimes fast,
+// sometimes slow) even over a fast local network -- the timing primitive
+// itself was unreliable. Clobbers A.
+wv_is_line0:
+    lda $d011
+    and #$80
+    bne wv_not_line0
+    lda $d012
+    rts
+wv_not_line0:
+    lda #$01                    // force non-zero -> Z clear
     rts
 
 // ===========================================================================

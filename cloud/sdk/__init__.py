@@ -118,6 +118,7 @@ from .network_helper import (
     send_vic_colors,
     send_dmawrite,
     dma_read_memory,
+    dma_write_memory_rest,
     send_c64_keyboard_input,
     read_last_c64_ip,
 )
@@ -281,6 +282,7 @@ __all__ = [
     "send_vic_colors",
     "send_dmawrite",
     "dma_read_memory",
+    "dma_write_memory_rest",
     "send_c64_keyboard_input",
     "read_last_c64_ip",
     # State
