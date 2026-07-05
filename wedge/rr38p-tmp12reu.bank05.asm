@@ -173,6 +173,11 @@ bank05_sub_801a:
 .const w_key_stage = $02ff   // key-repeat pacing (cs_fwd): 0 = next repeat of
                              // the held key gets the INITIAL delay; nonzero =
                              // already past that, use the FAST delay instead
+// Reuses wc_match's w_hidx byte: wc_match always writes it (via `stx w_hidx`)
+// before ever reading it, same non-collision reasoning as w_key_stage above.
+.const last_matrix = $02fe  // SFDX value (matrix code) of the key currently
+                            // being auto-repeated by cs_modal; $40 sentinel
+                            // (SFDX's own "no key down" value) means none
 // Two-stage key-repeat pacing for a held key forwarded to a server console
 // (mirrors BASIC's own SPACE-key repeat feel): the first repeat waits the
 // longer INITIAL delay, every repeat after that only waits the shorter FAST
@@ -180,8 +185,8 @@ bank05_sub_801a:
 // generator free-runs off the video/colour clock, not the 6510's instruction
 // clock, so this stays correct whether the Ultimate 64 is running stock or
 // overclocked, unlike a CPU-cycle-counted busy-wait would be.
-.const INITIAL_REPEAT_DELAY_FRAMES = 26   // ~520ms @ 50Hz PAL / ~433ms @ 60Hz NTSC
-.const FAST_REPEAT_DELAY_FRAMES    = 6    // ~120ms @ 50Hz PAL / ~100ms @ 60Hz NTSC
+.const INITIAL_REPEAT_DELAY_FRAMES = 25   // ~500ms @ 50Hz PAL / ~417ms @ 60Hz NTSC
+.const FAST_REPEAT_DELAY_FRAMES    = 3    // ~60ms @ 50Hz PAL / ~50ms @ 60Hz NTSC
 //
 // Resident block (datassette buffer $0340-$03f9) -- must be intact whenever
 // the hooks are armed; refreshed from ROM templates on every typed line:
@@ -226,10 +231,12 @@ wedge_dispatch:
     jmp print_cr
 
 // wedge_dispatch_body -- parse cf_shadow (the raw pre-crunch typed line).
-// Recognized commands run locally and rts back to the wrapper above;
-// anything unrecognized is forwarded to the cloud chatbot with the "I:"
-// routing prefix -- same fallback as before, the temporary ERR=$xx
-// diagnostic print is retired (mechanism is confirmed).
+// Recognized commands run locally and rts back to the wrapper above; a
+// leading ':' (PySIC) is forwarded raw via send_cli (no "I:" wrapper, so
+// PythonEvalHandler sees its own prefix directly); anything else
+// unrecognized is forwarded to the cloud chatbot with the "I:" routing
+// prefix -- same fallback as before, the temporary ERR=$xx diagnostic
+// print is retired (mechanism is confirmed).
 wedge_dispatch_body:
     ldy #$00
 wd_skipsp:
@@ -244,8 +251,12 @@ wd_notend:
 wd_first:
     sty w_parse_y
     cmp #$23                   // '#' -- device-switch family
-    bne wd_scan
+    bne wd_check_pysic
     jmp cmd_hash
+wd_check_pysic:
+    cmp #$3a                   // ':' -- PySIC (python eval) prefix: forward
+    bne wd_scan                // raw, skipping the "I:" chat wrapper entirely
+    jmp send_cli
 wd_scan:
     ldx #$00                   // X walks the keyword table
 wd_next:
@@ -1409,57 +1420,75 @@ cs_dserver:
 cs_nodigit:
     jsr GETIN
     cmp #$00
-    beq cs_modal
+    beq cs_held_check           // nothing new translated -- is a key still physically down?
     cmp #$81                   // safety net: swallow stray colour codes if any leak through
     beq cs_modal
     cmp #$95
-    bcc cs_fwd
+    bcc cs_fresh
     cmp #$9b
     bcc cs_modal
-cs_fwd:
-    // Throttle autorepeat of a held key: w_len still holds the key code from
-    // the last key_send call (key_send's first instruction is `sta w_len`),
-    // so comparing against it tells us whether this is the same key firing
-    // again. A held key's KERNAL/matrix autorepeat can otherwise flood
-    // key_send far faster than a human intends (the cs_modal loop has no
-    // pacing of its own -- interrupts are off for its whole duration, so the
-    // usual jiffy clock is frozen too and can't be used here). Distinct keys
-    // (normal typing) always pass straight through, unthrottled, and reset
-    // w_key_stage so the *next* held-key run starts at the long delay again.
-    cmp w_len
-    beq cs_fwd_repeat
+cs_fresh:
+    // A translated character arrived from GETIN: always a confirmed, fresh
+    // physical keypress (SCNKEY's own matrix debounce already guarantees
+    // that part is reliable -- only its *autorepeat timing* isn't, see
+    // below). Remember which matrix code this was and reset our own repeat
+    // stage, then send immediately.
     pha
+    ldy SFDX
+    sty last_matrix
     lda #$00
     sta w_key_stage
     pla
-    jmp cs_fwd_send
-cs_fwd_repeat:
-    pha                         // preserve key code across the wait
+    jmp cs_send
+cs_held_check:
+    // No new translated char this scan. Rather than wait for SCNKEY to
+    // decide (on its own schedule) that it's time to inject another repeat
+    // character -- SCNKEY's repeat countdown assumes it's called at a
+    // steady 60Hz via the normal IRQ, but cs_modal calls it at whatever
+    // irregular rate this loop runs (fast when idle, paused for whole
+    // frames during our own waits below), so that countdown reaches zero
+    // and stays "ready to fire" almost immediately regardless of how long
+    // we actually wait -- we read the raw matrix code ourselves and decide
+    // when to resend it, using real raster/vsync time (see wait_frames),
+    // completely independent of SCNKEY's internal timing.
+    lda SFDX
+    cmp #$40                   // 64 = no key down
+    beq cs_modal
+    cmp last_matrix
+    bne cs_modal                // a different key is mid-debounce; wait for GETIN to produce it via cs_fresh
     ldx w_key_stage
-    bne cs_fwd_fast
+    bne cs_held_fast
     ldx #INITIAL_REPEAT_DELAY_FRAMES
     jsr wait_frames
     inc w_key_stage             // first repeat done -- fast pacing from now on
-    jmp cs_fwd_waited
-cs_fwd_fast:
+    jmp cs_held_recheck
+cs_held_fast:
     ldx #FAST_REPEAT_DELAY_FRAMES
     jsr wait_frames
-cs_fwd_waited:
-    pla
-cs_fwd_send:
+cs_held_recheck:
+    // Re-confirm the SAME key is still physically down *after* the wait,
+    // before actually resending -- a plain single tap will very often still
+    // read as "held" on the scan immediately following the initial press
+    // (release+debounce takes real time), which is why simply checking once
+    // before the wait caused a single tap to sometimes send a phantom
+    // second move once the wait finished, regardless of whether the user
+    // had already released the key. If it's been released (or a different
+    // key is now down), just drop back into the loop with nothing sent.
+    lda SFDX
+    cmp #$40
+    beq cs_release
+    cmp last_matrix
+    bne cs_release
+    lda w_len                   // resend the already-translated code from the last send
+cs_send:
     jsr key_send
-    // Flush the type-ahead buffer: SCNKEY assumes it's being called at a
-    // steady 60Hz (via the normal IRQ) to time its own autorepeat, but
-    // cs_modal calls it at an irregular rate (fast when idle, paused for
-    // whole frames during the waits above) -- so by the time we notice a key
-    // is repeating, SCNKEY can already have queued extra stale repeat chars
-    // ahead of us, which we'd otherwise drain and forward as if the user had
-    // pressed the key again (observed as the cursor jumping 2+ entries per
-    // held-key step). Dropping the buffer here means every future GETIN
-    // reflects only the key's current physical state from the next SCNKEY
-    // scan, not this backlog.
+    // Flush the type-ahead buffer: we don't use anything SCNKEY queued on
+    // its own (see above), so drop it and let the next SCNKEY scan start
+    // clean.
     lda #$00
     sta NDX
+    jmp cs_modal
+cs_release:
     jmp cs_modal
 
 // wait until no key is held, then flush the type-ahead buffer (drops the

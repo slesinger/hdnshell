@@ -44,7 +44,7 @@ class NetDriveHandler(BaseHandler):
         state = get_session_state_copy(session_id)
         if state.get("active_module") == "n":
             # Let explicit switches to another module take priority.
-            if any(tl.startswith(p) for p in ["i:", "c:", "#c", "?", "help"]):
+            if any(tl.startswith(p) for p in ["i:", "c:", "#c", ":", "help"]):
                 return False
             return True
         return False

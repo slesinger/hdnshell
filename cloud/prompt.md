@@ -80,7 +80,7 @@ Create a dispatch object that will work for text inputs ($02: C64 sending a stri
 |-----------------|-------------|---------------|
 | starts by "I:"  | General chat requests to LLM Agent | ChatHandler |
 | starts by "help" | Help requests | HelpHandler |
-| starts by "?"   | Evaluate python expression | PythonEvalHandler |
+| starts by ":"   | Evaluate python expression | PythonEvalHandler |
 | starts by "c:"  | requests to csdb.dk database | CSDBHandler |
 
 Create python files for the classes above and implement basic functionality that can be extended later.

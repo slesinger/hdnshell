@@ -71,7 +71,7 @@ class TestHelpHandler:
         assert handler.can_handle("HELP")
         assert handler.can_handle("help commands")
         assert not handler.can_handle("I: help me")
-        assert not handler.can_handle("? help")
+        assert not handler.can_handle(": help")
 
     def test_general_help(self):
         """Test general help response"""
@@ -80,7 +80,7 @@ class TestHelpHandler:
         assert "i:" in response
         assert "m:" in response
         assert "help" in response
-        assert "?" in response
+        assert "Python" in response
         assert "c:" in response
 
     def test_help_topic(self):
@@ -142,33 +142,33 @@ class TestPythonEvalHandler:
     def test_can_handle_eval(self):
         """Test eval command detection"""
         handler = PythonEvalHandler()
-        assert handler.can_handle("? 2 + 2")
-        assert handler.can_handle("?2+2")
-        assert not handler.can_handle("help ?")
+        assert handler.can_handle(": 2 + 2")
+        assert handler.can_handle(":2+2")
+        assert not handler.can_handle("help :")
         assert not handler.can_handle("I: what is ?")
 
     def test_simple_math(self):
         """Test simple mathematical expression"""
         handler = PythonEvalHandler()
-        response = handler.handle("? 2 + 2")
+        response = handler.handle(": 2 + 2")
         assert "4" in response
 
     def test_hex_conversion(self):
         """Test hex conversion"""
         handler = PythonEvalHandler()
-        response = handler.handle("? hex(255)")
+        response = handler.handle(": hex(255)")
         assert "0xff" in response.lower()
 
     def test_binary_conversion(self):
         """Test binary conversion"""
         handler = PythonEvalHandler()
-        response = handler.handle("? bin(15)")
+        response = handler.handle(": bin(15)")
         assert "0b1111" in response.lower()
 
     def test_c64_address(self):
         """Test C64 address conversion (shows hex)"""
         handler = PythonEvalHandler()
-        response = handler.handle("? 49152")
+        response = handler.handle(": 49152")
         assert "49152" in response
         # Should also show hex for C64 addresses
         assert "C000" in response.upper()
@@ -176,25 +176,25 @@ class TestPythonEvalHandler:
     def test_math_functions(self):
         """Test math functions"""
         handler = PythonEvalHandler()
-        response = handler.handle("? sqrt(16)")
+        response = handler.handle(": sqrt(16)")
         assert "4" in response
 
     def test_syntax_error(self):
         """Test syntax error handling"""
         handler = PythonEvalHandler()
-        response = handler.handle("? 2 +")
+        response = handler.handle(": 2 +")
         assert "error" in response.lower()
 
     def test_unsafe_function_blocked(self):
         """Test that unsafe functions are blocked"""
         handler = PythonEvalHandler()
-        response = handler.handle("? open('file.txt')")
+        response = handler.handle(": open('file.txt')")
         assert "error" in response.lower() or "unknown" in response.lower()
 
     def test_empty_expression(self):
         """Test empty expression"""
         handler = PythonEvalHandler()
-        response = handler.handle("?")
+        response = handler.handle(":")
         assert "provide" in response.lower()
 
 
@@ -208,7 +208,7 @@ class TestCSDBHandler:
         assert handler.can_handle("C: test")
         assert handler.can_handle("c:test")
         assert not handler.can_handle("help c:")
-        assert not handler.can_handle("? c:")
+        assert not handler.can_handle(": c:")
 
     def test_empty_query(self):
         """Test empty CSDB query"""
@@ -254,7 +254,7 @@ class TestChatHandler:
         assert handler.can_handle("i: hello")
         assert handler.can_handle("I:hello")
         assert not handler.can_handle("help I:")
-        assert not handler.can_handle("? I:")
+        assert not handler.can_handle(": I:")
 
     def test_empty_query(self):
         """Test empty chat query"""
@@ -442,8 +442,8 @@ class TestRequestDispatcher:
 
         dispatcher = RequestDispatcher()
 
-        # "? 2 + 2" in PETSCII
-        text = "? 2 + 2"
+        # ": 2 + 2" in PETSCII
+        text = ": 2 + 2"
         petscii_text = BaseHandler.utf8_to_petscii(text) + bytes([0x00])
 
         response = dispatcher.dispatch(petscii_text)

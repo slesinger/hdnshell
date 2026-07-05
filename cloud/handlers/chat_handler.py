@@ -390,7 +390,7 @@ class ChatHandler(BaseHandler):
         if t.startswith("i:"):
             return True
         if state.get("active_module") == "i":
-            if any(t.startswith(p) for p in ["c:", "?", "help"]):
+            if any(t.startswith(p) for p in ["c:", ":", "help"]):
                 return False
             return True
         return False

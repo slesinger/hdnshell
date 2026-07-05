@@ -29,14 +29,14 @@ HELP_TEXT = """\x05HDN Shell RR - Help\x9a
 \x9ei:<query>\x9a      Ask the AI assistant
 \x9em:<phrase>\x9a     Search the manual
 \x9ec:<query>\x9a      Search CSDB.dk
-\x9e?<expr>\x9a        Evaluate Python expr
+\x9e:<expr>\x9a        Evaluate Python expr
 \x9estatus\x9a         Show connection state
 
 Examples:
 i: how do i mount a disk?
 m: memcpy
 c: latest releases
-? 2 + 2
+: 2 + 2
 
 Any line that isn't a shell command
 is sent to the AI assistant, so the
@@ -133,17 +133,17 @@ Examples:
   I: what is peek and poke?
 
 The AI understands C64 context and will provide relevant answers.""",
-    "python": """Python Eval Command (?)
+    "python": """Python Eval Command (:)
 
 Evaluate Python expressions and get results.
 
-Usage: ? <expression>
+Usage: : <expression>
 
 Examples:
-  ? 2 + 2
-  ? 255 * 256
-  ? hex(49152)
-  ? bin(15)
+  : 2 + 2
+  : 255 * 256
+  : hex(49152)
+  : bin(15)
 
 Security: Only basic math and functions are allowed for safety.""",
     "csdb": """CSDB Command (c:)

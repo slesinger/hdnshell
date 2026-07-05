@@ -150,7 +150,7 @@ class CSDBHandler(BaseHandler):
         # Only assume csdb module if user explicitly switched to it
         if state.get("active_module") == "c":
             # Don't handle if another command is detected
-            if any(t.startswith(p) for p in ["i:", "?", "help"]):
+            if any(t.startswith(p) for p in ["i:", ":", "help"]):
                 return False
             return True
         return False

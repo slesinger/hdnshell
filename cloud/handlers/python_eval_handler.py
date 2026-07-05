@@ -2,7 +2,7 @@
 PythonEvalHandler - Evaluates Python expressions
 
 Provides safe Python expression evaluation for C64 users.
-Processes requests starting with "?"
+Processes requests starting with ":"
 """
 
 import logging
@@ -62,22 +62,22 @@ class PythonEvalHandler(BaseHandler):
 
     def can_handle(self, text: str, session_id: int = 0) -> bool:
         """
-        Check if text starts with "?"
+        Check if text starts with ":"
 
         Args:
             text: UTF-8 text to check
 
         Returns:
-            True if text starts with "?"
+            True if text starts with ":"
         """
-        return text.strip().startswith("?")
+        return text.strip().startswith(":")
 
     def handle(self, text: str, session_id: int = 0) -> str:
         """
         Evaluate Python expression and return result, capturing printed output
 
         Args:
-            text: UTF-8 text (should start with "?")
+            text: UTF-8 text (should start with ":")
 
         Returns:
             UTF-8 response text with evaluation result or printed output
@@ -85,11 +85,11 @@ class PythonEvalHandler(BaseHandler):
         import io
         import contextlib
 
-        # Remove "?" prefix
+        # Remove ":" prefix
         expression = text.strip()[1:].strip()
 
         if not expression:
-            return "Please provide an expression to evaluate after '?'"
+            return "Please provide an expression to evaluate after ':'"
 
         logger.info(f"Evaluating: {expression}")
 
