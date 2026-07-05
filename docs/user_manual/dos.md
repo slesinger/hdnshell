@@ -7,11 +7,13 @@ There are following devices available:
 - `8` — First disk drive (e.g. 1541)
 - `9` — Second disk drive (e.g. 1541)
 - `h` — Home directory in Ultimate storage
-- `f` — Flash storage in Ultimate (SD card, USB, Temp)
+- `f` — Flash partition in Ultimate storage
 - `t` — Temp folder in Ultimate storage
 - `s` — SoftIEC device (like SD2IEC) emulation storage in Ultimate
 - `c` — CSDB.dk API navigation
-- `n` — Network drive: browse and transfer files from the hondani cloud server's own workspace folder, as if it were just another local drive
+- `n` — Network drive: browse and transfer files from the HDN Server's own workspace folder, as if it were just another local drive
+
+> `h`, `t` and `f` are the same physical Ultimate drive (device 8) — switching between them only changes its current directory.
 
 ## Current Device
 
@@ -23,11 +25,11 @@ In some commands you can use `:` notation to avoid necessity to switch devices. 
 
 ## Listing Files (Directory Listing)
 
-`ll` — List files on the default device.
+`ll` — List files on the current device.
 
-`dir` — List files on the default device.
+`dir` — List files on the current device (same as `ll`).
 
-`<device letter>:dir` — List files on a specific device.
+`ll <pattern>` — List only entries matching the pattern. A trailing `*` matches a prefix (`ll outrun*`); a pattern without `*` matches anywhere in the entry name.
 
 ## Navigating Directories
 
@@ -45,15 +47,9 @@ To show the current directory, simply type `pwd`.
 
 ## Loading Programs
 
-`l <name with wildcards> [<to address>]` — Load file from current device.
+Loading works the classic way — BASIC stays, so `LOAD"demo*",8,1` works exactly as always, and the Retro Replay cartridge adds fast-load shortcuts: `/name` (fast load), `%name` (load absolute), `^name` (load and run), or simply the `F1` key to load and run the first file on the disk. See [Executing Programs](executing_programs.md).
 
-The `to address` is optional, if not provided, it will load to the default address specified in the file header. The address is assumed to be in hexadecimal.
-
-Examples:
-`l demo*` — Load files matching 'demo*' from current device. `*` fits any string, so it will load the first file starting with 'demo'.
-
-`l music.prg 2000` — Load 'music.prg' from current device to address $2000 (8192).
-
+To load a file to an arbitrary memory address of your choice, use [`memcpy`](memory-operations.md#saving-and-restoring-memory-blocks-memcpy).
 
 ## Mounting and Unmounting Disk Images
 
@@ -91,6 +87,6 @@ Refere to very detailed [documentation in C64OS post](https://c64os.com/post/sd2
 
 For more disk operation commands, see the [File Operations](file-operations.md) chapter.
 
-## Last Status
+## Drive Status
 
-`@` — Print the status string of the last operation on network or Ultimate DOS, etc.
+`@` — Read the drive error channel of the current IEC drive (the classic DOS wedge command, provided by the Retro Replay cartridge). `@<command>` sends a DOS command to the drive.

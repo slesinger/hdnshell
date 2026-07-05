@@ -1,6 +1,6 @@
 # File Manager
 
-The web-based File Manager gives you direct access to the Ultimate device storage from your browser. Open the HDN Cloud web UI, select `File Manager`, and make sure the status bar shows the IP address of your connected C64 Ultimate.
+The web-based File Manager gives you direct access to the Ultimate device storage from your browser. Open the HDN Server web UI, select `File Manager`, and make sure the status bar shows the IP address of your connected C64 Ultimate.
 
 Use the breadcrumb bar at the top to jump straight to any parent directory. The `..` row goes one level up, while clicking a folder name opens that folder.
 

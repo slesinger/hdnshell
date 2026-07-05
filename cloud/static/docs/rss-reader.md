@@ -1,6 +1,6 @@
 # RSS Reader (Console 6)
 
-The RSS Reader is a feed reader for RSS and Atom feeds that runs as a server-side console (Console 6). Press **`C=+6`** to switch to it at any time.
+The RSS Reader is a feed reader for RSS and Atom feeds that runs as a server-side console (Console 6). Press **`C=+CTRL+6`** to switch to it at any time.
 
 The server fetches and parses feeds using the feedparser library. Full article text is retrieved directly from source URLs using BeautifulSoup. The 40-column display shows article headlines, summaries, dates, and full article text.
 
@@ -66,7 +66,7 @@ Each article entry shows the feed name (cyan), article title, summary (up to 2 l
 |-----|--------|
 | `↑` / `↓` | Scroll article text |
 | `F3` / `F5` | Page up / page down |
-| `C=+C` | Copy article link to clipboard |
+| `C=+C` | Copy article link to the server-side clipboard (paste it with `C=+V` in the [File Editor](server-file-editor.md)) |
 | `RUN/STOP` | Return to article list |
 
 ### Feed Directory

@@ -1,6 +1,6 @@
 # Telegram Chat (Console 5)
 
-The Telegram Chat console is a full Telegram client that runs as a server-side console (Console 5). Press **`C=+5`** to switch to it at any time.
+The Telegram Chat console is a full Telegram client that runs as a server-side console (Console 5). Press **`C=+CTRL+5`** to switch to it at any time.
 
 The server connects to Telegram using the MTProto protocol via the Telethon library. Your account credentials are stored securely on the server — the C64 only sends and receives screen data and keystrokes.
 
@@ -53,7 +53,7 @@ Unread message counts are shown in **yellow** next to the chat name. Group chats
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Select chat |
-| `F5` / `F3` | Page down / page up |
+| `F5` | Page down |
 | `RETURN` | Open selected chat |
 | `F2` | Open settings |
 | `F3` | Open contacts |

@@ -32,6 +32,7 @@ export default function DocsPage({ initialSlug }) {
   const [error, setError] = useState(null);
   const [allPages, setAllPages] = useState([]);
   const [chapters, setChapters] = useState([]);
+  const [pendingAnchor, setPendingAnchor] = useState(null);
 
   useEffect(() => {
     fetch("/docs/docs-manifest.json")
@@ -67,6 +68,17 @@ export default function DocsPage({ initialSlug }) {
       });
     return () => { cancelled = true; };
   }, [activeSlug]);
+
+  // Scroll to a heading once its content has rendered, for cross-page anchor links.
+  useEffect(() => {
+    if (!pendingAnchor || loading) return;
+    const id = pendingAnchor;
+    const raf = requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView();
+      setPendingAnchor(null);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [pendingAnchor, loading, content]);
 
   return (
     <div className="rounded-4 bg-white border shadow-sm" style={{ minHeight: "70vh", display: "flex" }}>
@@ -128,14 +140,20 @@ export default function DocsPage({ initialSlug }) {
                 // Handle links: inter-doc .md links navigate within the app;
                 // external links open in a new tab; anchors are followed normally.
                 a: ({ href, children, ...props }) => {
-                  if (href?.endsWith(".md") && !href.startsWith("http")) {
-                    const slug = href.replace(/^.*\//, "").replace(/\.md$/, "");
+                  const hashIndex = href?.indexOf("#") ?? -1;
+                  const path = hashIndex >= 0 ? href.slice(0, hashIndex) : href;
+                  const anchor = hashIndex >= 0 ? href.slice(hashIndex + 1) : null;
+                  if (path?.endsWith(".md") && !path.startsWith("http")) {
+                    const slug = path.replace(/^.*\//, "").replace(/\.md$/, "");
                     const known = allPages.find((c) => c.slug === slug);
                     if (known) {
                       return (
                         <button
                           type="button"
-                          onClick={() => setActiveSlug(slug)}
+                          onClick={() => {
+                            setActiveSlug(slug);
+                            setPendingAnchor(anchor);
+                          }}
                           style={{
                             background: "none", border: "none", padding: 0,
                             color: "#0d6efd", cursor: "pointer", textDecoration: "underline",

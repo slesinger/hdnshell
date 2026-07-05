@@ -1,6 +1,6 @@
 # Wikipedia Browser (Console 7)
 
-The Wikipedia Browser is a dedicated PETSCII Wikipedia reader running as a server-side console (Console 7). Press **`C=+7`** to switch to it at any time.
+The Wikipedia Browser is a dedicated PETSCII Wikipedia reader running as a server-side console (Console 7). Press **`C=+CTRL+7`** to switch to it at any time.
 
 The server fetches and strips Wikipedia pages down to essential text and links for the 40×25 display. Works across all Wikipedia language editions. Links are highlighted inline; headings appear in white.
 
@@ -46,10 +46,11 @@ The server fetches and strips Wikipedia pages down to essential text and links f
 | `RETURN` | Search Wikipedia |
 | `RUN/STOP` | Cancel |
 | `←` / `→` | Move cursor in search field |
+| `↑` / `↓` | Cycle the search language |
 | `DEL` | Delete character (backspace) |
 | `HOME` | Jump to start of input |
 
-Search defaults to English (`en`). To search another language, prefix the query with the language code and a space — e.g. `de Fahrrad` searches German Wikipedia.
+Search defaults to English (`en`). To search another language, press `↑`/`↓` while in the search input to cycle through the available Wikipedia language editions — the current language is shown next to the input.
 
 ### Table of Contents
 

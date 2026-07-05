@@ -1,5 +1,7 @@
 
-# Alternative Installation
+# Alternative Installation (Legacy)
+
+> **This is the legacy v1 approach and is outdated.** The current product, **HDN Shell RR**, is a Retro Replay cartridge wedge that keeps BASIC in place — see [Getting Started](installation.md). The BASIC ROM replacement below is kept for reference; it offers a different (older) command set and does not receive new features.
 
 ## BASIC ROM Replacement (manual install with Ultimate)
 
@@ -7,15 +9,15 @@
 
 2. Enable REU (recommended size 16MB) in the Ultimate menu under `Settings` -> `Memory & ROMs` -> `RAM Expansion Unit` set to Enabled and set `Size` to 16MB.
 
-3. Enable `Command Interace` in the same menu to give C64 access to Ultimate features like filesystem and networking.
+3. Enable `Command Interface` in the same menu to give C64 access to Ultimate features like filesystem and networking.
 
-4. Enter `Network Services & Timezone` menu and enable `Ultimate DMA Service` (for fast transfers from cloud). Do not forget to configure your network settings (Ethernet or WiFi) as needed.
+4. Enter `Network Services & Timezone` menu and enable `Ultimate DMA Service` (for fast transfers from the server). Do not forget to configure your network settings (Ethernet or WiFi) as needed.
 
 5. Save the settings and reboot your C64.
 
 ## Without C64 Ultimate
 
-You can benefit from using a general RAM expansion unit (REU). Without Ultimate there is no alternative networking interface support as of now, so cloud features will not be available. Support the new Commodore by getting the C64U now 🙂 and continue the setup as described above.
+You can benefit from using a general RAM expansion unit (REU). Without Ultimate there is no alternative networking interface support as of now, so server features will not be available. Support the new Commodore by getting the C64U now 🙂 and continue the setup as described above.
 
 ## How do I Verify it Works?
 
@@ -29,6 +31,6 @@ After switching on your C64, you should see a command prompt like this:
 
 If first line is displayed like this, the BASIC ROM has been enabled correctly.
 
-The second line depends on your hardware configuration. If `Command Interace` has been enabled correctly, you should see `ULTIMATE-II DOS V1.2` part.
+The second line depends on your hardware configuration. If `Command Interface` has been enabled correctly, you should see `ULTIMATE-II DOS V1.2` part.
 
-You can use `info` command to display more detailed information about your setup. The `@` command shows the status of the last operation, like connecting to cloud server.
+You can use `info` command to display more detailed information about your setup. The `@` command shows the status of the last operation, like connecting to the server.

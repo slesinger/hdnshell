@@ -2,11 +2,11 @@
 
 ## Server Applications
 
-Server Applications are written in python, they run on the C64 HDN Cloud Server, that means on your PC, yet you can use them directly from your C64. They can render custom interfaces on the C64 screen, handle keypresses, and maintain state. They are ideal for building rich interactive applications that can use power of power of modern processing and internet connectivity, while providing the real user experience on the C64.
+Server Applications are written in python, they run on the HDN Server, that means on your PC, yet you can use them directly from your C64. They can render custom interfaces on the C64 screen, handle keypresses, and maintain state. They are ideal for building rich interactive applications that can use power of power of modern processing and internet connectivity, while providing the real user experience on the C64.
 
 ## Purpose
 
-This SDK defines a reusable internal Python API for building server applications for the C64 HDN Cloud Server.
+This SDK defines a reusable internal Python API for building server applications for the HDN Server.
 
 It standardizes:
 - C64 screen rendering (40x25)
@@ -19,7 +19,7 @@ It is intentionally an internal SDK (not a REST API).
 
 ## Development Cycle
 
-For developping a Server Application, you need to checkout Hondani Shell source code from [github](https://github.com/hondani/hdnsh) and run the server locally. This allows you to add or change a Server Application and run the Cloud Server directly without releasing a new version. This implies that the release downloaded from [github](https://github.com/hondani/hdnsh/releases) will not be used in this process.
+For developping a Server Application, you need to checkout Hondani Shell source code from [github](https://github.com/slesinger/hdnshell) and run the server locally. This allows you to add or change a Server Application and run the Cloud Server directly without releasing a new version. This implies that the release downloaded from [github](https://github.com/slesinger/hdnshell/releases) will not be used in this process.
 
 You can find the Server Apps sources under `cloud/server-apps/`. Play with the code there and then use `make run-server` to start the server and test your changes from the C64. When you are happy with the result, you can decide to prepare a pull request should you want to publish it for all the other users.
 

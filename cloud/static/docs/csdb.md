@@ -15,14 +15,13 @@ This example shows how to search for a Hondani demo, download it and run it. Her
 find hondani
 cd rel/248345
 cp *.zip
-#f
-cd /temp
+#t
 dir
 mnt meetro-side-a.d64
 #8
 dir
-l *
-run
+LOAD"*",8,1
+RUN
 ```
 
 > Note that even though this demo comes with two D64 images zipped into one zip file, the zip will get automatically extracted during the `cp` command.
@@ -45,6 +44,8 @@ Here are support object types and its aliases:
 - `release` (alias `rel`) - A demo, game, or other production released by a group or individual.
 - `group` (alias `grp`) - A team or organization that creates releases.
 - `scener` (alias `scn`) - An individual person involved
+
+The root directory also lists `event`, `bbs`, and `sid` sections, which can be browsed the same way.
 
 You can do `cd release` or `cd rel` which is a shorter equivalent.
 
@@ -87,11 +88,13 @@ When you are in a release detail directory context, you can use `cp` command to 
 cp *.zip
 ```
 
-> Note the deault target directory for copied files is `/temp` on the Ultimate storage.
+> Note the default target directory for copied files is `/temp` on the Ultimate storage.
+
+Some downloads on CSDB require being logged in. You can optionally enter your CSDB username and password in the server web UI `Settings`, and the server will use them when fetching files.
 
 
 ## Show Latest Releases
 
-You can also show latest releases by doing `cd release` and then `ls` or `dir`. This will list most recent 10 releases sorted by release date.
+You can also show latest releases by doing `cd release` and then `dir` (or `ll`). This will list most recent 10 releases sorted by release date.
 
 ![latest releases](../assets/csdb-latest.png)

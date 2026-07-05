@@ -40,16 +40,17 @@ Depending on the status of your C64U, you will need to ensure the following. The
 
 At this stage IP address should be discoverable. Use the `Find you C64U` button in top right corner of the web UI to scan your network. Alternatively, you can restart the `hdnsh-server` to trigger the scan in the terminal.
 
-- Enable network services 
+- Enable network services and the command interface
 
-At least `FTP file service` and `Ultimate DMA Service` should be enabled. The former allows you to transfer files between your PC and C64, while the latter enables to control the C64U.
+At least `FTP file service` and `Ultimate DMA Service` should be enabled — the former allows file transfers between your PC and C64, the latter lets the server paint screens and inject programs directly into memory. Also enable the `Command Interface` (under `Settings` -> `C64 and Cartridge Settings`) so the cartridge can reach the Ultimate DOS and network. Optionally enable `Web Remote Control` too — it is required for the AI assistant's screen reading and for the web UI's memory inspector.
 
 ![network-services.png|58%](../assets/network-services.png)
 
-- Set HDN Shell as BASIC ROM
+### 5. Attach the HDN Shell RR cartridge
 
-If the above is enabled correctly, you should see the `Set HDN Shell as BASIC ROM` button in the web UI. Click it and wait for the process to complete. This will automatically download the latest `hdnsh.bin` from the releases and set it as BASIC ROM in your Ultimate.
+HDN Shell RR ships as a Retro Replay cartridge image (`.crt`). Download the latest cartridge image from the [Releases](https://github.com/slesinger/hdnshell/releases/latest) page, copy it onto the Ultimate storage (the web UI's [File Manager](file-manager.md) can upload it for you), then in the Ultimate menu select the `.crt` file and choose `Run Cartridge`. To make it permanent, set it as the cartridge under `Settings` -> `C64 and Cartridge Settings` -> `Cartridge`.
 
-Here is download link for the latest `hdnsh.bin` in case you want to do it manually:
-https://github.com/slesinger/hdnshell/releases/latest/download/hdnsh.bin
+After a reset you land at the ordinary BASIC `READY.` prompt — that is correct: BASIC stays, the shell wedges in. Type `status` to verify the shell answers and to see whether the HDN Server is reachable.
+
+> The older approach of replacing the BASIC ROM with `hdnsh.bin` (the `Set HDN Shell as BASIC ROM` button in the web UI) is outdated — see [Alternative Installation](installation_alternative.md) if you need it.
 

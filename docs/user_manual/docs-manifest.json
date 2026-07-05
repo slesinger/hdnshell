@@ -11,7 +11,7 @@
     { "slug": "file-operations",          "title": "File Operations",                         "level": 2 },
     { "slug": "file-manager",             "title": "File Manager",                            "level": 2 },
     { "slug": "memory-operations",        "title": "Memory Operations, Machine Language Monitor" },
-    { "slug": "cloud-apps",               "title": "Cloud Apps" },
+    { "slug": "cloud-apps",               "title": "Server Apps" },
     { "slug": "server-file-editor",       "title": "File Editor",          "level": 2 },
     { "slug": "web-browser",              "title": "Web Browser",          "level": 2 },
     { "slug": "telegram-chat",            "title": "Telegram Chat",        "level": 2 },
@@ -22,8 +22,8 @@
     { "slug": "c-programming",            "title": "Programming in C on the C64",            "level": 2 },
     { "slug": "coding-agent",             "title": "Coding Agent",                           "level": 2 },
     { "slug": "api-sdk",                  "title": "Programming Server Apps",                "level": 2 },
-    { "slug": "cloud-integration",        "title": "Networking, Cloud Integration" },
+    { "slug": "cloud-integration",        "title": "Networking, HDN Server Integration" },
     { "slug": "csdb",                     "title": "CSDB.dk Commodore 64 Scene Database" },
-    { "slug": "installation_alternative", "title": "Alternative Installation" }
+    { "slug": "installation_alternative", "title": "Alternative Installation (Legacy)" }
   ]
 }

@@ -3,8 +3,8 @@
 ## Table of Contents
 
 1. [The Development Environment](#the-development-environment)
-   - [Console 2 — File Editor](#console-2--file-editor-c--2)
-   - [Console 3 — Coding Agent](#console-3--coding-agent-c--3)
+   - [Console 2 — File Editor](#console-2--file-editor-cctrl2)
+   - [Console 3 — Coding Agent](#console-3--coding-agent-cctrl3)
 2. [Project Structure](#project-structure)
 3. [Your First Program](#your-first-program)
 4. [C64 Memory Map](#c64-memory-map)
@@ -28,7 +28,7 @@ This guide walks you through writing, compiling, and running C programs directly
 
 **Prerequisites**
 
-- HDN Shell loaded as a ROM (or PRG) via the C64 Ultimate cartridge
+- The HDN Shell RR cartridge attached on your C64 Ultimate (see [Installation](installation.md))
 - C64 Ultimate connected to the same network as the HDN Shell cloud server
 - The cloud server running (see [Cloud Integration](cloud-integration.md))
 
@@ -40,19 +40,19 @@ Hondani Shell provides two dedicated server-side consoles for C development. Bot
 
 ### Switching Consoles
 
-Press the **Commodore key** (`C=`) together with a number key to switch consoles:
+Press the **Commodore key together with CTRL** (`C=+CTRL`) and a number key to switch consoles:
 
 | Key combo | Console |
 |-----------|---------|
-| `C=` + `1` | Local HDN Shell |
-| `C=` + `2` | **File Editor** — write and edit code |
-| `C=` + `3` | **Coding Agent** — AI assistant that writes, compiles, and runs code |
+| `C=+CTRL+1` | Local HDN Shell |
+| `C=+CTRL+2` | **File Editor** — write and edit code |
+| `C=+CTRL+3` | **Coding Agent** — AI assistant that writes, compiles, and runs code |
 
-Press `C=` + `1` at any time to return to the shell prompt.
+Press `C=+CTRL+1` at any time to return to the shell prompt.
 
 ---
 
-## Console 2 — File Editor (`C=` + `2`)
+## Console 2 — File Editor (`C=+CTRL+2`)
 
 The file editor is a full-featured text editor that renders entirely on the server and pushes the resulting screen to your C64. No editor code runs on the C64 itself.
 
@@ -172,7 +172,7 @@ Press **F3** to navigate the server's filesystem. Directories appear in green su
 
 ---
 
-## Console 3 — Coding Agent (`C=` + `3`)
+## Console 3 — Coding Agent (`C=+CTRL+3`)
 
 The Coding Agent is an AI assistant that speaks plain English. Tell it what you want to build; it writes the C source, compiles it with Oscar64, fixes any errors automatically, and uploads the resulting `.prg` to your C64 Ultimate.
 
@@ -201,7 +201,7 @@ The Coding Agent is an AI assistant that speaks plain English. Tell it what you 
 
 ### Workflow
 
-1. Press `C=` + `3` to open the Coding Agent.
+1. Press `C=+CTRL+3` to open the Coding Agent.
 2. Press `F3` to browse the workspace and select a project directory.
 3. Type what you want to build and press `RETURN`.
 4. The agent writes code, compiles, iterates on errors, and runs the program on your C64.
@@ -231,7 +231,10 @@ Type at the input line and press `RETURN`:
 | `/compile [file]` | Compile the project (optionally specify the main `.c` file) |
 | `/run` | Upload the last compiled `.prg` to C64 Ultimate and run it |
 | `/project` | Show the current working project directory |
+| `/new-project <name>` | Scaffold a fresh Oscar64 project and select it |
 | `/help` | Show the in-app help screen |
+
+See the [Coding Agent](coding-agent.md) chapter for the full command list, including modes (`/code`, `/plan`, `/explore`) and skills.
 
 ---
 

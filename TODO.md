@@ -1,8 +1,61 @@
 # TODO
 
 ```
+FEEDBACK
+
+Make Cursor...
+The fix seems to be improving but still it is too fast. Double the wait times. Now it happens that cursor moves two items at one. I will hw test after you slow it down.
+
+
+pysic syntax is what ever starts with ? will get executed in python on the server but ? is a BASIC equivalent of PRINT. Let's change the ? prefix to : prefix. Update the wedge, the server and the documentation.
+Ask me any questions before you proceed to ensure you understand the task well.
+
+
+opus
+Retested but it is still not fixed. Here is a working example:
+Page using-the-shell.md link legacy alternative installation is working.
+In the UI documentation user manual on the page Executing Program, there is link Game and Program Compatibility that is pointing to some void yet the content exists. Also, in the File Operations page there is wrong link Navigating Disk Drives and Directories.
+
+
+
+----
+READY
+
+opus
+Discontinue ROM v1 located in folder src and move it to src-discontinued. Look for the UI, it contains an easy install option where ROM is downloaded to /flash/roms in the C64U. Change the procedure to download like that, just place it /flash/carts. Ensure the new name of the cartridge will be hdn-rr38p-tmp12reu.crt. That is in the build.sh, in documentation, in all related places. The UI also allows to easily enable/dasable the ROM/cartridge. Adjust the procedure.
+Update Makefile where the build-basic is no longer useful. Insted replace it by build-crt to do wedge/build.sh
+
+
+fable
+Review the coding agent harness. Improve it to provide high performance coding capabilities focused on C development for the C64 Ultimate. Review existing prompts, skills, tools, available documentation within this project, includeing the TUIkit library. The development is strictly focused on the C64 Ultimate. Enable most useful documentation sources from public sources and locally.
+
+
+Sonnet
+When dragging a file onto the UI Filemanager page, there is an area labeled  Drag and drop files here to upload. Make the area more visible. Make an animated background to attract the user to drop the file there.
+
+
+
+------
+
+case boot screen
+
+
+memcpy zatuhava
+
+test deleting files
+
+jak fubnguje ukladani home v c64u? se to vzdycky nejak resetuje
+
+mkdisk <d64 image name> - d64 extension is assumed.
+
+Ask me any questions before you proceed to ensure you understand the task well.
+
+
 coding tool You can peek C64 Ultimate memory with: http://192.168.1.65/v1/machine:readmem?address=1000&length=16  (1000 is an example of 0x1000 address in hex, length is in bytes)
+
+scrollback section using server as memory
 m: jako AI manual protoze pri i: to nepouziva vzdy ten spravny tool
+improve pysic capablities.
 use FAISS for in memory similarity search, pickle embeddings to disk
 tutorial pres input keys
 nastavovani ip serveru

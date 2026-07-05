@@ -10,8 +10,6 @@
 
 To save or restore a block of memory (not a whole file that's already on a device), use `memcpy` — see [Memory Operations](memory-operations.md#saving-and-restoring-memory-blocks-memcpy).
 
-## ??
+## Deleting Files
 
-- `[<device letter>]delete "<name>"` — Delete file from disk.
-
-9:delete "old.prg" # Delete 'old.prg' from device 9
+Deleting files on IEC drives is handled by the Retro Replay cartridge's own BASIC toolkit `DELETE` command, or classically via the drive command channel (`@s:name`). On the Ultimate storage, use the web UI's [File Manager](file-manager.md) to delete files and folders.

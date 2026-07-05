@@ -1,10 +1,10 @@
-# PySIC, the Python Scripting Alternative to BASIC
+# PySIC, Python Expressions from the C64 Prompt
 
-Because BASIC was stripped from the ROM, a Python scripting is made available for limited scripting as an alternative. It is physically executed in the server compute. The idea is to offer functions to python that will be able to work with the C64 memory, disk, and other resources, so that it can be used for more complex tasks than just a calculator.
+PySIC gives you the option to execute Python expressions on the HDN Server, straight from the C64 command line. It is not a replacement for BASIC — BASIC is right there at the same prompt — it is a complement: instant access to modern math, conversions, and (in the future) functions that work with the C64 memory, disk, and other resources, without writing a program.
 
-`?` prefix indicates that the following text will be sent to the Python Eval Handler on the server, executed and standard output results returned and displayed on the C64 command line.
+`?` prefix indicates that the following text will be sent to the Python Eval Handler on the server, executed, and the result (or printed output) returned and displayed on the C64 command line.
 
-For security reasons, only a limited set of Python built-in functions and math operations are allowed. You can get an idea of what is possible by looking at the [source code](https://github.com/slesinger/hdnshell/blob/e8c4e2c86f7bac1b2294743ca37c2340c6d80930/cloud/python_eval_handler.py#L14).
+For security reasons, only a limited set of Python built-in functions and math operations are allowed. You can get an idea of what is possible by looking at the [source code](https://github.com/slesinger/hdnshell/blob/master/cloud/handlers/python_eval_handler.py).
 
 ![Simple PySIC Example](../assets/pysic-screenshot.png)
 

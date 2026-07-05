@@ -1,6 +1,6 @@
 # Server-Side File Editor (Console 2)
 
-HDN Shell includes a full-featured text editor that runs server-side and displays on your Commodore 64's 40×25 screen. The editor is available on **Console 2** and is accessed from the shell by switching to the server console with the C64 Ultimate network interface.
+HDN Shell includes a full-featured text editor that runs server-side and displays on your Commodore 64's 40×25 screen. The editor is available on **Console 2** — press **`C=+CTRL+2`** to switch to it at any time.
 
 The editor renders into a C64 screen-code buffer which is transferred to the C64 via the DMA service whenever the client requests a screen refresh — no BASIC or machine language editor code runs on the C64 itself.
 
@@ -50,6 +50,7 @@ The editor is always in one of the following modes displayed in the status bar:
 | Cursor keys | Move cursor one character / line |
 | `CTRL` + ←/→ | Move one word left / right |
 | `CTRL` + ↑/↓ | Scroll view without moving cursor |
+| `C=` + `<` / `C=` + `>` | Page up / page down |
 | `HOME` | Move to start of line |
 | `SHIFT` + `HOME` | Jump to top of file |
 | `CLR` | Jump to end of file |
@@ -116,11 +117,11 @@ When split, the top/left pane shows the active document and the top/right or bot
 
 | Key | Action |
 |-----|--------|
-| `ESC` | Open / close menu bar |
+| `RUN/STOP` | Open / close menu bar |
 | ← / → | Move between menus |
 | ↓ / ↑ | Open submenu / navigate items |
 | `RETURN` | Execute highlighted menu item |
-| `ESC` | Close menu, return to editing |
+| `RUN/STOP` | Close menu, return to editing |
 
 ### Other
 
@@ -148,7 +149,7 @@ Press **F3** (or *File → Open*) to enter the file browser.
 - Files are shown in **light blue**.
 - `..` navigates to the parent directory.
 - Press `RETURN` on a directory to enter it; on a file to open it in the editor.
-- Press `ESC` to return to editing without opening a file.
+- Press `RUN/STOP` to return to editing without opening a file.
 
 ---
 
@@ -164,14 +165,14 @@ Up to **8 files** can be open simultaneously.  Press **F2** to view the list:
 ```
 
 - The active file is highlighted and prefixed with `*`.
-- Use ↑/↓ to change the active file; `RETURN` or `ESC` to confirm.
+- Use ↑/↓ to change the active file; `RETURN` or `RUN/STOP` to confirm.
 - The menu bar always shows the current tab index, e.g. `2/3`.
 
 ---
 
 ## Embedded Console / Shell
 
-Press **F7** to enter the embedded shell.  Commands are executed server-side (the machine running HDN Cloud) and their output is displayed in the editor window.
+Press **F7** to enter the embedded shell.  Commands are executed server-side (the machine running the HDN Server) and their output is displayed in the editor window.
 
 ```
  console (esc=back)
@@ -185,7 +186,7 @@ Press **F7** to enter the embedded shell.  Commands are executed server-side (th
 - Type a command and press `RETURN` to execute.
 - `DEL` deletes the last typed character.
 - ↑/↓ scrolls the output history.
-- Press **ESC** or **F7** to return to the editor.
+- Press **RUN/STOP** or **F7** to return to the editor.
 
 This makes it easy to run `git`, `cp`, `grep`, or any other server-side tool without leaving the editor.
 

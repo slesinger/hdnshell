@@ -1,6 +1,6 @@
 # Web Browser (Console 4)
 
-The Web Browser is a full text-mode browser that runs as a server-side console (Console 4). Press **`C=+4`** to switch to it at any time.
+The Web Browser is a full text-mode browser that runs as a server-side console (Console 4). Press **`C=+CTRL+4`** to switch to it at any time.
 
 On the server, a headless Chromium instance (Playwright) fetches and fully renders web pages — including JavaScript-heavy sites. The rendered content is converted to PETSCII screen codes and displayed on the C64's 40×25 screen. Links, headings, images (as placeholders), and page colours are all represented.
 

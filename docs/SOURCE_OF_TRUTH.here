@@ -1,3 +1,0 @@
-Source of truth for manual pages is user_manual.
-UI build copies those files into docs automatically.
-This is configured in vite.config.js:57 via viteStaticCopy and output to static via vite.config.js:76.

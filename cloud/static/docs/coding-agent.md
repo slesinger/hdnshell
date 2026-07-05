@@ -1,6 +1,6 @@
 # Coding Agent (Console 3)
 
-The Coding Agent is an AI-powered coding assistant that runs as a server-side console (Console 3). Press **`C=+3`** to switch to it at any time.
+The Coding Agent is an AI-powered coding assistant that runs as a server-side console (Console 3). Press **`C=+CTRL+3`** to switch to it at any time.
 
 You chat with the agent in plain language. It is specialized for **Oscar64 C/C++ projects** targeting the Commodore 64 and C64 Ultimate. In normal coding mode it can inspect files, update `.c` and `.h` files, compile the project, and upload the resulting `.prg` to your C64 Ultimate. You observe the result on the real hardware and give feedback in the chat.
 
@@ -61,9 +61,11 @@ The current harness exposes these togglable skills:
 
 | Skill | Purpose |
 |------|---------|
+| `assistant_memory` | Keep and use persistent notes about the project across sessions |
 | `build_debug_loop` | Bias toward small compile-fix-rebuild iterations |
 | `memory_layout_checks` | Focus on fixed addresses, buffers, and memory overlaps |
 | `multi_file_refactor` | Focus on coordinated `.c` / `.h` edits |
+| `new_project` | Guide scaffolding of a fresh Oscar64 project |
 | `sprite_workflow` | Focus on Oscar64 sprite APIs, data placement, and image index arithmetic |
 
 Skills do not create a separate mode. They add extra guidance on top of the current mode.
@@ -72,7 +74,7 @@ Skills do not create a separate mode. They add extra guidance on top of the curr
 
 ## Workflow
 
-1. Press **`C=+3`** to open the Coding Agent.
+1. Press **`C=+CTRL+3`** to open the Coding Agent.
 2. Press **`F3`** to browse the workspace and select a project directory.
 3. Optional: switch mode with `/code`, `/plan`, or `/explore`.
 4. Optional: enable a skill with `/skill <name>`.
@@ -127,6 +129,7 @@ Type these commands at the input prompt and press `RETURN`:
 | `/compile [file]` | Compile the project (optionally specify the main `.c` file) |
 | `/run` | Upload the last compiled `.prg` to the C64 Ultimate and run it |
 | `/project` | Show the current working project directory |
+| `/new-project <name>` | Scaffold a fresh Oscar64 project in the workspace and select it |
 | `/status` | Show the current mode, active skills, and target file or directory |
 | `/help` | Show the in-app help screen |
 

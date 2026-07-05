@@ -166,6 +166,22 @@ bank05_sub_801a:
 .const w_dig2        = $02fd  // print_dec_byte scratch: tens digit
 .const w_hidx        = $02fe  // wc_match: haystack inner-compare index
 .const w_hstart      = $02ff  // wc_match: haystack outer try-start offset
+// Reuses wc_match's w_hstart byte: wc_match always zeroes it itself before
+// use (see wcm_haspat), and it's otherwise only touched by the ll/dir
+// wildcard filter -- a command that (like everything else) can't run while
+// cs_modal has taken over, so the two uses never collide.
+.const w_key_stage = $02ff   // key-repeat pacing (cs_fwd): 0 = next repeat of
+                             // the held key gets the INITIAL delay; nonzero =
+                             // already past that, use the FAST delay instead
+// Two-stage key-repeat pacing for a held key forwarded to a server console
+// (mirrors BASIC's own SPACE-key repeat feel): the first repeat waits the
+// longer INITIAL delay, every repeat after that only waits the shorter FAST
+// delay. Both are counted in vsyncs (wait_frames/wait_vbl) -- the VIC raster
+// generator free-runs off the video/colour clock, not the 6510's instruction
+// clock, so this stays correct whether the Ultimate 64 is running stock or
+// overclocked, unlike a CPU-cycle-counted busy-wait would be.
+.const INITIAL_REPEAT_DELAY_FRAMES = 13   // ~260ms @ 50Hz PAL / ~217ms @ 60Hz NTSC
+.const FAST_REPEAT_DELAY_FRAMES    = 3    // ~60ms @ 50Hz PAL / ~50ms @ 60Hz NTSC
 //
 // Resident block (datassette buffer $0340-$03f9) -- must be intact whenever
 // the hooks are armed; refreshed from ROM templates on every typed line:
@@ -1401,6 +1417,36 @@ cs_nodigit:
     cmp #$9b
     bcc cs_modal
 cs_fwd:
+    // Throttle autorepeat of a held key: w_len still holds the key code from
+    // the last key_send call (key_send's first instruction is `sta w_len`),
+    // so comparing against it tells us whether this is the same key firing
+    // again. A held key's KERNAL/matrix autorepeat can otherwise flood
+    // key_send far faster than a human intends (the cs_modal loop has no
+    // pacing of its own -- interrupts are off for its whole duration, so the
+    // usual jiffy clock is frozen too and can't be used here). Distinct keys
+    // (normal typing) always pass straight through, unthrottled, and reset
+    // w_key_stage so the *next* held-key run starts at the long delay again.
+    cmp w_len
+    beq cs_fwd_repeat
+    pha
+    lda #$00
+    sta w_key_stage
+    pla
+    jmp cs_fwd_send
+cs_fwd_repeat:
+    pha                         // preserve key code across the wait
+    ldx w_key_stage
+    bne cs_fwd_fast
+    ldx #INITIAL_REPEAT_DELAY_FRAMES
+    jsr wait_frames
+    inc w_key_stage             // first repeat done -- fast pacing from now on
+    jmp cs_fwd_waited
+cs_fwd_fast:
+    ldx #FAST_REPEAT_DELAY_FRAMES
+    jsr wait_frames
+cs_fwd_waited:
+    pla
+cs_fwd_send:
     jsr key_send
     jmp cs_modal
 
@@ -1486,6 +1532,27 @@ key_send:
     jsr nw_finish
     jsr net_close
 key_send_done:
+    rts
+
+// Wait X vertical blanks (X preloaded by the caller). Used only to pace
+// repeats of a held key in cs_fwd (see there for why); clobbers A/X.
+wait_frames:
+    jsr wait_vbl
+    dex
+    bne wait_frames
+    rts
+
+// Wait for one full frame boundary (raster line 0), regardless of the
+// raster position at entry. The VIC raster counter free-runs off the
+// video/colour clock independent of the 6510, so this delay is accurate
+// real time whether the CPU is running stock or overclocked. Clobbers A.
+wait_vbl:
+!leave0:
+    lda $d012
+    beq !leave0-                // if currently on line 0, wait to leave it
+!reach0:
+    lda $d012
+    bne !reach0-                // wait to reach line 0 (top of next frame)
     rts
 
 // ===========================================================================
