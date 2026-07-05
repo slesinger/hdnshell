@@ -3,18 +3,15 @@
 ```
 FEEDBACK
 
-Make Cursor...
-The fix seems to be improving but still it is too fast. Double the wait times. Now it happens that cursor moves two items at one. I will hw test after you slow it down.
 
 
 pysic syntax is what ever starts with ? will get executed in python on the server but ? is a BASIC equivalent of PRINT. Let's change the ? prefix to : prefix. Update the wedge, the server and the documentation.
+Introduce pysic understanding of the following commands:
+:print(ram[0400:0800]) - print memory from 0x0400 to 0x0800. Print is the python command, ram will be a lazy loaded memory view of the C64 RAM. The wedge will send the command to the server which will execute it and return the result to the wedge which will print it on the C64 screen.
+The ram command will be also used to store values to memory. For example :ram[0400:0800] = [0,1,2,3,4,5,6,7] will store the values 0 to 7 in memory from 0x0400 to 0x0800. The wedge will send the command to the server which will execute it and return the result to the wedge which will print it on the C64 screen. Suggest improvements so that the syntax is nice and pythonic.
+As example, this will set border to white color:
+:ram[0xd020] = 1
 Ask me any questions before you proceed to ensure you understand the task well.
-
-
-opus
-Retested but it is still not fixed. Here is a working example:
-Page using-the-shell.md link legacy alternative installation is working.
-In the UI documentation user manual on the page Executing Program, there is link Game and Program Compatibility that is pointing to some void yet the content exists. Also, in the File Operations page there is wrong link Navigating Disk Drives and Directories.
 
 
 
@@ -23,21 +20,60 @@ READY
 
 opus
 Discontinue ROM v1 located in folder src and move it to src-discontinued. Look for the UI, it contains an easy install option where ROM is downloaded to /flash/roms in the C64U. Change the procedure to download like that, just place it /flash/carts. Ensure the new name of the cartridge will be hdn-rr38p-tmp12reu.crt. That is in the build.sh, in documentation, in all related places. The UI also allows to easily enable/dasable the ROM/cartridge. Adjust the procedure.
-Update Makefile where the build-basic is no longer useful. Insted replace it by build-crt to do wedge/build.sh
+Update Makefile where the build-basic is no longer useful. Insted replace it by build-crt to do wedge/build.sh. Are there any other related changes needed in the Makefile? Also look to the release.ps1 which is similar but is used for windows build.
+Ask me any questions before you proceed to ensure you understand the task well.
 
 
 fable
 Review the coding agent harness. Improve it to provide high performance coding capabilities focused on C development for the C64 Ultimate. Review existing prompts, skills, tools, available documentation within this project, includeing the TUIkit library. The development is strictly focused on the C64 Ultimate. Enable most useful documentation sources from public sources and locally.
+It should be able to use git cli command provided that it is installed in the server system.
+Ask me any questions before you proceed to ensure you understand the task well.
 
 
 Sonnet
 When dragging a file onto the UI Filemanager page, there is an area labeled  Drag and drop files here to upload. Make the area more visible. Make an animated background to attract the user to drop the file there.
+Ask me any questions before you proceed to ensure you understand the task well.
 
 
 
+#opus
+The old BASIC ROM replacement (in the src folder) is having a good bootscreen finger print. It is using the lowercase font (please switch in the HDN RR impleemntation also to the lower case font). The old bootscreen looked like this:
+```
+    **** COMMODORE 64 SHELL V1 ****
+ 16M REU ultimate-ii dos v1.2, Hondani
+
+READY.
+```
+I want this boot screen to be presented in the new HDN RR implementation. The new bootscreen should look like this:
+```
+	**** COMMODORE 64 SHELL V2 ****
+ 16M REU ultimate-ii dos v1.2, HDN/CPX
+```
+and then the READY. prompt.
+Ask me any questions before you proceed to ensure you understand the task well.
+
+
+
+#sonnet
+Create a tool for the C64 server coding agent that will be able to peek C64 Ultimate memory with API like this: http://192.168.1.65/v1/machine:readmem?address=1000&length=16  (1000 is an example of 0x1000 address in hex, length is in bytes).
+Check if the tools does not exist yet. I tested and it looks the tool is not there or it does not work.
+Ask me any questions before you proceed to ensure you understand the task well.
+
+
+
+
+#sonnet
+In the wedge, create a new command that will work on the UCI and network drives:
+mkdisk <image name>.d64 - instead of d64 there can be d81 and other supported image types. The command will create a new disk image with the given name and type.
+Also update the user manual and the documentation to reflect this new command.
+Ask me any questions before you proceed to ensure you understand the task well.
+
+
+
+
+Ask me any questions before you proceed to ensure you understand the task well.
 ------
-
-case boot screen
+QUEUE
 
 
 memcpy zatuhava
@@ -46,17 +82,13 @@ test deleting files
 
 jak fubnguje ukladani home v c64u? se to vzdycky nejak resetuje
 
-mkdisk <d64 image name> - d64 extension is assumed.
-
-Ask me any questions before you proceed to ensure you understand the task well.
 
 
-coding tool You can peek C64 Ultimate memory with: http://192.168.1.65/v1/machine:readmem?address=1000&length=16  (1000 is an example of 0x1000 address in hex, length is in bytes)
 
-scrollback section using server as memory
-m: jako AI manual protoze pri i: to nepouziva vzdy ten spravny tool
-improve pysic capablities.
-use FAISS for in memory similarity search, pickle embeddings to disk
+
+Vymyslet ovladani: scrollback section using server as memory
+Je to hotove? m: jako AI manual protoze pri i: to nepouziva vzdy ten spravny tool
+Je to hotove? use FAISS for in memory similarity search, pickle embeddings to disk
 tutorial pres input keys
 nastavovani ip serveru
 tut1 prchazt disk, mount disk, run game
@@ -105,113 +137,3 @@ Residential programs are tiny programs loaded into memory and remain there for q
 ```resident load "<filename>"``` - load a program to stay resident in memory
 ```resident list``` - list resident programs
 ```resident unload <name>``` - unload resident program from memory
-
-## SMON Commands
-
-### A xxxx — Assemble
-
-Assemble code starting at `xxxx`. It is possible to use markers (a simple form of symbolic labels) in the form `Mxx`. A single `X` ends the assembly.
-
-### C xxxx yyyy zzzz aaaa bbbb — Convert Program
-
-The memory block from `xxxx` to `yyyy` is moved to `zzzz`. All absolute addresses in the code between `aaaa` and `bbbb` that pointed into the moved range are adjusted.
-
-### D xxxx (yyyy) — Disassemble
-
-Disassemble the program starting at `xxxx` (and ending at `yyyy`). Changes to the code are possible by overwriting the opcodes.
-
-### F aa bb cc ..., xxxx yyyy — Find Bytes
-
-Find all occurrences of the byte sequence `aa bb cc ...` in the memory range `xxxx` to `yyyy`.  
-It is possible to specify some nybbles of the search pattern as don't-care by using the wild card `*`.
-
-> **Note:** Unlike most other SMON-commands, the Find commands are very picky about syntax. There must be no space between the command name and the arguments to be found (exception: the Find Byte command requires exactly one space), and a comma before the range.
-
-#### FAaaaa, xxxx yyyy — Find Absolute Address
-
-Find all references to the absolute address `aaaa` within the memory range `xxxx` to `yyyy`.  
-Note that there is no space between `FA` and `aaaa`.
-
-#### FRaaaa, xxxx yyyy — Find Relative
-
-Find branch statements that point to address `aaaa` within the memory range `xxxx` to `yyyy`.  
-Note that there is no space between `FR` and `aaaa`.
-
-#### FTxxxx yyyy — Find Table
-
-Find all tables in the memory range from `xxxx` to `yyyy`. SMON defines a table as any information that cannot be disassembled.
-
-#### FZaa, xxxx yyyy — Find Zero-Page
-
-Find all references to the zero-page address `aa` within the memory range `xxxx` to `yyyy`.  
-Note that there is no space between `FZ` and `aa`.
-
-#### FIaa, xxxx yyyy — Find Immediate
-
-Find all statements in the memory range from `xxxx` to `yyyy` that use `aa` as immediate operand.  
-Note that there is no space between `FI` and `aa`.
-
-### G (xxxx) — Go
-
-Execute the machine program at `xxxx` or the current PC. If the code ends with `RTS`, SMON is terminated. To jump back to SMON after the code is executed, the program must end with `BRK`.
-
-### L "filename" (xxxx) — Load
-
-Load a file from the standard I/O device (see command I) at the standard address or `xxxx`.
-
-### M xxxx (yyyy) — Memory Dump
-
-Display the memory contents from `xxxx` to `yyyy` as hex-values and ASCII-characters. Changes are possible by overwriting the hex-values.
-
-### O xxxx yyyy zz — Occupy
-
-Fill the memory range `xxxx` to `yyyy` with the value `zz`.
-
-### P xxxx yyyy aaaa ... — Copy Bytes
-
-Copy the bytes from the memory range `xxxx` to `yyyy` to a new location starting at `aaaa`.
-
-### R — Register
-
-Display the contents of the CPU registers. Changes are possible by overwriting the values.
-
-### S ("filename" xxxx yyyy) — Save
-
-Save the memory contents from `xxxx` to `yyyy` to a file. If the file has been loaded using the command L then the parameters for save are optional.
-
-### V xxxx yyyy zzzz aaaa bbbb — Move Addresses
-
-All absolute addresses in the code between `aaaa` and `bbbb` that pointed into the range `xxxx` to `yyyy` are adjusted to point into the range starting at `zzzz`.
-
-### W xxxx yyyy zzzz — Write
-
-Copy the memory contents between `xxxx` and `yyyy` to `zzzz`. No address or other transformations are performed. Works correctly even if source and destination range overlap.
-
-### = xxxx yyyy — Check Equality
-
-The memory ranges starting at `xxxx` and `yyyy` are compared for equality. The address of the first different byte is displayed.
-
-
-## Disk Monitor Commands
-
-### Z — Start Disk Monitor (Equivalent Command: H)
-
-SMON features a built-in disk monitor for floppy disk #8. To avoid confusion in terms of command names, the disk monitor must be explicitly started and terminated. While SMON is in disk monitor mode, only the following commands are available.
-
-> **Note:** It is not possible to examine a device other than a floppy disk (i.e. not a folder of a Mac hard disk or a tape) mounted on drive #8.
-
-- **R (tt ss) — Read Sector**  
-	Read track `tt` sector `ss` into memory. If `tt` and `ss` are missing, the next logical (not physical!) sector is read.
-
-- **W (tt ss) — Write Sector**  
-	Write track `tt` sector `ss` to disk. If `tt` and `ss` are missing, the parameters from the last Read Sector command are used.
-
-- **M — Memory Dump**  
-	Display the disk sector in memory on the screen. The Shift-keys can be used to interrupt/continue the display of data.
-
-- **@ — Floppy Error Status**  
-	Displays the current Floppy Error Message. If no error occurred, then no message is printed (i.e. the message `00, OK,00,00` is suppressed).
-
-- **X — Exit the Disk-Monitor / Return to SMON proper.**
-
-

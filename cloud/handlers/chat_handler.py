@@ -431,6 +431,16 @@ class ChatHandler(BaseHandler):
             if slash_response is not None:
                 return slash_response
 
+        # "m:<phrase>" always searches the manual directly, bypassing the LLM
+        # agent's tool selection -- "i:" doesn't reliably pick the manual tool.
+        if query.lower().startswith("m:"):
+            phrase = query[2:].strip()
+            if not phrase:
+                return "Usage: m:<search phrase>, e.g. m:memcpy"
+            if self.manual_content:
+                return search_manual(phrase, self.manual_content)
+            return self._manual_missing_response(phrase)
+
         logger.info(f"Chat query: {query}")
 
         # If LLM is not initialized, provide fallback response

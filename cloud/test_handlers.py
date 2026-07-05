@@ -77,7 +77,8 @@ class TestHelpHandler:
         """Test general help response"""
         handler = HelpHandler()
         response = handler.handle("help")
-        assert "I:" in response
+        assert "i:" in response
+        assert "m:" in response
         assert "help" in response
         assert "?" in response
         assert "c:" in response

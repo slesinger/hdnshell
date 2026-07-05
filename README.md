@@ -1,29 +1,28 @@
-# HDN Shell — Modern BASIC ROM Replacement for Commodore 64
+# HDN Shell RR — AI-Enabled Shell for the Commodore 64
 
 > _Pronounced "Hondani Shell"_
 
-HDN Shell transforms your Commodore 64 by replacing the standard BASIC ROM ($A000-$BFFF) with a powerful, modern command line interface. When you power on your C64, HDN Shell launches instead of the classic BASIC interpreter, bringing Linux-inspired features and productivity to your retro computer.
+HDN Shell RR turns a Retro Replay cartridge on your C64 Ultimate into an AI-enabled, network-connected shell that lives *alongside* BASIC. You keep typing at the familiar `READY.` prompt: recognized shell commands run instantly in the cartridge, and anything BASIC doesn't understand is forwarded to the **HDN Server** — a companion app you run on your own PC or Mac — for AI chat, manual search, CSDB scene access, virtual console apps, and an AI coding agent that can see the screen, press keys, and inject compiled programs into the real machine.
+
+> An earlier version of HDN Shell replaced the BASIC ROM entirely. That approach is now outdated and kept only as a [legacy alternative installation](docs/user_manual/installation_alternative.md).
 
 ---
 
 ## 🚀 Key Benefits for C64 Users
 
-- **Simplified commands:** Replace `LOAD "*",8,1` with `ll` or `dir`.
-- **Fast file management:** Switch drives (`#9`), copy files (`cp from to`), and more.
-- **SD2IEC support:** Use device #10 (with Ultimate), including directory navigation.
-- **Linux-inspired command line:** Familiar syntax and power.
-- **Command history:** Recall and reuse previous commands.
-- **Screen scrollback:** Review output (requires REU).
-- **Integrated memory monitor:** Inspect and debug memory easily.
-- **HDN Cloud integration:** Connect for extended features (requires Ultimate/1541 Ultimate with networking).
-- **Open source:** All code, including cloud server, is available.
-- **Privacy-first:** Run HDN Cloud locally or use the free public server.
-- **Searchable manual pages:** Find help fast.
-- **AI chat:** Get assistance and answers.
-- **Python expression execution:** Run Python code directly.
-- **Memory efficiency:** Keeps all C64 memory free for your programs.
+- **BASIC stays.** Nothing is removed from your C64; the shell wedges into a Retro Replay cartridge and steps completely out of the way the moment you load or run a program.
+- **Simplified commands:** Replace `LOAD "$",8,1` with `ll` or `dir`.
+- **Fast file management:** Switch drives (`#9`), mount disk images (`mnt`), copy files (`cp`), and more.
+- **SD2IEC support:** Use device `#s` (with Ultimate), including directory navigation.
+- **Integrated machine code monitor & freezer:** courtesy of the Retro Replay cartridge itself, plus `memcpy` for saving/restoring arbitrary memory ranges to files.
+- **HDN Server integration:** connect for AI chat, CSDB browsing, a network drive, and a set of full server-side console apps (file editor, coding agent, web browser, Telegram, RSS reader, Wikipedia browser) — switch between them instantly with `C=+CTRL+<digit>`.
+- **Your machine, your server:** run the HDN Server locally on your own PC or Mac — no hosted service, no account, any OpenAI-compatible LLM endpoint (including local Ollama).
+- **Open source:** all code, including the server and the cartridge wedge source, is available.
+- **Searchable manual pages:** find help fast, including a dedicated `m:<phrase>` manual-search prefix.
+- **AI chat:** get assistance and answers right at the prompt — no prefix required, just type.
+- **Python expression execution:** run Python expressions on the server with `?<expr>`.
 
-> *REU required for scrollback. Ultimate/1541 Ultimate with networking required for cloud features.*
+> *Ultimate/1541 Ultimate with networking required for HDN Server features.*
 
 ---
 
@@ -31,39 +30,36 @@ HDN Shell transforms your Commodore 64 by replacing the standard BASIC ROM ($A00
 
 - C64 hardware is legendary; Ultimate makes it even better.
 - Today, C64 can be a serious computer for creative projects, learning, and fun.
-- Command line = power. HDN Shell brings that power to your C64.
+- Command line = power. HDN Shell RR brings that power to your C64 — without giving up BASIC.
 - Focus on productivity, not just nostalgia.
-- HDN Shell frees all C64 memory for your programs.
-- BASIC is mostly used for loading programs—HDN Shell does it faster and easier.
-- Want BASIC? Just plug in a cartridge.
-- Fast program injection means less waiting, more doing.
-- Cloud services and networking make your C64 feel modern.
-- Discover all the features HDN Shell brings to your C64!
+- Fast program injection from CSDB or the AI coding agent means less waiting, more doing.
+- Server integration and networking make your C64 feel modern.
+- Discover all the features HDN Shell RR brings to your C64!
 
 ---
 
 ## 🔮 Future Features
 
-- Multiple command line sessions (virtual consoles) — switch like Linux (C=+1, C=+2, ...)
-- Copy/paste on screen (maybe between cloud and C64!)
-- Write programs in the cloud, use them on your C64
+- Multiple command line sessions (virtual consoles) — switch like Linux
+- Clipboard between the server and the C64 (`C=+C` / `C=+V`)
 - Prglets: relocatable small resident programs
-- SID/MOD background music playback
-- Simple file editor ([speedscript](https://github.com/gillham/speedscript))
-- Replace Ultimate web app with a more integrated, powerful cloud solution
+- Resident programs handling frame interrupts
+- SID/MOD background music streaming
+- A community registry of third-party server apps and command handlers
 
 ---
 
 ## 🛠️ Installation & Quick Start
 
-See the [Installation Guide](docs/user_manual/installation.md) for step-by-step instructions to set up HDN Shell on your C64 and PC.
+See the [Installation Guide](docs/user_manual/installation.md) for step-by-step instructions to set up the HDN Server on your PC and attach the HDN Shell RR cartridge to your C64 Ultimate.
 
 ---
 
 ## 📖 User Manual
 
-- Type `HELP` in the command line for a list of available commands.
-- Get help on any topic: `HELP <command>` or `HELP <your question>`
+- Type `help` at the command line for a list of available commands.
+- Get help on any topic: `help <command>` or `help <your question>`.
+- Search the manual directly: `m:<search phrase>`.
 - Or, read the [User Manual](docs/user_manual/user_manual.md).
 
 ---
@@ -81,4 +77,3 @@ Created by [Honza](https://csdb.dk/scener/?id=2588) with support from the [Honda
 Built with KickAssembler for the Commodore 64.
 
 ---
-

@@ -21,6 +21,7 @@ You can get various types of help:
 - `help` with connection already established will show how to get more help.
 - `help <your question>` will show detailed help on a specific topic.
 - `help topics` will show you a list of available help topics.
+- `m:<manual search phrase>` searches this user manual directly and returns the most relevant paragraphs — use this when you want the raw manual text instead of a conversational answer. Example: `m:memcpy`.
 - AI assistance is a knowledge agent to help you in given situations, see [AI Assistance](ai-assistance.md) chapter for more details.
 - The source code is available at <https://github.com/slesinger/hdnshell>. If you need more help than the manual or built-in help can provide, read the code.
 

@@ -25,6 +25,16 @@ Beyond answering questions, the assistant has tools to work with your real machi
 
 With HDN Shell RR the prefix is optional at the `READY.` prompt — any unrecognized line reaches the assistant.
 
+### Searching the Manual Directly (`m:`)
+
+`i:` goes through the assistant's own judgement about which tool to use, so it doesn't always search the manual even when that's what you want. Use `m:<search phrase>` instead to search the manual directly and get the raw matching paragraphs back, with no LLM involved:
+
+```
+m:memcpy
+=== memory-operations.md ===
+memcpy $start-$end filename ...
+```
+
 ## Example
 
 ### Asking a general question:

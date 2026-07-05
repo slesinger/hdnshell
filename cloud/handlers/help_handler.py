@@ -22,30 +22,27 @@ Provide your answer in the same language as the query. Only use ASCII characters
 
 # Static help text
 
-HELP_TEXT = """\x05C64 HDN Shell Help\x9a
+HELP_TEXT = """\x05HDN Shell RR - Help\x9a
 
-\x9ehelp [topic]\x9a  Show help on a topic
-\x9ehelp topics\x9a   List help topics
-\x9eI:<query>\x9a     Chat with AI assistant
-\x9ec:<query>\x9a     Search CSDB.dk database
-\x9e?<expr>\x9a       Evaluate Python expression
+\x9ehelp [topic]\x9a   Show help on a topic
+\x9ehelp topics\x9a    List all help topics
+\x9ei:<query>\x9a      Ask the AI assistant
+\x9em:<phrase>\x9a     Search the manual
+\x9ec:<query>\x9a      Search CSDB.dk
+\x9e?<expr>\x9a        Evaluate Python expr
+\x9estatus\x9a         Show connection state
+
 Examples:
-I: what is the c64?
-help chat
-? 2 + 2
+i: how do i mount a disk?
+m: memcpy
 c: latest releases
+? 2 + 2
 
-For detailed help on a topic, use:
-help <topic>
+Any line that isn't a shell command
+is sent to the AI assistant, so the
+i: prefix above is optional.
 
-The topics available are:
-filesytem,chat,python,csdb,commands,
-ondra a dan,human wisdow,zeli,bla bla
-B
-C           \xb0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xae
-D           \xdd   \x9fHONDANI\x9a  \xdd
-E           \xed\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xbd
-F---                        --------"""
+For more, type: help topics"""
 
 
 def _manifest_candidates():
@@ -161,6 +158,22 @@ Examples:
   c:rob hubbard music
 
 Returns information from the comprehensive C64 Scene Database.""",
+    "manual": """Manual Search Command (m:)
+
+Search this user manual directly, without
+going through the AI assistant.
+
+Usage: m: <search phrase>
+
+Examples:
+  m: memcpy
+  m: mount disk
+  m: csdb
+
+Returns the most relevant manual paragraphs
+for your phrase. Use "i:" instead if you want
+a conversational answer rather than the raw
+manual text.""",
     "commands": HELP_TEXT,
 }
 

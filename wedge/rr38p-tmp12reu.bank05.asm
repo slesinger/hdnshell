@@ -180,8 +180,8 @@ bank05_sub_801a:
 // generator free-runs off the video/colour clock, not the 6510's instruction
 // clock, so this stays correct whether the Ultimate 64 is running stock or
 // overclocked, unlike a CPU-cycle-counted busy-wait would be.
-.const INITIAL_REPEAT_DELAY_FRAMES = 13   // ~260ms @ 50Hz PAL / ~217ms @ 60Hz NTSC
-.const FAST_REPEAT_DELAY_FRAMES    = 3    // ~60ms @ 50Hz PAL / ~50ms @ 60Hz NTSC
+.const INITIAL_REPEAT_DELAY_FRAMES = 26   // ~520ms @ 50Hz PAL / ~433ms @ 60Hz NTSC
+.const FAST_REPEAT_DELAY_FRAMES    = 6    // ~120ms @ 50Hz PAL / ~100ms @ 60Hz NTSC
 //
 // Resident block (datassette buffer $0340-$03f9) -- must be intact whenever
 // the hooks are armed; refreshed from ROM templates on every typed line:
@@ -1448,6 +1448,18 @@ cs_fwd_waited:
     pla
 cs_fwd_send:
     jsr key_send
+    // Flush the type-ahead buffer: SCNKEY assumes it's being called at a
+    // steady 60Hz (via the normal IRQ) to time its own autorepeat, but
+    // cs_modal calls it at an irregular rate (fast when idle, paused for
+    // whole frames during the waits above) -- so by the time we notice a key
+    // is repeating, SCNKEY can already have queued extra stale repeat chars
+    // ahead of us, which we'd otherwise drain and forward as if the user had
+    // pressed the key again (observed as the cursor jumping 2+ entries per
+    // held-key step). Dropping the buffer here means every future GETIN
+    // reflects only the key's current physical state from the next SCNKEY
+    // scan, not this backlog.
+    lda #$00
+    sta NDX
     jmp cs_modal
 
 // wait until no key is held, then flush the type-ahead buffer (drops the

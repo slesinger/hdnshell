@@ -40,8 +40,16 @@ implemented that night; the rest are proposals for future work._
    key, cached to disk (pickle keyed by content hash), cosine similarity in
    numpy; graceful fallback to the existing keyword search when no API key or
    cache is available. FAISS itself is overkill for ~25 manual pages.
-8. **`m:` AI-manual prefix** (TODO.md) — dedicated prefix that always searches
-   the manual, because `i:` doesn't reliably pick the manual tool.
+8. **`m:` AI-manual prefix** (TODO.md) ✅ — dedicated prefix that always
+   searches the manual, because `i:` doesn't reliably pick the manual tool.
+   Implemented in `ChatHandler.handle()` (checked right after the slash-command
+   branch, before the LLM agent is invoked): `m:<phrase>` calls `search_manual`
+   directly and returns the raw paragraphs, bypassing tool selection entirely.
+   No wedge/assembly change was needed — `m:` isn't a wedge keyword, so it
+   already falls through to the existing chat-forward path (`wd_chat`, which
+   prepends `I:`) like any other unrecognized line. Documented in
+   `docs/user_manual/user_manual.md` and `ai-assistance.md`, plus a new
+   `help manual` topic in `help_handler.py`.
 9. **Server IP configuration command** (TODO.md "nastavovani ip serveru") —
    let the C64 side set/store the cloud server IP without reflashing;
    also expose C64U IP override in the web UI.
