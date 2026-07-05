@@ -212,8 +212,11 @@ class CommandHandler:
         if response_type == ResponseType.PETSCII_NULL_TERMINATED:
             if not data or data[-1] != 0x00:
                 data += bytes([0x00])
+            # Wire format is un-terminated: strip the null terminator we just
+            # ensured above before sending.
+            return data[:-1]
         # return MAGIC_BYTES + bytes([response_type]) + data
-        return data[:-1]
+        return data
 
     @staticmethod
     def is_server_console(console_id: int) -> bool:

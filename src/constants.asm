@@ -74,6 +74,8 @@
 .const U0AAE = U0AA0+10            // end of work buffer $034b
 .const screen_history_write_ptr= $034c  // and $034d When screen scrolls, this index is updated to point to next history buffer empty line (ready for next write)
 .const screen_history_read_ptr = $034e  // and $034f When navigating history, this index is pointing to the last fetched history line
+.const last_server_key = $0350     // key code of last key forwarded to server app (for repeat throttle)
+.const last_server_key_jiffy = $0351  // TIME_LO value when last_server_key was forwarded (for repeat throttle)
 .const socket_id = $03fc           // socket id for network connection
 .const console_id = $03fd          // current console id (upper 4 bits only) for HDN Cloud communication // switched by C= + 1234567890, left arrow will bring default local console. // left arrow:$00, 1:$10, 2:$20, 3:$30, 4:$40, 5:$50, 6:$60, 7:$70, 8:$80, 9:$90, 0:$a0
 .const socket_status = $03fe       // SOCKET_IDLE, SOCKET_WRITTEN, SOCKET_AFTER_13, SOCKET_READING
@@ -117,6 +119,7 @@
 .const STOP    = $FFE1             // check the STOP key
 .const GETIN   = $FFE4             // get a character
 .const PLOT    = $FFF0             // set cursor position
+.const TIME_LO = $A2               // KERNAL jiffy clock low byte (fastest-changing, hardware-driven by CIA timer)
 
 // Input key codes
 .const KEY_NULL = $00
@@ -129,6 +132,9 @@
 .const KEY_GREEN = $1E
 .const KEY_BLUE = $1F
 .const KEY_SPACE = $20
+
+// Server console key-repeat throttle (jiffy-clock based, overclock-safe)
+.const MIN_KEY_REPEAT_JIFFIES = 4  // ~80ms@50Hz PAL / ~67ms@60Hz NTSC; tune after hardware testing
 .const KEY_EXCLAMATION = $21
 .const KEY_QUOTE = $22
 .const KEY_HASH = $23
@@ -349,6 +355,8 @@
     sta screen_history_write_ptr+1
     sta screen_history_read_ptr
     sta screen_history_read_ptr+1
+    sta last_server_key            // initialize key-repeat throttle state
+    sta last_server_key_jiffy
 
     lda #FEATURE_FLAG_CLOUD_REACHABLE
     sta FEATURE_FLAGS

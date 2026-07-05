@@ -16,18 +16,30 @@ import agent_tools
 
 from sdk.config_manager import apply_env_overrides
 from sdk.base_handler import BaseHandler
-from help_handler import HelpHandler
+from help_handler import HelpHandler, load_doc_topics, format_topics_list
 from python_eval_handler import PythonEvalHandler
 from csdb_handler import CSDBHandler
 from chat_handler import ChatHandler
 from code_chat_handler import _sprite_image_consistency_warnings
 from agent_tools import search_manual
-from sdk.shared_state import get_session_state_copy, update_session_state
+from sdk.shared_state import (
+    get_session_state_copy,
+    update_session_state,
+    reset_all_session_states,
+)
 
 # from generate_pet_asc_table import Petscii
 
 # Apply environment overrides from config file
 apply_env_overrides()
+
+
+@pytest.fixture(autouse=True)
+def _isolate_session_state():
+    """Session state is module-global; reset it so tests don't leak into each other."""
+    reset_all_session_states()
+    yield
+    reset_all_session_states()
 
 
 class TestBaseHandler:
@@ -81,6 +93,46 @@ class TestHelpHandler:
         handler = HelpHandler()
         response = handler.handle("help nonexistent")
         assert "topic" in response.lower() or "available" in response.lower()
+
+    def test_help_topics_lists_topics(self):
+        """Test that 'help topics' prints a list of available topics"""
+        handler = HelpHandler()
+        response = handler.handle("help topics")
+        assert "help" in response.lower() or "topic" in response.lower()
+        # Should mention at least one known manual topic/slug
+        assert "user_manual" in response or "chat" in response
+
+    def test_help_topic_singular_is_lenient(self):
+        """Test that 'help topic' (singular) is treated like 'help topics'"""
+        handler = HelpHandler()
+        response = handler.handle("help topic")
+        assert response == handler.handle("help topics")
+
+    def test_help_topics_lines_fit_40_columns(self):
+        """Test that the topics listing is formatted for a C64 40-col screen"""
+        handler = HelpHandler()
+        response = handler.handle("help topics")
+        for line in response.split("\n"):
+            assert len(line) <= 40, f"Line too long for 40-col screen: {line!r}"
+
+    def test_load_doc_topics_from_manifest(self):
+        """Test loading topics from the docs-manifest.json manifest"""
+        topics = load_doc_topics()
+        # The repo ships a manifest with several manual pages; if found,
+        # it should be a non-empty list of (slug, title) tuples.
+        assert isinstance(topics, list)
+        if topics:
+            slug, title = topics[0]
+            assert isinstance(slug, str) and slug
+            assert isinstance(title, str)
+
+    def test_format_topics_list_fallback_without_manifest(self, monkeypatch):
+        """Test the fallback listing when no manifest can be found"""
+        monkeypatch.setattr("help_handler.load_doc_topics", lambda: [])
+        response = format_topics_list()
+        assert "chat" in response
+        assert "python" in response
+        assert "csdb" in response
 
 
 class TestPythonEvalHandler:
@@ -167,8 +219,9 @@ class TestCSDBHandler:
         """Test CSDB help for general query"""
         handler = CSDBHandler()
         response = handler.handle("c: find hondani")
-        # Should provide usage help
-        assert "TBD" in response.lower() or "TBD" in response.lower()  # TODO
+        # Should return search results (or a no-results/error message), never crash
+        assert len(response) > 0
+        assert "matches" in response.lower() or "no results" in response.lower()
 
     def test_release_query(self):
         """Test querying a specific release"""
@@ -307,8 +360,8 @@ class TestChatHandler:
         if handler.llm:
             response = handler.handle("I: what is 2+2?")
             assert len(response) > 0
-            # The response should contain something about 4 or math
-            assert len(response) > 5  # Should be a meaningful response
+            # The response should contain the answer
+            assert "4" in response
         else:
             # If LLM not available, skip this test
             pytest.skip("Azure OpenAI not configured")
@@ -443,8 +496,8 @@ class TestRequestDispatcher:
 
         # Should get error message
         assert len(response) > 0
-        response_utf8 = BaseHandler.petscii_to_utf8(response[:-1])
-        assert "unknown" in response_utf8.lower() or "help" in response_utf8.lower()
+        response_utf8 = BaseHandler.petscii_to_utf8(response.rstrip(b"\x00"))
+        assert "error" in response_utf8.lower()
 
     def test_dispatch_empty(self):
         """Test dispatching empty input"""

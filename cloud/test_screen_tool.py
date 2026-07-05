@@ -10,7 +10,7 @@ def test_get_screen_tool_returns_25x40_ascii():
     fake_screen = bytes([a_sc] * (40 * 25))
 
     with patch("agent_tools._read_last_c64_ip", return_value="192.168.1.1"), patch(
-        "network_helper.dma_read_memory", return_value=fake_screen
+        "sdk.network_helper.dma_read_memory", return_value=fake_screen
     ):
 
         tool = create_screen_memory_tool()
@@ -42,7 +42,7 @@ def test_get_screen_tool_no_c64_ip():
 
 def test_get_screen_tool_dma_error():
     with patch("agent_tools._read_last_c64_ip", return_value="192.168.1.1"), patch(
-        "network_helper.dma_read_memory", side_effect=OSError("connection refused")
+        "sdk.network_helper.dma_read_memory", side_effect=OSError("connection refused")
     ):
         tool = create_screen_memory_tool()
         assert tool is not None

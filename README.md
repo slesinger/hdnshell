@@ -56,7 +56,7 @@ HDN Shell transforms your Commodore 64 by replacing the standard BASIC ROM ($A00
 
 ## 🛠️ Installation & Quick Start
 
-See the [Installation Guide](docs/installation.md) for step-by-step instructions to set up HDN Shell on your C64 and PC.
+See the [Installation Guide](docs/user_manual/installation.md) for step-by-step instructions to set up HDN Shell on your C64 and PC.
 
 ---
 
@@ -64,7 +64,7 @@ See the [Installation Guide](docs/installation.md) for step-by-step instructions
 
 - Type `HELP` in the command line for a list of available commands.
 - Get help on any topic: `HELP <command>` or `HELP <your question>`
-- Or, read the [User Manual](docs/user_manual.md).
+- Or, read the [User Manual](docs/user_manual/user_manual.md).
 
 ---
 
@@ -79,16 +79,6 @@ This project is free to use and modify for educational and personal purposes.
 Created by [Honza](https://csdb.dk/scener/?id=2588) with support from the [Hondani](https://csdb.dk/group/?id=901) gang.
 
 Built with KickAssembler for the Commodore 64.
-
----
-
-## 🎬 Watch the YouTube Brief!
-
-Want a quick overview of HDN Shell's benefits, motivation, and how to get started? Check out this 4-minute video:
-
-[![HDN Shell Quick Starter](https://img.youtube.com/vi/dummy1234/0.jpg)](https://www.youtube.com/watch?v=dummy1234)
-
-> _Click the thumbnail above or [watch here](https://www.youtube.com/watch?v=dummy1234)_
 
 ---
 

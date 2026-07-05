@@ -98,6 +98,14 @@ def update_session_state(session_id: int, **updates: Any) -> Dict[str, Any]:
         return dict(state)
 
 
+def reset_all_session_states() -> None:
+    """Drop all session states and locks (used by tests for isolation)."""
+    with _state_registry_lock:
+        _session_states.clear()
+        _session_locks.clear()
+        _session_turn_locks.clear()
+
+
 def append_chat_message(session_id: int, role: str, content: str) -> None:
     """Append one chat history entry while holding the session lock."""
     with locked_session_state(session_id) as state:

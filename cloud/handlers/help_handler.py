@@ -5,7 +5,10 @@ Provides static help text or uses LLM to find relevant help topics.
 Processes requests starting with "help"
 """
 
+import json
 import logging
+import os
+
 from sdk import BaseHandler
 
 logger = logging.getLogger(__name__)
@@ -43,6 +46,81 @@ C           \xb0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xae
 D           \xdd   \x9fHONDANI\x9a  \xdd
 E           \xed\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xc0\xbd
 F---                        --------"""
+
+
+def _manifest_candidates():
+    """
+    Candidate paths for docs-manifest.json, deployed copy first.
+
+    The cloud server ships cloud/static/docs/docs-manifest.json, so that
+    copy is tried first. The repo docs/user_manual copy is the fallback
+    (useful when running from a source checkout without the static mirror).
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    cloud_dir = os.path.abspath(os.path.join(here, ".."))
+    repo_root = os.path.abspath(os.path.join(cloud_dir, ".."))
+    return [
+        os.path.join(cloud_dir, "static", "docs", "docs-manifest.json"),
+        os.path.join(repo_root, "docs", "user_manual", "docs-manifest.json"),
+    ]
+
+
+def load_doc_topics():
+    """
+    Load the manual page list (slug + title) from docs-manifest.json.
+
+    Tries the deployed static copy first, then the repo docs copy.
+    Returns a list of (slug, title) tuples, or an empty list if no
+    manifest could be found/parsed.
+    """
+    for path in _manifest_candidates():
+        try:
+            if not os.path.isfile(path):
+                continue
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            pages = data.get("pages", [])
+            topics = [
+                (page.get("slug", ""), page.get("title", ""))
+                for page in pages
+                if page.get("slug")
+            ]
+            if topics:
+                logger.info("Loaded help topics from manifest: %s", path)
+                return topics
+        except Exception as e:
+            logger.warning("Could not load docs manifest %s: %s", path, e)
+    return []
+
+
+def format_topics_list() -> str:
+    """
+    Build the "help topics" response: a compact list of topic slugs the
+    user can pass to "help <topic>", formatted for a 40-column screen.
+    """
+    topics = load_doc_topics()
+
+    lines = ["Help topics:", ""]
+
+    if topics:
+        # Manifest entries may repeat a slug (e.g. sub-page groupings),
+        # so dedupe while keeping the first-seen order.
+        seen = set()
+        slugs = []
+        for slug, _title in topics:
+            if slug not in seen:
+                seen.add(slug)
+                slugs.append(slug)
+    else:
+        # Fallback: list the topics the handler already knows about
+        slugs = sorted(HELP_TOPICS.keys())
+
+    lines.extend(slugs)
+    lines.append("")
+    lines.append("Use: help <topic>")
+
+    return "\n".join(lines)
+
 
 # Help topics dictionary
 HELP_TOPICS = {
@@ -140,6 +218,11 @@ class HelpHandler(BaseHandler):
         if not topic:
             # Return general help
             return HELP_TEXT
+
+        # "help topics" (lenient: also accept "help topic") lists the
+        # available manual pages/topics
+        if topic in ("topics", "topic"):
+            return format_topics_list()
 
         # Check if topic exists in static help
         if topic in HELP_TOPICS:

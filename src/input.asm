@@ -54,7 +54,24 @@ HandleInput:
     cpx #$00  // local console
     beq !HandleLocalConsole+
 
-    // Remote console input handling
+    // Remote console input handling - throttle repeated same keys with jiffy clock
+    // Suppress autorepeat of the same key arriving faster than MIN_KEY_REPEAT_JIFFIES jiffies
+    pha                             // save key in A
+    cmp last_server_key             // is it the same key as last one?
+    bne !send_remote_key+           // if different key, send it
+    // Same key - check elapsed time
+    lda TIME_LO
+    sec
+    sbc last_server_key_jiffy
+    cmp #MIN_KEY_REPEAT_JIFFIES
+    bcs !send_remote_key+           // if elapsed >= MIN_KEY_REPEAT_JIFFIES, send it
+    pla                             // drop the key (restore A but don't send)
+    rts
+!send_remote_key:
+    pla
+    sta last_server_key             // update last key
+    lda TIME_LO
+    sta last_server_key_jiffy       // update last jiffy time
     jsr server_send_key
     rts
 
@@ -291,6 +308,10 @@ HandleConsoleSwitch:
     // disable cursor
     lda #$01
     sta CURSOR_DISABLE
+    // reset key-repeat throttle state for the new server console
+    lda #$00
+    sta last_server_key
+    sta last_server_key_jiffy
     jsr save_local_console
     jsr server_get_console_screen
     rts

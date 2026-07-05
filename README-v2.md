@@ -75,13 +75,3 @@ Built with KickAssembler for the Commodore 64.
 
 ---
 
-## 🎬 Watch the YouTube Brief!
-
-Want a quick overview of HDN Shell's benefits, motivation, and how to get started? Check out this 4-minute video:
-
-[![HDN Shell Quick Starter](https://img.youtube.com/vi/dummy1234/0.jpg)](https://www.youtube.com/watch?v=dummy1234)
-
-> _Click the thumbnail above or [watch here](https://www.youtube.com/watch?v=dummy1234)_
-
----
-

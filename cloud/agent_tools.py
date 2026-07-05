@@ -379,13 +379,34 @@ def _manual_query_tokens(topic: str) -> list[str]:
     return tokens
 
 
+def _try_semantic_search(topic: str, manual_content: dict, top_k: int = 8):
+    """Best-effort semantic search; returns None on any failure/unavailability.
+
+    Kept as a thin wrapper so search_manual never has to know about the
+    embeddings machinery in sdk.semantic_search, and any import/runtime
+    failure there degrades to the existing keyword search path.
+    """
+    try:
+        from sdk.semantic_search import semantic_search
+    except Exception as e:
+        logger.info("Semantic search module unavailable: %s", e)
+        return None
+
+    try:
+        return semantic_search(topic, manual_content, top_k=top_k)
+    except Exception as e:
+        logger.info("Semantic search failed, falling back to keyword search: %s", e)
+        return None
+
+
 def search_manual(topic: str, manual_content: dict) -> str:
     """
     Search the in-memory user manual for *topic*.
 
     If *topic* is empty or "all", returns the full concatenated manual.
-    Otherwise returns every paragraph/section that contains the keyword
-    (case-insensitive). Falls back to the full manual if nothing matches.
+    Tries semantic (embedding-based) search first; if that yields ranked
+    paragraphs, they are returned. Otherwise falls back to keyword scoring,
+    and finally to the full manual if nothing matches either approach.
     """
     if not manual_content:
         return "User manual is not available."
@@ -398,6 +419,11 @@ def search_manual(topic: str, manual_content: dict) -> str:
             f"=== {fname} ===\n{text}" for fname, text in manual_content.items()
         ]
         return "\n\n".join(sections)
+
+    semantic_results = _try_semantic_search(topic, manual_content)
+    if semantic_results:
+        results = [f"=== {fname} ===\n{para}" for _, fname, para in semantic_results]
+        return "\n\n".join(results)
 
     tokens = _manual_query_tokens(keyword)
     if not tokens:

@@ -26,6 +26,9 @@ def running_server(server):
     time.sleep(0.1)  # Give server time to start
     yield server
     server.stop()
+    # Make sure the accept-loop thread actually exits; the fixture must never
+    # let a hung server thread leak into (and stall) later tests.
+    thread.join(timeout=2)
 
 
 class TestProtocolParsing:
@@ -33,37 +36,38 @@ class TestProtocolParsing:
 
     def test_parse_keypress_command(self):
         """Test parsing of keypress command ($01)"""
-        # Magic bytes + Command ID $01 + PETSCII 'a' ($41) + No modifiers
-        packet = bytes([0xFE, 0xFF, 0x01, 0x41, 0x00])
+        # Magic byte + Command ID $01 + PETSCII 'a' ($41) + No modifiers
+        packet = bytes([0xFE, 0x01, 0x41, 0x00])
 
         magic, cmd_id, data = CommandHandler.parse_packet(packet)
 
-        assert magic == bytes([0xFE, 0xFF])
+        assert magic == MAGIC_BYTES
+        assert magic == bytes([0xFE])
         assert cmd_id == 0x01
         assert data == bytes([0x41, 0x00])
 
     def test_parse_text_input_command(self):
         """Test parsing of text input command ($02)"""
-        # Magic bytes + Command ID $02 + "hello" in PETSCII + null terminator
+        # Magic byte + Command ID $02 + "hello" in PETSCII + null terminator
         # h=0x48, e=0x45, l=0x4C, l=0x4C, o=0x4F
-        packet = bytes([0xFE, 0xFF, 0x02, 0x48, 0x45, 0x4C, 0x4C, 0x4F, 0x00])
+        packet = bytes([0xFE, 0x02, 0x48, 0x45, 0x4C, 0x4C, 0x4F, 0x00])
 
         magic, cmd_id, data = CommandHandler.parse_packet(packet)
 
-        assert magic == bytes([0xFE, 0xFF])
+        assert magic == MAGIC_BYTES
         assert cmd_id == 0x02
         assert data == bytes([0x48, 0x45, 0x4C, 0x4C, 0x4F, 0x00])
 
     def test_invalid_magic_bytes(self):
-        """Test that invalid magic bytes are rejected"""
-        packet = bytes([0xAA, 0xBB, 0x01, 0x41, 0x00])
+        """Test that invalid magic byte is rejected"""
+        packet = bytes([0xAA, 0x01, 0x41, 0x00])
 
         with pytest.raises(ValueError, match="Invalid magic bytes"):
             CommandHandler.parse_packet(packet)
 
     def test_packet_too_short(self):
         """Test that packets shorter than minimum length are rejected"""
-        packet = bytes([0xFE, 0xFF])
+        packet = bytes([0xFE, 0x01])
 
         with pytest.raises(ValueError, match="Packet too short"):
             CommandHandler.parse_packet(packet)
@@ -80,10 +84,10 @@ class TestCommandHandlers:
         response = CommandHandler.handle_keypress(data)
 
         assert response is not None
-        assert response[0:2] == MAGIC_BYTES
-        assert response[2] == ResponseType.PETSCII_NULL_TERMINATED
-        # Response should acknowledge the keypress
-        assert len(response) > 3
+        # Responses no longer carry magic/response-type prefix bytes -- they
+        # are raw (unterminated) PETSCII payloads.
+        assert response[0:1] != MAGIC_BYTES
+        assert len(response) > 0
 
     def test_handle_keypress_with_shift(self):
         """Test handling keypress with shift modifier"""
@@ -93,8 +97,7 @@ class TestCommandHandlers:
         response = CommandHandler.handle_keypress(data)
 
         assert response is not None
-        assert response[0:2] == MAGIC_BYTES
-        assert response[2] == ResponseType.PETSCII_NULL_TERMINATED
+        assert len(response) > 0
 
     def test_handle_text_input_simple(self):
         """Test handling simple text input"""
@@ -103,10 +106,8 @@ class TestCommandHandlers:
 
         response = CommandHandler.handle_text_input(data)
         assert response is not None
-        # assert response[0:2] == MAGIC_BYTES
-        # assert response[2] == ResponseType.PETSCII_NULL_TERMINATED
         # Response should echo or acknowledge the text
-        assert len(response) > 3
+        assert len(response) > 0
 
     def test_handle_text_input_empty(self):
         """Test handling empty text input"""
@@ -115,56 +116,64 @@ class TestCommandHandlers:
         response = CommandHandler.handle_text_input(data)
 
         assert response is not None
-        # assert response[0:2] == MAGIC_BYTES
 
 
 class TestResponseGeneration:
     """Test response packet generation"""
 
-    def test_petscii_protocol_response_is_null_terminated(self):
-        """Test that PETSCII_NULL_TERMINATED protocol responses are null-terminated"""
-        from sdk.command_handler import (
-            CommandHandler,
-            CommandID,
-            MAGIC_BYTES,
-            ResponseType,
+    def test_petscii_response_is_not_null_terminated_on_wire(self):
+        """PETSCII_NULL_TERMINATED responses ensure a null terminator internally
+        but create_response strips it before putting the response on the wire."""
+        # 'HELP' in PETSCII, no trailing null yet
+        petscii_text = bytes([0x48, 0x45, 0x4C, 0x50])
+
+        response = CommandHandler.create_response(
+            ResponseType.PETSCII_NULL_TERMINATED, petscii_text
         )
 
-        # Prepare a text input packet: MAGIC_BYTES + CommandID.TEXT_INPUT + PETSCII 'help' + null
-        petscii_text = bytes([0x48, 0x45, 0x4C, 0x50, 0x00])  # 'HELP' + null
-        packet = MAGIC_BYTES + bytes([CommandID.TEXT_INPUT]) + petscii_text
+        # The null terminator that create_response ensures internally must be
+        # stripped from the wire response.
+        assert response == petscii_text
+        assert response[-1:] != b"\x00"
 
-        response = CommandHandler.process_command(packet)
-        assert response is not None
-        # The response type should be PETSCII_NULL_TERMINATED
-        assert response[2] == ResponseType.PETSCII_NULL_TERMINATED
-        # The last byte of the response should be 0x00 (null terminator)
-        assert response[-1] == 0x00
-
-    def test_create_petscii_response(self):
-        """Test creating a PETSCII null-terminated response"""
-        # "ok" in PETSCII: o=$4F, k=$4B
+    def test_petscii_response_strips_existing_null_terminator(self):
+        """If the data already ends with a null, it is still stripped once."""
+        # "ok" in PETSCII + null terminator: o=$4F, k=$4B
         petscii_text = bytes([0x4F, 0x4B, 0x00])
 
         response = CommandHandler.create_response(
             ResponseType.PETSCII_NULL_TERMINATED, petscii_text
         )
 
-        assert response[0:2] == MAGIC_BYTES
-        assert response[2] == ResponseType.PETSCII_NULL_TERMINATED
-        assert response[3:] == petscii_text
+        assert response == bytes([0x4F, 0x4B])
 
-    def test_create_mixed_response(self):
-        """Test creating a mixed commands/screen codes response"""
+    def test_handle_keypress_response_not_null_terminated(self):
+        """The real handle_keypress path should also come back unterminated."""
+        data = bytes([0x41, 0x00])  # PETSCII 'a', no modifiers
+
+        response = CommandHandler.handle_keypress(data)
+
+        assert response[-1:] != b"\x00"
+
+    def test_create_mixed_response_unchanged(self):
+        """Non-PETSCII response types must be returned byte-for-byte unchanged
+        (this was a latent bug: the old code chopped the last byte off of
+        every response type, including screen-code / mtext payloads)."""
         data = bytes([0x01, 0x02, 0x03])
 
         response = CommandHandler.create_response(
             ResponseType.MIX_COMMANDS_SCREEN_CODES, data
         )
 
-        assert response[0:2] == MAGIC_BYTES
-        assert response[2] == ResponseType.MIX_COMMANDS_SCREEN_CODES
-        assert response[3:] == data
+        assert response == data
+
+    def test_create_mtext_response_unchanged(self):
+        """MTEXT_FORMAT responses must not be truncated either."""
+        data = bytes([0x10, 0x20, 0x30, 0x40])
+
+        response = CommandHandler.create_response(ResponseType.MTEXT_FORMAT, data)
+
+        assert response == data
 
 
 class TestPETSCIIConversion:
@@ -241,7 +250,19 @@ class TestPETSCIIConversion:
 
 
 class TestServerIntegration:
-    """Integration tests with actual TCP connections"""
+    """Integration tests with actual TCP connections.
+
+    These tests talk to a real C64Server bound to 127.0.0.1 on an ephemeral
+    port (port=0). No hardware / real network access is involved. Every
+    client socket gets a short settimeout() so a protocol mismatch (e.g. a
+    server that never responds) raises socket.timeout instead of hanging the
+    whole test run -- that is what made this class hang before: it sent
+    packets using the OLD 2-byte magic (0xFE 0xFF), the server silently
+    dropped them as invalid, and the blocking recv() with no timeout waited
+    forever for a response that would never come.
+    """
+
+    SOCKET_TIMEOUT = 5
 
     def test_server_starts_and_stops(self, server):
         """Test that server can start and stop cleanly"""
@@ -252,13 +273,14 @@ class TestServerIntegration:
         assert server.running
 
         server.stop()
-        time.sleep(0.1)
+        thread.join(timeout=2)
 
         assert not server.running
 
     def test_client_can_connect(self, running_server):
         """Test that a client can connect to the server"""
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(self.SOCKET_TIMEOUT)
         client.connect((running_server.host, running_server.port))
 
         assert client.fileno() != -1
@@ -268,41 +290,48 @@ class TestServerIntegration:
     def test_send_keypress_command(self, running_server):
         """Test sending a keypress command and receiving response"""
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(self.SOCKET_TIMEOUT)
         client.connect((running_server.host, running_server.port))
 
-        # Send keypress command: Magic + $01 + 'a' ($41) + no modifiers
-        packet = bytes([0xFE, 0xFF, 0x01, 0x41, 0x00])
+        # Send keypress command: magic byte + $01 + 'a' ($41) + no modifiers
+        packet = bytes([0xFE, 0x01, 0x41, 0x00])
         client.send(packet)
 
-        # Receive response
+        # Receive response (bounded by settimeout above)
         response = client.recv(1024)
 
-        assert len(response) >= 3
-        assert response[0:2] == MAGIC_BYTES
-        assert response[2] in [
-            ResponseType.PETSCII_NULL_TERMINATED,
-            ResponseType.MIX_COMMANDS_SCREEN_CODES,
-            ResponseType.MTEXT_FORMAT,
-        ]
+        # Current protocol: responses are raw PETSCII payloads with no
+        # magic/response-type prefix bytes.
+        assert len(response) > 0
+        assert response[0:1] != MAGIC_BYTES
 
         client.close()
 
     def test_send_text_input_command(self, running_server):
         """Test sending a text input command and receiving response"""
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(self.SOCKET_TIMEOUT)
         client.connect((running_server.host, running_server.port))
 
-        # Send text input: Magic + $02 + "test" + null
-        packet = bytes([0xFE, 0xFF, 0x02, 0x54, 0x45, 0x53, 0x54, 0x00])
+        # Send text input: magic byte + $02 + "test" + null
+        packet = bytes([0xFE, 0x02, 0x54, 0x45, 0x53, 0x54, 0x00])
         client.send(packet)
 
-        # Receive response
+        # Receive response (bounded by settimeout above)
         response = client.recv(1024)
 
-        assert len(response) >= 3
-        assert response[0:2] == MAGIC_BYTES
+        assert len(response) > 0
 
-        client.close()
+    @pytest.mark.skip(
+        reason=(
+            "SERVER_CMD_SAVE_SCREEN/RESTORE_SCREEN (console 0 COMMAND path) "
+            "DMA-reads/writes real C64 memory via network_helper.dma_read_memory "
+            "/ send_screen_data, which requires a physical C64 Ultimate on the "
+            "network. Not safe to run in an automated test environment."
+        )
+    )
+    def test_send_local_command_requires_hardware(self, running_server):
+        pass
 
 
 if __name__ == "__main__":

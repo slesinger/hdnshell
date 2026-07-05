@@ -13,7 +13,6 @@
     { "slug": "memory-operations",        "title": "Memory Operations, Machine Language Monitor" },
     { "slug": "cloud-apps",               "title": "Cloud Apps" },
     { "slug": "server-file-editor",       "title": "File Editor",          "level": 2 },
-    { "slug": "coding-agent",             "title": "Coding Agent",         "level": 2 },
     { "slug": "web-browser",              "title": "Web Browser",          "level": 2 },
     { "slug": "telegram-chat",            "title": "Telegram Chat",        "level": 2 },
     { "slug": "rss-reader",               "title": "RSS Reader",           "level": 2 },

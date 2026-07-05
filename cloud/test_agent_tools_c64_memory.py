@@ -10,7 +10,7 @@ from agent_tools import (
 def test_c64_memory_access_read(monkeypatch):
     monkeypatch.setattr("agent_tools._read_last_c64_ip", lambda: "192.168.1.9")
     monkeypatch.setattr(
-        "network_helper.dma_read_memory",
+        "sdk.network_helper.dma_read_memory",
         lambda host, address, length: bytes([0x41] * length),
     )
 
@@ -24,11 +24,11 @@ def test_c64_memory_access_write_and_execute(monkeypatch):
 
     monkeypatch.setattr("agent_tools._read_last_c64_ip", lambda: "192.168.1.9")
     monkeypatch.setattr(
-        "network_helper.dma_write_memory_rest",
+        "sdk.network_helper.dma_write_memory_rest",
         lambda host, address, data: calls["write"].append((host, address, bytes(data))),
     )
     monkeypatch.setattr(
-        "network_helper.dma_jump",
+        "sdk.network_helper.dma_jump",
         lambda host, address: calls["jump"].append((host, address)),
     )
 
@@ -51,11 +51,11 @@ def test_c64_memory_access_write_file_prg(monkeypatch, tmp_path: Path):
 
     monkeypatch.setattr("agent_tools._read_last_c64_ip", lambda: "192.168.1.9")
     monkeypatch.setattr(
-        "network_helper.dma_write_memory_rest",
+        "sdk.network_helper.dma_write_memory_rest",
         lambda host, address, data: calls["write"].append((host, address, bytes(data))),
     )
     monkeypatch.setattr(
-        "network_helper.dma_jump",
+        "sdk.network_helper.dma_jump",
         lambda host, address: calls["jump"].append((host, address)),
     )
 
@@ -74,16 +74,16 @@ def test_c64_machine_control_actions(monkeypatch):
     calls = []
     monkeypatch.setattr("agent_tools._read_last_c64_ip", lambda: "192.168.1.9")
     monkeypatch.setattr(
-        "network_helper.send_reset", lambda host: calls.append(("reset", host))
+        "sdk.network_helper.send_reset", lambda host: calls.append(("reset", host))
     )
     monkeypatch.setattr(
-        "network_helper.send_poweroff", lambda host: calls.append(("poweroff", host))
+        "sdk.network_helper.send_poweroff", lambda host: calls.append(("poweroff", host))
     )
     monkeypatch.setattr(
-        "network_helper.rest_menu_button", lambda host: calls.append(("menu", host))
+        "sdk.network_helper.rest_menu_button", lambda host: calls.append(("menu", host))
     )
     monkeypatch.setattr(
-        "network_helper.rest_reboot", lambda host: calls.append(("reboot", host))
+        "sdk.network_helper.rest_reboot", lambda host: calls.append(("reboot", host))
     )
 
     assert "Reset command sent" in c64_machine_control("reset")
@@ -119,7 +119,7 @@ def test_c64_memory_analyze_sid_and_sprites(monkeypatch, tmp_path: Path):
         data[sprite_pos + i] = (i * 7) & 0xFF
 
     monkeypatch.setattr(
-        "network_helper.dma_read_memory",
+        "sdk.network_helper.dma_read_memory",
         lambda host, address, length: bytes(data[address : address + length]),
     )
 
