@@ -25,6 +25,7 @@
     { "slug": "tutorial-2-sprites",       "title": "Tutorial 2 - Sprites & Game Loop",        "level": 2 },
     { "slug": "tutorial-3-raster-asm",    "title": "Tutorial 3 - Effect in Assembler",        "level": 2 },
     { "slug": "tutorial-4-tuikit-ui",     "title": "Tutorial 4 - UI with TUIkit",             "level": 2 },
+    { "slug": "tuikit-reference",         "title": "TUIkit Reference",                       "level": 2, "nav": false },
     { "slug": "api-sdk",                  "title": "Programming Server Apps",                "level": 2 },
     { "slug": "pysic",                    "title": "PySIC Alternative to BASIC Programming", "level": 2 },
     { "slug": "cloud-integration",        "title": "Networking, HDN Server Integration" },

@@ -523,6 +523,10 @@ cwin_console_edit_string(&mywin, 14);  // user types, result in window
 cwin_console_get_string(&mywin, buf, sizeof(buf));
 ```
 
+### TUIkit — Interactive UI Framework
+
+For interactive applications with menus, dialogs, list boxes, and mouse support, **TUIkit** builds on top of CharWin to provide a complete text-UI toolkit. TUIkit manages focus, keyboard/joystick/mouse input dispatch, theme rendering, and dirty-region optimization — all with zero heap allocation. See the [TUIkit Reference](tuikit-reference.md) for the complete API and widget catalog.
+
 ---
 
 ## VIC-II Video Chip

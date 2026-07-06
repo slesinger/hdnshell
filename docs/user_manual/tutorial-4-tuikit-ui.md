@@ -17,7 +17,7 @@ TUIkit is this project's reusable text-UI toolkit for 40×25 C64 screens: menus,
 dialogs, list boxes, checkboxes, text inputs — keyboard, joystick, and C64
 Ultimate **USB mouse** driven. It renders raw screencodes through Oscar's
 `CharWin`, redraws only "dirty" widgets, and does **no hidden heap allocation**
-(you hand it a fixed widget pool). Full API in the library's `tuikit/API.md`.
+(you hand it a fixed widget pool). Full API in the [TUIkit Reference](tuikit-reference.md).
 
 Turn on the TUIkit skill so the agent works from the real API:
 
