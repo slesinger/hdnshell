@@ -52,7 +52,9 @@ In all modes, the agent is tuned for Oscar64 and C64 work:
 - Understands multi-file `.c` and `.h` projects.
 - Uses Oscar64 documentation and symbol lookup tools instead of guessing APIs.
 - Uses C64 reference documentation for hardware, memory map, KERNAL, VIC, SID, and related topics.
+- Knows the project's own **TUIkit** text-UI library for building interactive apps.
 - Keeps sprite image index checks aligned with Oscar64 conventions.
+- Can use **git** (when installed on the server) to inspect history and commit working milestones. Network operations (push/pull/fetch) are blocked unless you explicitly ask to sync a remote.
 - Supports focused skills that bias the agent toward specific workflows.
 
 ### Built-in skills
@@ -67,8 +69,19 @@ The current harness exposes these togglable skills:
 | `multi_file_refactor` | Focus on coordinated `.c` / `.h` edits |
 | `new_project` | Guide scaffolding of a fresh Oscar64 project |
 | `sprite_workflow` | Focus on Oscar64 sprite APIs, data placement, and image index arithmetic |
+| `performance_c` | Bias toward high-performance C: type widths, zero page, `__native`/`__striped`, optimizer pragmas |
+| `tuikit_ui` | Build interactive text UIs with the project's TUIkit library |
 
 Skills do not create a separate mode. They add extra guidance on top of the current mode.
+
+---
+
+## Guided tutorials
+
+New to C on the C64 Ultimate? The [Coding Tutorials](coding-tutorials.md) walk you
+through four hands-on projects with this agent — from a first program to sprites,
+an assembler raster effect, and a TUIkit UI. Each has a ready-to-build reference
+project under [`oscar/projects/`](../../oscar/projects/).
 
 ---
 

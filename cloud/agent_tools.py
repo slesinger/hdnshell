@@ -11,6 +11,7 @@ Provides reusable tool builders for:
 import subprocess
 import os
 import sys
+import shutil
 import logging
 import re
 import json
@@ -1524,6 +1525,177 @@ def create_run_shell_command_tool(root_dir: str | None = None):
     return None
 
 
+# ------------------------------------------------------------------
+# Git version-control tool
+# ------------------------------------------------------------------
+
+# Subcommands that reach the network or an external remote. Blocked unless the
+# caller explicitly opts in with allow_remote=True.
+_GIT_REMOTE_SUBCOMMANDS = frozenset(
+    {"push", "pull", "fetch", "clone", "remote", "submodule"}
+)
+
+# Subcommands considered destructive to history or the working tree. Allowed,
+# but only surfaced deliberately so the model does not reach for them casually.
+_GIT_DESTRUCTIVE_SUBCOMMANDS = frozenset({"reset", "clean", "rebase", "gc"})
+
+
+def run_git_command(
+    args: str,
+    cwd: str = ".",
+    allow_remote: bool = False,
+    timeout_seconds: int = DEFAULT_SHELL_TIMEOUT_SECONDS,
+    root_dir: str | None = None,
+) -> str:
+    """Run a `git` command inside the allowed workspace subtree.
+
+    - Requires the git binary to be installed on the server.
+    - Confines execution to the workspace root (same sandbox as the shell tool).
+    - Blocks network subcommands (push/pull/fetch/clone/remote) unless
+      allow_remote=True, so local history operations are always safe.
+    """
+    if shutil.which("git") is None:
+        return (
+            "Error: git is not installed on the server. Ask the operator to "
+            "install git, then retry."
+        )
+
+    raw = (args or "").strip()
+    if not raw:
+        return "Error: git arguments must not be empty (e.g. 'status', 'log --oneline')."
+    if "\x00" in raw:
+        return "Error: git arguments contain an invalid null byte."
+
+    try:
+        timeout_seconds = int(timeout_seconds)
+    except Exception:
+        return "Error: timeout_seconds must be an integer."
+    if timeout_seconds < 1 or timeout_seconds > DEFAULT_SHELL_TIMEOUT_SECONDS:
+        return (
+            "Error: timeout_seconds must be between 1 and "
+            f"{DEFAULT_SHELL_TIMEOUT_SECONDS}."
+        )
+
+    # Strip a leading literal "git" if the model included it.
+    lowered = raw.lower()
+    if lowered == "git" or lowered.startswith("git "):
+        raw = raw[3:].strip()
+        if not raw:
+            return "Error: no git subcommand given after 'git'."
+
+    # Identify the subcommand (first token that is not a global -c/-C option).
+    tokens = raw.split()
+    subcommand = ""
+    for tok in tokens:
+        if tok.startswith("-"):
+            continue
+        subcommand = tok.lower()
+        break
+
+    if subcommand in _GIT_REMOTE_SUBCOMMANDS and not allow_remote:
+        return (
+            f"Error: git '{subcommand}' reaches an external remote and is blocked "
+            "by default. Rerun with allow_remote=true only if the user explicitly "
+            "asked to sync with a remote."
+        )
+
+    root = os.path.abspath(root_dir or _default_shell_root_dir())
+    ok, cwd_or_error = _resolve_shell_cwd(root, cwd)
+    if not ok:
+        return cwd_or_error
+    resolved_cwd = cwd_or_error
+
+    try:
+        result = subprocess.run(
+            ["git"] + tokens,
+            cwd=resolved_cwd,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+        combined = "\n".join(
+            part for part in [result.stdout, result.stderr] if part
+        ).strip()
+        output_text, truncated = _tail_lines(combined)
+        if not output_text:
+            output_text = "(no output)"
+        trunc_msg = "\n[output truncated to last 200 lines]" if truncated else ""
+        hint = ""
+        if (
+            result.returncode != 0
+            and "not a git repository" in combined.lower()
+            and subcommand != "init"
+        ):
+            hint = (
+                "\nHint: this directory is not a git repo yet. Run git 'init' first "
+                "if you intend to start version control here."
+            )
+        return (
+            f"cwd: {resolved_cwd}\n"
+            f"git {raw}\n"
+            f"exit_code: {result.returncode}\n"
+            f"output:\n{output_text}{trunc_msg}{hint}"
+        )
+    except subprocess.TimeoutExpired:
+        return f"cwd: {resolved_cwd}\ngit {raw}\nexit_code: timeout\noutput:\n(timed out)"
+    except Exception as e:
+        return f"Error running git command: {e}"
+
+
+def create_git_tool(root_dir: str | None = None):
+    """Factory for a git CLI tool scoped to the workspace subtree."""
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class GitCommandInput(BaseModel):
+            args: str = Field(
+                description=(
+                    "Arguments passed to git, without the leading 'git'. "
+                    "Examples: 'status', 'log --oneline -10', 'add .', "
+                    "\"commit -m 'add sprite loader'\", 'diff', 'checkout -b feature'."
+                )
+            )
+            cwd: str = Field(
+                default=".",
+                description="Working directory, relative to the workspace root.",
+            )
+            allow_remote: bool = Field(
+                default=False,
+                description=(
+                    "Set true only when the user explicitly asked to sync with a "
+                    "remote (push/pull/fetch/clone/remote). Blocked otherwise."
+                ),
+            )
+
+        allowed_root = os.path.abspath(root_dir or _default_shell_root_dir())
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging(
+                "git",
+                lambda args, cwd=".", allow_remote=False: run_git_command(
+                    args=args,
+                    cwd=cwd,
+                    allow_remote=allow_remote,
+                    root_dir=allowed_root,
+                ),
+            ),
+            name="git",
+            description=(
+                "Run git version-control commands (status, diff, log, add, commit, "
+                "branch, checkout, stash, init) inside the workspace. Use this to "
+                "inspect history and to checkpoint your work with small, well-described "
+                "commits. Network subcommands are blocked unless allow_remote=true. "
+                "Requires git to be installed on the server."
+            ),
+            args_schema=GitCommandInput,
+        )
+        logger.info("git tool initialized (root: %s)", allowed_root)
+        return tool
+    except Exception as e:
+        logger.error("Error initializing git tool: %s", e)
+    return None
+
+
 def create_oscar64_graphics_audio_vector_ultimate_docs_tool():
     """
     Build and return a LangChain Tool that returns the contents of
@@ -1962,6 +2134,74 @@ def _hexdump(data: bytes, base_address: int, max_lines: int = 64) -> str:
     if len(chunked) > len(shown):
         lines.append(f"... truncated {len(chunked) - len(shown)} line(s)")
     return "\n".join(lines)
+
+
+def c64_memory_peek(address: str = "0x0000", length: int = 256) -> str:
+    """
+    Read-only peek of C64 memory on the physical Ultimate machine via the
+    Ultimate cartridge REST API (GET /v1/machine:readmem).
+    """
+    from sdk.network_helper import dma_read_memory
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    addr = _parse_int_auto(address, 0)
+    if addr < 0 or addr > 0xFFFF:
+        return "Error: address must be in range 0x0000..0xFFFF."
+
+    try:
+        read_len = int(length)
+    except Exception:
+        return "Error: length must be an integer."
+    if read_len < 1 or read_len > 65536:
+        return "Error: length must be in range 1..65536."
+
+    try:
+        data = dma_read_memory(c64_ip, addr, read_len)
+        return (
+            f"Read {len(data)} bytes from ${addr:04X} on {c64_ip}.\n"
+            f"{_hexdump(data, addr)}"
+        )
+    except Exception as e:
+        return f"Error reading C64 memory via REST API: {e}"
+
+
+def create_c64_memory_peek_tool():
+    """Factory for a read-only C64 memory peek tool."""
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class C64MemoryPeekInput(BaseModel):
+            address: str = Field(
+                default="0x0000",
+                description="Start address to read from (hex like 0x0801 or decimal).",
+            )
+            length: int = Field(
+                default=256,
+                ge=1,
+                le=65536,
+                description="Number of bytes to read.",
+            )
+
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging("c64_memory_peek", c64_memory_peek),
+            name="c64_memory_peek",
+            description=(
+                "Read-only peek at C64 memory on the physical Ultimate machine "
+                "via the Ultimate cartridge REST API (GET /v1/machine:readmem). "
+                "Returns a hex+ASCII dump of the requested range. Does not write "
+                "or execute anything."
+            ),
+            args_schema=C64MemoryPeekInput,
+        )
+        logger.info("c64_memory_peek tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing c64_memory_peek tool: %s", e)
+    return None
 
 
 def c64_memory_access(

@@ -3,8 +3,8 @@
 ## Table of Contents
 
 1. [The Development Environment](#the-development-environment)
-   - [Console 2 — File Editor](#console-2--file-editor-cctrl2)
-   - [Console 3 — Coding Agent](#console-3--coding-agent-cctrl3)
+   - Console 2 — File Editor
+   - Console 3 — Coding Agent
 2. [Project Structure](#project-structure)
 3. [Your First Program](#your-first-program)
 4. [C64 Memory Map](#c64-memory-map)
@@ -33,6 +33,12 @@ This guide walks you through writing, compiling, and running C programs directly
 - The cloud server running (see [Cloud Integration](cloud-integration.md))
 
 ---
+
+> **Prefer to learn by doing?** The [Coding Tutorials](coding-tutorials.md) turn
+> this reference into four hands-on, agent-guided projects (first program →
+> sprites → assembler raster effect → TUIkit UI), each with a ready-to-build
+> example under [`oscar/projects/`](../../oscar/projects/). This page is the
+> deeper reference to return to.
 
 ## The Development Environment
 

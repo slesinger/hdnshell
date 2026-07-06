@@ -22,12 +22,14 @@ from agent_tools import (
     create_compile_project_tool,
     create_run_project_tool,
     create_run_shell_command_tool,
+    create_git_tool,
     create_find_oscar_symbol_tool,
     create_oscar64_overview_stdlib_docs_tool,
     create_oscar64_vic_sid_cia_reu_docs_tool,
     create_oscar64_charwin_sprites_input_io_docs_tool,
     create_oscar64_graphics_audio_vector_ultimate_docs_tool,
     create_project_scaffold,
+    create_c64_memory_peek_tool,
 )
 
 logger = logging.getLogger(__name__)
@@ -76,6 +78,7 @@ SHARED_INSTRUCTION_FILES = [
     "action_safety.md",
     "compile_run_loop.md",
     "oscar_guardrails.md",
+    "git_workflow.md",
     "repo_memory.md",
 ]
 
@@ -548,11 +551,13 @@ class CodeChatAgent:
             create_websearch_tool(),
             create_c64ref_tool(),
             create_run_shell_command_tool(),
+            create_git_tool(),
             create_find_oscar_symbol_tool(),
             create_oscar64_overview_stdlib_docs_tool(),
             create_oscar64_vic_sid_cia_reu_docs_tool(),
             create_oscar64_charwin_sprites_input_io_docs_tool(),
             create_oscar64_graphics_audio_vector_ultimate_docs_tool(),
+            create_c64_memory_peek_tool(),
         ]
         tool_list = list(shared_tools)
         if self.working_dir:

@@ -6,7 +6,7 @@ There are following devices available:
 
 - `8` — First disk drive (e.g. 1541)
 - `9` — Second disk drive (e.g. 1541)
-- `h` — Home directory in Ultimate storage
+- `h` — Home directory in Ultimate storage (C64U fw 1.1.0 is having a bug, it will use current dir on your USB instead)
 - `f` — Flash partition in Ultimate storage
 - `t` — Temp folder in Ultimate storage
 - `s` — SoftIEC device (like SD2IEC) emulation storage in Ultimate

@@ -4,7 +4,29 @@ from agent_tools import (
     c64_memory_access,
     c64_machine_control,
     c64_memory_analyze,
+    c64_memory_peek,
 )
+
+
+def test_c64_memory_peek(monkeypatch):
+    calls = []
+    monkeypatch.setattr("agent_tools._read_last_c64_ip", lambda: "192.168.1.9")
+    monkeypatch.setattr(
+        "sdk.network_helper.dma_read_memory",
+        lambda host, address, length: calls.append((host, address, length))
+        or bytes([0x41] * length),
+    )
+
+    result = c64_memory_peek(address="0x1000", length=16)
+
+    assert "Read 16 bytes" in result
+    assert "$1000" in result
+    assert calls == [("192.168.1.9", 0x1000, 16)]
+
+
+def test_c64_memory_peek_no_ip(monkeypatch):
+    monkeypatch.setattr("agent_tools._read_last_c64_ip", lambda: "")
+    assert "No C64 IP configured" in c64_memory_peek(address="0x1000", length=16)
 
 
 def test_c64_memory_access_read(monkeypatch):

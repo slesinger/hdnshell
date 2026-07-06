@@ -1,4 +1,8 @@
 
+> **Coding series:** full record-ready scripts and asset lists for the three
+> coding tutorial videos ("Can You C?", sprites, and the assembler raster effect)
+> live in [codingTutorialVideos.md](codingTutorialVideos.md).
+
 ## Topics/videos
 
 ### What is this HDNShell about and do I really need this thing?
