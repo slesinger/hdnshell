@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import MiniSearch from "minisearch";
 
 // Page list is loaded from /docs/docs-manifest.json at runtime.
 // To add a new doc page: add an entry there — no JSX changes needed.
@@ -25,6 +26,24 @@ function headingId(children) {
     .trim();
 }
 
+// Build a short excerpt around the first matching term, so results give
+// context instead of always showing the start of the section.
+function buildSnippet(text, terms) {
+  if (!text) return "";
+  const lower = text.toLowerCase();
+  let hitIndex = -1;
+  for (const term of terms) {
+    const i = lower.indexOf(term.toLowerCase());
+    if (i >= 0 && (hitIndex === -1 || i < hitIndex)) hitIndex = i;
+  }
+  const radius = 90;
+  const start = hitIndex >= 0 ? Math.max(0, hitIndex - radius) : 0;
+  const end = Math.min(text.length, start + radius * 2);
+  const prefix = start > 0 ? "…" : "";
+  const suffix = end < text.length ? "…" : "";
+  return prefix + text.slice(start, end).trim() + suffix;
+}
+
 export default function DocsPage({ initialSlug }) {
   const [activeSlug, setActiveSlug] = useState(initialSlug || "user_manual");
   const [content, setContent] = useState("");
@@ -33,6 +52,8 @@ export default function DocsPage({ initialSlug }) {
   const [allPages, setAllPages] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [pendingAnchor, setPendingAnchor] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchIndex, setSearchIndex] = useState(null);
 
   useEffect(() => {
     fetch("/docs/docs-manifest.json")
@@ -44,6 +65,49 @@ export default function DocsPage({ initialSlug }) {
       })
       .catch(() => {});
   }, []);
+
+  // Load the pre-built search index once; it covers every doc page
+  // (docs/user_manual/*.md), not just the ones fetched so far.
+  useEffect(() => {
+    fetch("/docs/search-index.json")
+      .then((r) => r.json())
+      .then((entries) => {
+        const mini = new MiniSearch({
+          fields: ["pageTitle", "heading", "text"],
+          storeFields: ["slug", "pageTitle", "heading", "anchor", "text"],
+          searchOptions: {
+            prefix: true,
+            fuzzy: 0.2,
+            boost: { pageTitle: 2, heading: 1.5 },
+          },
+        });
+        mini.addAll(entries);
+        setSearchIndex(mini);
+      })
+      .catch(() => {});
+  }, []);
+
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim();
+    if (!query || !searchIndex) return [];
+    const terms = query.split(/\s+/);
+    return searchIndex
+      .search(query)
+      .slice(0, 30)
+      .map((r) => ({
+        slug: r.slug,
+        pageTitle: r.pageTitle,
+        heading: r.heading,
+        anchor: r.anchor,
+        snippet: buildSnippet(r.text, terms),
+      }));
+  }, [searchQuery, searchIndex]);
+
+  function goToResult(result) {
+    setActiveSlug(result.slug);
+    setPendingAnchor(result.anchor);
+    setSearchQuery("");
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -122,13 +186,57 @@ export default function DocsPage({ initialSlug }) {
 
       {/* Content */}
       <div className="p-4 flex-grow-1" style={{ minWidth: 0, overflowY: "auto" }}>
-        {loading && (
-          <div className="text-muted">Loading…</div>
-        )}
-        {error && (
-          <div className="text-danger">Failed to load documentation: {error}</div>
-        )}
-        {!loading && !error && (
+        <div className="mb-4 docs-search-box">
+          <span className="docs-search-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </span>
+          <input
+            type="search"
+            className="docs-search-input"
+            placeholder="Search the manual…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        {searchQuery.trim() ? (
+          <div className="docs-search-results">
+            <p className="text-muted mb-3">
+              {searchResults.length} result{searchResults.length === 1 ? "" : "s"} for “{searchQuery.trim()}”
+            </p>
+            {searchResults.map((r) => (
+              <button
+                key={`${r.slug}#${r.anchor || ""}`}
+                type="button"
+                onClick={() => goToResult(r)}
+                className="d-block w-100 text-start border-0 border-bottom bg-transparent py-3"
+                style={{ cursor: "pointer" }}
+              >
+                <div className="fw-semibold" style={{ color: "#0d6efd" }}>
+                  {r.pageTitle}
+                  {r.heading && r.heading !== r.pageTitle ? ` › ${r.heading}` : ""}
+                </div>
+                {r.snippet && (
+                  <div className="text-body-secondary small mt-1">{r.snippet}</div>
+                )}
+              </button>
+            ))}
+            {searchResults.length === 0 && (
+              <p className="text-muted">No matches found.</p>
+            )}
+          </div>
+        ) : (
+          <>
+            {loading && (
+              <div className="text-muted">Loading…</div>
+            )}
+            {error && (
+              <div className="text-danger">Failed to load documentation: {error}</div>
+            )}
+            {!loading && !error && (
           <div className="docs-content">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
@@ -209,6 +317,8 @@ export default function DocsPage({ initialSlug }) {
               {content}
             </ReactMarkdown>
           </div>
+            )}
+          </>
         )}
       </div>
     </div>

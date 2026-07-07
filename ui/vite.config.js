@@ -4,8 +4,14 @@ import { viteStaticCopy } from "vite-plugin-static-copy";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { generateSearchIndex } from "./scripts/build-search-index.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// search-index.json is derived from docs/user_manual/*.md, so regenerate it
+// whenever vite starts (dev or build) instead of committing a copy that can
+// drift out of sync with the source markdown.
+generateSearchIndex(path.resolve(__dirname, "../docs/user_manual"));
 
 // Dev-only plugin: serve ../docs/user_manual/*.md at /docs/<file>.md
 function devDocsPlugin() {
@@ -62,6 +68,10 @@ export default defineConfig({
         },
         {
           src: "../docs/user_manual/docs-manifest.json",
+          dest: "docs",
+        },
+        {
+          src: "../docs/user_manual/search-index.json",
           dest: "docs",
         },
         {

@@ -15,11 +15,22 @@ Ask me any questions before you proceed to ensure you understand the task well.
 FEEDBACK
 
 #fable
-System hangs scenario: #h -> pwd -> F1 (to load giana sisters from mounted drive 8)
+HDN Shell wedge System hangs in scenario: #h -> pwd -> F1 (to load giana sisters from mounted drive 8)
 System works scenario: #h -> F1 (to load giana sisters from mounted drive 8) - intro shows, I can play game
 Po resetu, #h -> "cd sd" nebo "cd /" dojde k divnemu zakousnuti (prepnuti fontu, protoze pismenka se zmeni v horizontalni cary) a skoku do freeze menu RR cartidge. Totez se deje po resetu i:hi -> zatuhne stejne.
-Stejne zatuhnuti se stani i po resetu a prikazu "TASM"
+Stejne zatuhnuti se stani i po resetu a prikazu "TASM".
+These are maybe two different problems, but maybe related. Understand the history from wedge/wedge-analysis.md. I am affraid that these problems are related to quite recent changes. Do a deep analysis. It is critical to resolve these issues as they are critical success factors for the whole HDN Shell product.
+Again, not sure if it is related but when I switch C=+CTRL+3 to coding agent and then C=+CTRL+2 to IDE server app, mostly it hangs. I can see an exclamation mark on the screen like if data are written to wrong address and the screen is by coincidence one such address. There is something very fishy in the modified Retro Replay cartridge and I am hoping that it has some common denominator that resolving one will improve others, too.
 Make sure that the HDN shell operation as as much hidden and transparent as possible. It should enable bank5 only when needed and then it should be disabled again. From outside it, memory-vise, it should be as if the HDN shell is not there at all. The user should not be able to see any difference compared to Retro Replay. See the Retro Replay documentation https://wiki.icomp.de/wiki/Retro_Replay .
+Ask me any questions before you proceed to ensure you understand the task well.
+
+
+HDN UI Docs - make it searchable. Suggest solutions. Prefered is browser-side search.
+Ask me any questions before you proceed to ensure you understand the task well.
+
+
+Review the HDN UI Dcocs in docs/user_manual folder and mostly look for redundant information and structure of the documentation. It seems info is repeating and the structure is a bit confusing. Some pages are too long, some information is not at the right home and better should be moved. Check for links, some might be broken.
+Ask me any questions before you proceed to ensure you understand the task well.
 
 
 ----
@@ -30,7 +41,7 @@ In the wedge, create a new command that will work on the UCI and network drives:
 mkdisk <image name>.d64 - instead of d64 there can be d81 and other supported image types. The command will create a new disk image with the given name and type.
 Also update the user manual and the documentation to reflect this new command.
 Ask me any questions before you proceed to ensure you understand the task well.
-Ask me any questions before you proceed to ensure you understand the task well.
+
 
 
 
@@ -44,14 +55,6 @@ F5 LIST
 F6 Freeze Menu
 F7 RUN
 F8 MON See here
-Ask me any questions before you proceed to ensure you understand the task well.
-
-
-HDN UI Docs - make it searchable. Suggest solutions. Prefered is browser-side search.
-Ask me any questions before you proceed to ensure you understand the task well.
-
-
-Review the HDN UI Dcocs in docs/user_manual folder and mostly look for redundant information and structure of the documentation. It seems info is repeating and the structure is a bit confusing. Some pages are too long, some information is not at the right home and better should be moved. Check for links, some might be broken.
 Ask me any questions before you proceed to ensure you understand the task well.
 
 

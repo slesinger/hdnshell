@@ -51,6 +51,43 @@
   border-color: rgba(220, 53, 69, 0.7);
 }
 
+/* Docs page search box */
+.docs-search-box {
+  position: relative;
+}
+
+.docs-search-box .docs-search-icon {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #98a2b3;
+  pointer-events: none;
+  display: flex;
+}
+
+.docs-search-box input.docs-search-input {
+  width: 100%;
+  padding: 0.65rem 1rem 0.65rem 2.6rem;
+  font-size: 1rem;
+  border-radius: 999px;
+  border: 1px solid #dde1e6;
+  background: #f5f7fa;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.docs-search-box input.docs-search-input::placeholder {
+  color: #98a2b3;
+}
+
+.docs-search-box input.docs-search-input:focus {
+  outline: none;
+  background: #fff;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.12);
+}
+
 /* Docs page markdown content */
 .docs-content {
   font-size: 0.925rem;

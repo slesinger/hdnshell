@@ -1,10 +1,19 @@
 # Filesystem Operations
 
-## Ultimate Storage
+Commands for creating directories, copying files, and moving raw memory blocks. For navigating devices and directories, listing, mounting disk images, and drive status, see [Navigating Disk Drives and Directories](dos.md).
 
-`mkdir <name>` — Create a new directory with the specified name. Ultimate filesystem only (`h`/`t`/`f`).
+## Creating Directories
 
-`cp <name>` — Copy a file between `/temp` on the Ultimate filesystem and the currently active server-backed device (`n` network drive or `c` CSDB). See [Navigating Disk Drives and Directories](dos.md#copying-files-cp) for the full device matrix, or [CSDB](csdb.md) for the CSDB-specific workflow.
+`mkdir <name>` — Create a directory in the current location. Only supported on the Ultimate filesystem (`h`/`t`/`f`).
+
+## Copying Files (`cp`)
+
+`cp <name>` — Copy a file between the Ultimate filesystem's `/temp` folder and whichever server-backed device is currently active:
+
+- On `n` (network drive): downloads `<name>` from the current network-drive directory into `/temp`.
+- On `c` (CSDB): downloads `<name>` (e.g. a release's `.zip`) into `/temp` — see [CSDB](csdb.md) for the full workflow.
+- On `h`/`t`/`f`: uploads `<name>` from `/temp` into the current directory of whichever server-backed device (`n` or `c`) you last had active.
+- Not supported on `8`/`9`/`s` (no server-side session to bridge to).
 
 ## Saving and Loading Arbitrary Memory
 

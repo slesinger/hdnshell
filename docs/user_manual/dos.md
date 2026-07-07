@@ -47,7 +47,7 @@ To show the current directory, simply type `pwd`.
 
 ## Loading Programs
 
-Loading works the classic way — BASIC stays, so `LOAD"demo*",8,1` works exactly as always, and the Retro Replay cartridge adds fast-load shortcuts: `/name` (fast load), `%name` (load absolute), `^name` (load and run), or simply the `F1` key to load and run the first file on the disk. See [Executing Programs](executing_programs.md).
+Loading works the classic way — BASIC stays, so `LOAD"demo*",8,1` works exactly as always. The Retro Replay cartridge also adds fast-load shortcuts (`/`, `%`, `^`, `F1`) — see [Executing Programs](executing_programs.md) for the full list.
 
 To load a file to an arbitrary memory address of your choice, use [`memcpy`](memory-operations.md#saving-and-restoring-memory-blocks-memcpy).
 
@@ -60,32 +60,15 @@ The `mnt` command can mount disk images (D64/D71/D81) to device 8. This allows y
 - `mnt /mydir/myimage.d64` — Mount image absolute from root
 - `umnt` — Unmount disk image (return to SD card directory)
 
-## Creating Directories
+## Creating Directories, Copying Files
 
-`mkdir <name>` — Create a directory in the current location. Only supported on the Ultimate filesystem (`h`/`t`/`f`).
-
-## Copying Files (`cp`)
-
-`cp <name>` — Copy a file between the Ultimate filesystem's `/temp` folder and whichever server-backed device is currently active:
-
-- On `n` (network drive): downloads `<name>` from the current network-drive directory into `/temp`.
-- On `c` (CSDB): downloads `<name>` (e.g. a release's `.zip`) into `/temp` — see [CSDB](csdb.md) for the full workflow.
-- On `h`/`t`/`f`: uploads `<name>` from `/temp` into the current directory of whichever server-backed device (`n` or `c`) you last had active.
-- Not supported on `8`/`9`/`s` (no server-side session to bridge to).
-
-To save or load an arbitrary block of C64 memory (not a whole file already on a device), see [`memcpy`](memory-operations.md#saving-and-restoring-memory-blocks-memcpy) instead.
+To create directories (`mkdir`) and copy files between the Ultimate storage and the server-backed devices (`cp`), see the [File Operations](file-operations.md) chapter.
 
 ## SoftIEC (SD2IEC Emulation)
 
 Software IEC emulation was popularized by [SD2IEC](https://www.c64-wiki.com/wiki/SD2IEC) project. You can [build your own easily](https://randomnerdtutorials.com/esp32-microsd-card-arduino/) but the good thing on C64U is that you do not need to. You can enable SoftIEC in the menu and you will see it as device #s (IEC device 10).
 
 Refere to very detailed [documentation in C64OS post](https://c64os.com/post/sd2iecdocumentation#filemanagement). Kudos to Greg for his amazing work on all the documentation pages.
-
----
-
-
-
-For more disk operation commands, see the [File Operations](file-operations.md) chapter.
 
 ## Drive Status
 

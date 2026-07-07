@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
+    "minisearch": "^7.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
