@@ -27,6 +27,8 @@ binaries/*
 robik-d2d55-02522689b916.json
 ui/dist/*
 ui/node_modules/
+docs/user_manual/search-index.json
+cloud/static/docs/search-index.json
 venv/
 release/**
 release/hdnsh-server-linux
