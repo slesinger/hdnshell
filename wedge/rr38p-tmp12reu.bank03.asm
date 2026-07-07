@@ -2121,40 +2121,53 @@ bank03_sub_9f87:
     ldy #$01               // a0 01
     sta ($22),y            // 91 22
     rts                    // 60
+// bank03_api_11 -- stock: picks black or white based on border color and
+// forces it into $0286 (current text color). Called from bank01_sub_83ca on
+// every cold start AND every RESTORE/reset re-init, which is why the READY
+// prompt/cursor/typed text always came out white regardless of what color
+// the user had set. Neutered to a plain rts (wedge round 9 hardware
+// feedback, 2026-07-06): the shell must never touch text color on its own --
+// whatever the user has set (default light blue, or anything they POKE'd
+// into $0286/cursor color) stays in effect. Same byte count, NOPs pad the
+// rest so nothing after this block shifts.
 bank03_api_11:
-    lda $d021              // ad 21 d0
-    and #$0f               // 29 0f
-    ldx #$01               // a2 01
-    cmp #$01               // c9 01
-    bne bank03_sub_9f9a              // d0 01
-    dex                    // ca
-bank03_sub_9f9a:
-    stx $0286              // 8e 86 02
     rts                    // 60
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
+    nop                    // ea
     .byte $20, $02, $9f, $33, $80, $8e, $39, $03, $a2, $05, $a0, $1d, $20, $76, $85, $a6    // data $9f9e
     .byte $ba, $a9, $00, $20, $cd, $bd, $a9, $20, $4c, $16, $e7, $20, $00, $9f, $57, $80    // data $9fae
     .byte $d0, $03, $4c, $5d, $84, $a9, $0d, $4c, $16, $e7    // data $9fbe
+// bank03_api_21 -- stock: `jsr bank03_sub_8362` printing the inline
+// "CYBERPUNX RETRO REPLAY 64KB - 3.8P" version line (CR + 3-space indent +
+// text + CR) that shows up in white below the HDN boot banner on every cold
+// boot. Suppressed (wedge round 7 hardware feedback, 2026-07-06) by swapping
+// the 3-byte jsr for a 3-byte jmp straight to this routine's own rts,
+// skipping print and string alike. The string bytes stay in place as data
+// (never executed, never printed) so nothing after them shifts. The bytes
+// after this jsr were previously misdecoded here as opcodes -- they are the
+// inline string consumed by bank03_sub_8362's return-address trick.
 bank03_api_21:
-    jsr bank03_sub_8362              // 20 62 83
-    ora $2020              // 0d 20 20
-    jsr $5943              // 20 43 59
-    .byte $42    // undocumented opcode
-    eor $52                // 45 52
-    bvc $a02b              // 50 55
-    lsr $2058              // 4e 58 20
-    .byte $52    // undocumented opcode
-    eor $54                // 45 54
-    .byte $52    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    jsr $4552              // 20 52 45
-    bvc $a02f              // 50 4c
-    eor ($59,x)            // 41 59
-    jsr $3436              // 20 36 34
-    .byte $4b    // undocumented opcode
-    .byte $42    // undocumented opcode
-    jsr $202d              // 20 2d 20
-    .byte $33    // undocumented opcode
-    rol $5038              // 2e 38 50
-    ora $6000              // 0d 00 60
-    brk                    // 00
+    jmp b03_api_21_rts     // 4c f3 9f -- was: jsr bank03_sub_8362 (20 62 83)
+    .byte $0d, $20, $20, $20                                                        // CR + 3-space indent
+    .byte $43, $59, $42, $45, $52, $50, $55, $4e, $58, $20                          // "CYBERPUNX "
+    .byte $52, $45, $54, $52, $4f, $20                                              // "RETRO "
+    .byte $52, $45, $50, $4c, $41, $59, $20                                         // "REPLAY "
+    .byte $36, $34, $4b, $42, $20, $2d, $20, $33, $2e, $38, $50                     // "64KB - 3.8P"
+    .byte $0d, $00                                                                  // CR + terminator
+b03_api_21_rts:
+    rts                    // 60
+    .byte $00
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ff5

@@ -339,7 +339,8 @@ bank01_api_00:
     jsr $e453              // 20 53 e4
     jsr bank01_api_06              // 20 1d 83
     jsr $e3bf              // 20 bf e3
-    jsr $e422              // 20 22 e4
+    jsr boot_hook          // was: jsr $e422 (stock BASIC banner + BYTES FREE) --
+                           // replaced with the HDN shell boot banner, same 3-byte jsr
     jsr bank01_sub_83ca              // 20 ca 83
     jsr bank01_sub_9f51              // 20 51 9f
     pha                    // 48
@@ -2508,19 +2509,21 @@ lt_skipshadow:
 // the fall-through path -- the original handler depends on it).
 ierror_stub_rom:
     txa                     // X bit7 set = "print READY, no error" -- BASIC's warm
-    bmi ie_fall              // start ($e37b) ends with LDX #$80 / JMP ($0300), and
+    bmi ie_direct            // start ($e37b) ends with LDX #$80 / JMP ($0300), and
                              // every cart wedge command (the `$` directory, INFO,
                              // F3's macro, STOP+RESTORE...) terminates through it.
-                             // Never ours: fall through so READY prints normally.
+                             // Also OURS now: bank05's dispatch sees bit7 in
+                             // ie_errcode and prints the shell's own READY
+                             // (capitals + light blue) instead of falling
+                             // through to the stock lowercase one.
     lda $3a                 // CURLIN high byte: $ff means direct/immediate mode
     cmp #$ff
     beq ie_direct
-ie_fall:
     jmp (ie_orig_vec)        // program-mode error -- not ours, fall through untouched
 ie_direct:
-    // DIAGNOSTIC ROUND: fires for every direct-mode error (not narrowed to
-    // SYNTAX yet -- the exact error-table index needs hardware confirmation
-    // first, see wedge-analysis.md). Stash X so bank05 can print it.
+    // Fires for every direct-mode error AND every bit7 "print READY" pass.
+    // Stash X: bank05's dispatch branches on bit7 (READY vs typed-line
+    // fallback); the error-table index is kept for diagnostics either way.
     stx ie_errcode
     sei
     lda #$88                 // bank05 select value for $de00 (bit7+bit3 = bank 5)
@@ -2554,13 +2557,62 @@ ierror_stub_rom_end:
 // Layout guard: the relocated block ($0340+) must end before the ILOAD shim
 // slot at $0372 (bank05's il_shim_ram -- keep in sync).
 .errorif ie_ram + (ierror_stub_rom_end - ierror_stub_rom) > $0372, "ie_ram block overruns il_shim_ram"
-    .fill $9e10 - ierror_stub_rom_end, $00    // remaining confirmed-free bytes, unused so far
+
+// ---------------------------------------------------------------------------
+// boot_hook -- cold-start only (called once, from bank01_api_00, replacing
+// the stock `jsr $e422` that prints "**** COMMODORE 64 BASIC V2 ****" / BYTES
+// FREE -- same 3-byte jsr, zero shift). Switches to the lowercase/uppercase
+// charset (permanent, matches the old standalone-ROM shell's default), then
+// tail-calls boot_call (a second, larger free pocket at $9e3a -- this one
+// only has 15 bytes free, not enough for the cross-bank call machinery too).
+// ---------------------------------------------------------------------------
+boot_hook:
+    lda $d018
+    and #%11110001
+    ora #%00000110           // charset base $1800 = lowercase/uppercase set
+    sta $d018
+    jmp boot_call
+boot_hook_end:
+
+    .fill $9e10 - boot_hook_end, $00    // remaining confirmed-free bytes, unused so far
     .byte $a9, $20, $8d, $00    // data $9e10 (unchanged original code resumes here)
     .byte $de, $a5, $01, $8d, $2e, $de, $09, $03, $85, $01, $a9, $08, $8d, $00, $de, $68    // data $9e14
     .byte $28, $60, $08, $48, $a9, $20, $8d, $00, $de, $a9, $37, $85, $01, $a9, $0a, $8d    // data $9e24
-    .byte $00, $de, $68, $28, $58, $60, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e34
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e44
-    .byte $00, $00, $00, $00, $00, $c6, $01, $b1, $bb, $e6, $01, $60, $20, $26, $de, $a5    // data $9e54
+    .byte $00, $de, $68, $28, $58, $60    // data $9e34-$9e39 (unchanged original code resumes here)
+
+// ---------------------------------------------------------------------------
+// boot_call -- second half of the boot_hook split above (confirmed-free
+// 31-byte pocket, raw-byte-scanned the same way as the $9d74 pocket -- see
+// wedge-analysis.md §4). Copies a relocatable stub to $cf00 and calls into
+// bank05's boot_banner: same cross-bank technique as xb2_rom, needed because
+// the $de00 bank-select write repages the very $8000-$9fff window this code
+// runs from. $cf00 is real C64 RAM, untouched at this point in cold start
+// (round 6 vacated it for typed-line safety against loaded programs --
+// irrelevant here since nothing has been loaded yet). Tail-called from
+// boot_hook, so boot_stub's rts below returns straight to bank01_api_00.
+// ---------------------------------------------------------------------------
+boot_call:
+    ldx #boot_stub_end - boot_stub - 1
+bc_copy:
+    lda boot_stub,x
+    sta $cf00,x
+    dex
+    bpl bc_copy
+    jmp $cf00
+boot_stub:
+    sei
+    lda #$88                 // bank05 select value
+    sta $de00
+    jsr $901b                // bank05 boot_banner (fixed jump-table entry)
+    lda #$08                 // bank01 select value -- restore
+    sta $de00
+    cli
+    rts
+boot_stub_end:
+
+    .fill $9e59 - boot_stub_end, $00    // remaining confirmed-free bytes in this pocket
+
+    .byte $c6, $01, $b1, $bb, $e6, $01, $60, $20, $26, $de, $a5    // data $9e59 (unchanged original code resumes here)
     .byte $93, $90, $03, $4c, $a5, $f4, $4c, $ed, $f5, $38, $24, $18, $85, $93, $20, $97    // data $9e64
     .byte $de, $4c, $26, $89, $48, $a5, $9a, $c9, $04, $d0, $07, $68, $20, $97, $de, $4c    // data $9e74
     .byte $27, $9c, $4c, $cd, $f1, $20, $97, $de, $4c, $ea, $9b, $ea, $ea, $20, $97, $de    // data $9e84
