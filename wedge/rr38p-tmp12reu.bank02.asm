@@ -3400,12 +3400,13 @@ bank02_data_991E:
 // Step 5b: full HDN cloud round-trip over the Ultimate Command Interface
 // ($DF1C-$DF1F, visibility from this banked-in context hardware-proven in
 // steps 4/5a). TCP connect to 192.168.1.2:6464, send the wire packet
-// $FE (magic) $02 (TEXT_INPUT, console 0) "PING", print the raw PETSCII
-// reply via CHROUT, close the socket. Border: green = reply printed,
-// red = any failure. Interrupts stay off for the whole exchange (a jiffy
-// IRQ WILL fire during a multi-ms exchange; no RR hook may run with bank2
-// in the window). No zero page is touched. Scratch (plain RAM above the
-// TMP top $CEFF, PEEKable breadcrumbs after a red border):
+// $FE (magic) $02 (TEXT_INPUT, console 0) + payload, print the raw
+// PETSCII reply via CHROUT, close the socket. Border: green = reply
+// printed, red = any failure. Interrupts stay off for the whole exchange
+// (a jiffy IRQ WILL fire during a multi-ms exchange; no RR hook may run
+// with bank2 in the window). No zero page is WRITTEN (TXTPTR $7A/$7B is
+// only read). Scratch (plain RAM above the TMP top $CEFF, PEEKable
+// breadcrumbs after a red border):
 //   $CF20 UCI ident readback     $CF21 socket id
 //   $CF22/$CF23 read length lo/hi $CF24 retry counter  $CF25 got-data flag
 //   $CF26 wait-loop outer counter (5c)
@@ -3413,9 +3414,16 @@ bank02_data_991E:
 // UCI protocol per src-discontinued/c64u_common.asm + c64u_network.asm and
 // docs/inspiration/ultimate_lib.c: SOCKET_READ response data = 2-byte LE
 // length prefix ($FFFF = nothing yet -> retry, $0000 = EOF), then payload.
-// Known 5b simplifications (fine for PING, revisit for the real fallback):
-// single $E8-byte read chunk (longer replies truncated); no close on a
-// refused connect (no socket exists then).
+//
+// Step 6: the payload is no longer hardcoded "PING" but the typed
+// rest-of-line after the HONDANI keyword, read through TXTPTR ($7A),y.
+// The bank1 handler leaves TXTPTR on the first non-space char after the
+// keyword (its jsr $0073), and the scanner runs PRE-crunch, so the buffer
+// at ($7A) is the raw PETSCII exactly as typed, $00-terminated. Bare
+// `HONDANI` sends an empty payload (server answers ?ERROR/AI -- fine).
+// Known simplifications (revisit in step 7): single $E8-byte read chunk
+// (longer replies truncated); no close on a refused connect (no socket
+// exists then).
 hondani_net:
     sei                    // no IRQ while UCI is mid-transaction
     lda $df1d              // UCI ident register ($C9 = present)
@@ -3451,18 +3459,24 @@ hn_jfail:
                            // wait-for-idle (the observed server-restart hang).
     jmp hn_fail            // connect-phase failures: no socket to close
 hn_conok:
-// ---- write: cmd $11, socket id, $FE $02 "PING" ------------------------------
+// ---- write: cmd $11, socket id, $FE $02 <typed line via TXTPTR> -------------
     lda #$11               // NET_CMD_SOCKET_WRITE
     jsr hn_hdr
     lda $cf21
     sta $df1d
-    ldx #$00
-hn_wlp:
-    lda hn_msg,x
+    lda #$fe               // wire magic
     sta $df1d
-    inx
-    cpx #hn_msg_end - hn_msg
+    lda #$02               // TEXT_INPUT (console 0)
+    sta $df1d
+    ldy #$00
+hn_wlp:
+    lda ($7a),y            // raw typed rest-of-line (see step-6 header note)
+    beq hn_wdone           // $00 = end of the input line
+    sta $df1d
+    iny
+    cpy #$58               // safety bound: 88-char input buffer
     bne hn_wlp
+hn_wdone:
     jsr hn_push
     bcc hn_w1
     jmp hn_failc
@@ -3675,10 +3689,6 @@ hn_fbad:
 // ---- data -------------------------------------------------------------------
 hn_ip:
     .byte $31, $39, $32, $2E, $31, $36, $38, $2E, $31, $2E, $32, $00    // "192.168.1.2",0
-hn_msg:
-    .byte $fe, $02                                  // magic, TEXT_INPUT (console 0)
-    .byte $50, $49, $4e, $47                        // "PING" (PETSCII upper)
-hn_msg_end:
 .errorif (* > $9B0E), "hondani_net overflowed its pocket"
     .fill $9B0E - *, $00   // pad to $9B0E (was: zeros)
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B0E
