@@ -1,2160 +1,3222 @@
-// disassembly for rr38p-tmp12reu.bin bank 3
-// bank file offset: $6000-$7fff
-// cartridge window: $8000-$9fff
-// vectors: coldstart=$8009, warmstart=$800c, signature=c3 c2 cd 38 30
-// reachable instructions: 1396 bytes decoded as code: 2719
-// entry points: $8009, $800c, $8042, $8265, $82af, $82b5, $842f, $8435, $845d, $857f, $8644, $864c, $8944, $8e7f, $8eb3, $8ee2, $8fdc, $905f, $90c8, $90f6, $9102, $9159, $9219, $9418, $942f, $9451, $9473, $94c5, $94eb, $9502, $9658, $971c, $9f58, $9f8e, $9fc8
-// jump table from cold start:
-//   $8009 -> $90c8
-//   $800c -> $82b5
-//   $800f -> $845d
+// Disassembly for rr38p-tmp12reu.bin bank 3
+// Bank file offset: $6000-$7FFF
+// Cartridge window: $8000-$9FFF
+// Vectors: coldstart=$8009, warmstart=$800C, signature=c3 c2 cd 38 30
+// Reachable instructions: 1396 bytes decoded as code: 2719
+// Entry points: $8009, $800C, $8042, $8265, $82AF, $82B5, $842F, $8435, $845D, $857F, $8644, $864C, $8944, $8E7F, $8EB3, $8EE2, $8FDC, $905F, $90C8, $90F6, $9102, $9159, $9219, $9418, $942F, $9451, $9473, $94C5, $94EB, $9502, $9658, $971C, $9F58, $9F8E, $9FC8
+// Jump table from cold start:
+//   $8009 -> $90C8
+//   $800C -> $82B5
+//   $800F -> $845D
 //   $8012 -> $8944
 //   $8015 -> $8644
-//   $8018 -> $864c
-//   $801b -> $94eb
-//   $801e -> $90f6
+//   $8018 -> $864C
+//   $801B -> $94EB
+//   $801E -> $90F6
 //   $8021 -> $8435
-//   $8024 -> $842f
+//   $8024 -> $842F
 //   $8027 -> $9102
-//   $802a -> $9f8e
-//   $802d -> $82af
-//   $8030 -> $8e7f
-//   $8033 -> $8eb3
-//   $8036 -> $8ee2
+//   $802A -> $9F8E
+//   $802D -> $82AF
+//   $8030 -> $8E7F
+//   $8033 -> $8EB3
+//   $8036 -> $8EE2
 //   $8039 -> $9219
-//   $803c -> $9159
-//   $803f -> $857f
+//   $803C -> $9159
+//   $803F -> $857F
 //   $8042 -> $8042
-//   $8045 -> $905f
-//   $8048 -> $9fc8
-//   $804b -> $94c5
-//   $804e -> $9f58
-//   $8051 -> $8fdc
+//   $8045 -> $905F
+//   $8048 -> $9FC8
+//   $804B -> $94C5
+//   $804E -> $9F58
+//   $8051 -> $8FDC
 //   $8054 -> $9502
 //   $8057 -> $9658
-//   $805a -> $971c
-//   $805d -> $942f
+//   $805A -> $971C
+//   $805D -> $942F
 //   $8060 -> $9473
 //   $8063 -> $9451
 //   $8066 -> $9418
 //   $8069 -> $8265
-// external branch/jsr/jmp targets: $002d, $0073, $0079, $0210, $202d, $2041, $2045, $2059, $2d20, $2d42, $2e2e, $3146, $3436, $3531, $4153, $4353, $4424, $4552, $4620, $4843, $494c, $4957, $4e49, $4f4d, $4f53, $5053, $5244, $5245, $524f, $5349, $542a, $5453, $5543, $5941, $5943, $a02b, $a02f, $a200, $a3bf, $a533, $a57c, $a613, $a660, $a687, $a68e, $a81d, $a8fb, $a90b, $a96b, $af08, $bc49, $bdcd, $bddf, $de9d, $dede, $e3bf, $e453, $e544, $e716, $f6bc, $f6ed, $fd8d, $fda3, $fe72, $ff5b, $ff9f, $ffd2, $ffe4, $fff0
+// External branch/jsr/jmp targets: $002D, $0073, $0079, $0210, $202D, $2041, $2045, $2059, $2D20, $2D42, $2E2E, $3146, $3436, $3531, $4153, $4353, $4424, $4552, $4620, $4843, $494C, $4957, $4E49, $4F4D, $4F53, $5053, $5244, $5245, $524F, $5349, $542A, $5453, $5543, $5941, $5943, $A02B, $A02F, $A200, $A3BF, $A533, $A57C, $A613, $A660, $A687, $A68E, $A81D, $A8FB, $A90B, $A96B, $AF08, $BC49, $BDCD, $BDDF, $DE9D, $DEDE, $E3BF, $E453, $E544, $E716, $F6BC, $F6ED, $FD8D, $FDA3, $FE72, $FF5B, $FF9F, $FFD2, $FFE4, $FFF0
 
-// symbol table (auto-generated)
+// Symbol table (auto-generated)
 //   $8009 bank03_cold_start
-//   $800c bank03_warm_start
+//   $800C bank03_warm_start
 //   $8042 bank03_api_19
 //   $8265 bank03_api_32
-//   $82af bank03_api_12
-//   $82b5 bank03_api_01
-//   $82c0 bank03_sub_82c0
-//   $835f bank03_sub_835f
+//   $82AF bank03_api_12
+//   $82B5 bank03_api_01
+//   $82C0 bank03_sub_82C0
+//   $835F bank03_sub_835F
 //   $8362 bank03_sub_8362
-//   $836a bank03_sub_836a
+//   $836A bank03_sub_836A
 //   $8372 bank03_sub_8372
 //   $8384 bank03_sub_8384
-//   $838c bank03_sub_838c
+//   $838C bank03_sub_838C
 //   $8394 bank03_sub_8394
-//   $83a2 bank03_sub_83a2
-//   $83a7 bank03_sub_83a7
-//   $83b0 bank03_sub_83b0
-//   $83cf bank03_sub_83cf
-//   $842f bank03_api_09
+//   $83A2 bank03_sub_83A2
+//   $83A7 bank03_sub_83A7
+//   $83B0 bank03_sub_83B0
+//   $83CF bank03_sub_83CF
+//   $842F bank03_api_09
 //   $8435 bank03_api_08
 //   $8439 bank03_sub_8439
-//   $844e bank03_sub_844e
+//   $844E bank03_sub_844E
 //   $8450 bank03_sub_8450
-//   $845d bank03_api_02
-//   $845e bank03_sub_845e
+//   $845D bank03_api_02
+//   $845E bank03_sub_845E
 //   $8576 bank03_sub_8576
-//   $857f bank03_api_18
+//   $857F bank03_api_18
 //   $8594 bank03_sub_8594
-//   $85a1 bank03_sub_85a1
+//   $85A1 bank03_sub_85A1
 //   $8644 bank03_api_04
-//   $864c bank03_api_05
-//   $86e5 bank03_sub_86e5
-//   $86f3 bank03_sub_86f3
+//   $864C bank03_api_05
+//   $86E5 bank03_sub_86E5
+//   $86F3 bank03_sub_86F3
 //   $8944 bank03_api_03
 //   $8985 bank03_sub_8985
-//   $8c60 bank03_sub_8c60
-//   $8ca6 bank03_sub_8ca6
-//   $8cbb bank03_sub_8cbb
-//   $8cca bank03_sub_8cca
-//   $8cd6 bank03_sub_8cd6
-//   $8cd9 bank03_sub_8cd9
-//   $8ce4 bank03_sub_8ce4
-//   $8ce7 bank03_sub_8ce7
-//   $8ced bank03_sub_8ced
-//   $8cfd bank03_sub_8cfd
-//   $8d09 bank03_sub_8d09
-//   $8d18 bank03_sub_8d18
-//   $8d1d bank03_sub_8d1d
-//   $8d2e bank03_sub_8d2e
-//   $8d4b bank03_sub_8d4b
-//   $8d70 bank03_sub_8d70
-//   $8d79 bank03_sub_8d79
-//   $8d8a bank03_sub_8d8a
-//   $8da1 bank03_sub_8da1
-//   $8e6e bank03_sub_8e6e
-//   $8e7f bank03_api_13
-//   $8e81 bank03_sub_8e81
-//   $8eaa bank03_sub_8eaa
-//   $8eb3 bank03_api_14
-//   $8ec6 bank03_sub_8ec6
-//   $8ed3 bank03_sub_8ed3
-//   $8edc bank03_sub_8edc
-//   $8edd bank03_sub_8edd
-//   $8ee2 bank03_api_15
-//   $8ef1 bank03_sub_8ef1
-//   $8f12 bank03_sub_8f12
-//   $8f15 bank03_sub_8f15
-//   $8f2b bank03_sub_8f2b
-//   $8f46 bank03_sub_8f46
-//   $8f4c bank03_sub_8f4c
-//   $8f56 bank03_sub_8f56
-//   $8f9f bank03_sub_8f9f
-//   $8fbd bank03_sub_8fbd
-//   $8fd8 bank03_sub_8fd8
-//   $8fdb bank03_sub_8fdb
-//   $8fdc bank03_api_24
-//   $904a bank03_sub_904a
-//   $905f bank03_api_20
-//   $90b8 bank03_sub_90b8
-//   $90c8 bank03_api_00
-//   $90cc bank03_sub_90cc
-//   $90d6 bank03_sub_90d6
-//   $90f6 bank03_api_07
-//   $90f8 bank03_sub_90f8
+//   $8C60 bank03_sub_8C60
+//   $8CA6 bank03_sub_8CA6
+//   $8CBB bank03_sub_8CBB
+//   $8CCA bank03_sub_8CCA
+//   $8CD6 bank03_sub_8CD6
+//   $8CD9 bank03_sub_8CD9
+//   $8CE4 bank03_sub_8CE4
+//   $8CE7 bank03_sub_8CE7
+//   $8CED bank03_sub_8CED
+//   $8CFD bank03_sub_8CFD
+//   $8D09 bank03_sub_8D09
+//   $8D18 bank03_sub_8D18
+//   $8D1D bank03_sub_8D1D
+//   $8D2E bank03_sub_8D2E
+//   $8D4B bank03_sub_8D4B
+//   $8D70 bank03_sub_8D70
+//   $8D79 bank03_sub_8D79
+//   $8D8A bank03_sub_8D8A
+//   $8DA1 bank03_sub_8DA1
+//   $8E6E bank03_sub_8E6E
+//   $8E7F bank03_api_13
+//   $8E81 bank03_sub_8E81
+//   $8EAA bank03_sub_8EAA
+//   $8EB3 bank03_api_14
+//   $8EC6 bank03_sub_8EC6
+//   $8ED3 bank03_sub_8ED3
+//   $8EDC bank03_sub_8EDC
+//   $8EDD bank03_sub_8EDD
+//   $8EE2 bank03_api_15
+//   $8EF1 bank03_sub_8EF1
+//   $8F12 bank03_sub_8F12
+//   $8F15 bank03_sub_8F15
+//   $8F2B bank03_sub_8F2B
+//   $8F46 bank03_sub_8F46
+//   $8F4C bank03_sub_8F4C
+//   $8F56 bank03_sub_8F56
+//   $8F9F bank03_sub_8F9F
+//   $8FBD bank03_sub_8FBD
+//   $8FD8 bank03_sub_8FD8
+//   $8FDB bank03_sub_8FDB
+//   $8FDC bank03_api_24
+//   $904A bank03_sub_904A
+//   $905F bank03_api_20
+//   $90B8 bank03_sub_90B8
+//   $90C8 bank03_api_00
+//   $90CC bank03_sub_90CC
+//   $90D6 bank03_sub_90D6
+//   $90F6 bank03_api_07
+//   $90F8 bank03_sub_90F8
 //   $9102 bank03_api_10
-//   $910b bank03_sub_910b
+//   $910B bank03_sub_910B
 //   $9111 bank03_sub_9111
 //   $9124 bank03_sub_9124
 //   $9159 bank03_api_17
 //   $9172 bank03_sub_9172
 //   $9183 bank03_sub_9183
-//   $919b bank03_sub_919b
-//   $91a9 bank03_sub_91a9
-//   $91bc bank03_sub_91bc
-//   $91c8 bank03_sub_91c8
-//   $91e5 bank03_sub_91e5
-//   $91ef bank03_sub_91ef
-//   $91f5 bank03_sub_91f5
-//   $91fd bank03_sub_91fd
-//   $91ff bank03_sub_91ff
-//   $920a bank03_sub_920a
-//   $920b bank03_sub_920b
+//   $919B bank03_sub_919B
+//   $91A9 bank03_sub_91A9
+//   $91BC bank03_sub_91BC
+//   $91C8 bank03_sub_91C8
+//   $91E5 bank03_sub_91E5
+//   $91EF bank03_sub_91EF
+//   $91F5 bank03_sub_91F5
+//   $91FD bank03_sub_91FD
+//   $91FF bank03_sub_91FF
+//   $920A bank03_sub_920A
+//   $920B bank03_sub_920B
 //   $9211 bank03_sub_9211
 //   $9212 bank03_sub_9212
 //   $9218 bank03_sub_9218
 //   $9219 bank03_api_16
-//   $922b bank03_sub_922b
+//   $922B bank03_sub_922B
 //   $9231 bank03_sub_9231
-//   $923a bank03_sub_923a
-//   $923f bank03_sub_923f
+//   $923A bank03_sub_923A
+//   $923F bank03_sub_923F
 //   $9242 bank03_sub_9242
 //   $9261 bank03_sub_9261
 //   $9266 bank03_sub_9266
-//   $926c bank03_sub_926c
+//   $926C bank03_sub_926C
 //   $9273 bank03_sub_9273
 //   $9276 bank03_sub_9276
 //   $9295 bank03_sub_9295
 //   $9298 bank03_sub_9298
-//   $92aa bank03_sub_92aa
-//   $92ac bank03_sub_92ac
-//   $92b4 bank03_sub_92b4
-//   $92c0 bank03_sub_92c0
-//   $92cc bank03_sub_92cc
-//   $92cd bank03_sub_92cd
-//   $92e0 bank03_sub_92e0
-//   $92f5 bank03_sub_92f5
-//   $931d bank03_sub_931d
-//   $932b bank03_sub_932b
-//   $932f bank03_sub_932f
+//   $92AA bank03_sub_92AA
+//   $92AC bank03_sub_92AC
+//   $92B4 bank03_sub_92B4
+//   $92C0 bank03_sub_92C0
+//   $92CC bank03_sub_92CC
+//   $92CD bank03_sub_92CD
+//   $92E0 bank03_sub_92E0
+//   $92F5 bank03_sub_92F5
+//   $931D bank03_sub_931D
+//   $932B bank03_sub_932B
+//   $932F bank03_sub_932F
 //   $9337 bank03_sub_9337
 //   $9341 bank03_sub_9341
 //   $9372 bank03_sub_9372
 //   $9375 bank03_sub_9375
-//   $938e bank03_sub_938e
+//   $938E bank03_sub_938E
 //   $9391 bank03_sub_9391
 //   $9397 bank03_sub_9397
-//   $93b6 bank03_sub_93b6
-//   $93c2 bank03_sub_93c2
-//   $93c4 bank03_sub_93c4
-//   $93d6 bank03_sub_93d6
-//   $93e2 bank03_sub_93e2
-//   $93f5 bank03_sub_93f5
+//   $93B6 bank03_sub_93B6
+//   $93C2 bank03_sub_93C2
+//   $93C4 bank03_sub_93C4
+//   $93D6 bank03_sub_93D6
+//   $93E2 bank03_sub_93E2
+//   $93F5 bank03_sub_93F5
 //   $9406 bank03_sub_9406
 //   $9410 bank03_sub_9410
 //   $9411 bank03_sub_9411
 //   $9418 bank03_api_31
-//   $942a bank03_sub_942a
-//   $942f bank03_api_28
+//   $942A bank03_sub_942A
+//   $942F bank03_api_28
 //   $9451 bank03_api_30
-//   $946e bank03_sub_946e
+//   $946E bank03_sub_946E
 //   $9473 bank03_api_29
-//   $94a0 bank03_sub_94a0
-//   $94b7 bank03_sub_94b7
-//   $94c2 bank03_sub_94c2
-//   $94c5 bank03_api_22
-//   $94c8 bank03_sub_94c8
-//   $94eb bank03_api_06
+//   $94A0 bank03_sub_94A0
+//   $94B7 bank03_sub_94B7
+//   $94C2 bank03_sub_94C2
+//   $94C5 bank03_api_22
+//   $94C8 bank03_sub_94C8
+//   $94EB bank03_api_06
 //   $9502 bank03_api_25
 //   $9658 bank03_api_26
-//   $96de bank03_sub_96de
-//   $96f4 bank03_sub_96f4
-//   $971c bank03_api_27
-//   $972b bank03_sub_972b
+//   $96DE bank03_sub_96DE
+//   $96F4 bank03_sub_96F4
+//   $971C bank03_api_27
+//   $972B bank03_sub_972B
 //   $9744 bank03_sub_9744
 //   $9772 bank03_sub_9772
 //   $9777 bank03_sub_9777
 //   $9789 bank03_sub_9789
-//   $978f bank03_sub_978f
+//   $978F bank03_sub_978F
 //   $9790 bank03_sub_9790
-//   $97a1 bank03_sub_97a1
-//   $9f01 bank03_sub_9f01
-//   $9f02 bank03_sub_9f02
-//   $9f05 bank03_sub_9f05
-//   $9f2b bank03_sub_9f2b
-//   $9f58 bank03_api_23
-//   $9f61 bank03_sub_9f61
-//   $9f69 bank03_sub_9f69
-//   $9f86 bank03_sub_9f86
-//   $9f87 bank03_sub_9f87
-//   $9f8e bank03_api_11
-//   $9f9a bank03_sub_9f9a
-//   $9fc8 bank03_api_21
+//   $97A1 bank03_sub_97A1
+//   $9F01 bank03_sub_9F01
+//   $9F02 bank03_sub_9F02
+//   $9F05 bank03_sub_9F05
+//   $9F2B bank03_sub_9F2B
+//   $9F58 bank03_api_23
+//   $9F61 bank03_sub_9F61
+//   $9F69 bank03_sub_9F69
+//   $9F86 bank03_sub_9F86
+//   $9F87 bank03_sub_9F87
+//   $9F8E bank03_api_11
+//   $9F9A bank03_sub_9F9A
+//   $9FC8 bank03_api_21
 
 .pc = $8000
 
-    .byte $09, $80, $0c, $80, $c3, $c2, $cd, $38, $30    // data $8000
+bank03_data_8000:
+.errorif (* != $8000), "bank03_data_8000 shifted"
+    .byte $09, $80, $0C, $80, $C3, $C2, $CD, $38, $30    // data $8000
 bank03_cold_start:
-    jmp bank03_api_00              // 4c c8 90
+    jmp bank03_api_00              // 4C C8 90
 bank03_warm_start:
-    jmp bank03_api_01              // 4c b5 82
-    .byte $4c, $5d, $84, $4c, $44, $89, $4c, $44, $86, $4c, $4c, $86, $4c, $eb, $94, $4c    // data $800f
-    .byte $f6, $90, $4c, $35, $84, $4c, $2f, $84, $4c, $02, $91, $4c, $8e, $9f, $4c, $af    // data $801f
-    .byte $82, $4c, $7f, $8e, $4c, $b3, $8e, $4c, $e2, $8e, $4c, $19, $92, $4c, $59, $91    // data $802f
-    .byte $4c, $7f, $85    // data $803f
+    jmp bank03_api_01              // 4C B5 82
+bank03_data_800F:
+.errorif (* != $800F), "bank03_data_800F shifted"
+    jmp $845d              // 4C 5D 84
+    jmp $8944              // 4C 44 89
+    jmp $8644              // 4C 44 86
+    jmp $864c              // 4C 4C 86
+    jmp $94eb              // 4C EB 94
+    jmp $90f6              // 4C F6 90
+    jmp $8435              // 4C 35 84
+    jmp $842f              // 4C 2F 84
+    jmp $9102              // 4C 02 91
+    jmp $9f8e              // 4C 8E 9F
+    jmp $82af              // 4C AF 82
+    jmp $8e7f              // 4C 7F 8E
+    jmp $8eb3              // 4C B3 8E
+    jmp $8ee2              // 4C E2 8E
+    jmp $9219              // 4C 19 92
+    jmp $9159              // 4C 59 91
+    jmp $857f              // 4C 7F 85
 bank03_api_19:
-    jmp bank03_api_19              // 4c 42 80
-    .byte $4c, $5f, $90, $4c, $c8, $9f, $4c, $c5, $94, $4c, $58, $9f, $4c, $dc, $8f, $4c    // data $8045
-    .byte $02, $95, $4c, $58, $96, $4c, $1c, $97, $4c, $2f, $94, $4c, $73, $94, $4c, $51    // data $8055
-    .byte $94, $4c, $18, $94, $4c, $65, $82, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8065
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $ea, $ea, $ea, $ea    // data $8075
-    .byte $ea, $ea, $4c, $8d, $80, $4c, $41, $82, $a2, $00, $bd, $cf, $80, $9d, $00, $ce    // data $8085
-    .byte $bd, $cf, $81, $9d, $00, $cf, $ee, $20, $d0, $e8, $d0, $ee, $20, $62, $83, $0d    // data $8095
-    .byte $0d, $53, $54, $41, $52, $54, $45, $44, $20, $44, $45, $42, $55, $47, $53, $54    // data $80a5
-    .byte $55, $42, $20, $4f, $4e, $20, $53, $53, $20, $2d, $20, $4b, $49, $43, $4b, $20    // data $80b5
-    .byte $49, $4e, $20, $59, $45, $52, $20, $50, $43, $00, $4c, $06, $ce, $4c, $11, $ce    // data $80c5
-    .byte $a9, $04, $20, $ff, $ce, $20, $11, $ce, $4c, $0b, $ce, $78, $20, $45, $cf, $b0    // data $80d5
-    .byte $23, $c9, $41, $d0, $1f, $20, $5c, $cf, $c9, $42, $d0, $03, $4c, $3c, $ce, $c9    // data $80e5
-    .byte $43, $d0, $03, $4c, $87, $ce, $c9, $44, $d0, $03, $4c, $ce, $ce, $c9, $4b, $d0    // data $80f5
-    .byte $03, $4c, $db, $ce, $58, $60, $a5, $a0, $48, $a5, $a1, $48, $a5, $a2, $48, $a5    // data $8105
-    .byte $a3, $48, $20, $5c, $cf, $85, $a2, $20, $5c, $cf, $85, $a3, $20, $5c, $cf, $85    // data $8115
-    .byte $a0, $20, $5c, $cf, $85, $a1, $a0, $00, $20, $5c, $cf, $91, $a0, $e6, $a0, $d0    // data $8125
-    .byte $02, $e6, $a1, $a5, $a1, $c5, $a3, $d0, $ef, $a5, $a0, $c5, $a2, $d0, $e9, $68    // data $8135
-    .byte $8d, $a3, $00, $68, $8d, $a2, $00, $68, $8d, $a1, $00, $68, $8d, $a0, $00, $58    // data $8145
-    .byte $60, $a5, $a0, $48, $a5, $a1, $48, $a5, $a2, $48, $a5, $a3, $48, $20, $5c, $cf    // data $8155
-    .byte $85, $a2, $20, $5c, $cf, $85, $a3, $20, $5c, $cf, $85, $a0, $20, $5c, $cf, $85    // data $8165
-    .byte $a1, $a0, $00, $b1, $a0, $20, $62, $cf, $e6, $a0, $d0, $02, $e6, $a1, $a5, $a1    // data $8175
-    .byte $c5, $a3, $d0, $ef, $a5, $a0, $c5, $a2, $d0, $e9, $68, $85, $a3, $68, $85, $a2    // data $8185
-    .byte $68, $85, $a1, $68, $85, $a0, $58, $60, $20, $5c, $cf, $85, $a0, $20, $5c, $cf    // data $8195
-    .byte $85, $a1, $6c, $a0, $00, $a9, $37, $85, $01, $58, $20, $59, $a6, $4c, $ae, $a7    // data $81a5
-    .byte $ad, $01, $de, $09, $01, $8d, $01, $de, $a2, $00, $8e, $0f, $de, $ec, $0f, $de    // data $81b5
-    .byte $d0, $05, $e8, $d0, $f5, $18, $60, $38, $60, $aa, $ad, $01, $de, $09, $01, $8d    // data $81c5
-    .byte $01, $de, $a9, $87, $8d, $0a, $de, $a9, $83, $8d, $0b, $de, $8e, $08, $de, $a9    // data $81d5
-    .byte $00, $8d, $09, $de, $a9, $03, $8d, $0b, $de, $a9, $00, $8d, $09, $de, $4c, $3f    // data $81e5
-    .byte $cf, $ad, $0d, $de, $29, $01, $60, $ad, $0d, $de, $29, $20, $60, $ad, $0e, $de    // data $81f5
-    .byte $29, $10, $60, $a9, $03, $8d, $0c, $de, $60, $a9, $01, $8d, $0c, $de, $60, $20    // data $8205
-    .byte $27, $cf, $d0, $03, $20, $39, $cf, $20, $3f, $cf, $20, $27, $cf, $d0, $02, $38    // data $8215
-    .byte $60, $ad, $08, $de, $18, $60, $20, $45, $cf, $b0, $fb, $60, $48, $20, $33, $cf    // data $8225
-    .byte $f0, $fb, $20, $2d, $cf, $f0, $fb, $68, $8d, $08, $de, $60, $20, $62, $83, $0d    // data $8235
-    .byte $20, $20, $41, $44, $44, $52, $20, $41, $52, $20, $58, $52, $20, $59, $52, $20    // data $8245
-    .byte $53, $50, $20, $30, $31, $20, $4e, $56, $2d, $42, $44, $49, $5a, $43, $00, $60    // data $8255
+    jmp bank03_api_19              // 4C 42 80
+bank03_data_8045:
+.errorif (* != $8045), "bank03_data_8045 shifted"
+    jmp $905f              // 4C 5F 90
+    jmp $9fc8              // 4C C8 9F
+    jmp $94c5              // 4C C5 94
+    jmp $9f58              // 4C 58 9F
+    jmp $8fdc              // 4C DC 8F
+    jmp $9502              // 4C 02 95
+    jmp $9658              // 4C 58 96
+    jmp $971c              // 4C 1C 97
+    jmp $942f              // 4C 2F 94
+    jmp $9473              // 4C 73 94
+    jmp $9451              // 4C 51 94
+    jmp $9418              // 4C 18 94
+    jmp $8265              // 4C 65 82
+bank03_data_806C:
+.errorif (* != $806C), "bank03_data_806C shifted"
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $806C
+    .byte $00, $00, $00, $00, $00    // data $807C
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    jmp b03_808D           // 4C 8D 80
+    jmp b03_8241           // 4C 41 82
+b03_808D:
+    ldx #$00               // A2 00
+b03_808F:
+    lda $80cf,x            // BD CF 80
+    sta $ce00,x            // 9D 00 CE
+    lda $81cf,x            // BD CF 81
+    sta $cf00,x            // 9D 00 CF
+    inc $d020              // EE 20 D0   VIC border color
+    inx                    // E8
+    bne b03_808F           // D0 EE
+    jsr $8362              // 20 62 83
+    .byte $0D, $0D, $53, $54, $41, $52, $54, $45, $44, $20, $44, $45, $42, $55, $47, $53    // data $80A4  text: "..STARTED DEBUGS"
+    .byte $54, $55, $42, $20, $4F, $4E, $20, $53, $53, $20, $2D, $20, $4B, $49, $43, $4B    // data $80B4  text: "TUB ON SS - KICK"
+    .byte $20, $49, $4E, $20, $59, $45, $52, $20, $50, $43, $00    // data $80C4  text: " IN YER PC."
+    jmp $ce06              // 4C 06 CE
+    jmp $ce11              // 4C 11 CE
+    lda #$04               // A9 04
+    jsr $ceff              // 20 FF CE
+    jsr $ce11              // 20 11 CE
+    jmp $ce0b              // 4C 0B CE
+    sei                    // 78
+    jsr $cf45              // 20 45 CF
+    bcs b03_8109           // B0 23
+    cmp #$41               // C9 41
+    bne b03_8109           // D0 1F
+    jsr $cf5c              // 20 5C CF
+    cmp #$42               // C9 42
+    bne b03_80F4           // D0 03
+    jmp $ce3c              // 4C 3C CE
+b03_80F4:
+    cmp #$43               // C9 43
+    bne b03_80FB           // D0 03
+    jmp $ce87              // 4C 87 CE
+b03_80FB:
+    cmp #$44               // C9 44
+    bne b03_8102           // D0 03
+    jmp $cece              // 4C CE CE
+b03_8102:
+    cmp #$4b               // C9 4B
+    bne b03_8109           // D0 03
+    jmp $cedb              // 4C DB CE
+b03_8109:
+    cli                    // 58
+    rts                    // 60
+    lda $a0                // A5 A0
+    pha                    // 48
+    lda $a1                // A5 A1
+    pha                    // 48
+    lda $a2                // A5 A2
+    pha                    // 48
+    lda $a3                // A5 A3
+    pha                    // 48
+    jsr $cf5c              // 20 5C CF
+    sta $a2                // 85 A2
+    jsr $cf5c              // 20 5C CF
+    sta $a3                // 85 A3
+    jsr $cf5c              // 20 5C CF
+    sta $a0                // 85 A0
+    jsr $cf5c              // 20 5C CF
+    sta $a1                // 85 A1
+    ldy #$00               // A0 00
+b03_812D:
+    jsr $cf5c              // 20 5C CF
+    sta ($a0),y            // 91 A0
+    inc $a0                // E6 A0
+    bne b03_8138           // D0 02
+    inc $a1                // E6 A1
+b03_8138:
+    lda $a1                // A5 A1
+    cmp $a3                // C5 A3
+    bne b03_812D           // D0 EF
+    lda $a0                // A5 A0
+    cmp $a2                // C5 A2
+    bne b03_812D           // D0 E9
+    pla                    // 68
+    sta.abs $00a3          // 8D A3 00
+    pla                    // 68
+    sta.abs $00a2          // 8D A2 00
+    pla                    // 68
+    sta.abs $00a1          // 8D A1 00
+    pla                    // 68
+    sta.abs $00a0          // 8D A0 00
+    cli                    // 58
+    rts                    // 60
+    lda $a0                // A5 A0
+    pha                    // 48
+    lda $a1                // A5 A1
+    pha                    // 48
+    lda $a2                // A5 A2
+    pha                    // 48
+    lda $a3                // A5 A3
+    pha                    // 48
+    jsr $cf5c              // 20 5C CF
+    sta $a2                // 85 A2
+    jsr $cf5c              // 20 5C CF
+    sta $a3                // 85 A3
+    jsr $cf5c              // 20 5C CF
+    sta $a0                // 85 A0
+    jsr $cf5c              // 20 5C CF
+    sta $a1                // 85 A1
+    ldy #$00               // A0 00
+b03_8178:
+    lda ($a0),y            // B1 A0
+    jsr $cf62              // 20 62 CF
+    inc $a0                // E6 A0
+    bne b03_8183           // D0 02
+    inc $a1                // E6 A1
+b03_8183:
+    lda $a1                // A5 A1
+    cmp $a3                // C5 A3
+    bne b03_8178           // D0 EF
+    lda $a0                // A5 A0
+    cmp $a2                // C5 A2
+    bne b03_8178           // D0 E9
+    pla                    // 68
+    sta $a3                // 85 A3
+    pla                    // 68
+    sta $a2                // 85 A2
+    pla                    // 68
+    sta $a1                // 85 A1
+    pla                    // 68
+    sta $a0                // 85 A0
+    cli                    // 58
+    rts                    // 60
+    jsr $cf5c              // 20 5C CF
+    sta $a0                // 85 A0
+    jsr $cf5c              // 20 5C CF
+    sta $a1                // 85 A1
+    jmp ($00a0)            // 6C A0 00
+    lda #$37               // A9 37
+    sta $01                // 85 01   CPU port: mem banking
+    cli                    // 58
+    jsr $a659              // 20 59 A6
+    jmp $a7ae              // 4C AE A7
+    lda $de01              // AD 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
+    ora #$01               // 09 01
+    sta $de01              // 8D 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
+    ldx #$00               // A2 00
+b03_81BF:
+    stx $de0f              // 8E 0F DE
+    cpx $de0f              // EC 0F DE
+    bne b03_81CC           // D0 05
+    inx                    // E8
+    bne b03_81BF           // D0 F5
+    clc                    // 18
+    rts                    // 60
+b03_81CC:
+    sec                    // 38
+    rts                    // 60
+    tax                    // AA
+    lda $de01              // AD 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
+    ora #$01               // 09 01
+    sta $de01              // 8D 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
+    lda #$87               // A9 87
+    sta $de0a              // 8D 0A DE
+    lda #$83               // A9 83
+    sta $de0b              // 8D 0B DE
+    stx $de08              // 8E 08 DE
+    lda #$00               // A9 00
+    sta $de09              // 8D 09 DE
+    lda #$03               // A9 03
+    sta $de0b              // 8D 0B DE
+    lda #$00               // A9 00
+    sta $de09              // 8D 09 DE
+    jmp $cf3f              // 4C 3F CF
+    lda $de0d              // AD 0D DE
+    and #$01               // 29 01
+    rts                    // 60
+    lda $de0d              // AD 0D DE
+    and #$20               // 29 20
+    rts                    // 60
+    lda $de0e              // AD 0E DE
+    and #$10               // 29 10
+    rts                    // 60
+    lda #$03               // A9 03
+    sta $de0c              // 8D 0C DE
+    rts                    // 60
+    lda #$01               // A9 01
+    sta $de0c              // 8D 0C DE
+    rts                    // 60
+    jsr $cf27              // 20 27 CF
+    bne b03_821C           // D0 03
+    jsr $cf39              // 20 39 CF
+b03_821C:
+    jsr $cf3f              // 20 3F CF
+    jsr $cf27              // 20 27 CF
+    bne b03_8226           // D0 02
+    sec                    // 38
+    rts                    // 60
+b03_8226:
+    lda $de08              // AD 08 DE
+    clc                    // 18
+    rts                    // 60
+b03_822B:
+    jsr $cf45              // 20 45 CF
+    bcs b03_822B           // B0 FB
+    rts                    // 60
+    pha                    // 48
+b03_8232:
+    jsr $cf33              // 20 33 CF
+    beq b03_8232           // F0 FB
+b03_8237:
+    jsr $cf2d              // 20 2D CF
+    beq b03_8237           // F0 FB
+    pla                    // 68
+    sta $de08              // 8D 08 DE
+    rts                    // 60
+b03_8241:
+    jsr $8362              // 20 62 83
+    .byte $0D, $20, $20, $41, $44, $44, $52, $20, $41, $52, $20, $58, $52, $20, $59, $52    // data $8244  text: ".  ADDR AR XR YR"
+    .byte $20, $53, $50, $20, $30, $31, $20, $4E, $56, $2D, $42, $44, $49, $5A, $43, $00    // data $8254  text: " SP 01 NV-BDIZC."
+    rts                    // 60
 bank03_api_32:
     jsr bank03_sub_8362              // 20 62 83
-    .byte $52    // undocumented opcode
-    .byte $52    // undocumented opcode
-    jsr $4552              // 20 52 45
-    lsr $3a,x              // 56 3a
-    jsr $a200              // 20 00 a2
-    sta $a0,x              // 95 a0
-    .byte $82    // undocumented opcode
-    jsr $de9d              // 20 9d de
-    jsr $e716              // 20 16 e7
-    lda #$2e               // a9 2e
-    jsr $e716              // 20 16 e7
-    iny                    // c8
-    jsr $de9d              // 20 9d de
-    jsr $e716              // 20 16 e7
-    iny                    // c8
-    jsr $de9d              // 20 9d de
-    jsr $e716              // 20 16 e7
+    .byte $52, $52, $20, $52, $45, $56, $3A, $20, $00    // data $8268  text: "RR REV: ."
+    ldx #$95               // A2 95
+    ldy #$82               // A0 82
+    jsr $de9d              // 20 9D DE
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    lda #$2e               // A9 2E
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    iny                    // C8
+    jsr $de9d              // 20 9D DE
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    iny                    // C8
+    jsr $de9d              // 20 9D DE
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
     jsr bank03_sub_8362              // 20 62 83
-    ora $4f0d              // 0d 0d 4f
-    .byte $57    // undocumented opcode
-    lsr $5245              // 4e 45 52
-    .byte $3a    // undocumented opcode
-    jsr $a200              // 20 00 a2
-    sta $a0,x              // 95 a0
-    sta $20                // 85 20
-    sta $20de,x            // 9d de 20
-    asl $e7,x              // 16 e7
-    iny                    // c8
-    cpy #$95               // c0 95
-    bne $829f              // d0 f5
-    lda #$0d               // a9 0d
-    jmp $e716              // 4c 16 e7
+    .byte $0D, $0D, $4F, $57, $4E, $45, $52, $3A, $20, $00    // data $8291  text: "..OWNER: ."
+    ldx #$95               // A2 95
+    ldy #$85               // A0 85
+    jsr $de9d              // 20 9D DE
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    iny                    // C8
+    cpy #$95               // C0 95
+    bne $829f              // D0 F5
+    lda #$0d               // A9 0D
+    jmp $e716              // 4C 16 E7   KERNAL screen CHROUT
 bank03_api_12:
-    jsr bank03_sub_9f02              // 20 02 9f
-    clc                    // 18
-    .byte $80    // undocumented opcode
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $18, $80         // inline arg: cross-bank call target $8018
     rts                    // 60
 bank03_api_01:
-    jsr $f6bc              // 20 bc f6
-    jsr $f6ed              // 20 ed f6
-    beq bank03_sub_82c0              // f0 03
-    jmp $fe72              // 4c 72 fe
-bank03_sub_82c0:
-    ldx #$fb               // a2 fb
-    txs                    // 9a
-    jsr bank03_sub_9f01              // 20 01 9f
-    .byte $0c    // undocumented opcode
-    .byte $80    // undocumented opcode
-    jsr bank03_sub_9f02              // 20 02 9f
-    .byte $12    // undocumented opcode
-    .byte $80    // undocumented opcode
+    jsr $f6bc              // 20 BC F6
+    jsr $f6ed              // 20 ED F6
+    beq bank03_sub_82C0              // F0 03
+    jmp $fe72              // 4C 72 FE
+bank03_sub_82C0:
+    ldx #$fb               // A2 FB
+    txs                    // 9A
+    jsr bank03_sub_9F01              // 20 01 9F
+    .byte $0C, $80         // inline arg: cross-bank call target $800C
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $12, $80         // inline arg: cross-bank call target $8012
     rts                    // 60
-    .byte $a9, $4e, $8d, $3c, $03, $a9, $3a, $8d, $3d, $03, $20, $62, $83, $44, $49, $53    // data $82ce
-    .byte $4b, $20, $4e, $41, $4d, $45, $3a, $20, $00, $a2, $0b, $a0, $1a, $20, $00, $9f    // data $82de
-    .byte $5d, $80, $d0, $03, $4c, $5d, $84, $85, $fb, $a8, $88, $b1, $bb, $99, $3e, $03    // data $82ee
-    .byte $88, $10, $f8, $20, $62, $83, $49, $44, $20, $4e, $55, $4d, $42, $45, $52, $3a    // data $82fe
-    .byte $20, $00, $a9, $a0, $a4, $fb, $a2, $05, $99, $3e, $03, $c8, $ca, $10, $f9, $a2    // data $830e
-    .byte $0b, $a0, $0c, $20, $00, $9f, $5d, $80, $a6, $fb, $a8, $f0, $13, $a9, $2c, $9d    // data $831e
-    .byte $3e, $03, $e8, $a0, $00, $b1, $bb, $9d, $3e, $03, $e8, $c8, $c0, $05, $d0, $f5    // data $832e
-    .byte $e8, $e8, $8a, $a2, $3c, $a0, $03, $20, $bd, $ff, $a9, $00, $85, $9d, $20, $02    // data $833e
-    .byte $9f, $1b, $80, $20, $ae, $ff, $4c, $7f, $85, $a9, $00, $85, $b7, $f0, $ef, $a2    // data $834e
-    .byte $03    // data $835e
-bank03_sub_835f:
+bank03_data_82CE:
+.errorif (* != $82CE), "bank03_data_82CE shifted"
+    lda #$4e               // A9 4E
+    sta $033c              // 8D 3C 03
+    lda #$3a               // A9 3A
+    sta $033d              // 8D 3D 03
+    jsr $8362              // 20 62 83
+    .byte $44, $49, $53, $4B, $20, $4E, $41, $4D, $45, $3A, $20, $00    // data $82DB  text: "DISK NAME: ."
+    ldx #$0b               // A2 0B
+    ldy #$1a               // A0 1A
+    jsr $9f00              // 20 00 9F
+    .byte $5D, $80         // inline arg: cross-bank call target $805D
+    bne b03_82F5           // D0 03
+    jmp $845d              // 4C 5D 84
+b03_82F5:
+    sta $fb                // 85 FB
+    tay                    // A8
+    dey                    // 88
+b03_82F9:
+    lda ($bb),y            // B1 BB
+    sta $033e,y            // 99 3E 03
+    dey                    // 88
+    bpl b03_82F9           // 10 F8
+    jsr $8362              // 20 62 83
+    .byte $49, $44, $20, $4E, $55, $4D, $42, $45, $52, $3A, $20, $00    // data $8304  text: "ID NUMBER: ."
+    lda #$a0               // A9 A0
+    ldy $fb                // A4 FB
+    ldx #$05               // A2 05
+b03_8316:
+    sta $033e,y            // 99 3E 03
+    iny                    // C8
+    dex                    // CA
+    bpl b03_8316           // 10 F9
+    ldx #$0b               // A2 0B
+    ldy #$0c               // A0 0C
+    jsr $9f00              // 20 00 9F
+    .byte $5D, $80         // inline arg: cross-bank call target $805D
+    ldx $fb                // A6 FB
+    tay                    // A8
+    beq b03_833E           // F0 13
+    lda #$2c               // A9 2C
+    sta $033e,x            // 9D 3E 03
+    inx                    // E8
+    ldy #$00               // A0 00
+b03_8333:
+    lda ($bb),y            // B1 BB
+    sta $033e,x            // 9D 3E 03
+    inx                    // E8
+    iny                    // C8
+    cpy #$05               // C0 05
+    bne b03_8333           // D0 F5
+b03_833E:
+    inx                    // E8
+    inx                    // E8
+    txa                    // 8A
+    ldx #$3c               // A2 3C
+    ldy #$03               // A0 03
+    jsr $ffbd              // 20 BD FF   KERNAL SETNAM: set filename
+    lda #$00               // A9 00
+    sta $9d                // 85 9D   KERNAL msg mode
+b03_834C:
+    jsr $9f02              // 20 02 9F
+    .byte $1B, $80         // inline arg: cross-bank call target $801B
+    jsr $ffae              // 20 AE FF   KERNAL UNLSN
+    jmp $857f              // 4C 7F 85
+    lda #$00               // A9 00
+    sta $b7                // 85 B7   filename length
+    beq b03_834C           // F0 EF
+    ldx #$03               // A2 03
+bank03_sub_835F:
     jsr bank03_sub_8576              // 20 76 85
+// --- $8362: print inline string (pull return addr, print $00-terminated
+// PETSCII text following the jsr, resume after it). $835F is a second
+// entry a few bytes earlier (control-code prefix variant).
 bank03_sub_8362:
     pla                    // 68
-    sta $3d                // 85 3d
+    sta $3d                // 85 3D
     pla                    // 68
-    sta $3e                // 85 3e
-    stx $8d                // 86 8d
-bank03_sub_836a:
-    ldy #$00               // a0 00
-    inc $3d                // e6 3d
-    bne bank03_sub_8372              // d0 02
-    inc $3e                // e6 3e
+    sta $3e                // 85 3E
+    stx $8d                // 86 8D
+bank03_sub_836A:
+    ldy #$00               // A0 00
+    inc $3d                // E6 3D
+    bne bank03_sub_8372              // D0 02
+    inc $3e                // E6 3E
 bank03_sub_8372:
-    lda ($3d),y            // b1 3d
-    beq bank03_sub_83a7              // f0 31
-    cmp #$01               // c9 01
-    bne bank03_sub_8384              // d0 0a
-    ldx $d6                // a6 d6
-    inx                    // e8
-    ldy #$0a               // a0 0a
+    lda ($3d),y            // B1 3D
+    beq bank03_sub_83A7              // F0 31
+    cmp #$01               // C9 01
+    bne bank03_sub_8384              // D0 0A
+    ldx $d6                // A6 D6
+    inx                    // E8
+    ldy #$0a               // A0 0A
     jsr bank03_sub_8576              // 20 76 85
-    bne bank03_sub_836a              // d0 e6
+    bne bank03_sub_836A              // D0 E6
 bank03_sub_8384:
-    cmp #$02               // c9 02
-    bne bank03_sub_8394              // d0 0c
-    iny                    // c8
-    lda ($3d),y            // b1 3d
-    tax                    // aa
-bank03_sub_838c:
-    jsr bank03_sub_83b0              // 20 b0 83
-    dex                    // ca
-    bne bank03_sub_838c              // d0 fa
-    beq bank03_sub_836a              // f0 d6
+    cmp #$02               // C9 02
+    bne bank03_sub_8394              // D0 0C
+    iny                    // C8
+    lda ($3d),y            // B1 3D
+    tax                    // AA
+bank03_sub_838C:
+    jsr bank03_sub_83B0              // 20 B0 83
+    dex                    // CA
+    bne bank03_sub_838C              // D0 FA
+    beq bank03_sub_836A              // F0 D6
 bank03_sub_8394:
-    cmp #$2a               // c9 2a
-    bne bank03_sub_83a2              // d0 0a
-    jsr bank03_sub_83b0              // 20 b0 83
-    lda #$2d               // a9 2d
-    jsr $e716              // 20 16 e7
-    lda #$20               // a9 20
-bank03_sub_83a2:
-    jsr $e716              // 20 16 e7
-    bcc bank03_sub_836a              // 90 c3
-bank03_sub_83a7:
-    lda $3e                // a5 3e
+    cmp #$2a               // C9 2A
+    bne bank03_sub_83A2              // D0 0A
+    jsr bank03_sub_83B0              // 20 B0 83
+    lda #$2d               // A9 2D
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    lda #$20               // A9 20
+bank03_sub_83A2:
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    bcc bank03_sub_836A              // 90 C3
+bank03_sub_83A7:
+    lda $3e                // A5 3E
     pha                    // 48
-    lda $3d                // a5 3d
+    lda $3d                // A5 3D
     pha                    // 48
-    ldx $8d                // a6 8d
+    ldx $8d                // A6 8D
     rts                    // 60
-bank03_sub_83b0:
-    lda #$20               // a9 20
-    jmp $e716              // 4c 16 e7
-    .byte $ad, $36, $03, $85, $ae, $ad, $37, $03, $85, $af, $a2, $01, $86, $c1, $a0, $08    // data $83b5
-    .byte $84, $c2, $ad, $38, $03, $85, $bd, $4c, $8e, $fb    // data $83c5
-bank03_sub_83cf:
+bank03_sub_83B0:
+    lda #$20               // A9 20
+    jmp $e716              // 4C 16 E7   KERNAL screen CHROUT
+bank03_data_83B5:
+.errorif (* != $83B5), "bank03_data_83B5 shifted"
+    .byte $AD, $36, $03, $85, $AE, $AD, $37, $03, $85, $AF, $A2, $01, $86, $C1, $A0, $08    // data $83B5
+    .byte $84, $C2, $AD, $38, $03, $85, $BD, $4C, $8E, $FB    // data $83C5
+bank03_sub_83CF:
     sei                    // 78
-    jsr $fda3              // 20 a3 fd
-    jsr bank03_api_00              // 20 c8 90
-    jsr $ff5b              // 20 5b ff
-    jsr $e453              // 20 53 e4
-    jsr $e3bf              // 20 bf e3
-    lda #$03               // a9 03
-    sta $2d                // 85 2d
-    lda #$08               // a9 08
-    sta $2e                // 85 2e
-    lda #$80               // a9 80
-    sta $9d                // 85 9d
-    lda #$37               // a9 37
-    sta $01                // 85 01
-    sta $c0                // 85 c0
-    lda #$06               // a9 06
-    sta $d020              // 8d 20 d0
-    sta $d021              // 8d 21 d0
-    ldx #$01               // a2 01
-    ldy #$0b               // a0 0b
-    jsr bank03_sub_835f              // 20 5f 83
-    ora $20                // 05 20
-    .byte $43    // undocumented opcode
-    eor $4542,y            // 59 42 45
-    .byte $52    // undocumented opcode
-    bvc bank03_sub_845e              // 50 55
-    lsr $2058              // 4e 58 20
-    .byte $52    // undocumented opcode
-    eor $50                // 45 50
-    jmp $5941              // 4c 41 59
-    .byte $00, $a2, $02, $a0, $0c, $20, $76, $85, $a2, $0f, $a9, $a3, $20, $16, $e7, $ca    // data $8412
-    .byte $10, $fa, $a2, $8f, $a0, $de, $8e, $02, $03, $8c, $03, $03, $60    // data $8422
+    jsr $fda3              // 20 A3 FD   KERNAL IOINIT guts
+    jsr bank03_api_00              // 20 C8 90
+    jsr $ff5b              // 20 5B FF   KERNAL CINT guts (video init)
+    jsr $e453              // 20 53 E4   BASIC copy vectors to $0300
+    jsr $e3bf              // 20 BF E3   BASIC init RAM/CHRGET
+    lda #$03               // A9 03
+    sta $2d                // 85 2D   BASIC vars start lo
+    lda #$08               // A9 08
+    sta $2e                // 85 2E   BASIC vars start hi
+    lda #$80               // A9 80
+    sta $9d                // 85 9D   KERNAL msg mode
+    lda #$37               // A9 37
+    sta $01                // 85 01   CPU port: mem banking
+    sta $c0                // 85 C0
+    lda #$06               // A9 06
+    sta $d020              // 8D 20 D0   VIC border color
+    sta $d021              // 8D 21 D0   VIC background color
+    ldx #$01               // A2 01
+    ldy #$0b               // A0 0B
+    jsr bank03_sub_835F              // 20 5F 83
+    .byte $05, $20, $43, $59, $42, $45, $52, $50, $55, $4E, $58, $20, $52, $45, $50, $4C    // data $8400  text: ". CYBERPUNX REPL"
+    .byte $41, $59, $00    // data $8410  text: "AY."
+    ldx #$02               // A2 02
+    ldy #$0c               // A0 0C
+    jsr $8576              // 20 76 85
+    ldx #$0f               // A2 0F
+    lda #$a3               // A9 A3
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    dex                    // CA
+bank03_data_8412:
+bank03_data_8422:
+.errorif (* != $8422), "bank03_data_8422 shifted"
+    .byte $10, $FA, $A2, $8F, $A0, $DE, $8E, $02, $03, $8C, $03, $03, $60    // data $8422
 bank03_api_09:
-    ldx #$90               // a2 90
-    ldy #$84               // a0 84
-    bne bank03_sub_8439              // d0 04
+    ldx #$90               // A2 90
+    ldy #$84               // A0 84
+    bne bank03_sub_8439              // D0 04
 bank03_api_08:
-    ldx #$72               // a2 72
-    ldy #$84               // a0 84
+    ldx #$72               // A2 72
+    ldy #$84               // A0 84
 bank03_sub_8439:
-    stx $033a              // 8e 3a 03
-    sty $033b              // 8c 3b 03
+    stx $033a              // 8E 3A 03
+    sty $033b              // 8C 3B 03
     sei                    // 78
-    ldx #$fb               // a2 fb
-    txs                    // 9a
-    cld                    // d8
-    ldx $ba                // a6 ba
-    cpx #$11               // e0 11
-    bcs bank03_sub_844e              // b0 04
-    cpx #$08               // e0 08
-    bcs bank03_sub_8450              // b0 02
-bank03_sub_844e:
-    ldx #$08               // a2 08
+    ldx #$fb               // A2 FB
+    txs                    // 9A
+    cld                    // D8
+    ldx $ba                // A6 BA   current device
+    cpx #$11               // E0 11
+    bcs bank03_sub_844E              // B0 04
+    cpx #$08               // E0 08
+    bcs bank03_sub_8450              // B0 02
+bank03_sub_844E:
+    ldx #$08               // A2 08
 bank03_sub_8450:
-    stx $0339              // 8e 39 03
-    lda $ae                // a5 ae
-    sta $0336              // 8d 36 03
-    lda $af                // a5 af
-    sta $0337              // 8d 37 03
+    stx $0339              // 8E 39 03
+    lda $ae                // A5 AE   load end addr lo
+    sta $0336              // 8D 36 03
+    lda $af                // A5 AF   load end addr hi
+    sta $0337              // 8D 37 03
 bank03_api_02:
     sei                    // 78
-bank03_sub_845e:
-    ldx #$fb               // a2 fb
-    txs                    // 9a
-    cld                    // d8
-    stx $cc                // 86 cc
-    jsr bank03_sub_83cf              // 20 cf 83
-    jsr $a660              // 20 60 a6
-    lda $0339              // ad 39 03
-    sta $ba                // 85 ba
-    jmp ($033a)            // 6c 3a 03
-    .byte $a0, $0d, $20, $5d, $83, $12, $55, $54, $49, $4c, $49, $54, $49, $45, $53, $20    // data $8472
-    .byte $4d, $45, $4e, $55, $0d, $00, $a2, $f8, $a0, $85, $a9, $10, $d0, $20, $20, $b5    // data $8482
-    .byte $83, $a0, $0e, $20, $5d, $83, $12, $42, $41, $43, $4b, $55, $50, $20, $20, $4d    // data $8492
-    .byte $45, $4e, $55, $0d, $00, $20, $04, $87, $a2, $a2, $a0, $85, $a9, $06, $20, $b6    // data $84a2
-    .byte $84, $4c, $5d, $84, $86, $ae, $84, $af, $85, $ad, $20, $a6, $9f, $a2, $05, $a0    // data $84b2
-    .byte $0a, $20, $5f, $83, $46, $31, $20, $2d, $20, $44, $49, $53, $4b, $20, $44, $45    // data $84c2
-    .byte $56, $49, $43, $45, $3a, $01, $46, $33, $20, $2d, $20, $44, $49, $52, $45, $43    // data $84d2
-    .byte $54, $4f, $52, $59, $01, $46, $35, $20, $2d, $20, $46, $4f, $52, $4d, $41, $54    // data $84e2
-    .byte $01, $46, $37, $20, $2d, $20, $44, $4f, $53, $20, $43, $4f, $4d, $4d, $41, $4e    // data $84f2
-    .byte $44, $0d, $01, $00, $a9, $41, $85, $ab, $a0, $00, $84, $fb, $a6, $d6, $e8, $c9    // data $8502
-    .byte $20, $d0, $01, $e8, $a0, $06, $20, $76, $85, $a5, $ab, $e6, $ab, $20, $16, $e7    // data $8512
-    .byte $20, $62, $83, $2a, $00, $a4, $fb, $b1, $ae, $f0, $0c, $08, $29, $7f, $20, $16    // data $8522
-    .byte $e7, $c8, $28, $10, $f2, $d0, $d3, $20, $90, $85, $c9, $85, $d0, $05, $20, $9e    // data $8532
-    .byte $9f, $90, $f4, $a2, $00, $c9, $86, $f0, $1c, $a2, $02, $c9, $87, $f0, $16, $a2    // data $8542
-    .byte $04, $c9, $88, $f0, $10, $c9, $41, $90, $de, $c5, $ab, $b0, $da, $38, $e9, $41    // data $8552
-    .byte $0a, $18, $65, $ad, $aa, $bd, $26, $86, $48, $bd, $25, $86, $48, $20, $b5, $83    // data $8562
-    .byte $a2, $16, $a0, $00    // data $8572
+bank03_sub_845E:
+    ldx #$fb               // A2 FB
+    txs                    // 9A
+    cld                    // D8
+    stx $cc                // 86 CC
+    jsr bank03_sub_83CF              // 20 CF 83
+    jsr $a660              // 20 60 A6
+    lda $0339              // AD 39 03
+    sta $ba                // 85 BA   current device
+    jmp ($033a)            // 6C 3A 03
+bank03_data_8472:
+.errorif (* != $8472), "bank03_data_8472 shifted"
+    ldy #$0d               // A0 0D
+    jsr $835d              // 20 5D 83
+    .byte $12    // 12  undocumented/illegal at $8477
+    .byte $55, $54, $49, $4C, $49, $54, $49, $45, $53, $20, $4D, $45, $4E, $55, $0D, $00    // data $8478  text: "UTILITIES MENU.."
+    ldx #$f8               // A2 F8
+    ldy #$85               // A0 85
+    lda #$10               // A9 10
+    bne b03_84B0           // D0 20
+    jsr $83b5              // 20 B5 83
+    ldy #$0e               // A0 0E
+    jsr $835d              // 20 5D 83
+    .byte $12    // 12  undocumented/illegal at $8498
+    .byte $42, $41, $43, $4B, $55, $50, $20, $20, $4D, $45, $4E, $55, $0D, $00    // data $8499  text: "BACKUP  MENU.."
+    jsr $8704              // 20 04 87
+    ldx #$a2               // A2 A2
+    ldy #$85               // A0 85
+    lda #$06               // A9 06
+b03_84B0:
+    jsr b03_84B6           // 20 B6 84
+    jmp $845d              // 4C 5D 84
+b03_84B6:
+    stx $ae                // 86 AE   load end addr lo
+    sty $af                // 84 AF   load end addr hi
+    sta $ad                // 85 AD
+    jsr $9fa6              // 20 A6 9F
+    ldx #$05               // A2 05
+    ldy #$0a               // A0 0A
+    jsr $835f              // 20 5F 83
+    .byte $46, $31, $20, $2D, $20, $44, $49, $53, $4B, $20, $44, $45, $56, $49, $43, $45    // data $84C6  text: "F1 - DISK DEVICE"
+    .byte $3A    // data $84D6  text: ":"
+    ora ($46,x)            // 01 46
+    .byte $33, $20, $2D, $20, $44, $49, $52, $45, $43, $54, $4F, $52, $59    // data $84D9  text: "3 - DIRECTORY"
+    ora ($46,x)            // 01 46
+    .byte $35, $20, $2D, $20, $46, $4F, $52, $4D, $41, $54    // data $84E8  text: "5 - FORMAT"
+    ora ($46,x)            // 01 46
+    .byte $37, $20, $2D, $20, $44, $4F, $53, $20, $43, $4F, $4D, $4D, $41, $4E, $44, $0D    // data $84F4  text: "7 - DOS COMMAND."
+    ora ($00,x)            // 01 00
+    lda #$41               // A9 41
+    sta $ab                // 85 AB
+    ldy #$00               // A0 00
+b03_850C:
+    sty $fb                // 84 FB
+    ldx $d6                // A6 D6
+    inx                    // E8
+    cmp #$20               // C9 20
+    bne b03_8516           // D0 01
+    inx                    // E8
+b03_8516:
+    ldy #$06               // A0 06
+    jsr $8576              // 20 76 85
+    lda $ab                // A5 AB
+    inc $ab                // E6 AB
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    jsr $8362              // 20 62 83
+    .byte $2A, $00    // data $8525  text: "*."
+    ldy $fb                // A4 FB
+b03_8529:
+    lda ($ae),y            // B1 AE
+    beq b03_8539           // F0 0C
+    php                    // 08
+    and #$7f               // 29 7F
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    iny                    // C8
+    plp                    // 28
+    bpl b03_8529           // 10 F2
+    bne b03_850C           // D0 D3
+b03_8539:
+    jsr $8590              // 20 90 85
+    cmp #$85               // C9 85
+    bne b03_8545           // D0 05
+    jsr $9f9e              // 20 9E 9F
+    bcc b03_8539           // 90 F4
+b03_8545:
+    ldx #$00               // A2 00
+    cmp #$86               // C9 86
+    beq b03_8567           // F0 1C
+    ldx #$02               // A2 02
+    cmp #$87               // C9 87
+    beq b03_8567           // F0 16
+    ldx #$04               // A2 04
+    cmp #$88               // C9 88
+    beq b03_8567           // F0 10
+    cmp #$41               // C9 41
+    bcc b03_8539           // 90 DE
+    cmp $ab                // C5 AB
+    bcs b03_8539           // B0 DA
+    sec                    // 38
+    sbc #$41               // E9 41
+    asl                    // 0A
+    clc                    // 18
+    adc $ad                // 65 AD
+    tax                    // AA
+b03_8567:
+    lda $8626,x            // BD 26 86
+    pha                    // 48
+    lda $8625,x            // BD 25 86
+    pha                    // 48
+    jsr $83b5              // 20 B5 83
+    ldx #$16               // A2 16
+    ldy #$00               // A0 00
 bank03_sub_8576:
     clc                    // 18
-    jmp $fff0              // 4c f0 ff
-    .byte $20, $02, $9f, $21, $80    // data $857a
+    jmp $fff0              // 4C F0 FF   KERNAL PLOT: set/get cursor
+bank03_data_857A:
+.errorif (* != $857A), "bank03_data_857A shifted"
+    .byte $20, $02, $9F, $21, $80    // data $857A
 bank03_api_18:
     jsr bank03_sub_8362              // 20 62 83
-    ora $5250              // 0d 50 52
-    eor $53                // 45 53
-    .byte $53    // undocumented opcode
-    jsr $2041              // 20 41 20
-    .byte $4b    // undocumented opcode
-    eor $59                // 45 59
-    ora $a900              // 0d 00 a9
-    brk                    // 00
-    sta $c6                // 85 c6
+    .byte $0D, $50, $52, $45, $53, $53, $20, $41, $20, $4B, $45, $59, $0D, $00    // data $8582  text: ".PRESS A KEY.."
+    lda #$00               // A9 00
+    sta $c6                // 85 C6   keyboard buffer count
 bank03_sub_8594:
-    jsr $ff9f              // 20 9f ff
-    jsr $ffe4              // 20 e4 ff
-    beq bank03_sub_8594              // f0 f8
-    cmp #$03               // c9 03
-    beq bank03_sub_85a1              // f0 01
+    jsr $ff9f              // 20 9F FF   KERNAL SCNKEY: scan keyboard
+    jsr $ffe4              // 20 E4 FF   KERNAL GETIN: get key
+    beq bank03_sub_8594              // F0 F8
+    cmp #$03               // C9 03
+    beq bank03_sub_85A1              // F0 01
     clc                    // 18
-bank03_sub_85a1:
+bank03_sub_85A1:
     rts                    // 60
-    .byte $44, $49, $53, $4b, $20, $53, $41, $56, $45, $20, $2d, $20, $54, $55, $52, $42    // data $85a2
-    .byte $cf, $44, $49, $53, $4b, $20, $53, $41, $56, $45, $20, $2d, $20, $53, $54, $41    // data $85b2
-    .byte $4e, $44, $41, $52, $c4, $52, $45, $53, $54, $41, $52, $54, $20, $50, $52, $4f    // data $85c2
-    .byte $47, $52, $41, $cd, $45, $58, $49, $54, $20, $54, $4f, $20, $55, $54, $49, $4c    // data $85d2
-    .byte $49, $54, $49, $45, $d3, $45, $58, $49, $54, $20, $54, $4f, $20, $46, $41, $53    // data $85e2
-    .byte $54, $4c, $4f, $41, $44, $00, $44, $49, $53, $4b, $20, $46, $49, $4c, $45, $43    // data $85f2
-    .byte $4f, $50, $d9, $57, $48, $4f, $4c, $45, $20, $44, $49, $53, $4b, $20, $43, $4f    // data $8602
-    .byte $50, $d9, $45, $58, $49, $54, $20, $54, $4f, $20, $46, $41, $53, $54, $4c, $4f    // data $8612
-    .byte $41, $44, $00, $79, $85, $cd, $82, $b8, $86, $90, $86, $3f, $87, $0c, $08, $20    // data $8622
-    .byte $80, $f7, $86, $3a, $86, $35, $80, $f7, $86, $20, $12, $80, $20, $c3, $9f, $4c    // data $8632
-    .byte $57, $83    // data $8642
+bank03_data_85A2:
+.errorif (* != $85A2), "bank03_data_85A2 shifted"
+    .byte $44, $49, $53, $4B, $20, $53, $41, $56, $45, $20, $2D, $20, $54, $55, $52, $42    // data $85A2  text: "DISK SAVE - TURB"
+    .byte $CF    // CF  undocumented/illegal at $85B2
+    .byte $44, $49, $53, $4B, $20, $53, $41, $56, $45, $20, $2D, $20, $53, $54, $41, $4E    // data $85B3  text: "DISK SAVE - STAN"
+    .byte $44, $41, $52    // data $85C3  text: "DAR"
+    cpy $52                // C4 52
+    .byte $45, $53, $54, $41, $52, $54, $20, $50, $52, $4F, $47, $52, $41    // data $85C8  text: "ESTART PROGRA"
+    cmp $5845              // CD 45 58
+    .byte $49, $54, $20, $54, $4F, $20, $55, $54, $49, $4C, $49, $54, $49, $45    // data $85D8  text: "IT TO UTILITIE"
+    .byte $D3    // D3  undocumented/illegal at $85E6
+    .byte $45, $58, $49, $54, $20, $54, $4F, $20, $46, $41, $53, $54, $4C, $4F, $41, $44    // data $85E7  text: "EXIT TO FASTLOAD"
+    .byte $00    // data $85F7  text: "."
+// --- $85F8-$863D: file/disk-copy menu strings (last char OR $80 as
+// terminator) followed by a lo/hi handler-address table at $8625. Not code.
+    .byte $44, $49, $53, $4B, $20, $46, $49, $4C, $45, $43, $4F, $50, $D9, $57, $48, $4F    // data $85F8  "DISK FILECOP.WHO"
+    .byte $4C, $45, $20, $44, $49, $53, $4B, $20, $43, $4F, $50, $D9, $45, $58, $49, $54    // data $8608  "LE DISK COP.EXIT"
+    .byte $20, $54, $4F, $20, $46, $41, $53, $54, $4C, $4F, $41, $44, $00, $79, $85, $CD    // data $8618  " TO FASTLOAD...."
+    .byte $82, $B8, $86, $90, $86, $3F, $87, $0C, $08, $20, $80, $F7, $86, $3A, $86, $35    // data $8628  ".....?... ...:.5"
+    .byte $80, $F7, $86, $20, $12, $80    // data $8638  "... .."
+    jsr $9fc3              // 20 C3 9F
+    jmp $8357              // 4C 57 83
 bank03_api_04:
-    lda $c1                // a5 c1
-    sta $c3                // 85 c3
-    lda $c2                // a5 c2
-    sta $c4                // 85 c4
+    lda $c1                // A5 C1   I/O start addr lo
+    sta $c3                // 85 C3
+    lda $c2                // A5 C2   I/O start addr hi
+    sta $c4                // 85 C4
 bank03_api_05:
-    jsr bank03_sub_9f05              // 20 05 9f
-    .byte $8f    // undocumented opcode
-    inc $20,x              // f6 20
-    stx $a9fb              // 8e fb a9
-    adc ($85,x)            // 61 85
-    lda $a020,y            // b9 20 a0
-    dec $0190,x            // de 90 01
+    jsr bank03_sub_9F05              // 20 05 9F
+    .byte $8F, $F6         // inline arg: cross-bank call target $F68F
+    jsr $fb8e              // 20 8E FB
+    lda #$61               // A9 61
+    sta $b9                // 85 B9   secondary addr
+    jsr $dea0              // 20 A0 DE
+    bcc $865e              // 90 01
     rts                    // 60
-    .byte $a5, $ba, $20, $b1, $ff, $a5, $b9, $20, $93, $ff, $a5, $c3, $20, $a8, $ff, $a5    // data $865e
-    .byte $c4, $20, $a8, $ff, $20, $d1, $fc, $b0, $17, $78, $a0, $07, $b9, $fc, $86, $99    // data $866e
-    .byte $a4, $00, $88, $d0, $f7, $20, $a5, $00, $20, $a8, $ff, $20, $db, $fc, $d0, $e4    // data $867e
-    .byte $4c, $3f, $f6, $a9, $80, $2c, $a9, $00, $8d, $38, $03, $85, $bd, $20, $b9, $9f    // data $868e
-    .byte $a5, $bd, $d0, $0e, $a4, $b7, $a9, $2c, $91, $bb, $c8, $a9, $57, $91, $bb, $c8    // data $869e
-    .byte $84, $b7, $20, $c8, $82, $20, $c3, $9f, $4c, $57, $83, $20, $62, $83, $45, $4e    // data $86ae
-    .byte $54, $45, $52, $20, $43, $4f, $4d, $4d, $41, $4e, $44, $3a, $3e, $20, $00, $a2    // data $86be
-    .byte $10, $a0, $38, $20, $00, $9f, $5d, $80, $08, $20, $02, $9f, $1b, $80, $28, $f0    // data $86ce
-    .byte $03, $4c, $57, $83, $4c, $7f, $85    // data $86de
-bank03_sub_86e5:
-    lda #$12               // a9 12
-    jsr $e716              // 20 16 e7
-    cpx #$0a               // e0 0a
-    bcs bank03_sub_86f3              // b0 05
-    lda #$30               // a9 30
-    jsr $e716              // 20 16 e7
-bank03_sub_86f3:
-    lda #$00               // a9 00
-    jmp $bdcd              // 4c cd bd
-    .byte $20, $01, $9f, $09, $80, $e6, $01, $b1, $ac, $c6, $01, $60, $a2, $09, $a0, $1e    // data $86f8
-    .byte $20, $5f, $83, $42, $4c, $4f, $43, $4b, $53, $00, $a0, $00, $a9, $fe, $a2, $0b    // data $8708
-    .byte $20, $2b, $87, $a2, $0c, $a0, $20, $20, $76, $85, $a6, $bf, $e0, $cb, $90, $13    // data $8718
-    .byte $e8, $d0, $10, $a0, $20, $85, $bf, $20, $76, $85, $a6, $bf, $20, $02, $9f, $27    // data $8728
-    .byte $80, $86, $bf, $a9, $00, $4c, $cd, $bd, $20, $b9, $9f, $a0, $b9, $b9, $56, $87    // data $8738
-    .byte $99, $46, $03, $88, $d0, $f7, $20, $47, $03, $20, $c3, $9f, $4c, $57, $83, $a5    // data $8748
-    .byte $af, $38, $e9, $d0, $90, $24, $aa, $86, $fd, $e8, $8e, $ca, $03, $20, $88, $03    // data $8758
-    .byte $a5, $ae, $18, $69, $50, $85, $ae, $a5, $fd, $69, $08, $85, $af, $20, $72, $03    // data $8768
-    .byte $20, $88, $03, $20, $f1, $03, $a0, $d0, $d0, $04, $a6, $ae, $a4, $af, $a9, $01    // data $8778
-    .byte $85, $ac, $a9, $08, $85, $ad, $a9, $ac, $c6, $01, $20, $d8, $ff, $e6, $01, $60    // data $8788
-    .byte $a0, $3a, $b9, $0c, $08, $48, $b9, $c5, $03, $99, $0c, $08, $68, $99, $c5, $03    // data $8798
-    .byte $88, $d0, $ef, $a9, $47, $85, $22, $a9, $08, $85, $23, $a9, $d0, $85, $25, $84    // data $87a8
-    .byte $24, $78, $a6, $fd, $e8, $e6, $01, $b1, $22, $48, $b1, $24, $91, $22, $68, $91    // data $87b8
-    .byte $24, $c8, $d0, $f3, $e6, $23, $e6, $25, $ca, $d0, $ec, $c6, $01, $60, $78, $e6    // data $87c8
-    .byte $01, $a2, $20, $a0, $00, $b9, $47, $08, $99, $00, $d0, $c8, $d0, $f7, $ee, $16    // data $87d8
-    .byte $08, $ee, $19, $08, $ca, $d0, $ee, $c6, $01, $20, $38, $08, $c8, $84, $b9, $a9    // data $87e8
-    .byte $08, $48, $a9, $0c, $48, $8a, $4c, $d5, $ff, $a5, $bb, $d0, $02, $c6, $bc, $c6    // data $87f8
-    .byte $bb, $e6, $b7, $a9, $31, $91, $bb, $60, $09, $20, $48, $24, $94, $10, $0a, $38    // data $8808
-    .byte $66, $a3, $20, $41, $88, $46, $94, $46, $a3, $68, $85, $95, $78, $c9, $24, $d0    // data $8818
-    .byte $03, $4c, $db, $88, $20, $9d, $88, $ad, $00, $dd, $09, $08, $8d, $00, $dd, $78    // data $8828
-    .byte $20, $8e, $ee, $20, $97, $ee, $20, $b3, $ee, $78, $2c, $0c, $dd, $30, $06, $20    // data $8838
-    .byte $97, $ee, $4c, $44, $ed, $a5, $95, $20, $7e, $88, $24, $a3, $10, $03, $20, $9d    // data $8848
-    .byte $88, $58, $18, $60, $24, $94, $30, $05, $38, $66, $94, $d0, $05, $48, $20, $41    // data $8858
-    .byte $88, $68, $85, $95, $18, $60, $a9, $3f, $20, $12, $88, $4c, $03, $ee, $85, $95    // data $8868
-    .byte $20, $b8, $88, $4c, $be, $ed, $20, $89, $88, $a9, $10, $2c, $0d, $dd, $f0, $fb    // data $8878
-    .byte $60, $8d, $01, $dd, $ad, $0d, $dd, $ad, $00, $dd, $29, $fb, $8d, $00, $dd, $09    // data $8888
-    .byte $04, $8d, $00, $dd, $60, $ad, $0c, $dd, $29, $7f, $8d, $0c, $dd, $a9, $3f, $8d    // data $8898
-    .byte $02, $dd, $ad, $00, $dd, $09, $04, $8d, $00, $dd, $a9, $00, $8d, $03, $dd, $60    // data $88a8
-    .byte $78, $2c, $0c, $dd, $30, $09, $20, $8e, $ee, $20, $9a, $ee, $4c, $44, $ed, $29    // data $88b8
-    .byte $f0, $c9, $e0, $d0, $0b, $a9, $00, $8d, $0c, $dd, $20, $89, $88, $20, $9d, $88    // data $88c8
-    .byte $58, $18, $60, $20, $ea, $88, $90, $03, $4c, $2e, $ed, $a9, $c0, $8d, $0c, $dd    // data $88d8
-    .byte $58, $60, $20, $9d, $88, $ce, $03, $dd, $2c, $0c, $dd, $70, $e4, $20, $89, $88    // data $88e8
-    .byte $a9, $ff, $8d, $07, $dc, $a9, $19, $8d, $0f, $dc, $ad, $0d, $dc, $ad, $0d, $dd    // data $88f8
-    .byte $29, $10, $d0, $cd, $ad, $0d, $dc, $29, $02, $f0, $f2, $38, $60, $48, $a9, $00    // data $8908
-    .byte $85, $90, $a9, $04, $20, $10, $88, $68, $4c, $76, $88, $48, $a9, $00, $85, $90    // data $8918
-    .byte $a9, $04, $20, $b1, $ff, $68, $4c, $93, $ff, $a9, $0a, $2c, $a9, $0d, $4c, $5c    // data $8928
-    .byte $88, $20, $34, $89, $a5, $93, $29, $20, $d0, $ef, $60, $24    // data $8938
+bank03_data_865E:
+.errorif (* != $865E), "bank03_data_865E shifted"
+    lda $ba                // A5 BA   current device
+    jsr $ffb1              // 20 B1 FF   KERNAL LISTEN
+    lda $b9                // A5 B9   secondary addr
+    jsr $ff93              // 20 93 FF   KERNAL SECOND
+    lda $c3                // A5 C3
+    jsr $ffa8              // 20 A8 FF   KERNAL CIOUT: serial byte out
+    lda $c4                // A5 C4
+    jsr $ffa8              // 20 A8 FF   KERNAL CIOUT: serial byte out
+b03_8672:
+    jsr $fcd1              // 20 D1 FC
+    bcs b03_868E           // B0 17
+    sei                    // 78
+    ldy #$07               // A0 07
+b03_867A:
+    lda $86fc,y            // B9 FC 86
+    sta $00a4,y            // 99 A4 00
+    dey                    // 88
+    bne b03_867A           // D0 F7
+    jsr $00a5              // 20 A5 00
+    jsr $ffa8              // 20 A8 FF   KERNAL CIOUT: serial byte out
+    jsr $fcdb              // 20 DB FC
+    bne b03_8672           // D0 E4
+b03_868E:
+    jmp $f63f              // 4C 3F F6
+    lda #$80               // A9 80
+    bit.abs $00a9          // 2C A9 00
+    sta $0338              // 8D 38 03
+    sta $bd                // 85 BD
+    jsr $9fb9              // 20 B9 9F
+    lda $bd                // A5 BD
+    bne b03_86B0           // D0 0E
+    ldy $b7                // A4 B7   filename length
+    lda #$2c               // A9 2C
+    sta ($bb),y            // 91 BB
+    iny                    // C8
+    lda #$57               // A9 57
+    sta ($bb),y            // 91 BB
+    iny                    // C8
+    sty $b7                // 84 B7   filename length
+b03_86B0:
+    jsr $82c8              // 20 C8 82
+    jsr $9fc3              // 20 C3 9F
+    jmp $8357              // 4C 57 83
+    jsr $8362              // 20 62 83
+    .byte $45, $4E, $54, $45, $52, $20, $43, $4F, $4D, $4D, $41, $4E, $44, $3A, $3E, $20    // data $86BC  text: "ENTER COMMAND:> "
+    .byte $00    // data $86CC  text: "."
+    ldx #$10               // A2 10
+    ldy #$38               // A0 38
+    jsr $9f00              // 20 00 9F
+    .byte $5D, $80         // inline arg: cross-bank call target $805D
+    php                    // 08
+    jsr $9f02              // 20 02 9F
+    .byte $1B, $80         // inline arg: cross-bank call target $801B
+    plp                    // 28
+    beq b03_86E2           // F0 03
+    jmp $8357              // 4C 57 83
+b03_86E2:
+    jmp $857f              // 4C 7F 85
+bank03_sub_86E5:
+    lda #$12               // A9 12
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    cpx #$0a               // E0 0A
+    bcs bank03_sub_86F3              // B0 05
+    lda #$30               // A9 30
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+bank03_sub_86F3:
+    lda #$00               // A9 00
+    jmp $bdcd              // 4C CD BD
+bank03_data_86F8:
+.errorif (* != $86F8), "bank03_data_86F8 shifted"
+    jsr $9f01              // 20 01 9F
+    .byte $09, $80         // inline arg: cross-bank call target $8009
+    inc $01                // E6 01   CPU port: mem banking
+    lda ($ac),y            // B1 AC
+    dec $01                // C6 01   CPU port: mem banking
+    rts                    // 60
+    ldx #$09               // A2 09
+    ldy #$1e               // A0 1E
+    jsr $835f              // 20 5F 83
+    .byte $42, $4C, $4F, $43, $4B, $53, $00    // data $870B  text: "BLOCKS."
+    ldy #$00               // A0 00
+    lda #$fe               // A9 FE
+    ldx #$0b               // A2 0B
+    jsr b03_872B           // 20 2B 87
+    ldx #$0c               // A2 0C
+    ldy #$20               // A0 20
+    jsr $8576              // 20 76 85
+    ldx $bf                // A6 BF
+    cpx #$cb               // E0 CB
+    bcc b03_873B           // 90 13
+    inx                    // E8
+    bne b03_873B           // D0 10
+b03_872B:
+    ldy #$20               // A0 20
+    sta $bf                // 85 BF
+    jsr $8576              // 20 76 85
+    ldx $bf                // A6 BF
+    jsr $9f02              // 20 02 9F
+    .byte $27, $80         // inline arg: cross-bank call target $8027
+    stx $bf                // 86 BF
+b03_873B:
+    lda #$00               // A9 00
+    jmp $bdcd              // 4C CD BD
+    jsr $9fb9              // 20 B9 9F
+    ldy #$b9               // A0 B9
+b03_8745:
+    lda $8756,y            // B9 56 87
+    sta $0346,y            // 99 46 03
+    dey                    // 88
+    bne b03_8745           // D0 F7
+    jsr $0347              // 20 47 03
+    jsr $9fc3              // 20 C3 9F
+    jmp $8357              // 4C 57 83
+    lda $af                // A5 AF   load end addr hi
+    sec                    // 38
+    sbc #$d0               // E9 D0
+    bcc b03_8782           // 90 24
+    tax                    // AA
+    stx $fd                // 86 FD
+    inx                    // E8
+    stx $03ca              // 8E CA 03
+    jsr $0388              // 20 88 03
+    lda $ae                // A5 AE   load end addr lo
+    clc                    // 18
+    adc #$50               // 69 50
+    sta $ae                // 85 AE   load end addr lo
+    lda $fd                // A5 FD
+    adc #$08               // 69 08
+    sta $af                // 85 AF   load end addr hi
+    jsr $0372              // 20 72 03
+    jsr $0388              // 20 88 03
+    jsr $03f1              // 20 F1 03
+    ldy #$d0               // A0 D0
+    bne b03_8786           // D0 04
+b03_8782:
+    ldx $ae                // A6 AE   load end addr lo
+    ldy $af                // A4 AF   load end addr hi
+b03_8786:
+    lda #$01               // A9 01
+    sta $ac                // 85 AC
+    lda #$08               // A9 08
+    sta $ad                // 85 AD
+    lda #$ac               // A9 AC
+    dec $01                // C6 01   CPU port: mem banking
+    jsr $ffd8              // 20 D8 FF   KERNAL SAVE
+    inc $01                // E6 01   CPU port: mem banking
+    rts                    // 60
+    ldy #$3a               // A0 3A
+b03_879A:
+    lda $080c,y            // B9 0C 08
+    pha                    // 48
+    lda $03c5,y            // B9 C5 03
+    sta $080c,y            // 99 0C 08
+    pla                    // 68
+    sta $03c5,y            // 99 C5 03
+    dey                    // 88
+    bne b03_879A           // D0 EF
+    lda #$47               // A9 47
+    sta $22                // 85 22
+    lda #$08               // A9 08
+    sta $23                // 85 23
+    lda #$d0               // A9 D0
+    sta $25                // 85 25
+    sty $24                // 84 24
+    sei                    // 78
+    ldx $fd                // A6 FD
+    inx                    // E8
+    inc $01                // E6 01   CPU port: mem banking
+b03_87BF:
+    lda ($22),y            // B1 22
+    pha                    // 48
+    lda ($24),y            // B1 24
+    sta ($22),y            // 91 22
+    pla                    // 68
+    sta ($24),y            // 91 24
+    iny                    // C8
+    bne b03_87BF           // D0 F3
+    inc $23                // E6 23
+    inc $25                // E6 25
+    dex                    // CA
+    bne b03_87BF           // D0 EC
+    dec $01                // C6 01   CPU port: mem banking
+    rts                    // 60
+    sei                    // 78
+    inc $01                // E6 01   CPU port: mem banking
+    ldx #$20               // A2 20
+    ldy #$00               // A0 00
+b03_87DD:
+    lda $0847,y            // B9 47 08
+    sta $d000,y            // 99 00 D0
+    iny                    // C8
+    bne b03_87DD           // D0 F7
+    inc $0816              // EE 16 08
+    inc $0819              // EE 19 08
+    dex                    // CA
+    bne b03_87DD           // D0 EE
+    dec $01                // C6 01   CPU port: mem banking
+    jsr $0838              // 20 38 08
+    iny                    // C8
+    sty $b9                // 84 B9   secondary addr
+    lda #$08               // A9 08
+    pha                    // 48
+    lda #$0c               // A9 0C
+    pha                    // 48
+    txa                    // 8A
+    jmp $ffd5              // 4C D5 FF   KERNAL LOAD
+    lda $bb                // A5 BB   filename ptr lo
+    bne b03_8807           // D0 02
+    dec $bc                // C6 BC   filename ptr hi
+b03_8807:
+    dec $bb                // C6 BB   filename ptr lo
+    inc $b7                // E6 B7   filename length
+    lda #$31               // A9 31
+    sta ($bb),y            // 91 BB
+    rts                    // 60
+b03_8810:
+    ora #$20               // 09 20
+b03_8812:
+    pha                    // 48
+    bit $94                // 24 94
+    bpl b03_8821           // 10 0A
+    sec                    // 38
+    ror $a3                // 66 A3
+    jsr b03_8841           // 20 41 88
+    lsr $94                // 46 94
+    lsr $a3                // 46 A3
+b03_8821:
+    pla                    // 68
+    sta $95                // 85 95
+    sei                    // 78
+    cmp #$24               // C9 24
+    bne b03_882C           // D0 03
+    jmp b03_88DB           // 4C DB 88
+b03_882C:
+    jsr b03_889D           // 20 9D 88
+    lda $dd00              // AD 00 DD   CIA2 port A (VIC bank, IEC lines)
+    ora #$08               // 09 08
+    sta $dd00              // 8D 00 DD   CIA2 port A (VIC bank, IEC lines)
+    sei                    // 78
+    jsr $ee8e              // 20 8E EE
+    jsr $ee97              // 20 97 EE
+    jsr $eeb3              // 20 B3 EE
+b03_8841:
+    sei                    // 78
+    bit $dd0c              // 2C 0C DD
+    bmi b03_884D           // 30 06
+    jsr $ee97              // 20 97 EE
+    jmp $ed44              // 4C 44 ED
+b03_884D:
+    lda $95                // A5 95
+    jsr b03_887E           // 20 7E 88
+    bit $a3                // 24 A3
+    bpl b03_8859           // 10 03
+    jsr b03_889D           // 20 9D 88
+b03_8859:
+    cli                    // 58
+    clc                    // 18
+    rts                    // 60
+b03_885C:
+    bit $94                // 24 94
+    bmi b03_8865           // 30 05
+    sec                    // 38
+    ror $94                // 66 94
+    bne b03_886A           // D0 05
+b03_8865:
+    pha                    // 48
+    jsr b03_8841           // 20 41 88
+    pla                    // 68
+b03_886A:
+    sta $95                // 85 95
+    clc                    // 18
+    rts                    // 60
+    lda #$3f               // A9 3F
+    jsr b03_8812           // 20 12 88
+    jmp $ee03              // 4C 03 EE
+b03_8876:
+    sta $95                // 85 95
+    jsr b03_88B8           // 20 B8 88
+    jmp $edbe              // 4C BE ED
+b03_887E:
+    jsr b03_8889           // 20 89 88
+    lda #$10               // A9 10
+b03_8883:
+    bit $dd0d              // 2C 0D DD   CIA2 ICR (NMI control/ack)
+    beq b03_8883           // F0 FB
+    rts                    // 60
+b03_8889:
+    sta $dd01              // 8D 01 DD   CIA2 port B (user port)
+    lda $dd0d              // AD 0D DD   CIA2 ICR (NMI control/ack)
+    lda $dd00              // AD 00 DD   CIA2 port A (VIC bank, IEC lines)
+    and #$fb               // 29 FB
+    sta $dd00              // 8D 00 DD   CIA2 port A (VIC bank, IEC lines)
+    ora #$04               // 09 04
+    sta $dd00              // 8D 00 DD   CIA2 port A (VIC bank, IEC lines)
+    rts                    // 60
+b03_889D:
+    lda $dd0c              // AD 0C DD
+    and #$7f               // 29 7F
+    sta $dd0c              // 8D 0C DD
+    lda #$3f               // A9 3F
+    sta $dd02              // 8D 02 DD   CIA2 DDR A
+    lda $dd00              // AD 00 DD   CIA2 port A (VIC bank, IEC lines)
+    ora #$04               // 09 04
+    sta $dd00              // 8D 00 DD   CIA2 port A (VIC bank, IEC lines)
+    lda #$00               // A9 00
+    sta $dd03              // 8D 03 DD   CIA2 DDR B
+    rts                    // 60
+b03_88B8:
+    sei                    // 78
+    bit $dd0c              // 2C 0C DD
+    bmi b03_88C7           // 30 09
+    jsr $ee8e              // 20 8E EE
+    jsr $ee9a              // 20 9A EE
+    jmp $ed44              // 4C 44 ED
+b03_88C7:
+    and #$f0               // 29 F0
+    cmp #$e0               // C9 E0
+    bne b03_88D8           // D0 0B
+    lda #$00               // A9 00
+    sta $dd0c              // 8D 0C DD
+    jsr b03_8889           // 20 89 88
+    jsr b03_889D           // 20 9D 88
+b03_88D8:
+    cli                    // 58
+b03_88D9:
+    clc                    // 18
+    rts                    // 60
+b03_88DB:
+    jsr b03_88EA           // 20 EA 88
+    bcc b03_88E3           // 90 03
+    jmp $ed2e              // 4C 2E ED
+b03_88E3:
+    lda #$c0               // A9 C0
+    sta $dd0c              // 8D 0C DD
+    cli                    // 58
+    rts                    // 60
+b03_88EA:
+    jsr b03_889D           // 20 9D 88
+    dec $dd03              // CE 03 DD   CIA2 DDR B
+    bit $dd0c              // 2C 0C DD
+    bvs b03_88D9           // 70 E4
+    jsr b03_8889           // 20 89 88
+    lda #$ff               // A9 FF
+    sta $dc07              // 8D 07 DC
+    lda #$19               // A9 19
+    sta $dc0f              // 8D 0F DC   CIA1 CRB
+    lda $dc0d              // AD 0D DC   CIA1 ICR (IRQ control/ack)
+b03_8905:
+    lda $dd0d              // AD 0D DD   CIA2 ICR (NMI control/ack)
+    and #$10               // 29 10
+    bne b03_88D9           // D0 CD
+    lda $dc0d              // AD 0D DC   CIA1 ICR (IRQ control/ack)
+    and #$02               // 29 02
+    beq b03_8905           // F0 F2
+    sec                    // 38
+    rts                    // 60
+    pha                    // 48
+    lda #$00               // A9 00
+    sta $90                // 85 90   KERNAL I/O status
+    lda #$04               // A9 04
+    jsr b03_8810           // 20 10 88
+    pla                    // 68
+    jmp b03_8876           // 4C 76 88
+    pha                    // 48
+    lda #$00               // A9 00
+    sta $90                // 85 90   KERNAL I/O status
+    lda #$04               // A9 04
+    jsr $ffb1              // 20 B1 FF   KERNAL LISTEN
+    pla                    // 68
+    jmp $ff93              // 4C 93 FF   KERNAL SECOND
+b03_8931:
+    lda #$0a               // A9 0A
+    bit $0da9              // 2C A9 0D
+    jmp b03_885C           // 4C 5C 88
+    jsr $8934              // 20 34 89
+    lda $93                // A5 93
+    and #$20               // 29 20
+    bne b03_8931           // D0 EF
+    rts                    // 60
+    .byte $24    // 24  undocumented/illegal at $8943
 bank03_api_03:
-    jmp bank03_sub_94c8              // 4c c8 94
-    .byte $a9, $00, $20, $a6, $8c, $b0, $35, $20, $aa, $8e, $a9, $01, $a2, $43, $a0, $89    // data $8947
-    .byte $20, $bd, $ff, $a0, $00, $a6, $f9, $20, $ba, $ff, $a9, $60, $85, $b9, $20, $d5    // data $8957
-    .byte $f3, $a5, $ba, $20, $b4, $ff, $a5, $b9, $20, $96, $ff, $20, $a5, $ff, $a5, $90    // data $8967
-    .byte $4a, $4a, $90, $15, $20, $60, $8c, $20, $7c, $8c, $f0, $cb, $18, $24    // data $8977
+    jmp bank03_sub_94C8              // 4C C8 94
+bank03_data_8947:
+.errorif (* != $8947), "bank03_data_8947 shifted"
+    lda #$00               // A9 00
+    jsr $8ca6              // 20 A6 8C
+    bcs b03_8983           // B0 35
+b03_894E:
+    jsr $8eaa              // 20 AA 8E
+    lda #$01               // A9 01
+    ldx #$43               // A2 43
+    ldy #$89               // A0 89
+    jsr $ffbd              // 20 BD FF   KERNAL SETNAM: set filename
+    ldy #$00               // A0 00
+    ldx $f9                // A6 F9
+    jsr $ffba              // 20 BA FF   KERNAL SETLFS: set file/dev/sec
+    lda #$60               // A9 60
+    sta $b9                // 85 B9   secondary addr
+    jsr $f3d5              // 20 D5 F3
+    lda $ba                // A5 BA   current device
+    jsr $ffb4              // 20 B4 FF   KERNAL TALK
+    lda $b9                // A5 B9   secondary addr
+    jsr $ff96              // 20 96 FF   KERNAL TKSA
+    jsr $ffa5              // 20 A5 FF   KERNAL ACPTR: serial byte in
+    lda $90                // A5 90   KERNAL I/O status
+    lsr                    // 4A
+    lsr                    // 4A
+    bcc $8990              // 90 15
+    jsr $8c60              // 20 60 8C
+    jsr $8c7c              // 20 7C 8C
+    beq b03_894E           // F0 CB
+b03_8983:
+    clc                    // 18
+    .byte $24    // 24  undocumented/illegal at $8984
 bank03_sub_8985:
     sec                    // 38
-    ldx #$01               // a2 01
-    stx $dc0e              // 8e 0e dc
-    dex                    // ca
-    stx $0800              // 8e 00 08
+    ldx #$01               // A2 01
+    stx $dc0e              // 8E 0E DC   CIA1 CRA
+    dex                    // CA
+    stx $0800              // 8E 00 08
     rts                    // 60
-    .byte $20, $a5, $ff, $20, $00, $9f, $63, $80, $a9, $08, $a0, $80, $a2, $1e, $20, $00    // data $8990
-    .byte $9f, $15, $80, $a9, $00, $85, $fd, $a0, $26, $85, $fb, $84, $fc, $a2, $1e, $a8    // data $89a0
-    .byte $c6, $fc, $91, $fb, $c8, $d0, $fb, $ca, $d0, $f6, $20, $44, $e5, $20, $62, $83    // data $89b0
-    .byte $44, $49, $53, $4b, $3a, $20, $00, $20, $e3, $8b, $20, $c3, $9f, $20, $62, $83    // data $89c0
-    .byte $52, $45, $41, $44, $49, $4e, $47, $20, $44, $49, $52, $2e, $2e, $2e, $0d, $00    // data $89d0
-    .byte $a2, $00, $86, $fb, $a2, $27, $bd, $00, $04, $9d, $20, $08, $a9, $a3, $20, $16    // data $89e0
-    .byte $e7, $ca, $10, $f2, $20, $62, $83, $9d, $0d, $00, $4c, $0d, $8a, $20, $62, $83    // data $89f0
-    .byte $4e, $2f, $41, $0d, $00, $4c, $0d, $8a, $a9, $91, $20, $16, $e7, $20, $e3, $8b    // data $8a00
-    .byte $a5, $90, $f0, $03, $4c, $9f, $8a, $a0, $05, $b1, $d1, $c9, $22, $f0, $03, $4c    // data $8a10
-    .byte $96, $8a, $a5, $f8, $c9, $50, $f0, $0b, $c9, $53, $f0, $07, $c9, $55, $f0, $03    // data $8a20
-    .byte $4c, $fd, $89, $a5, $c3, $e4, $c3, $90, $c4, $05, $c4, $f0, $c0, $a5, $c4, $d0    // data $8a30
-    .byte $bc, $a9, $0d, $20, $16, $e7, $ae, $00, $1e, $a5, $bd, $9d, $01, $1e, $a5, $f7    // data $8a40
-    .byte $38, $65, $fb, $85, $fb, $aa, $90, $02, $e6, $fc, $a5, $fc, $c9, $1d, $90, $03    // data $8a50
-    .byte $8a, $c9, $eb, $e6, $fd, $b0, $0c, $a5, $fd, $c9, $fe, $b0, $06, $ee, $00, $1e    // data $8a60
-    .byte $4c, $08, $8a, $20, $62, $83, $0d, $0d, $2e, $2e, $2e, $20, $4d, $4f, $52, $45    // data $8a70
-    .byte $20, $46, $49, $4c, $45, $53, $20, $2e, $2e, $2e, $0d, $0d, $00, $4c, $96, $8a    // data $8a80
-    .byte $20, $33, $f6, $4c, $85, $89, $20, $42, $f6, $ee, $20, $d0, $4c, $99, $8a, $a2    // data $8a90
-    .byte $00, $a0, $80, $20, $bd, $ff, $a9, $00, $8d, $ef, $03, $85, $02, $a5, $bb, $85    // data $8aa0
-    .byte $fb, $a5, $bc, $85, $fc, $a9, $00, $85, $8b, $8d, $b0, $09, $85, $ae, $a9, $0a    // data $8ab0
-    .byte $8d, $b1, $09, $85, $af, $ae, $ef, $03, $ee, $ef, $03, $bd, $f0, $03, $d0, $03    // data $8ac0
-    .byte $4c, $7e, $89, $85, $fd, $85, $fe, $a5, $02, $f0, $03, $20, $70, $8e, $a9, $01    // data $8ad0
-    .byte $85, $02, $20, $d6, $8b, $a6, $f9, $a0, $00, $20, $ba, $ff, $a6, $ae, $a4, $af    // data $8ae0
-    .byte $86, $c3, $84, $c4, $a9, $80, $85, $9d, $0a, $85, $93, $20, $d2, $f5, $a9, $20    // data $8af0
-    .byte $20, $16, $e7, $20, $c1, $f5, $06, $9d, $c6, $b7, $c6, $b7, $a9, $00, $20, $6b    // data $8b00
-    .byte $8c, $e6, $b7, $e6, $b7, $90, $05, $a9, $20, $20, $62, $8c, $a6, $8b, $a5, $c3    // data $8b10
-    .byte $9d, $a7, $02, $a5, $c4, $9d, $a8, $02, $a5, $ae, $9d, $b2, $09, $a5, $af, $9d    // data $8b20
-    .byte $b3, $09, $e8, $e8, $86, $8b, $20, $cb, $8b, $c6, $fd, $d0, $a8, $20, $6e, $8e    // data $8b30
-    .byte $a5, $fe, $85, $fd, $a6, $fb, $a4, $fc, $86, $bb, $84, $bc, $a9, $00, $85, $8b    // data $8b40
-    .byte $85, $ae, $a9, $0a, $85, $af, $20, $d6, $8b, $a5, $ae, $85, $c1, $a5, $af, $85    // data $8b50
-    .byte $c2, $a6, $8b, $bd, $b2, $09, $85, $ae, $bd, $a7, $02, $85, $c3, $bd, $b3, $09    // data $8b60
-    .byte $85, $af, $bd, $a8, $02, $85, $c4, $e8, $e8, $86, $8b, $a5, $fa, $85, $ba, $a9    // data $8b70
-    .byte $80, $85, $9d, $20, $02, $9f, $18, $80, $a5, $90, $f0, $03, $20, $60, $8c, $20    // data $8b80
-    .byte $cb, $8b, $c6, $fd, $d0, $c3, $24, $8c, $30, $26, $20, $62, $83, $0d, $0d, $41    // data $8b90
-    .byte $4e, $4f, $54, $48, $45, $52, $20, $4f, $55, $54, $50, $55, $54, $3f, $20, $28    // data $8ba0
-    .byte $59, $2f, $4e, $29, $00, $20, $95, $8c, $d0, $06, $20, $b3, $8e, $4c, $40, $8b    // data $8bb0
-    .byte $a5, $bb, $d0, $02, $c6, $bc, $c6, $bb, $4c, $ad, $8a, $a5, $b7, $18, $65, $bb    // data $8bc0
-    .byte $85, $bb, $90, $02, $e6, $bc, $a0, $00, $b1, $bb, $85, $b7, $e6, $bb, $d0, $02    // data $8bd0
-    .byte $e6, $bc, $60, $a0, $02, $84, $8b, $a0, $00, $84, $f8, $84, $90, $20, $a5, $ff    // data $8be0
-    .byte $85, $c3, $20, $a5, $ff, $85, $c4, $a6, $90, $f0, $03, $4c, $42, $f6, $c6, $8b    // data $8bf0
-    .byte $d0, $eb, $a6, $c3, $a4, $c4, $20, $cd, $bd, $a0, $01, $a9, $20, $20, $16, $e7    // data $8c00
-    .byte $20, $a5, $ff, $c9, $22, $d0, $0a, $a5, $f8, $49, $ff, $85, $f8, $a9, $22, $d0    // data $8c10
-    .byte $07, $a6, $f8, $f0, $03, $91, $fb, $c8, $a6, $90, $d0, $cf, $aa, $d0, $de, $a9    // data $8c20
-    .byte $2c, $91, $fb, $c8, $84, $f7, $a0, $18, $b1, $d1, $09, $40, $85, $f8, $a4, $f7    // data $8c30
-    .byte $91, $fb, $98, $a0, $00, $91, $fb, $a2, $fe, $86, $bf, $98, $a4, $c3, $f0, $0d    // data $8c40
-    .byte $a2, $01, $18, $65, $bf, $90, $01, $e8, $88, $d0, $f7, $86, $bd, $a2, $f6, $60    // data $8c50
-bank03_sub_8c60:
-    lda #$0d               // a9 0d
-    jsr $e716              // 20 16 e7
-    jsr bank03_sub_9f02              // 20 02 9f
-    bit $80                // 24 80
+bank03_data_8990:
+.errorif (* != $8990), "bank03_data_8990 shifted"
+    jsr $ffa5              // 20 A5 FF   KERNAL ACPTR: serial byte in
+    jsr $9f00              // 20 00 9F
+    .byte $63, $80         // inline arg: cross-bank call target $8063
+    lda #$08               // A9 08
+    ldy #$80               // A0 80
+    ldx #$1e               // A2 1E
+    jsr $9f00              // 20 00 9F
+    .byte $15, $80         // inline arg: cross-bank call target $8015
+    lda #$00               // A9 00
+    sta $fd                // 85 FD
+    ldy #$26               // A0 26
+    sta $fb                // 85 FB
+    sty $fc                // 84 FC
+    ldx #$1e               // A2 1E
+    tay                    // A8
+b03_89B0:
+    dec $fc                // C6 FC
+b03_89B2:
+    sta ($fb),y            // 91 FB
+    iny                    // C8
+    bne b03_89B2           // D0 FB
+    dex                    // CA
+    bne b03_89B0           // D0 F6
+    jsr $e544              // 20 44 E5   KERNAL clear screen
+    jsr $8362              // 20 62 83
+    .byte $44, $49, $53, $4B, $3A, $20, $00    // data $89C0  text: "DISK: ."
+    jsr b03_8BE3           // 20 E3 8B
+    jsr $9fc3              // 20 C3 9F
+    jsr $8362              // 20 62 83
+    .byte $52, $45, $41, $44, $49, $4E, $47, $20, $44, $49, $52, $2E, $2E, $2E, $0D, $00    // data $89D0  text: "READING DIR....."
+    ldx #$00               // A2 00
+    stx $fb                // 86 FB
+    ldx #$27               // A2 27
+b03_89E6:
+    lda $0400,x            // BD 00 04   screen RAM
+    sta $0820,x            // 9D 20 08
+    lda #$a3               // A9 A3
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    dex                    // CA
+    bpl b03_89E6           // 10 F2
+    jsr $8362              // 20 62 83
+    .byte $9D, $0D, $00    // data $89F7  text: "..."
+    jmp b03_8A0D           // 4C 0D 8A
+b03_89FD:
+    jsr $8362              // 20 62 83
+    .byte $4E, $2F, $41, $0D, $00    // data $8A00  text: "N/A.."
+    jmp b03_8A0D           // 4C 0D 8A
+b03_8A08:
+    lda #$91               // A9 91
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+b03_8A0D:
+    jsr b03_8BE3           // 20 E3 8B
+    lda $90                // A5 90   KERNAL I/O status
+    beq b03_8A17           // F0 03
+    jmp b03_8A9F           // 4C 9F 8A
+b03_8A17:
+    ldy #$05               // A0 05
+    lda ($d1),y            // B1 D1
+    cmp #$22               // C9 22
+    beq b03_8A22           // F0 03
+    jmp b03_8A96           // 4C 96 8A
+b03_8A22:
+    lda $f8                // A5 F8
+    cmp #$50               // C9 50
+    beq b03_8A33           // F0 0B
+    cmp #$53               // C9 53
+    beq b03_8A33           // F0 07
+    cmp #$55               // C9 55
+    beq b03_8A33           // F0 03
+    jmp b03_89FD           // 4C FD 89
+b03_8A33:
+    lda $c3                // A5 C3
+    cpx $c3                // E4 C3
+    bcc b03_89FD           // 90 C4
+    ora $c4                // 05 C4
+    beq b03_89FD           // F0 C0
+    lda $c4                // A5 C4
+    bne b03_89FD           // D0 BC
+    lda #$0d               // A9 0D
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    ldx $1e00              // AE 00 1E
+    lda $bd                // A5 BD
+    sta $1e01,x            // 9D 01 1E
+    lda $f7                // A5 F7
+    sec                    // 38
+    adc $fb                // 65 FB
+    sta $fb                // 85 FB
+    tax                    // AA
+    bcc b03_8A5A           // 90 02
+    inc $fc                // E6 FC
+b03_8A5A:
+    lda $fc                // A5 FC
+    cmp #$1d               // C9 1D
+    bcc b03_8A63           // 90 03
+    txa                    // 8A
+    cmp #$eb               // C9 EB
+b03_8A63:
+    inc $fd                // E6 FD
+    bcs b03_8A73           // B0 0C
+    lda $fd                // A5 FD
+    cmp #$fe               // C9 FE
+    bcs b03_8A73           // B0 06
+    inc $1e00              // EE 00 1E
+    jmp b03_8A08           // 4C 08 8A
+b03_8A73:
+    jsr $8362              // 20 62 83
+    .byte $0D, $0D, $2E, $2E, $2E, $20, $4D, $4F, $52, $45, $20, $46, $49, $4C, $45, $53    // data $8A76  text: "..... MORE FILES"
+    .byte $20, $2E, $2E, $2E, $0D, $0D, $00    // data $8A86  text: " ......"
+    jmp b03_8A96           // 4C 96 8A
+    jsr $f633              // 20 33 F6
+    jmp $8985              // 4C 85 89
+b03_8A96:
+    jsr $f642              // 20 42 F6
+b03_8A99:
+    inc $d020              // EE 20 D0   VIC border color
+    jmp b03_8A99           // 4C 99 8A
+b03_8A9F:
+    ldx #$00               // A2 00
+    ldy #$80               // A0 80
+    jsr $ffbd              // 20 BD FF   KERNAL SETNAM: set filename
+    lda #$00               // A9 00
+    sta $03ef              // 8D EF 03
+    sta $02                // 85 02
+b03_8AAD:
+    lda $bb                // A5 BB   filename ptr lo
+    sta $fb                // 85 FB
+    lda $bc                // A5 BC   filename ptr hi
+    sta $fc                // 85 FC
+    lda #$00               // A9 00
+    sta $8b                // 85 8B
+    sta $09b0              // 8D B0 09
+    sta $ae                // 85 AE   load end addr lo
+    lda #$0a               // A9 0A
+    sta $09b1              // 8D B1 09
+    sta $af                // 85 AF   load end addr hi
+    ldx $03ef              // AE EF 03
+    inc $03ef              // EE EF 03
+    lda $03f0,x            // BD F0 03
+    bne b03_8AD3           // D0 03
+    jmp $897e              // 4C 7E 89
+b03_8AD3:
+    sta $fd                // 85 FD
+    sta $fe                // 85 FE
+    lda $02                // A5 02
+    beq b03_8ADE           // F0 03
+    jsr $8e70              // 20 70 8E
+b03_8ADE:
+    lda #$01               // A9 01
+    sta $02                // 85 02
+    jsr b03_8BD6           // 20 D6 8B
+b03_8AE5:
+    ldx $f9                // A6 F9
+    ldy #$00               // A0 00
+    jsr $ffba              // 20 BA FF   KERNAL SETLFS: set file/dev/sec
+    ldx $ae                // A6 AE   load end addr lo
+    ldy $af                // A4 AF   load end addr hi
+    stx $c3                // 86 C3
+    sty $c4                // 84 C4
+    lda #$80               // A9 80
+    sta $9d                // 85 9D   KERNAL msg mode
+    asl                    // 0A
+    sta $93                // 85 93
+    jsr $f5d2              // 20 D2 F5
+    lda #$20               // A9 20
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    jsr $f5c1              // 20 C1 F5
+    asl $9d                // 06 9D   KERNAL msg mode
+    dec $b7                // C6 B7   filename length
+    dec $b7                // C6 B7   filename length
+    lda #$00               // A9 00
+    jsr $8c6b              // 20 6B 8C
+    inc $b7                // E6 B7   filename length
+    inc $b7                // E6 B7   filename length
+    bcc b03_8B1C           // 90 05
+    lda #$20               // A9 20
+    jsr $8c62              // 20 62 8C
+b03_8B1C:
+    ldx $8b                // A6 8B
+    lda $c3                // A5 C3
+    sta $02a7,x            // 9D A7 02
+    lda $c4                // A5 C4
+    sta $02a8,x            // 9D A8 02
+    lda $ae                // A5 AE   load end addr lo
+    sta $09b2,x            // 9D B2 09
+    lda $af                // A5 AF   load end addr hi
+    sta $09b3,x            // 9D B3 09
+    inx                    // E8
+    inx                    // E8
+    stx $8b                // 86 8B
+    jsr b03_8BCB           // 20 CB 8B
+    dec $fd                // C6 FD
+    bne b03_8AE5           // D0 A8
+    jsr $8e6e              // 20 6E 8E
+b03_8B40:
+    lda $fe                // A5 FE
+    sta $fd                // 85 FD
+    ldx $fb                // A6 FB
+    ldy $fc                // A4 FC
+    stx $bb                // 86 BB   filename ptr lo
+    sty $bc                // 84 BC   filename ptr hi
+    lda #$00               // A9 00
+    sta $8b                // 85 8B
+    sta $ae                // 85 AE   load end addr lo
+    lda #$0a               // A9 0A
+    sta $af                // 85 AF   load end addr hi
+    jsr b03_8BD6           // 20 D6 8B
+b03_8B59:
+    lda $ae                // A5 AE   load end addr lo
+    sta $c1                // 85 C1   I/O start addr lo
+    lda $af                // A5 AF   load end addr hi
+    sta $c2                // 85 C2   I/O start addr hi
+    ldx $8b                // A6 8B
+    lda $09b2,x            // BD B2 09
+    sta $ae                // 85 AE   load end addr lo
+    lda $02a7,x            // BD A7 02
+    sta $c3                // 85 C3
+    lda $09b3,x            // BD B3 09
+    sta $af                // 85 AF   load end addr hi
+    lda $02a8,x            // BD A8 02
+    sta $c4                // 85 C4
+    inx                    // E8
+    inx                    // E8
+    stx $8b                // 86 8B
+    lda $fa                // A5 FA
+    sta $ba                // 85 BA   current device
+    lda #$80               // A9 80
+    sta $9d                // 85 9D   KERNAL msg mode
+    jsr $9f02              // 20 02 9F
+    .byte $18, $80         // inline arg: cross-bank call target $8018
+    lda $90                // A5 90   KERNAL I/O status
+    beq b03_8B8F           // F0 03
+    jsr $8c60              // 20 60 8C
+b03_8B8F:
+    jsr b03_8BCB           // 20 CB 8B
+    dec $fd                // C6 FD
+    bne b03_8B59           // D0 C3
+    bit $8c                // 24 8C
+    bmi b03_8BC0           // 30 26
+    jsr $8362              // 20 62 83
+    .byte $0D, $0D, $41, $4E, $4F, $54, $48, $45, $52, $20, $4F, $55, $54, $50, $55, $54    // data $8B9D  text: "..ANOTHER OUTPUT"
+    .byte $3F, $20, $28, $59, $2F, $4E, $29, $00    // data $8BAD  text: "? (Y/N)."
+    jsr $8c95              // 20 95 8C
+    bne b03_8BC0           // D0 06
+    jsr $8eb3              // 20 B3 8E
+    jmp b03_8B40           // 4C 40 8B
+b03_8BC0:
+    lda $bb                // A5 BB   filename ptr lo
+    bne b03_8BC6           // D0 02
+    dec $bc                // C6 BC   filename ptr hi
+b03_8BC6:
+    dec $bb                // C6 BB   filename ptr lo
+    jmp b03_8AAD           // 4C AD 8A
+b03_8BCB:
+    lda $b7                // A5 B7   filename length
+    clc                    // 18
+    adc $bb                // 65 BB   filename ptr lo
+    sta $bb                // 85 BB   filename ptr lo
+    bcc b03_8BD6           // 90 02
+    inc $bc                // E6 BC   filename ptr hi
+b03_8BD6:
+    ldy #$00               // A0 00
+    lda ($bb),y            // B1 BB
+    sta $b7                // 85 B7   filename length
+    inc $bb                // E6 BB   filename ptr lo
+    bne b03_8BE2           // D0 02
+    inc $bc                // E6 BC   filename ptr hi
+b03_8BE2:
     rts                    // 60
-    .byte $2c, $3c, $03, $30, $06, $20, $02, $9f, $15, $80, $60, $20, $02, $9f, $0f, $80    // data $8c6b
-    .byte $60, $20, $62, $83, $0d, $0d, $41, $4e, $4f, $54, $48, $45, $52, $20, $44, $49    // data $8c7b
-    .byte $53, $4b, $3f, $20, $28, $59, $2f, $4e, $29, $00, $20, $90, $85, $c9, $4e, $f0    // data $8c8b
-    .byte $04, $c9, $59, $d0, $f5, $20, $16, $e7, $c9, $59, $60    // data $8c9b
-bank03_sub_8ca6:
+b03_8BE3:
+    ldy #$02               // A0 02
+    sty $8b                // 84 8B
+    ldy #$00               // A0 00
+    sty $f8                // 84 F8
+    sty $90                // 84 90   KERNAL I/O status
+b03_8BED:
+    jsr $ffa5              // 20 A5 FF   KERNAL ACPTR: serial byte in
+    sta $c3                // 85 C3
+    jsr $ffa5              // 20 A5 FF   KERNAL ACPTR: serial byte in
+    sta $c4                // 85 C4
+    ldx $90                // A6 90   KERNAL I/O status
+    beq b03_8BFE           // F0 03
+b03_8BFB:
+    jmp $f642              // 4C 42 F6
+b03_8BFE:
+    dec $8b                // C6 8B
+    bne b03_8BED           // D0 EB
+    ldx $c3                // A6 C3
+    ldy $c4                // A4 C4
+    jsr $bdcd              // 20 CD BD
+    ldy #$01               // A0 01
+    lda #$20               // A9 20
+b03_8C0D:
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    jsr $ffa5              // 20 A5 FF   KERNAL ACPTR: serial byte in
+    cmp #$22               // C9 22
+    bne b03_8C21           // D0 0A
+    lda $f8                // A5 F8
+    eor #$ff               // 49 FF
+    sta $f8                // 85 F8
+    lda #$22               // A9 22
+    bne b03_8C28           // D0 07
+b03_8C21:
+    ldx $f8                // A6 F8
+    beq b03_8C28           // F0 03
+    sta ($fb),y            // 91 FB
+    iny                    // C8
+b03_8C28:
+    ldx $90                // A6 90   KERNAL I/O status
+    bne b03_8BFB           // D0 CF
+    tax                    // AA
+    bne b03_8C0D           // D0 DE
+    lda #$2c               // A9 2C
+    sta ($fb),y            // 91 FB
+    iny                    // C8
+    sty $f7                // 84 F7
+    ldy #$18               // A0 18
+    lda ($d1),y            // B1 D1
+    ora #$40               // 09 40
+    sta $f8                // 85 F8
+    ldy $f7                // A4 F7
+    sta ($fb),y            // 91 FB
+    tya                    // 98
+    ldy #$00               // A0 00
+    sta ($fb),y            // 91 FB
+    ldx #$fe               // A2 FE
+    stx $bf                // 86 BF
+    tya                    // 98
+    ldy $c3                // A4 C3
+    beq b03_8C5D           // F0 0D
+    ldx #$01               // A2 01
+b03_8C52:
+    clc                    // 18
+    adc $bf                // 65 BF
+    bcc b03_8C58           // 90 01
+    inx                    // E8
+b03_8C58:
+    dey                    // 88
+    bne b03_8C52           // D0 F7
+    stx $bd                // 86 BD
+b03_8C5D:
+    ldx #$f6               // A2 F6
+    rts                    // 60
+bank03_sub_8C60:
+    lda #$0d               // A9 0D
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $24, $80         // inline arg: cross-bank call target $8024
+    rts                    // 60
+bank03_data_8C6B:
+.errorif (* != $8C6B), "bank03_data_8C6B shifted"
+    bit $033c              // 2C 3C 03
+    bmi b03_8C76           // 30 06
+    jsr $9f02              // 20 02 9F
+    .byte $15, $80         // inline arg: cross-bank call target $8015
+    rts                    // 60
+b03_8C76:
+    jsr $9f02              // 20 02 9F
+    .byte $0F, $80         // inline arg: cross-bank call target $800F
+    rts                    // 60
+    jsr $8362              // 20 62 83
+    .byte $0D, $0D, $41, $4E, $4F, $54, $48, $45, $52, $20, $44, $49, $53, $4B, $3F, $20    // data $8C7F  text: "..ANOTHER DISK? "
+    .byte $28, $59, $2F, $4E, $29, $00    // data $8C8F  text: "(Y/N)."
+b03_8C95:
+    jsr $8590              // 20 90 85
+    cmp #$4e               // C9 4E
+    beq b03_8CA0           // F0 04
+    cmp #$59               // C9 59
+    bne b03_8C95           // D0 F5
+b03_8CA0:
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    cmp #$59               // C9 59
+    rts                    // 60
+bank03_sub_8CA6:
     pha                    // 48
-    ldx #$08               // a2 08
-    stx $f9                // 86 f9
-    inx                    // e8
-    stx $fa                // 86 fa
-    stx $ba                // 86 ba
-    jsr bank03_sub_9f02              // 20 02 9f
-    .byte $0c    // undocumented opcode
-    .byte $80    // undocumented opcode
-    bne bank03_sub_8cbb              // d0 04
-    dec $fa                // c6 fa
-    dec $ba                // c6 ba
-bank03_sub_8cbb:
-    ldy #$01               // a0 01
-    sty $fb                // 84 fb
-    sty $fc                // 84 fc
+    ldx #$08               // A2 08
+    stx $f9                // 86 F9
+    inx                    // E8
+    stx $fa                // 86 FA
+    stx $ba                // 86 BA   current device
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $0C, $80         // inline arg: cross-bank call target $800C
+    bne bank03_sub_8CBB              // D0 04
+    dec $fa                // C6 FA
+    dec $ba                // C6 BA   current device
+bank03_sub_8CBB:
+    ldy #$01               // A0 01
+    sty $fb                // 84 FB
+    sty $fc                // 84 FC
     dey                    // 88
     pla                    // 68
-    tax                    // aa
-    beq bank03_sub_8cca              // f0 04
-    sty $fc                // 84 fc
-    sty $fb                // 84 fb
-bank03_sub_8cca:
-    lda $8db5,y            // b9 b5 8d
-    beq bank03_sub_8ce4              // f0 15
-    cmp #$ff               // c9 ff
-    beq bank03_sub_8cd9              // f0 06
-    jsr $e716              // 20 16 e7
-bank03_sub_8cd6:
-    iny                    // c8
-    bne bank03_sub_8cca              // d0 f1
-bank03_sub_8cd9:
-    inx                    // e8
-    lda $8e2b,x            // bd 2b 8e
-    beq bank03_sub_8cd6              // f0 f7
-    jsr $e716              // 20 16 e7
-    bcc bank03_sub_8cd9              // 90 f5
-bank03_sub_8ce4:
-    jmp bank03_sub_8d4b              // 4c 4b 8d
-bank03_sub_8ce7:
-    lda #$54               // a9 54
-    ldy #$05               // a0 05
-    ldx #$04               // a2 04
-bank03_sub_8ced:
+    tax                    // AA
+    beq bank03_sub_8CCA              // F0 04
+    sty $fc                // 84 FC
+    sty $fb                // 84 FB
+bank03_sub_8CCA:
+    lda $8db5,y            // B9 B5 8D
+    beq bank03_sub_8CE4              // F0 15
+    cmp #$ff               // C9 FF
+    beq bank03_sub_8CD9              // F0 06
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+bank03_sub_8CD6:
+    iny                    // C8
+    bne bank03_sub_8CCA              // D0 F1
+bank03_sub_8CD9:
+    inx                    // E8
+    lda $8e2b,x            // BD 2B 8E
+    beq bank03_sub_8CD6              // F0 F7
+    jsr $e716              // 20 16 E7   KERNAL screen CHROUT
+    bcc bank03_sub_8CD9              // 90 F5
+bank03_sub_8CE4:
+    jmp bank03_sub_8D4B              // 4C 4B 8D
+bank03_sub_8CE7:
+    lda #$54               // A9 54
+    ldy #$05               // A0 05
+    ldx #$04               // A2 04
+bank03_sub_8CED:
     sta $22                // 85 22
     sty $23                // 84 23
-    lda $f8,x              // b5 f8
+    lda $f8,x              // B5 F8
     and #$01               // 29 01
-    lsr                  // 4a
-    ror                  // 6a
+    lsr                  // 4A
+    ror                  // 6A
     eor #$80               // 49 80
     sta $24                // 85 24
-    ldy #$05               // a0 05
-bank03_sub_8cfd:
-    lda ($22),y            // b1 22
-    and #$7f               // 29 7f
+    ldy #$05               // A0 05
+bank03_sub_8CFD:
+    lda ($22),y            // B1 22
+    and #$7f               // 29 7F
     eor $24                // 45 24
-    cpy #$03               // c0 03
-    bcc bank03_sub_8d09              // 90 02
+    cpy #$03               // C0 03
+    bcc bank03_sub_8D09              // 90 02
     eor #$80               // 49 80
-bank03_sub_8d09:
+bank03_sub_8D09:
     sta ($22),y            // 91 22
     dey                    // 88
-    bpl bank03_sub_8cfd              // 10 ef
-    ldy $23                // a4 23
-    lda $22                // a5 22
+    bpl bank03_sub_8CFD              // 10 EF
+    ldy $23                // A4 23
+    lda $22                // A5 22
     sec                    // 38
-    sbc #$50               // e9 50
-    bcs bank03_sub_8d18              // b0 01
+    sbc #$50               // E9 50
+    bcs bank03_sub_8D18              // B0 01
     dey                    // 88
-bank03_sub_8d18:
-    dex                    // ca
-    cpx #$02               // e0 02
-    bne bank03_sub_8ced              // d0 d0
-bank03_sub_8d1d:
+bank03_sub_8D18:
+    dex                    // CA
+    cpx #$02               // E0 02
+    bne bank03_sub_8CED              // D0 D0
+bank03_sub_8D1D:
     jsr $8590              // 20 90 85
-    cmp #$20               // c9 20
-    beq bank03_sub_8d79              // f0 55
-    cmp #$03               // c9 03
-    bne bank03_sub_8d2e              // d0 06
+    cmp #$20               // C9 20
+    beq bank03_sub_8D79              // F0 55
+    cmp #$03               // C9 03
+    bne bank03_sub_8D2E              // D0 06
     pla                    // 68
     pla                    // 68
-    lda #$00               // a9 00
+    lda #$00               // A9 00
     clc                    // 18
     rts                    // 60
-bank03_sub_8d2e:
+bank03_sub_8D2E:
     sec                    // 38
-    sbc #$85               // e9 85
-    cmp #$04               // c9 04
-    bcs bank03_sub_8d1d              // b0 e8
-    tax                    // aa
-    cpx #$02               // e0 02
-    bcs bank03_sub_8d70              // b0 36
-    lda $f9,x              // b5 f9
-    sta $ba                // 85 ba
-    txa                    // 8a
+    sbc #$85               // E9 85
+    cmp #$04               // C9 04
+    bcs bank03_sub_8D1D              // B0 E8
+    tax                    // AA
+    cpx #$02               // E0 02
+    bcs bank03_sub_8D70              // B0 36
+    lda $f9,x              // B5 F9
+    sta $ba                // 85 BA   current device
+    txa                    // 8A
     pha                    // 48
-    jsr bank03_sub_9f02              // 20 02 9f
-    .byte $33    // undocumented opcode
-    .byte $80    // undocumented opcode
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $33, $80         // inline arg: cross-bank call target $8033
     pla                    // 68
-    tax                    // aa
-    lda $ba                // a5 ba
-    sta $f9,x              // 95 f9
-bank03_sub_8d4b:
-    ldy #$15               // a0 15
-    ldx #$02               // a2 02
+    tax                    // AA
+    lda $ba                // A5 BA   current device
+    sta $f9,x              // 95 F9
+bank03_sub_8D4B:
+    ldy #$15               // A0 15
+    ldx #$02               // A2 02
     clc                    // 18
-    jsr $fff0              // 20 f0 ff
-    ldx $f9                // a6 f9
-    jsr bank03_sub_86e5              // 20 e5 86
-    ldy #$15               // a0 15
-    ldx #$04               // a2 04
+    jsr $fff0              // 20 F0 FF   KERNAL PLOT: set/get cursor
+    ldx $f9                // A6 F9
+    jsr bank03_sub_86E5              // 20 E5 86
+    ldy #$15               // A0 15
+    ldx #$04               // A2 04
     clc                    // 18
-    jsr $fff0              // 20 f0 ff
-    ldx $fa                // a6 fa
-    jsr bank03_sub_86e5              // 20 e5 86
-    ldy #$15               // a0 15
-    ldx #$0b               // a2 0b
+    jsr $fff0              // 20 F0 FF   KERNAL PLOT: set/get cursor
+    ldx $fa                // A6 FA
+    jsr bank03_sub_86E5              // 20 E5 86
+    ldy #$15               // A0 15
+    ldx #$0b               // A2 0B
     clc                    // 18
-    jsr $fff0              // 20 f0 ff
-    jmp bank03_sub_8ce7              // 4c e7 8c
-bank03_sub_8d70:
-    lda #$01               // a9 01
-    eor $f9,x              // 55 f9
-    sta $f9,x              // 95 f9
-    jmp bank03_sub_8ce7              // 4c e7 8c
-bank03_sub_8d79:
-    lda #$00               // a9 00
-    lsr $fc                // 46 fc
-    ror                  // 6a
-    lsr $fb                // 46 fb
-    ror                  // 6a
-    sta $8c                // 85 8c
-    ldx #$00               // a2 00
-    stx $ba                // 86 ba
-    stx $fd                // 86 fd
-    inx                    // e8
-bank03_sub_8d8a:
+    jsr $fff0              // 20 F0 FF   KERNAL PLOT: set/get cursor
+    jmp bank03_sub_8CE7              // 4C E7 8C
+bank03_sub_8D70:
+    lda #$01               // A9 01
+    eor $f9,x              // 55 F9
+    sta $f9,x              // 95 F9
+    jmp bank03_sub_8CE7              // 4C E7 8C
+bank03_sub_8D79:
+    lda #$00               // A9 00
+    lsr $fc                // 46 FC
+    ror                  // 6A
+    lsr $fb                // 46 FB
+    ror                  // 6A
+    sta $8c                // 85 8C
+    ldx #$00               // A2 00
+    stx $ba                // 86 BA   current device
+    stx $fd                // 86 FD
+    inx                    // E8
+bank03_sub_8D8A:
     stx $24                // 86 24
-    lda $f9,x              // b5 f9
-    cmp $ba                // c5 ba
-    sta $ba                // 85 ba
-    beq bank03_sub_8da1              // f0 0d
-    jsr bank03_sub_9f02              // 20 02 9f
-    .byte $0c    // undocumented opcode
-    .byte $80    // undocumented opcode
-    bne bank03_sub_8da1              // d0 06
+    lda $f9,x              // B5 F9
+    cmp $ba                // C5 BA   current device
+    sta $ba                // 85 BA   current device
+    beq bank03_sub_8DA1              // F0 0D
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $0C, $80         // inline arg: cross-bank call target $800C
+    bne bank03_sub_8DA1              // D0 06
     pla                    // 68
     pla                    // 68
-    lda #$05               // a9 05
+    lda #$05               // A9 05
     sec                    // 38
     rts                    // 60
-bank03_sub_8da1:
-    lda $1f                // a5 1f
-    eor $fd                // 45 fd
-    sta $fd                // 85 fd
-    ldx $24                // a6 24
-    dex                    // ca
-    bpl bank03_sub_8d8a              // 10 de
+bank03_sub_8DA1:
+    lda $1f                // A5 1F
+    eor $fd                // 45 FD
+    sta $fd                // 85 FD
+    ldx $24                // A6 24
+    dex                    // CA
+    bpl bank03_sub_8D8A              // 10 DE
     clc                    // 18
-    lda $1f                // a5 1f
-    sta $033c              // 8d 3c 03
-    lda $fd                // a5 fd
+    lda $1f                // A5 1F
+    sta $033c              // 8D 3C 03
+    lda $fd                // A5 FD
     rts                    // 60
-    .byte $93, $20, $ff, $20, $43, $4f, $50, $59, $0d, $0d, $20, $46, $31, $2e, $20, $53    // data $8db5
-    .byte $4f, $55, $52, $43, $45, $20, $44, $45, $56, $49, $43, $45, $3a, $20, $12, $20    // data $8dc5
-    .byte $30, $38, $20, $0d, $0d, $20, $46, $33, $2e, $20, $54, $41, $52, $47, $45, $54    // data $8dd5
-    .byte $20, $44, $45, $56, $49, $43, $45, $3a, $20, $12, $20, $30, $38, $20, $0d, $0d    // data $8de5
-    .byte $20, $46, $35, $2e, $20, $ff, $3a, $20, $59, $45, $53, $20, $4e, $4f, $0d, $0d    // data $8df5
-    .byte $20, $46, $37, $2e, $20, $ff, $3a, $20, $59, $45, $53, $20, $4e, $4f, $0d, $0d    // data $8e05
-    .byte $20, $50, $52, $45, $53, $53, $20, $53, $50, $41, $43, $45, $20, $54, $4f, $20    // data $8e15
-    .byte $53, $54, $41, $52, $54, $0d, $00, $46, $49, $4c, $45, $00, $4d, $55, $4c, $54    // data $8e25
-    .byte $49, $20, $4f, $55, $54, $50, $55, $54, $20, $00, $52, $45, $50, $4c, $41, $43    // data $8e35
-    .byte $45, $20, $46, $49, $4c, $45, $53, $00, $44, $49, $53, $4b, $00, $49, $47, $4e    // data $8e45
-    .byte $4f, $52, $45, $20, $45, $52, $52, $4f, $52, $53, $00, $42, $41, $4d, $20, $43    // data $8e55
-    .byte $4f, $50, $59, $20, $20, $20, $20, $20, $00    // data $8e65
-bank03_sub_8e6e:
+bank03_data_8DB5:
+.errorif (* != $8DB5), "bank03_data_8DB5 shifted"
+// --- $8DB5-$8E6D: disk-copy dialog text ($93=CLR, $12=RVS on, $FF=field
+// placeholder): "COPY / F1. SOURCE DEVICE / F3. TARGET DEVICE / F5/F7:
+// YES NO / PRESS SPACE TO START" + option strings. Not code.
+    .byte $93, $20, $FF, $20, $43, $4F, $50, $59, $0D, $0D, $20, $46, $31, $2E, $20, $53    // data $8DB5  ". . COPY.. F1. S"
+    .byte $4F, $55, $52, $43, $45, $20, $44, $45, $56, $49, $43, $45, $3A, $20, $12, $20    // data $8DC5  "OURCE DEVICE: . "
+    .byte $30, $38, $20, $0D, $0D, $20, $46, $33, $2E, $20, $54, $41, $52, $47, $45, $54    // data $8DD5  "08 .. F3. TARGET"
+    .byte $20, $44, $45, $56, $49, $43, $45, $3A, $20, $12, $20, $30, $38, $20, $0D, $0D    // data $8DE5  " DEVICE: . 08 .."
+    .byte $20, $46, $35, $2E, $20, $FF, $3A, $20, $59, $45, $53, $20, $4E, $4F, $0D, $0D    // data $8DF5  " F5. .: YES NO.."
+    .byte $20, $46, $37, $2E, $20, $FF, $3A, $20, $59, $45, $53, $20, $4E, $4F, $0D, $0D    // data $8E05  " F7. .: YES NO.."
+    .byte $20, $50, $52, $45, $53, $53, $20, $53, $50, $41, $43, $45, $20, $54, $4F, $20    // data $8E15  " PRESS SPACE TO "
+    .byte $53, $54, $41, $52, $54, $0D, $00, $46, $49, $4C, $45, $00, $4D, $55, $4C, $54    // data $8E25  "START..FILE.MULT"
+    .byte $49, $20, $4F, $55, $54, $50, $55, $54, $20, $00, $52, $45, $50, $4C, $41, $43    // data $8E35  "I OUTPUT .REPLAC"
+    .byte $45, $20, $46, $49, $4C, $45, $53, $00, $44, $49, $53, $4B, $00, $49, $47, $4E    // data $8E45  "E FILES.DISK.IGN"
+    .byte $4F, $52, $45, $20, $45, $52, $52, $4F, $52, $53, $00, $42, $41, $4D, $20, $43    // data $8E55  "ORE ERRORS.BAM C"
+    .byte $4F, $50, $59, $20, $20, $20, $20, $20, $00    // data $8E65  "OPY     ."
+bank03_sub_8E6E:
     sec                    // 38
     bit $18                // 24 18
-    lda $f9                // a5 f9
-    eor $fa                // 45 fa
-    bne bank03_sub_8edc              // d0 65
-    bcs bank03_api_14              // b0 3a
-    jsr bank03_api_13              // 20 7f 8e
-    jmp bank03_sub_8ec6              // 4c c6 8e
+    lda $f9                // A5 F9
+    eor $fa                // 45 FA
+    bne bank03_sub_8EDC              // D0 65
+    bcs bank03_api_14              // B0 3A
+    jsr bank03_api_13              // 20 7F 8E
+    jmp bank03_sub_8EC6              // 4C C6 8E
 bank03_api_13:
-    lda $f9                // a5 f9
-bank03_sub_8e81:
+    lda $f9                // A5 F9
+bank03_sub_8E81:
     pha                    // 48
     jsr bank03_sub_8362              // 20 62 83
-    ora $4e49              // 0d 49 4e
-    .byte $53    // undocumented opcode
-    eor $52                // 45 52
-    .byte $54    // undocumented opcode
-    jsr $4f53              // 20 53 4f
-    eor $52,x              // 55 52
-    .byte $43    // undocumented opcode
-    eor $20                // 45 20
-    .byte $44    // undocumented opcode
-    eor #$53               // 49 53
-    .byte $4b    // undocumented opcode
-    jsr $4e49              // 20 49 4e
-    jsr $5244              // 20 44 52
-    eor #$56               // 49 56
-    eor $20                // 45 20
-    brk                    // 00
-    .byte $68, $aa, $a9, $00, $4c, $cd, $bd    // data $8ea3
-bank03_sub_8eaa:
-    jsr bank03_api_13              // 20 7f 8e
-    lda $fa                // a5 fa
-    cmp $f9                // c5 f9
-    beq bank03_sub_8ec6              // f0 13
+    .byte $0D, $49, $4E, $53, $45, $52, $54, $20, $53, $4F, $55, $52, $43, $45, $20, $44    // data $8E85  text: ".INSERT SOURCE D"
+    .byte $49, $53, $4B, $20, $49, $4E, $20, $44, $52, $49, $56, $45, $20, $00    // data $8E95  text: "ISK IN DRIVE ."
+bank03_data_8EA3:
+.errorif (* != $8EA3), "bank03_data_8EA3 shifted"
+    .byte $68, $AA, $A9, $00, $4C, $CD, $BD    // data $8EA3
+bank03_sub_8EAA:
+    jsr bank03_api_13              // 20 7F 8E
+    lda $fa                // A5 FA
+    cmp $f9                // C5 F9
+    beq bank03_sub_8EC6              // F0 13
 bank03_api_14:
-    lda $fa                // a5 fa
-    jsr bank03_sub_8e81              // 20 81 8e
-    lda #$07               // a9 07
-    sta $d3                // 85 d3
+    lda $fa                // A5 FA
+    jsr bank03_sub_8E81              // 20 81 8E
+    lda #$07               // A9 07
+    sta $d3                // 85 D3
     jsr bank03_sub_8362              // 20 62 83
-    .byte $54    // undocumented opcode
-    eor ($52,x)            // 41 52
-    .byte $47    // undocumented opcode
-    eor $54                // 45 54
-    brk                    // 00
-bank03_sub_8ec6:
+    .byte $54, $41, $52, $47, $45, $54, $00    // data $8EBF  text: "TARGET."
+bank03_sub_8EC6:
     jsr bank03_sub_8362              // 20 62 83
-    ora $523c              // 0d 3c 52
-    eor $54                // 45 54
-    eor $52,x              // 55 52
-    lsr.a $003e              // 4e 3e 00
-bank03_sub_8ed3:
+    .byte $0D, $3C, $52, $45, $54, $55, $52, $4E, $3E, $00    // data $8EC9  text: ".<RETURN>."
+bank03_sub_8ED3:
     jsr $8590              // 20 90 85
-    bcs bank03_sub_8edd              // b0 05
-    cmp #$0d               // c9 0d
-    bne bank03_sub_8ed3              // d0 f7
-bank03_sub_8edc:
+    bcs bank03_sub_8EDD              // B0 05
+    cmp #$0d               // C9 0D
+    bne bank03_sub_8ED3              // D0 F7
+bank03_sub_8EDC:
     rts                    // 60
-bank03_sub_8edd:
+bank03_sub_8EDD:
     pla                    // 68
     pla                    // 68
-    jmp bank03_sub_8985              // 4c 85 89
+    jmp bank03_sub_8985              // 4C 85 89
 bank03_api_15:
-    lda #$21               // a9 21
-    jsr bank03_sub_8ca6              // 20 a6 8c
-    bne bank03_sub_8ef1              // d0 08
-    lda $1f                // a5 1f
-    beq bank03_sub_8f12              // f0 25
+    lda #$21               // A9 21
+    jsr bank03_sub_8CA6              // 20 A6 8C
+    bne bank03_sub_8EF1              // D0 08
+    lda $1f                // A5 1F
+    beq bank03_sub_8F12              // F0 25
     and #$20               // 29 20
-    bne bank03_sub_8f15              // d0 24
-bank03_sub_8ef1:
+    bne bank03_sub_8F15              // D0 24
+bank03_sub_8EF1:
     jsr bank03_sub_8362              // 20 62 83
-    ora $4944              // 0d 44 49
-    .byte $53    // undocumented opcode
-    .byte $4b    // undocumented opcode
-    .byte $43    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    bvc bank03_sub_8f56              // 50 59
-    jsr $5349              // 20 49 53
-    jsr $3531              // 20 31 35
-    .byte $34    // undocumented opcode
-    and ($20),y            // 31 20
-    .byte $4f    // undocumented opcode
-    lsr $594c              // 4e 4c 59
-    rol $2e2e              // 2e 2e 2e
-    ora $4c00              // 0d 00 4c
-    .byte $83    // undocumented opcode
-    .byte $89    // undocumented opcode
-bank03_sub_8f12:
-    jmp bank03_sub_8c60              // 4c 60 8c
-bank03_sub_8f15:
-    jsr bank03_sub_8eaa              // 20 aa 8e
-    lda $f9                // a5 f9
-    sta $ba                // 85 ba
-    lda #$00               // a9 00
-    sta $fd                // 85 fd
-    lda #$0e               // a9 0e
-    sta $fe                // 85 fe
-    jsr bank03_sub_8fbd              // 20 bd 8f
-    ldy #$00               // a0 00
-    ldx #$01               // a2 01
-bank03_sub_8f2b:
+    .byte $0D, $44, $49, $53, $4B, $43, $4F, $50, $59, $20, $49, $53, $20, $31, $35, $34    // data $8EF4  text: ".DISKCOPY IS 154"
+    .byte $31, $20, $4F, $4E, $4C, $59, $2E, $2E, $2E, $0D, $00    // data $8F04  text: "1 ONLY....."
+    jmp $8983              // 4C 83 89
+bank03_sub_8F12:
+    jmp bank03_sub_8C60              // 4C 60 8C
+bank03_sub_8F15:
+    jsr bank03_sub_8EAA              // 20 AA 8E
+    lda $f9                // A5 F9
+    sta $ba                // 85 BA   current device
+    lda #$00               // A9 00
+    sta $fd                // 85 FD
+    lda #$0e               // A9 0E
+    sta $fe                // 85 FE
+    jsr bank03_sub_8FBD              // 20 BD 8F
+    ldy #$00               // A0 00
+    ldx #$01               // A2 01
+bank03_sub_8F2B:
     stx $10                // 86 10
-    bit $8c                // 24 8c
-    bvs bank03_sub_8f46              // 70 15
+    bit $8c                // 24 8C
+    bvs bank03_sub_8F46              // 70 15
     sty $24                // 84 24
-    jsr bank03_sub_9f02              // 20 02 9f
-    ora #$80               // 09 80
-    lda $10                // a5 10
-    asl                  // 0a
-    asl                  // 0a
-    tay                    // a8
-    lda $0e00,y            // b9 00 0e
-    ldy $24                // a4 24
-    cmp $13                // c5 13
-    beq bank03_sub_8f4c              // f0 06
-bank03_sub_8f46:
-    iny                    // c8
-    lda $10                // a5 10
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $09, $80         // inline arg: cross-bank call target $8009
+    lda $10                // A5 10
+    asl                  // 0A
+    asl                  // 0A
+    tay                    // A8
+    lda $0e00,y            // B9 00 0E
+    ldy $24                // A4 24
+    cmp $13                // C5 13
+    beq bank03_sub_8F4C              // F0 06
+bank03_sub_8F46:
+    iny                    // C8
+    lda $10                // A5 10
     sta $0352,y            // 99 52 03
-bank03_sub_8f4c:
-    ldx $10                // a6 10
-    inx                    // e8
-    cpx $f8                // e4 f8
-    bne bank03_sub_8f2b              // d0 d8
-    iny                    // c8
-    lda #$ff               // a9 ff
-bank03_sub_8f56:
+bank03_sub_8F4C:
+    ldx $10                // A6 10
+    inx                    // E8
+    cpx $f8                // E4 F8
+    bne bank03_sub_8F2B              // D0 D8
+    iny                    // C8
+    lda #$ff               // A9 FF
+bank03_sub_8F56:
     sta $0352,y            // 99 52 03
-    lda #$00               // a9 00
+    lda #$00               // A9 00
     sta $51                // 85 51
-    sta $0352              // 8d 52 03
-    inc $51                // e6 51
-    jsr bank03_sub_9f02              // 20 02 9f
-    rol                  // 2a
-    .byte $80    // undocumented opcode
+    sta $0352              // 8D 52 03
+    inc $51                // E6 51
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $2A, $80         // inline arg: cross-bank call target $802A
     clc                    // 18
-    lda $f9                // a5 f9
-    jsr bank03_sub_8f9f              // 20 9f 8f
-    jsr bank03_sub_8e6e              // 20 6e 8e
-    jsr bank03_sub_9f02              // 20 02 9f
-    brk                    // 00
-    .byte $08, $a5, $50, $48, $24, $8c, $10, $06, $38, $a5, $fa, $20, $9f, $8f, $68, $aa    // data $8f74
-    .byte $bd, $52, $03, $30, $08, $86, $51, $20, $70, $8e, $4c, $67, $8f, $20, $ae, $ff    // data $8f84
-    .byte $20, $7c, $8c, $d0, $03, $4c, $15, $8f, $4c, $83, $89    // data $8f94
-bank03_sub_8f9f:
-    sta $ba                // 85 ba
-    jsr bank03_sub_9f02              // 20 02 9f
-    sta $2408,x            // 9d 08 24
-    sty $3110              // 8c 10 31
+    lda $f9                // A5 F9
+    jsr bank03_sub_8F9F              // 20 9F 8F
+    jsr bank03_sub_8E6E              // 20 6E 8E
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $00, $08         // inline arg: cross-bank call target $0800
+    lda $50                // A5 50
+    pha                    // 48
+    bit $8c                // 24 8C
+    bpl b03_8F82           // 10 06
+    sec                    // 38
+    lda $fa                // A5 FA
+    jsr $8f9f              // 20 9F 8F
+b03_8F82:
+    pla                    // 68
+    tax                    // AA
+bank03_data_8F74:
+bank03_data_8F84:
+.errorif (* != $8F84), "bank03_data_8F84 shifted"
+    .byte $BD, $52, $03, $30, $08, $86, $51, $20, $70, $8E, $4C, $67, $8F, $20, $AE, $FF    // data $8F84
+    .byte $20, $7C, $8C, $D0, $03, $4C, $15, $8F, $4C, $83, $89    // data $8F94
+bank03_sub_8F9F:
+    sta $ba                // 85 BA   current device
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $9D, $08         // inline arg: cross-bank call target $089D
+    bit $8c                // 24 8C
+    bpl $8fdb              // 10 31
     jsr bank03_sub_8362              // 20 62 83
-    ora $5245              // 0d 45 52
-    .byte $52    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    .byte $52    // undocumented opcode
-    .byte $53    // undocumented opcode
-    .byte $3a    // undocumented opcode
-    brk                    // 00
-    .byte $a6, $fe, $a9, $00, $4c, $cd, $bd    // data $8fb6
-bank03_sub_8fbd:
-    jsr bank03_sub_9f02              // 20 02 9f
-    .byte $0c    // undocumented opcode
-    .byte $80    // undocumented opcode
-    beq bank03_sub_8fd8              // f0 14
-    lda #$24               // a9 24
-    sta $f8                // 85 f8
-    ldx #$0e               // a2 0e
-    lda #$12               // a9 12
-    ldy #$00               // a0 00
-    jsr bank03_sub_9f01              // 20 01 9f
-    .byte $27    // undocumented opcode
-    .byte $80    // undocumented opcode
-    jsr bank03_sub_8c60              // 20 60 8c
-    bcc bank03_sub_8fdb              // 90 03
-bank03_sub_8fd8:
-    jmp bank03_sub_8edd              // 4c dd 8e
-bank03_sub_8fdb:
+    .byte $0D, $45, $52, $52, $4F, $52, $53, $3A, $00    // data $8FAD  text: ".ERRORS:."
+bank03_data_8FB6:
+.errorif (* != $8FB6), "bank03_data_8FB6 shifted"
+    .byte $A6, $FE, $A9, $00, $4C, $CD, $BD    // data $8FB6
+bank03_sub_8FBD:
+    jsr bank03_sub_9F02              // 20 02 9F
+    .byte $0C, $80         // inline arg: cross-bank call target $800C
+    beq bank03_sub_8FD8              // F0 14
+    lda #$24               // A9 24
+    sta $f8                // 85 F8
+    ldx #$0e               // A2 0E
+    lda #$12               // A9 12
+    ldy #$00               // A0 00
+    jsr bank03_sub_9F01              // 20 01 9F
+    .byte $27, $80         // inline arg: cross-bank call target $8027
+    jsr bank03_sub_8C60              // 20 60 8C
+    bcc bank03_sub_8FDB              // 90 03
+bank03_sub_8FD8:
+    jmp bank03_sub_8EDD              // 4C DD 8E
+bank03_sub_8FDB:
     rts                    // 60
 bank03_api_24:
     jsr bank03_sub_8362              // 20 62 83
-    ora $2f52              // 0d 52 2f
-    .byte $53    // undocumented opcode
-    jsr $202d              // 20 2d 20
-    eor ($42,x)            // 41 42
-    .byte $4f    // undocumented opcode
-    .byte $52    // undocumented opcode
-    .byte $54    // undocumented opcode
-    ora $5f20              // 0d 20 5f
-    jsr $2d20              // 20 20 2d
-    jsr $4153              // 20 53 41
-    lsr $45,x              // 56 45
-    jsr $5543              // 20 43 55
-    .byte $52    // undocumented opcode
-    .byte $52    // undocumented opcode
-    eor $4e                // 45 4e
-    .byte $54    // undocumented opcode
-    jsr $4f4d              // 20 4d 4f
-    .byte $44    // undocumented opcode
-    eor $0d                // 45 0d
-    .byte $53    // undocumented opcode
-    bvc bank03_sub_904a              // 50 43
-    jsr $202d              // 20 2d 20
-    .byte $54    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    .byte $47    // undocumented opcode
-    .byte $47    // undocumented opcode
-    jmp $2045              // 4c 45 20
-    .byte $4d, $4f, $44, $45, $53, $0d, $43, $42, $4d, $20, $2d, $20, $54, $4f, $47, $47    // data $9011
-    .byte $4c, $45, $20, $49, $4e, $54, $45, $52, $4c, $41, $43, $45, $0d, $20, $31, $20    // data $9021
-    .byte $20, $2d, $20, $43, $48, $41, $4e, $47, $45, $20, $42, $47, $20, $43, $4f, $4c    // data $9031
-    .byte $4f, $52, $0d, $0d, $2d, $20, $50, $52, $45    // data $9041
-bank03_sub_904a:
-    .byte $53    // undocumented opcode
-    .byte $53    // undocumented opcode
-    jsr $5053              // 20 53 50
-    eor ($43,x)            // 41 43
-    eor $20                // 45 20
-    .byte $54    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    jsr $5453              // 20 53 54
-    eor ($52,x)            // 41 52
-    .byte $54    // undocumented opcode
-    jsr $002d              // 20 2d 00
+    .byte $0D, $52, $2F, $53, $20, $2D, $20, $41, $42, $4F, $52, $54, $0D, $20, $5F, $20    // data $8FDF  text: ".R/S - ABORT. _ "
+    .byte $20, $2D, $20, $53, $41, $56, $45, $20, $43, $55, $52, $52, $45, $4E, $54, $20    // data $8FEF  text: " - SAVE CURRENT "
+    .byte $4D, $4F, $44, $45, $0D, $53, $50, $43, $20, $2D, $20, $54, $4F, $47, $47, $4C    // data $8FFF  text: "MODE.SPC - TOGGL"
+    .byte $45, $20, $4D, $4F, $44, $45, $53, $0D, $43, $42, $4D, $20, $2D, $20, $54, $4F    // data $900F  text: "E MODES.CBM - TO"
+    .byte $47, $47, $4C, $45, $20, $49, $4E, $54, $45, $52, $4C, $41, $43, $45, $0D, $20    // data $901F  text: "GGLE INTERLACE. "
+    .byte $31, $20, $20, $2D, $20, $43, $48, $41, $4E, $47, $45, $20, $42, $47, $20, $43    // data $902F  text: "1  - CHANGE BG C"
+    .byte $4F, $4C, $4F, $52, $0D, $0D, $2D, $20, $50, $52, $45, $53, $53, $20, $53, $50    // data $903F  text: "OLOR..- PRESS SP"
+    .byte $41, $43, $45, $20, $54, $4F, $20, $53, $54, $41, $52, $54, $20, $2D, $00    // data $904F  text: "ACE TO START -."
+bank03_data_9011:
+bank03_sub_904A:
     rts                    // 60
 bank03_api_20:
     jsr bank03_sub_8362              // 20 62 83
-    ora $200d              // 0d 0d 20
-    eor ($2d,x)            // 41 2d
-    .byte $4b    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    eor ($4c,x)            // 41 4c
-    eor ($20,x)            // 41 20
-    bvc bank03_sub_90b8              // 50 49
-    .byte $43    // undocumented opcode
-    .byte $54    // undocumented opcode
-    eor $52,x              // 55 52
-    eor $0d                // 45 0d
-    jsr $2d42              // 20 42 2d
-    .byte $42    // undocumented opcode
-    eor #$54               // 49 54
-    eor $5041              // 4d 41 50
-    ora $4320              // 0d 20 43
-    and $4843              // 2d 43 48
-    eor ($52,x)            // 41 52
-    .byte $53    // undocumented opcode
-    eor $54                // 45 54
-    ora $4420              // 0d 20 44
-    and $4353              // 2d 53 43
-    .byte $52    // undocumented opcode
-    eor $45                // 45 45
-    lsr $4152              // 4e 52 41
-    eor $200d              // 4d 0d 20
-    eor $2d                // 45 2d
-    .byte $43    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    jmp $524f              // 4c 4f 52
-    .byte $52, $41, $4d, $0d, $20, $46, $2d, $46, $4c, $49, $2f, $49, $46, $4c, $49, $20    // data $909f
-    .byte $50, $49, $43, $54, $55, $52, $45, $0d, $20    // data $90af
-bank03_sub_90b8:
-    .byte $47    // undocumented opcode
-    and $454d              // 2d 4d 45
-    eor $524f              // 4d 4f 52
-    eor $4120,y            // 59 20 41
-    .byte $52    // undocumented opcode
-    eor $41                // 45 41
-    ora $6000              // 0d 00 60
+    .byte $0D, $0D, $20, $41, $2D, $4B, $4F, $41, $4C, $41, $20, $50, $49, $43, $54, $55    // data $9062  text: ".. A-KOALA PICTU"
+    .byte $52, $45, $0D, $20, $42, $2D, $42, $49, $54, $4D, $41, $50, $0D, $20, $43, $2D    // data $9072  text: "RE. B-BITMAP. C-"
+    .byte $43, $48, $41, $52, $53, $45, $54, $0D, $20, $44, $2D, $53, $43, $52, $45, $45    // data $9082  text: "CHARSET. D-SCREE"
+    .byte $4E, $52, $41, $4D, $0D, $20, $45, $2D, $43, $4F, $4C, $4F, $52, $52, $41, $4D    // data $9092  text: "NRAM. E-COLORRAM"
+    .byte $0D, $20, $46, $2D, $46, $4C, $49, $2F, $49, $46, $4C, $49, $20, $50, $49, $43    // data $90A2  text: ". F-FLI/IFLI PIC"
+    .byte $54, $55, $52, $45, $0D, $20, $47, $2D, $4D, $45, $4D, $4F, $52, $59, $20, $41    // data $90B2  text: "TURE. G-MEMORY A"
+    .byte $52, $45, $41, $0D, $00    // data $90C2  text: "REA.."
+    rts                    // 60
+bank03_data_909F:
+bank03_sub_90B8:
 bank03_api_00:
-    jsr bank03_api_07              // 20 f6 90
+    jsr bank03_api_07              // 20 F6 90
     tya                    // 98
-bank03_sub_90cc:
+bank03_sub_90CC:
     sta $0255,y            // 99 55 02
-    iny                    // c8
-    cpy #$52               // c0 52
-    bne bank03_sub_90cc              // d0 f8
-    ldx #$02               // a2 02
-bank03_sub_90d6:
+    iny                    // C8
+    cpy #$52               // C0 52
+    bne bank03_sub_90CC              // D0 F8
+    ldx #$02               // A2 02
+bank03_sub_90D6:
     sta $00,x              // 95 00
-    inx                    // e8
-    bne bank03_sub_90d6              // d0 fb
-    lda #$64               // a9 64
-    sta $0255              // 8d 55 02
-    lda #$0a               // a9 0a
-    sta $0257              // 8d 57 02
-    lda #$3c               // a9 3c
-    sta $b2                // 85 b2
-    lda #$03               // a9 03
-    sta $b3                // 85 b3
-    ldy #$a0               // a0 a0
-    jsr $fd8d              // 20 8d fd
-    asl                  // 0a
-    sta $ba                // 85 ba
+    inx                    // E8
+    bne bank03_sub_90D6              // D0 FB
+    lda #$64               // A9 64
+    sta $0255              // 8D 55 02
+    lda #$0a               // A9 0A
+    sta $0257              // 8D 57 02
+    lda #$3c               // A9 3C
+    sta $b2                // 85 B2
+    lda #$03               // A9 03
+    sta $b3                // 85 B3
+    ldy #$a0               // A0 A0
+    jsr $fd8d              // 20 8D FD
+    asl                  // 0A
+    sta $ba                // 85 BA   current device
     rts                    // 60
 bank03_api_07:
-    ldy #$20               // a0 20
-bank03_sub_90f8:
-    lda $fd2f,y            // b9 2f fd
+    ldy #$20               // A0 20
+bank03_sub_90F8:
+    lda $fd2f,y            // B9 2F FD
     sta $0313,y            // 99 13 03
     dey                    // 88
-    bne bank03_sub_90f8              // d0 f7
+    bne bank03_sub_90F8              // D0 F7
     rts                    // 60
 bank03_api_10:
     sei                    // 78
-    cld                    // d8
-    lda #$00               // a9 00
-    sta $d016              // 8d 16 d0
-    ldx #$a7               // a2 a7
-bank03_sub_910b:
-    sta $0200,x            // 9d 00 02
-    inx                    // e8
-    bne bank03_sub_910b              // d0 fa
+    cld                    // D8
+    lda #$00               // A9 00
+    sta $d016              // 8D 16 D0   VIC control 2 (XSCROLL, 38/40col)
+    ldx #$a7               // A2 A7
+bank03_sub_910B:
+    sta $0200,x            // 9D 00 02   BASIC input buffer
+    inx                    // E8
+    bne bank03_sub_910B              // D0 FA
 bank03_sub_9111:
-    sta $0300,x            // 9d 00 03
-    inx                    // e8
-    bne bank03_sub_9111              // d0 fa
-    jsr bank03_api_00              // 20 c8 90
-    jsr $fda3              // 20 a3 fd
-    jsr $ff5b              // 20 5b ff
-    inc $c5                // e6 c5
-    ldx #$29               // a2 29
+    sta $0300,x            // 9D 00 03   IERROR vector
+    inx                    // E8
+    bne bank03_sub_9111              // D0 FA
+    jsr bank03_api_00              // 20 C8 90
+    jsr $fda3              // 20 A3 FD   KERNAL IOINIT guts
+    jsr $ff5b              // 20 5B FF   KERNAL CINT guts (video init)
+    inc $c5                // E6 C5   last key
+    ldx #$29               // A2 29
 bank03_sub_9124:
-    lda $9130,x            // bd 30 91
-    sta $0210,x            // 9d 10 02
-    dex                    // ca
-    bpl bank03_sub_9124              // 10 f7
-    jmp $0210              // 4c 10 02
-    .byte $a9, $0e, $8d, $00, $de, $58, $20, $53, $e4, $a2, $03, $bd, $00, $08, $9d, $0a    // data $9130
-    .byte $02, $ca, $10, $f7, $20, $bf, $e3, $20, $22, $e4, $a2, $03, $bd, $0a, $02, $9d    // data $9140
-    .byte $00, $08, $ca, $10, $f7, $68, $4c, $86, $e3    // data $9150
+    lda $9130,x            // BD 30 91
+    sta $0210,x            // 9D 10 02
+    dex                    // CA
+    bpl bank03_sub_9124              // 10 F7
+    jmp $0210              // 4C 10 02
+bank03_data_9130:
+.errorif (* != $9130), "bank03_data_9130 shifted"
+    .byte $A9, $0E, $8D, $00, $DE, $58, $20, $53, $E4, $A2, $03, $BD, $00, $08, $9D, $0A    // data $9130
+    .byte $02, $CA, $10, $F7, $20, $BF, $E3, $20, $22, $E4, $A2, $03, $BD, $0A, $02, $9D    // data $9140
+    .byte $00, $08, $CA, $10, $F7, $68, $4C, $86, $E3    // data $9150
 bank03_api_17:
-    jsr $a57c              // 20 7c a5
-    jsr bank03_sub_920b              // 20 0b 92
-    lda #$ff               // a9 ff
+    jsr $a57c              // 20 7C A5
+    jsr bank03_sub_920B              // 20 0B 92
+    lda #$ff               // A9 FF
     sta $52                // 85 52
     sta $53                // 85 53
-    ldy #$00               // a0 00
-    lda $2b                // a5 2b
+    ldy #$00               // A0 00
+    lda $2b                // A5 2B   BASIC prog start lo
     sta $20                // 85 20
-    lda $2c                // a5 2c
+    lda $2c                // A5 2C   BASIC prog start hi
     sta $21                // 85 21
-    jmp bank03_sub_919b              // 4c 9b 91
+    jmp bank03_sub_919B              // 4C 9B 91
 bank03_sub_9172:
-    lda ($7a),y            // b1 7a
-    beq bank03_sub_91bc              // f0 46
-    lda ($20),y            // b1 20
-    beq bank03_sub_9183              // f0 09
-    lda ($7a),y            // b1 7a
-    cmp ($20),y            // d1 20
-    bne bank03_sub_9183              // d0 03
-    iny                    // c8
-    bne bank03_sub_9172              // d0 ef
+    lda ($7a),y            // B1 7A
+    beq bank03_sub_91BC              // F0 46
+    lda ($20),y            // B1 20
+    beq bank03_sub_9183              // F0 09
+    lda ($7a),y            // B1 7A
+    cmp ($20),y            // D1 20
+    bne bank03_sub_9183              // D0 03
+    iny                    // C8
+    bne bank03_sub_9172              // D0 EF
 bank03_sub_9183:
     jsr bank03_sub_9212              // 20 12 92
-    ldy #$00               // a0 00
-    lda ($20),y            // b1 20
-    bne bank03_sub_9172              // d0 e6
+    ldy #$00               // A0 00
+    lda ($20),y            // B1 20
+    bne bank03_sub_9172              // D0 E6
     jsr bank03_sub_9212              // 20 12 92
-    ldy #$00               // a0 00
-    sty $ae                // 84 ae
-    lda ($20),y            // b1 20
-    bne bank03_sub_919b              // d0 04
-    lda #$01               // a9 01
-    sta $ae                // 85 ae
-bank03_sub_919b:
+    ldy #$00               // A0 00
+    sty $ae                // 84 AE   load end addr lo
+    lda ($20),y            // B1 20
+    bne bank03_sub_919B              // D0 04
+    lda #$01               // A9 01
+    sta $ae                // 85 AE   load end addr lo
+bank03_sub_919B:
     jsr bank03_sub_9212              // 20 12 92
-    lda ($20),y            // b1 20
-    bne bank03_sub_91a9              // d0 07
-    lda $ae                // a5 ae
-    cmp #$01               // c9 01
-    bne bank03_sub_91a9              // d0 01
+    lda ($20),y            // B1 20
+    bne bank03_sub_91A9              // D0 07
+    lda $ae                // A5 AE   load end addr lo
+    cmp #$01               // C9 01
+    bne bank03_sub_91A9              // D0 01
     rts                    // 60
-bank03_sub_91a9:
+bank03_sub_91A9:
     jsr bank03_sub_9212              // 20 12 92
-    lda ($20),y            // b1 20
+    lda ($20),y            // B1 20
     sta $50                // 85 50
     jsr bank03_sub_9212              // 20 12 92
-    lda ($20),y            // b1 20
+    lda ($20),y            // B1 20
     sta $51                // 85 51
     jsr bank03_sub_9212              // 20 12 92
-    bne bank03_sub_9172              // d0 b6
-bank03_sub_91bc:
-    lda $50                // a5 50
-    cmp $52                // c5 52
-    bne bank03_sub_91c8              // d0 06
-    lda $51                // a5 51
-    cmp $53                // c5 53
-    beq bank03_sub_9183              // f0 bb
-bank03_sub_91c8:
-    lda $50                // a5 50
+    bne bank03_sub_9172              // D0 B6
+bank03_sub_91BC:
+    lda $50                // A5 50
+    cmp $52                // C5 52
+    bne bank03_sub_91C8              // D0 06
+    lda $51                // A5 51
+    cmp $53                // C5 53
+    beq bank03_sub_9183              // F0 BB
+bank03_sub_91C8:
+    lda $50                // A5 50
     sta $52                // 85 52
     sta $63                // 85 63
-    lda $51                // a5 51
+    lda $51                // A5 51
     sta $62                // 85 62
     sta $53                // 85 53
-    ldx #$90               // a2 90
+    ldx #$90               // A2 90
     sec                    // 38
-    jsr $bc49              // 20 49 bc
-    jsr $bddf              // 20 df bd
-    jsr bank03_sub_91fd              // 20 fd 91
+    jsr $bc49              // 20 49 BC
+    jsr $bddf              // 20 DF BD
+    jsr bank03_sub_91FD              // 20 FD 91
     sec                    // 38
-    jsr $fff0              // 20 f0 ff
+    jsr $fff0              // 20 F0 FF   KERNAL PLOT: set/get cursor
     tya                    // 98
-bank03_sub_91e5:
-    sbc #$0a               // e9 0a
-    bcs bank03_sub_91e5              // b0 fc
-    eor #$ff               // 49 ff
+bank03_sub_91E5:
+    sbc #$0a               // E9 0A
+    bcs bank03_sub_91E5              // B0 FC
+    eor #$ff               // 49 FF
     adc #$01               // 69 01
-    tax                    // aa
-    inx                    // e8
-bank03_sub_91ef:
-    dex                    // ca
-    bne bank03_sub_91f5              // d0 03
-    jmp bank03_sub_9183              // 4c 83 91
-bank03_sub_91f5:
-    lda #$20               // a9 20
-    jsr $ffd2              // 20 d2 ff
-    jmp bank03_sub_91ef              // 4c ef 91
-bank03_sub_91fd:
-    ldx #$00               // a2 00
-bank03_sub_91ff:
-    lda $0100,x            // bd 00 01
-    beq bank03_sub_920a              // f0 06
-    jsr $ffd2              // 20 d2 ff
-    inx                    // e8
-    bne bank03_sub_91ff              // d0 f5
-bank03_sub_920a:
+    tax                    // AA
+    inx                    // E8
+bank03_sub_91EF:
+    dex                    // CA
+    bne bank03_sub_91F5              // D0 03
+    jmp bank03_sub_9183              // 4C 83 91
+bank03_sub_91F5:
+    lda #$20               // A9 20
+    jsr $ffd2              // 20 D2 FF   KERNAL CHROUT: print char
+    jmp bank03_sub_91EF              // 4C EF 91
+bank03_sub_91FD:
+    ldx #$00               // A2 00
+bank03_sub_91FF:
+    lda $0100,x            // BD 00 01
+    beq bank03_sub_920A              // F0 06
+    jsr $ffd2              // 20 D2 FF   KERNAL CHROUT: print char
+    inx                    // E8
+    bne bank03_sub_91FF              // D0 F5
+bank03_sub_920A:
     rts                    // 60
-bank03_sub_920b:
-    inc $7a                // e6 7a
-    bne bank03_sub_9211              // d0 02
-    inc $7b                // e6 7b
+bank03_sub_920B:
+    inc $7a                // E6 7A   TXTPTR lo
+    bne bank03_sub_9211              // D0 02
+    inc $7b                // E6 7B   TXTPTR hi
 bank03_sub_9211:
     rts                    // 60
 bank03_sub_9212:
-    inc $20                // e6 20
-    bne bank03_sub_9218              // d0 02
-    inc $21                // e6 21
+    inc $20                // E6 20
+    bne bank03_sub_9218              // D0 02
+    inc $21                // E6 21
 bank03_sub_9218:
     rts                    // 60
 bank03_api_16:
-    lda #$00               // a9 00
+    lda #$00               // A9 00
     sta $51                // 85 51
     sta $52                // 85 52
-    lda #$ff               // a9 ff
-    sta $3d                // 85 3d
-    bne bank03_sub_922b              // d0 06
-    lda $14                // a5 14
-    sta $3d                // 85 3d
-    lda $15                // a5 15
-bank03_sub_922b:
-    sta $3e                // 85 3e
+    lda #$ff               // A9 FF
+    sta $3d                // 85 3D
+    bne bank03_sub_922B              // D0 06
+    lda $14                // A5 14
+    sta $3d                // 85 3D
+    lda $15                // A5 15
+bank03_sub_922B:
+    sta $3e                // 85 3E
     sei                    // 78
-    jsr $a68e              // 20 8e a6
+    jsr $a68e              // 20 8E A6
 bank03_sub_9231:
-    ldy #$02               // a0 02
-    lda ($7a),y            // b1 7a
-    bne bank03_sub_923a              // d0 03
-    jmp bank03_sub_938e              // 4c 8e 93
-bank03_sub_923a:
-    ldy #$04               // a0 04
-    jsr $a8fb              // 20 fb a8
-bank03_sub_923f:
+    ldy #$02               // A0 02
+    lda ($7a),y            // B1 7A
+    bne bank03_sub_923A              // D0 03
+    jmp bank03_sub_938E              // 4C 8E 93
+bank03_sub_923A:
+    ldy #$04               // A0 04
+    jsr $a8fb              // 20 FB A8
+bank03_sub_923F:
     jsr $0073              // 20 73 00
 bank03_sub_9242:
-    jsr bank03_sub_93f5              // 20 f5 93
-    cmp #$00               // c9 00
-    beq bank03_sub_9231              // f0 e8
-    cmp #$cb               // c9 cb
-    beq bank03_sub_926c              // f0 1f
-    cmp #$89               // c9 89
-    beq bank03_sub_9273              // f0 22
-    cmp #$8d               // c9 8d
-    beq bank03_sub_9273              // f0 1e
-    cmp #$a7               // c9 a7
-    beq bank03_sub_9261              // f0 08
-    cmp #$8a               // c9 8a
-    beq bank03_sub_9261              // f0 04
-    cmp #$9b               // c9 9b
-    bne bank03_sub_923f              // d0 de
+    jsr bank03_sub_93F5              // 20 F5 93
+    cmp #$00               // C9 00
+    beq bank03_sub_9231              // F0 E8
+    cmp #$cb               // C9 CB
+    beq bank03_sub_926C              // F0 1F
+    cmp #$89               // C9 89
+    beq bank03_sub_9273              // F0 22
+    cmp #$8d               // C9 8D
+    beq bank03_sub_9273              // F0 1E
+    cmp #$a7               // C9 A7
+    beq bank03_sub_9261              // F0 08
+    cmp #$8a               // C9 8A
+    beq bank03_sub_9261              // F0 04
+    cmp #$9b               // C9 9B
+    bne bank03_sub_923F              // D0 DE
 bank03_sub_9261:
     jsr $0073              // 20 73 00
     bcc bank03_sub_9276              // 90 10
 bank03_sub_9266:
-    cmp #$ab               // c9 ab
-    beq bank03_sub_9273              // f0 09
-    bne bank03_sub_9242              // d0 d6
-bank03_sub_926c:
+    cmp #$ab               // C9 AB
+    beq bank03_sub_9273              // F0 09
+    bne bank03_sub_9242              // D0 D6
+bank03_sub_926C:
     jsr $0073              // 20 73 00
-    cmp #$a4               // c9 a4
-    bne bank03_sub_923f              // d0 cc
+    cmp #$a4               // C9 A4
+    bne bank03_sub_923F              // D0 CC
 bank03_sub_9273:
     jsr $0073              // 20 73 00
 bank03_sub_9276:
-    ldx $7a                // a6 7a
-    stx $8d                // 86 8d
-    ldx $7b                // a6 7b
-    stx $8e                // 86 8e
-    jsr $a96b              // 20 6b a9
-    lda $14                // a5 14
-    sta $fb                // 85 fb
-    lda $15                // a5 15
-    sta $fc                // 85 fc
+    ldx $7a                // A6 7A   TXTPTR lo
+    stx $8d                // 86 8D
+    ldx $7b                // A6 7B   TXTPTR hi
+    stx $8e                // 86 8E
+    jsr $a96b              // 20 6B A9
+    lda $14                // A5 14
+    sta $fb                // 85 FB
+    lda $15                // A5 15
+    sta $fc                // 85 FC
     jsr bank03_sub_9295              // 20 95 92
     jsr $0079              // 20 79 00
-    cmp #$2c               // c9 2c
-    beq bank03_sub_9273              // f0 e0
-    bne bank03_sub_9266              // d0 d1
+    cmp #$2c               // C9 2C
+    beq bank03_sub_9273              // F0 E0
+    bne bank03_sub_9266              // D0 D1
 bank03_sub_9295:
-    jsr bank03_sub_93e2              // 20 e2 93
+    jsr bank03_sub_93E2              // 20 E2 93
 bank03_sub_9298:
-    ldy #$01               // a0 01
-    lda ($5f),y            // b1 5f
-    beq bank03_sub_92cc              // f0 2e
-    iny                    // c8
+    ldy #$01               // A0 01
+    lda ($5f),y            // B1 5F
+    beq bank03_sub_92CC              // F0 2E
+    iny                    // C8
     jsr bank03_sub_9411              // 20 11 94
-    cmp $3e                // c5 3e
-    bne bank03_sub_92aa              // d0 04
-    cpx $3d                // e4 3d
-    beq bank03_sub_92ac              // f0 02
-bank03_sub_92aa:
-    bcs bank03_sub_92cc              // b0 20
-bank03_sub_92ac:
-    cmp $fc                // c5 fc
-    bne bank03_sub_92b4              // d0 04
-    cpx $fb                // e4 fb
-    beq bank03_sub_92cd              // f0 19
-bank03_sub_92b4:
-    bcs bank03_sub_92cc              // b0 16
-    lda $02                // a5 02
-    adc $8b                // 65 8b
-    sta $8b                // 85 8b
-    bcc bank03_sub_92c0              // 90 02
-    inc $8c                // e6 8c
-bank03_sub_92c0:
-    ldy #$00               // a0 00
+    cmp $3e                // C5 3E
+    bne bank03_sub_92AA              // D0 04
+    cpx $3d                // E4 3D
+    beq bank03_sub_92AC              // F0 02
+bank03_sub_92AA:
+    bcs bank03_sub_92CC              // B0 20
+bank03_sub_92AC:
+    cmp $fc                // C5 FC
+    bne bank03_sub_92B4              // D0 04
+    cpx $fb                // E4 FB
+    beq bank03_sub_92CD              // F0 19
+bank03_sub_92B4:
+    bcs bank03_sub_92CC              // B0 16
+    lda $02                // A5 02
+    adc $8b                // 65 8B
+    sta $8b                // 85 8B
+    bcc bank03_sub_92C0              // 90 02
+    inc $8c                // E6 8C
+bank03_sub_92C0:
+    ldy #$00               // A0 00
     jsr bank03_sub_9411              // 20 11 94
-    stx $5f                // 86 5f
+    stx $5f                // 86 5F
     sta $60                // 85 60
-    jmp bank03_sub_9298              // 4c 98 92
-bank03_sub_92cc:
+    jmp bank03_sub_9298              // 4C 98 92
+bank03_sub_92CC:
     rts                    // 60
-bank03_sub_92cd:
-    lda $8b                // a5 8b
+bank03_sub_92CD:
+    lda $8b                // A5 8B
     sta $63                // 85 63
-    lda $8c                // a5 8c
+    lda $8c                // A5 8C
     sta $62                // 85 62
-    ldx #$90               // a2 90
+    ldx #$90               // A2 90
     sec                    // 38
-    jsr $bc49              // 20 49 bc
-    jsr $bddf              // 20 df bd
-    ldy #$ff               // a0 ff
-bank03_sub_92e0:
-    iny                    // c8
-    lda $0100,y            // b9 00 01
-    bne bank03_sub_92e0              // d0 fa
-    sty $8f                // 84 8f
-    lda $7a                // a5 7a
+    jsr $bc49              // 20 49 BC
+    jsr $bddf              // 20 DF BD
+    ldy #$ff               // A0 FF
+bank03_sub_92E0:
+    iny                    // C8
+    lda $0100,y            // B9 00 01
+    bne bank03_sub_92E0              // D0 FA
+    sty $8f                // 84 8F
+    lda $7a                // A5 7A   TXTPTR lo
     sec                    // 38
-    sbc $8d                // e5 8d
+    sbc $8d                // E5 8D
     sec                    // 38
-    sbc $8f                // e5 8f
-    bne bank03_sub_92f5              // d0 03
-    jmp bank03_sub_9372              // 4c 72 93
-bank03_sub_92f5:
-    bcc bank03_sub_9341              // 90 4a
-    sta $ab                // 85 ab
-    lda $7a                // a5 7a
-    sta $3b                // 85 3b
-    sbc $ab                // e5 ab
+    sbc $8f                // E5 8F
+    bne bank03_sub_92F5              // D0 03
+    jmp bank03_sub_9372              // 4C 72 93
+bank03_sub_92F5:
+    bcc bank03_sub_9341              // 90 4A
+    sta $ab                // 85 AB
+    lda $7a                // A5 7A   TXTPTR lo
+    sta $3b                // 85 3B
+    sbc $ab                // E5 AB
     sta $39                // 85 39
-    lda $7b                // a5 7b
-    sta $3c                // 85 3c
-    sbc #$00               // e9 00
-    sta $3a                // 85 3a
+    lda $7b                // A5 7B   TXTPTR hi
+    sta $3c                // 85 3C
+    sbc #$00               // E9 00
+    sta $3a                // 85 3A
     pha                    // 48
     sec                    // 38
-    lda $2d                // a5 2d
-    sbc $7a                // e5 7a
-    sta $a9                // 85 a9
-    lda $2e                // a5 2e
-    sbc $7b                // e5 7b
-    sta $aa                // 85 aa
-    ldy #$00               // a0 00
-    ldx $aa                // a6 aa
-    beq bank03_sub_932b              // f0 0e
-bank03_sub_931d:
-    lda ($3b),y            // b1 3b
+    lda $2d                // A5 2D   BASIC vars start lo
+    sbc $7a                // E5 7A   TXTPTR lo
+    sta $a9                // 85 A9
+    lda $2e                // A5 2E   BASIC vars start hi
+    sbc $7b                // E5 7B   TXTPTR hi
+    sta $aa                // 85 AA
+    ldy #$00               // A0 00
+    ldx $aa                // A6 AA
+    beq bank03_sub_932B              // F0 0E
+bank03_sub_931D:
+    lda ($3b),y            // B1 3B
     sta ($39),y            // 91 39
-    iny                    // c8
-    bne bank03_sub_931d              // d0 f9
-    inc $3c                // e6 3c
-    inc $3a                // e6 3a
-    dex                    // ca
-    bne bank03_sub_931d              // d0 f2
-bank03_sub_932b:
-    ldx $a9                // a6 a9
-    beq bank03_sub_9337              // f0 08
-bank03_sub_932f:
-    lda ($3b),y            // b1 3b
+    iny                    // C8
+    bne bank03_sub_931D              // D0 F9
+    inc $3c                // E6 3C
+    inc $3a                // E6 3A
+    dex                    // CA
+    bne bank03_sub_931D              // D0 F2
+bank03_sub_932B:
+    ldx $a9                // A6 A9
+    beq bank03_sub_9337              // F0 08
+bank03_sub_932F:
+    lda ($3b),y            // B1 3B
     sta ($39),y            // 91 39
-    iny                    // c8
-    dex                    // ca
-    bne bank03_sub_932f              // d0 f8
+    iny                    // C8
+    dex                    // CA
+    bne bank03_sub_932F              // D0 F8
 bank03_sub_9337:
-    lda $39                // a5 39
-    sta $7a                // 85 7a
+    lda $39                // A5 39
+    sta $7a                // 85 7A   TXTPTR lo
     pla                    // 68
-    sta $7b                // 85 7b
-    jmp bank03_sub_9372              // 4c 72 93
+    sta $7b                // 85 7B   TXTPTR hi
+    jmp bank03_sub_9372              // 4C 72 93
 bank03_sub_9341:
     sec                    // 38
-    sta $ab                // 85 ab
-    lda #$00               // a9 00
-    sbc $ab                // e5 ab
-    sta $ab                // 85 ab
-    adc $2d                // 65 2d
+    sta $ab                // 85 AB
+    lda #$00               // A9 00
+    sbc $ab                // E5 AB
+    sta $ab                // 85 AB
+    adc $2d                // 65 2D   BASIC vars start lo
     sta $58                // 85 58
-    lda $2e                // a5 2e
-    sta $5b                // 85 5b
+    lda $2e                // A5 2E   BASIC vars start hi
+    sta $5b                // 85 5B
     adc #$00               // 69 00
     sta $59                // 85 59
-    lda $2d                // a5 2d
-    sta $5a                // 85 5a
-    lda $7a                // a5 7a
-    sta $5f                // 85 5f
+    lda $2d                // A5 2D   BASIC vars start lo
+    sta $5a                // 85 5A
+    lda $7a                // A5 7A   TXTPTR lo
+    sta $5f                // 85 5F
     clc                    // 18
-    adc $ab                // 65 ab
+    adc $ab                // 65 AB
     pha                    // 48
-    lda $7b                // a5 7b
+    lda $7b                // A5 7B   TXTPTR hi
     sta $60                // 85 60
     adc #$00               // 69 00
     pha                    // 48
-    jsr $a3bf              // 20 bf a3
+    jsr $a3bf              // 20 BF A3
     pla                    // 68
-    sta $7b                // 85 7b
+    sta $7b                // 85 7B   TXTPTR hi
     pla                    // 68
-    sta $7a                // 85 7a
+    sta $7a                // 85 7A   TXTPTR lo
 bank03_sub_9372:
-    ldy $8f                // a4 8f
+    ldy $8f                // A4 8F
     dey                    // 88
 bank03_sub_9375:
-    lda $0100,y            // b9 00 01
-    sta ($8d),y            // 91 8d
+    lda $0100,y            // B9 00 01
+    sta ($8d),y            // 91 8D
     dey                    // 88
-    bpl bank03_sub_9375              // 10 f8
-    jsr $a533              // 20 33 a5
-    lda $22                // a5 22
+    bpl bank03_sub_9375              // 10 F8
+    jsr $a533              // 20 33 A5
+    lda $22                // A5 22
     clc                    // 18
     adc #$02               // 69 02
-    sta $2d                // 85 2d
-    lda $23                // a5 23
+    sta $2d                // 85 2D   BASIC vars start lo
+    lda $23                // A5 23
     adc #$00               // 69 00
-    sta $2e                // 85 2e
+    sta $2e                // 85 2E   BASIC vars start hi
     rts                    // 60
-bank03_sub_938e:
-    jsr bank03_sub_93e2              // 20 e2 93
+bank03_sub_938E:
+    jsr bank03_sub_93E2              // 20 E2 93
 bank03_sub_9391:
-    ldy #$01               // a0 01
-    lda ($5f),y            // b1 5f
-    bne bank03_sub_93b6              // d0 1f
+    ldy #$01               // A0 01
+    lda ($5f),y            // B1 5F
+    bne bank03_sub_93B6              // D0 1F
 bank03_sub_9397:
-    lda $37                // a5 37
-    ldy $38                // a4 38
+    lda $37                // A5 37   BASIC mem top lo
+    ldy $38                // A4 38   BASIC mem top hi
     sta $33                // 85 33
     sty $34                // 84 34
-    lda $2d                // a5 2d
-    ldy $2e                // a4 2e
-    sta $2f                // 85 2f
+    lda $2d                // A5 2D   BASIC vars start lo
+    ldy $2e                // A4 2E   BASIC vars start hi
+    sta $2f                // 85 2F
     sty $30                // 84 30
     sta $31                // 85 31
     sty $32                // 84 32
-    jsr $a81d              // 20 1d a8
-    ldx #$19               // a2 19
+    jsr $a81d              // 20 1D A8
+    ldx #$19               // A2 19
     stx $16                // 86 16
-    jmp $a687              // 4c 87 a6
-    .byte $60    // data $93b5
-bank03_sub_93b6:
-    iny                    // c8
+    jmp $a687              // 4C 87 A6
+bank03_data_93B5:
+.errorif (* != $93B5), "bank03_data_93B5 shifted"
+    .byte $60    // data $93B5
+bank03_sub_93B6:
+    iny                    // C8
     jsr bank03_sub_9411              // 20 11 94
-    cmp $3e                // c5 3e
-    bne bank03_sub_93c2              // d0 04
-    cpx $3d                // e4 3d
-    beq bank03_sub_93c4              // f0 02
-bank03_sub_93c2:
-    bcs bank03_sub_9397              // b0 d3
-bank03_sub_93c4:
-    lda $8c                // a5 8c
-    sta ($5f),y            // 91 5f
+    cmp $3e                // C5 3E
+    bne bank03_sub_93C2              // D0 04
+    cpx $3d                // E4 3D
+    beq bank03_sub_93C4              // F0 02
+bank03_sub_93C2:
+    bcs bank03_sub_9397              // B0 D3
+bank03_sub_93C4:
+    lda $8c                // A5 8C
+    sta ($5f),y            // 91 5F
     dey                    // 88
-    lda $8b                // a5 8b
-    sta ($5f),y            // 91 5f
+    lda $8b                // A5 8B
+    sta ($5f),y            // 91 5F
     clc                    // 18
     adc $02                // 65 02
-    sta $8b                // 85 8b
-    bcc bank03_sub_93d6              // 90 02
-    inc $8c                // e6 8c
-bank03_sub_93d6:
-    ldy #$00               // a0 00
+    sta $8b                // 85 8B
+    bcc bank03_sub_93D6              // 90 02
+    inc $8c                // E6 8C
+bank03_sub_93D6:
+    ldy #$00               // A0 00
     jsr bank03_sub_9411              // 20 11 94
-    stx $5f                // 86 5f
+    stx $5f                // 86 5F
     sta $60                // 85 60
-    jmp bank03_sub_9391              // 4c 91 93
-bank03_sub_93e2:
-    lda $fd                // a5 fd
-    sta $8b                // 85 8b
-    lda $fe                // a5 fe
-    sta $8c                // 85 8c
-    lda $51                // a5 51
+    jmp bank03_sub_9391              // 4C 91 93
+bank03_sub_93E2:
+    lda $fd                // A5 FD
+    sta $8b                // 85 8B
+    lda $fe                // A5 FE
+    sta $8c                // 85 8C
+    lda $51                // A5 51
     sta $14                // 85 14
-    lda $52                // a5 52
+    lda $52                // A5 52
     sta $15                // 85 15
-    jmp $a613              // 4c 13 a6
-bank03_sub_93f5:
-    cmp #$8f               // c9 8f
-    beq $9404              // f0 0b
-    cmp #$22               // c9 22
-    beq bank03_sub_9406              // f0 09
-    cmp #$83               // c9 83
-    bne bank03_sub_9410              // d0 0f
-    lda #$3a               // a9 3a
-    bit.a $00a9              // 2c a9 00
+    jmp $a613              // 4C 13 A6
+bank03_sub_93F5:
+    cmp #$8f               // C9 8F
+    beq $9404              // F0 0B
+    cmp #$22               // C9 22
+    beq bank03_sub_9406              // F0 09
+    cmp #$83               // C9 83
+    bne bank03_sub_9410              // D0 0F
+    lda #$3a               // A9 3A
+    bit.abs $00a9              // 2C A9 00
 bank03_sub_9406:
-    tax                    // aa
-    jsr $a90b              // 20 0b a9
-    jsr $a8fb              // 20 fb a8
+    tax                    // AA
+    jsr $a90b              // 20 0B A9
+    jsr $a8fb              // 20 FB A8
     jsr $0079              // 20 79 00
 bank03_sub_9410:
     rts                    // 60
 bank03_sub_9411:
-    lda ($5f),y            // b1 5f
-    tax                    // aa
-    iny                    // c8
-    lda ($5f),y            // b1 5f
+    lda ($5f),y            // B1 5F
+    tax                    // AA
+    iny                    // C8
+    lda ($5f),y            // B1 5F
     rts                    // 60
 bank03_api_31:
-    ldy #$01               // a0 01
+    ldy #$01               // A0 01
     tya                    // 98
-    sta ($2b),y            // 91 2b
-    jsr bank03_api_23              // 20 58 9f
-    lda $22                // a5 22
-    ldy $23                // a4 23
+    sta ($2b),y            // 91 2B
+    jsr bank03_api_23              // 20 58 9F
+    lda $22                // A5 22
+    ldy $23                // A4 23
     clc                    // 18
     adc #$02               // 69 02
-    bcc bank03_sub_942a              // 90 01
-    iny                    // c8
-bank03_sub_942a:
-    sta $2d                // 85 2d
-    sty $2e                // 84 2e
+    bcc bank03_sub_942A              // 90 01
+    iny                    // C8
+bank03_sub_942A:
+    sta $2d                // 85 2D   BASIC vars start lo
+    sty $2e                // 84 2E   BASIC vars start hi
     rts                    // 60
 bank03_api_28:
     jsr bank03_api_29              // 20 73 94
     tya                    // 98
-    ldy #$01               // a0 01
-    sta ($c1),y            // 91 c1
-    txa                    // 8a
+    ldy #$01               // A0 01
+    sta ($c1),y            // 91 C1
+    txa                    // 8A
     dey                    // 88
-    sta ($c1),y            // 91 c1
-    sty $0200              // 8c 00 02
-    lda $c1                // a5 c1
-    sta $5f                // 85 5f
-    lda $c2                // a5 c2
+    sta ($c1),y            // 91 C1
+    sty $0200              // 8C 00 02   BASIC input buffer
+    lda $c1                // A5 C1   I/O start addr lo
+    sta $5f                // 85 5F
+    lda $c2                // A5 C2   I/O start addr hi
     sta $60                // 85 60
-    lda $0302              // ad 02 03
-    sta $c1                // 85 c1
-    lda $0303              // ad 03 03
-    sta $c2                // 85 c2
+    lda $0302              // AD 02 03   IMAIN vector (BASIC idle loop)
+    sta $c1                // 85 C1   I/O start addr lo
+    lda $0303              // AD 03 03
+    sta $c2                // 85 C2   I/O start addr hi
     rts                    // 60
 bank03_api_30:
-    lda $c2                // a5 c2
-    sta $0303              // 8d 03 03
-    lda $c1                // a5 c1
-    sta $0302              // 8d 02 03
-    lda #$08               // a9 08
-    ldy #$01               // a0 01
-    sta ($2b),y            // 91 2b
-    jsr bank03_api_23              // 20 58 9f
-    lda $22                // a5 22
-    ldy $23                // a4 23
+    lda $c2                // A5 C2   I/O start addr hi
+    sta $0303              // 8D 03 03
+    lda $c1                // A5 C1   I/O start addr lo
+    sta $0302              // 8D 02 03   IMAIN vector (BASIC idle loop)
+    lda #$08               // A9 08
+    ldy #$01               // A0 01
+    sta ($2b),y            // 91 2B
+    jsr bank03_api_23              // 20 58 9F
+    lda $22                // A5 22
+    ldy $23                // A4 23
     clc                    // 18
     adc #$02               // 69 02
-    bcc bank03_sub_946e              // 90 01
-    iny                    // c8
-bank03_sub_946e:
-    sta $2d                // 85 2d
-    sty $2e                // 84 2e
+    bcc bank03_sub_946E              // 90 01
+    iny                    // C8
+bank03_sub_946E:
+    sta $2d                // 85 2D   BASIC vars start lo
+    sty $2e                // 84 2E   BASIC vars start hi
     rts                    // 60
 bank03_api_29:
-    bcs bank03_sub_94c2              // b0 4d
-    jsr $a96b              // 20 6b a9
-    jsr $a613              // 20 13 a6
-    ldx $5f                // a6 5f
-    ldy $60                // a4 60
-    stx $c1                // 86 c1
-    sty $c2                // 84 c2
+    bcs bank03_sub_94C2              // B0 4D
+    jsr $a96b              // 20 6B A9
+    jsr $a613              // 20 13 A6
+    ldx $5f                // A6 5F
+    ldy $60                // A4 60
+    stx $c1                // 86 C1   I/O start addr lo
+    sty $c2                // 84 C2   I/O start addr hi
     jsr $0079              // 20 79 00
-    cmp #$2d               // c9 2d
-    bne bank03_sub_94c2              // d0 38
+    cmp #$2d               // C9 2D
+    bne bank03_sub_94C2              // D0 38
     jsr $0073              // 20 73 00
-    bne bank03_sub_94a0              // d0 11
-    lda $2d                // a5 2d
+    bne bank03_sub_94A0              // D0 11
+    lda $2d                // A5 2D   BASIC vars start lo
     sec                    // 38
-    sbc #$02               // e9 02
-    tax                    // aa
-    sta $5f                // 85 5f
-    lda $2e                // a5 2e
-    sbc #$00               // e9 00
-    tay                    // a8
+    sbc #$02               // E9 02
+    tax                    // AA
+    sta $5f                // 85 5F
+    lda $2e                // A5 2E   BASIC vars start hi
+    sbc #$00               // E9 00
+    tay                    // A8
     sta $60                // 85 60
-    bne bank03_sub_94b7              // d0 17
-bank03_sub_94a0:
-    jsr $a96b              // 20 6b a9
-    bne bank03_sub_94c2              // d0 1d
-    jsr $a613              // 20 13 a6
-    ldx $5f                // a6 5f
-    ldy $60                // a4 60
-    bcc bank03_sub_94b7              // 90 09
-    ldy #$00               // a0 00
-    lda ($5f),y            // b1 5f
-    tax                    // aa
-    iny                    // c8
-    lda ($5f),y            // b1 5f
-    tay                    // a8
-bank03_sub_94b7:
-    lda $c1                // a5 c1
-    cmp $5f                // c5 5f
-    lda $c2                // a5 c2
-    sbc $60                // e5 60
-    bcs bank03_sub_94c2              // b0 01
+    bne bank03_sub_94B7              // D0 17
+bank03_sub_94A0:
+    jsr $a96b              // 20 6B A9
+    bne bank03_sub_94C2              // D0 1D
+    jsr $a613              // 20 13 A6
+    ldx $5f                // A6 5F
+    ldy $60                // A4 60
+    bcc bank03_sub_94B7              // 90 09
+    ldy #$00               // A0 00
+    lda ($5f),y            // B1 5F
+    tax                    // AA
+    iny                    // C8
+    lda ($5f),y            // B1 5F
+    tay                    // A8
+bank03_sub_94B7:
+    lda $c1                // A5 C1   I/O start addr lo
+    cmp $5f                // C5 5F
+    lda $c2                // A5 C2   I/O start addr hi
+    sbc $60                // E5 60
+    bcs bank03_sub_94C2              // B0 01
     rts                    // 60
-bank03_sub_94c2:
-    jmp $af08              // 4c 08 af
+bank03_sub_94C2:
+    jmp $af08              // 4C 08 AF
 bank03_api_22:
-    jsr $e544              // 20 44 e5
-bank03_sub_94c8:
+    jsr $e544              // 20 44 E5   KERNAL clear screen
+bank03_sub_94C8:
     jsr bank03_sub_8362              // 20 62 83
-    .byte $43    // undocumented opcode
-    eor $52,x              // 55 52
-    .byte $52    // undocumented opcode
-    eor $4e                // 45 4e
-    .byte $54    // undocumented opcode
-    jmp $2059              // 4c 59 20
-    .byte $4f, $55, $54, $20, $4f, $46, $20, $4f, $52, $44, $45, $52, $2e, $2e, $2e, $0d    // data $94d5
-    .byte $0d, $0d, $00, $4c, $7f, $85    // data $94e5
+    .byte $43, $55, $52, $52, $45, $4E, $54, $4C, $59, $20, $4F, $55, $54, $20, $4F, $46    // data $94CB  text: "CURRENTLY OUT OF"
+    .byte $20, $4F, $52, $44, $45, $52, $2E, $2E, $2E, $0D, $0D, $0D, $00    // data $94DB  text: " ORDER......."
+    jmp $857f              // 4C 7F 85
+bank03_data_94D5:
 bank03_api_06:
-    jsr $e544              // 20 44 e5
+    jsr $e544              // 20 44 E5   KERNAL clear screen
     jsr bank03_sub_8362              // 20 62 83
-    eor $554f,y            // 59 4f 55
-    jsr $4957              // 20 57 49
-    .byte $53    // undocumented opcode
-    pha                    // 48
-    jsr $2e2e              // 20 2e 2e
-    rol.a $000d              // 2e 0d 00
-    jmp bank03_api_18              // 4c 7f 85
+    .byte $59, $4F, $55, $20, $57, $49, $53, $48, $20, $2E, $2E, $2E, $0D, $00    // data $94F1  text: "YOU WISH ....."
+    jmp bank03_api_18              // 4C 7F 85
 bank03_api_25:
     jsr bank03_sub_8362              // 20 62 83
-    ora $0d0d              // 0d 0d 0d
-    ora ($46,x)            // 01 46
-    and ($2a),y            // 31 2a
-    .byte $43    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    lsr $4946              // 4e 46 49
-    .byte $47    // undocumented opcode
-    eor $52,x              // 55 52
-    eor $20                // 45 20
-    eor $4d45              // 4d 45 4d
-    .byte $4f    // undocumented opcode
-    .byte $52    // undocumented opcode
-    eor $010d,y            // 59 0d 01
-    lsr $33                // 46 33
-    rol                  // 2a
-    lsr $524f              // 4e 4f 52
-    eor $4c41              // 4d 41 4c
-    jsr $4552              // 20 52 45
-    .byte $53    // undocumented opcode
-    eor $54                // 45 54
-    ora $4601              // 0d 01 46
-    and $2a,x              // 35 2a
-    eor $54,x              // 55 54
-    eor #$4c               // 49 4c
-    eor #$54               // 49 54
-    eor #$45               // 49 45
-    .byte $53    // undocumented opcode
-    ora $4601              // 0d 01 46
-    .byte $37    // undocumented opcode
-    rol                  // 2a
-    eor #$4e               // 49 4e
-    .byte $53    // undocumented opcode
-    .byte $54    // undocumented opcode
-    eor ($4c,x)            // 41 4c
-    jmp $4620              // 4c 20 46
-    .byte $41, $53, $54, $4c, $4f, $41, $44, $00, $2c, $01, $de, $50, $28, $20, $62, $83    // data $9549
-    .byte $0d, $0d, $0d, $0d, $20, $20, $20, $20, $20, $20, $20, $52, $45, $55, $20, $43    // data $9559
-    .byte $4f, $4d, $50, $41, $54, $49, $42, $49, $4c, $49, $54, $59, $20, $45, $4e, $41    // data $9569
-    .byte $42, $4c, $45, $44, $00, $20, $62, $83, $0d, $0d, $20, $20, $20, $20, $53, $49    // data $9579
-    .byte $4c, $56, $45, $52, $53, $55, $52, $46, $45, $52, $20, $00, $ad, $01, $de, $09    // data $9589
-    .byte $01, $8d, $01, $de, $a9, $ff, $8d, $0f, $de, $ad, $0f, $de, $c9, $ff, $d0, $16    // data $9599
-    .byte $20, $62, $83, $46, $4f, $55, $4e, $44, $20, $2d, $20, $45, $4e, $41, $42, $4c    // data $95a9
-    .byte $45, $44, $00, $4c, $d7, $95, $20, $62, $83, $4e, $4f, $54, $20, $46, $4f, $55    // data $95b9
-    .byte $4e, $44, $20, $2d, $20, $44, $49, $53, $41, $42, $4c, $45, $44, $00, $ad, $01    // data $95c9
-    .byte $de, $29, $fe, $8d, $01, $de, $a2, $18, $a0, $00, $20, $76, $85, $ad, $a6, $02    // data $95d9
-    .byte $f0, $0b, $20, $62, $83, $50, $41, $4c, $20, $00, $4c, $ff, $95, $20, $62, $83    // data $95e9
-    .byte $4e, $54, $53, $43, $20, $00, $a9, $37, $85, $01, $a5, $01, $c9, $77, $f0, $0a    // data $95f9
-    .byte $20, $62, $83, $43, $36, $34, $00, $4c, $1b, $96, $20, $62, $83, $43, $31, $32    // data $9609
-    .byte $38, $00, $a2, $18, $a0, $1b, $20, $76, $85, $20, $62, $83, $20, $50, $41, $4c    // data $9619
-    .byte $20, $36, $34, $4b, $42, $20, $52, $4f, $00, $ad, $a6, $02, $d0, $16, $a2, $18    // data $9629
-    .byte $a0, $10, $20, $76, $85, $20, $62, $83, $96, $3c, $57, $41, $52, $4e, $49, $4e    // data $9639
-    .byte $47, $21, $3e, $00, $a9, $0d, $8d, $e7, $07, $a9, $06, $8d, $ff, $d9, $60    // data $9649
+    .byte $0D, $0D, $0D, $01, $46, $31, $2A, $43, $4F, $4E, $46, $49, $47, $55, $52, $45    // data $9505  text: "....F1*CONFIGURE"
+    .byte $20, $4D, $45, $4D, $4F, $52, $59, $0D, $01, $46, $33, $2A, $4E, $4F, $52, $4D    // data $9515  text: " MEMORY..F3*NORM"
+    .byte $41, $4C, $20, $52, $45, $53, $45, $54, $0D, $01, $46, $35, $2A, $55, $54, $49    // data $9525  text: "AL RESET..F5*UTI"
+    .byte $4C, $49, $54, $49, $45, $53, $0D, $01, $46, $37, $2A, $49, $4E, $53, $54, $41    // data $9535  text: "LITIES..F7*INSTA"
+    .byte $4C, $4C, $20, $46, $41, $53, $54, $4C, $4F, $41, $44, $00    // data $9545  text: "LL FASTLOAD."
+bank03_data_9549:
+    bit $de01              // 2C 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
+    bvc b03_957E           // 50 28
+    jsr $8362              // 20 62 83
+    .byte $0D, $0D, $0D, $0D, $20, $20, $20, $20, $20, $20, $20, $52, $45, $55, $20, $43    // data $9559  text: "....       REU C"
+    .byte $4F, $4D, $50, $41, $54, $49, $42, $49, $4C, $49, $54, $59, $20, $45, $4E, $41    // data $9569  text: "OMPATIBILITY ENA"
+    .byte $42, $4C, $45, $44, $00    // data $9579  text: "BLED."
+b03_957E:
+    jsr $8362              // 20 62 83
+    .byte $0D, $0D, $20, $20, $20, $20, $53, $49, $4C, $56, $45, $52, $53, $55, $52, $46    // data $9581  text: "..    SILVERSURF"
+    .byte $45, $52, $20, $00    // data $9591  text: "ER ."
+    lda $de01              // AD 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
+    ora #$01               // 09 01
+    sta $de01              // 8D 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
+    lda #$ff               // A9 FF
+    sta $de0f              // 8D 0F DE
+    lda $de0f              // AD 0F DE
+    cmp #$ff               // C9 FF
+    bne b03_95BF           // D0 16
+    jsr $8362              // 20 62 83
+    .byte $46, $4F, $55, $4E, $44, $20, $2D, $20, $45, $4E, $41, $42, $4C, $45, $44, $00    // data $95AC  text: "FOUND - ENABLED."
+    jmp b03_95D7           // 4C D7 95
+b03_95BF:
+    jsr $8362              // 20 62 83
+    .byte $4E, $4F, $54, $20, $46, $4F, $55, $4E, $44, $20, $2D, $20, $44, $49, $53, $41    // data $95C2  text: "NOT FOUND - DISA"
+    .byte $42, $4C, $45, $44, $00    // data $95D2  text: "BLED."
+b03_95D7:
+    lda $de01              // AD 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
+    and #$fe               // 29 FE
+    sta $de01              // 8D 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
+    ldx #$18               // A2 18
+    ldy #$00               // A0 00
+    jsr $8576              // 20 76 85
+    lda $02a6              // AD A6 02
+    beq b03_95F6           // F0 0B
+    jsr $8362              // 20 62 83
+    .byte $50, $41, $4C, $20, $00    // data $95EE  text: "PAL ."
+    jmp b03_95FF           // 4C FF 95
+b03_95F6:
+    jsr $8362              // 20 62 83
+    .byte $4E, $54, $53, $43, $20, $00    // data $95F9  text: "NTSC ."
+b03_95FF:
+    lda #$37               // A9 37
+    sta $01                // 85 01   CPU port: mem banking
+    lda $01                // A5 01   CPU port: mem banking
+    cmp #$77               // C9 77
+    beq b03_9613           // F0 0A
+    jsr $8362              // 20 62 83
+    .byte $43, $36, $34, $00    // data $960C  text: "C64."
+    jmp b03_961B           // 4C 1B 96
+b03_9613:
+    jsr $8362              // 20 62 83
+    .byte $43, $31, $32, $38, $00    // data $9616  text: "C128."
+b03_961B:
+    ldx #$18               // A2 18
+    ldy #$1b               // A0 1B
+    jsr $8576              // 20 76 85
+    jsr $8362              // 20 62 83
+    .byte $20, $50, $41, $4C, $20, $36, $34, $4B, $42, $20, $52, $4F, $00    // data $9625  text: " PAL 64KB RO."
+    lda $02a6              // AD A6 02
+    bne b03_964D           // D0 16
+    ldx #$18               // A2 18
+    ldy #$10               // A0 10
+    jsr $8576              // 20 76 85
+    jsr $8362              // 20 62 83
+    .byte $96, $3C, $57, $41, $52, $4E, $49, $4E, $47, $21, $3E, $00    // data $9641  text: ".<WARNING!>."
+b03_964D:
+    lda #$0d               // A9 0D
+    sta $07e7              // 8D E7 07
+    lda #$06               // A9 06
+    sta $d9ff              // 8D FF D9
+    rts                    // 60
 bank03_api_26:
     jsr bank03_sub_8362              // 20 62 83
-    jsr $3146              // 20 46 31
-    rol                  // 2a
-    .byte $42    // undocumented opcode
-    eor ($43,x)            // 41 43
-    .byte $4b    // undocumented opcode
-    eor $50,x              // 55 50
-    jsr $4620              // 20 20 46
-    .byte $33    // undocumented opcode
-    rol                  // 2a
-    .byte $52    // undocumented opcode
-    eor $53                // 45 53
-    .byte $54    // undocumented opcode
-    eor ($52,x)            // 41 52
-    .byte $54    // undocumented opcode
-    jsr $4620              // 20 20 46
-    .byte $37    // undocumented opcode
-    rol                  // 2a
-    .byte $53    // undocumented opcode
-    .byte $43    // undocumented opcode
-    .byte $52    // undocumented opcode
-    eor $45                // 45 45
-    lsr $0d0d              // 4e 0d 0d
-    ora $4d20              // 0d 20 4d
-    rol                  // 2a
-    eor $4e4f              // 4d 4f 4e
-    eor #$54               // 49 54
-    .byte $4f    // undocumented opcode
-    .byte $52    // undocumented opcode
-    .byte $02    // undocumented opcode
-    .byte $0b    // undocumented opcode
-    eor $2a                // 45 2a
-    bvc bank03_sub_96de              // 50 4f
-    .byte $4b    // undocumented opcode
-    eor $53                // 45 53
-    ora $4420              // 0d 20 44
-    rol                  // 2a
-    .byte $44    // undocumented opcode
-    eor #$52               // 49 52
-    eor $43                // 45 43
-    .byte $54    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    .byte $52    // undocumented opcode
-    eor $0902,y            // 59 02 09
-    cli                    // 58
-    rol                  // 2a
-    bvc bank03_sub_96f4              // 50 4f
-    .byte $4b    // undocumented opcode
-    eor $46                // 45 46
-    eor #$4e               // 49 4e
-    .byte $44    // undocumented opcode
-    eor $52                // 45 52
-    ora $5420              // 0d 20 54
-    rol                  // 2a
-    eor $44                // 45 44
-    eor #$54               // 49 54
-    jsr $4353              // 20 53 43
-    .byte $52    // undocumented opcode
-    eor $45                // 45 45
-    lsr $0702              // 4e 02 07
-    .byte $4b    // undocumented opcode
-    rol                  // 2a
-    .byte $53    // undocumented opcode
-    bvc $9715              // 50 52
-    eor #$54               // 49 54
-    eor $4b                // 45 4b
-    eor #$4c               // 49 4c
-    jmp $5245              // 4c 45 52
-    .byte $0d, $20, $56, $2a, $45, $44, $49, $54, $20, $53, $50, $52, $49, $54, $45, $53    // data $96cc
-    .byte $02, $06    // data $96dc
-bank03_sub_96de:
-    jmp $542a              // 4c 2a 54
-    .byte $55, $52, $42, $4f, $20, $4c, $49, $4e, $4b, $45, $52, $0d, $20, $43, $2a, $45    // data $96e1
-    .byte $44, $49, $54    // data $96f1
-bank03_sub_96f4:
-    jsr $4843              // 20 43 48
-    eor ($52,x)            // 41 52
-    .byte $53    // undocumented opcode
-    eor $54                // 45 54
-    .byte $02    // undocumented opcode
-    ora $20                // 05 20
-    bvc bank03_sub_972b              // 50 2a
-    bvc bank03_sub_9744              // 50 41
-    .byte $52    // undocumented opcode
-    eor ($4d,x)            // 41 4d
-    eor $54                // 45 54
-    eor $52                // 45 52
-    .byte $53    // undocumented opcode
-    ora $5320              // 0d 20 53
-    rol                  // 2a
-    .byte $53    // undocumented opcode
-    eor ($56,x)            // 41 56
-    eor $4c                // 45 4c
-    eor ($4e,x)            // 41 4e
-    .byte $44    // undocumented opcode
-    ora $0d0d              // 0d 0d 0d
-    brk                    // 00
+    .byte $20, $46, $31, $2A, $42, $41, $43, $4B, $55, $50, $20, $20, $46, $33, $2A, $52    // data $965B  text: " F1*BACKUP  F3*R"
+    .byte $45, $53, $54, $41, $52, $54, $20, $20, $46, $37, $2A, $53, $43, $52, $45, $45    // data $966B  text: "ESTART  F7*SCREE"
+    .byte $4E, $0D, $0D, $0D, $20, $4D, $2A, $4D, $4F, $4E, $49, $54, $4F, $52, $02, $0B    // data $967B  text: "N... M*MONITOR.."
+    .byte $45, $2A, $50, $4F, $4B, $45, $53, $0D, $20, $44, $2A, $44, $49, $52, $45, $43    // data $968B  text: "E*POKES. D*DIREC"
+    .byte $54, $4F, $52, $59, $02, $09, $58, $2A, $50, $4F, $4B, $45, $46, $49, $4E, $44    // data $969B  text: "TORY..X*POKEFIND"
+    .byte $45, $52, $0D, $20, $54, $2A, $45, $44, $49, $54, $20, $53, $43, $52, $45, $45    // data $96AB  text: "ER. T*EDIT SCREE"
+    .byte $4E, $02, $07, $4B, $2A, $53, $50, $52, $49, $54, $45, $4B, $49, $4C, $4C, $45    // data $96BB  text: "N..K*SPRITEKILLE"
+    .byte $52, $0D, $20, $56, $2A, $45, $44, $49, $54, $20, $53, $50, $52, $49, $54, $45    // data $96CB  text: "R. V*EDIT SPRITE"
+    .byte $53, $02, $06, $4C, $2A, $54, $55, $52, $42, $4F, $20, $4C, $49, $4E, $4B, $45    // data $96DB  text: "S..L*TURBO LINKE"
+    .byte $52, $0D, $20, $43, $2A, $45, $44, $49, $54, $20, $43, $48, $41, $52, $53, $45    // data $96EB  text: "R. C*EDIT CHARSE"
+    .byte $54, $02, $05, $20, $50, $2A, $50, $41, $52, $41, $4D, $45, $54, $45, $52, $53    // data $96FB  text: "T.. P*PARAMETERS"
+    .byte $0D, $20, $53, $2A, $53, $41, $56, $45, $4C, $41, $4E, $44, $0D, $0D, $0D, $00    // data $970B  text: ". S*SAVELAND...."
+bank03_data_96CC:
+bank03_sub_96DE:
+bank03_data_96E1:
+bank03_sub_96F4:
     rts                    // 60
 bank03_api_27:
     jsr bank03_sub_8362              // 20 62 83
-    .byte $43    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    jmp $494c              // 4c 4c 49
-    .byte $53, $49, $4f, $4e, $20, $54, $59    // data $9724
-bank03_sub_972b:
-    bvc bank03_sub_9772              // 50 45
-    .byte $3a    // undocumented opcode
-    ora $020d              // 0d 0d 02
-    .byte $0c    // undocumented opcode
-    eor ($2a,x)            // 41 2a
-    .byte $53    // undocumented opcode
-    bvc bank03_sub_9789              // 50 52
-    eor #$54               // 49 54
-    eor $2f                // 45 2f
-    .byte $53    // undocumented opcode
-    bvc bank03_sub_9790              // 50 52
-    eor #$54               // 49 54
-    eor $20                // 45 20
-    bit $44                // 24 44
+    .byte $43, $4F, $4C, $4C, $49, $53, $49, $4F, $4E, $20, $54, $59, $50, $45, $3A, $0D    // data $971F  text: "COLLISION TYPE:."
+    .byte $0D, $02, $0C, $41, $2A, $53, $50, $52, $49, $54, $45, $2F, $53, $50, $52, $49    // data $972F  text: "...A*SPRITE/SPRI"
+    .byte $54, $45, $20, $24, $44, $30, $31, $45, $0D, $02, $0C, $42, $2A, $53, $50, $52    // data $973F  text: "TE $D01E...B*SPR"
+    .byte $49, $54, $45, $2F, $42, $43, $4B, $47, $52, $44, $20, $24, $44, $30, $31, $46    // data $974F  text: "ITE/BCKGRD $D01F"
+    .byte $0D, $02, $0C, $43, $2A, $42, $4F, $54, $48, $00    // data $975F  text: "...C*BOTH."
+bank03_data_9724:
+bank03_sub_972B:
 bank03_sub_9744:
-    bmi bank03_sub_9777              // 30 31
-    eor $0d                // 45 0d
-    .byte $02    // undocumented opcode
-    .byte $0c    // undocumented opcode
-    .byte $42    // undocumented opcode
-    rol                  // 2a
-    .byte $53    // undocumented opcode
-    bvc bank03_sub_97a1              // 50 52
-    eor #$54               // 49 54
-    eor $2f                // 45 2f
-    .byte $42    // undocumented opcode
-    .byte $43    // undocumented opcode
-    .byte $4b    // undocumented opcode
-    .byte $47    // undocumented opcode
-    .byte $52    // undocumented opcode
-    .byte $44    // undocumented opcode
-    jsr $4424              // 20 24 44
-    bmi bank03_sub_978f              // 30 31
-    lsr $0d                // 46 0d
-    .byte $02    // undocumented opcode
-    .byte $0c    // undocumented opcode
-    .byte $43    // undocumented opcode
-    rol                  // 2a
-    .byte $42    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    .byte $54    // undocumented opcode
-    pha                    // 48
-    brk                    // 00
+bank03_data_9769:
+.errorif (* != $9769), "bank03_data_9769 shifted"
     .byte $60, $00, $00, $00, $00, $00, $00, $00, $00    // data $9769
 bank03_sub_9772:
     brk                    // 00
+bank03_data_9773:
+.errorif (* != $9773), "bank03_data_9773 shifted"
     .byte $00, $00, $00, $00    // data $9773
 bank03_sub_9777:
     brk                    // 00
+bank03_data_9778:
+.errorif (* != $9778), "bank03_data_9778 shifted"
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9778
     .byte $00    // data $9788
 bank03_sub_9789:
     brk                    // 00
-    .byte $00, $00, $00, $00, $00    // data $978a
-bank03_sub_978f:
+bank03_data_978A:
+.errorif (* != $978A), "bank03_data_978A shifted"
+    .byte $00, $00, $00, $00, $00    // data $978A
+bank03_sub_978F:
     brk                    // 00
 bank03_sub_9790:
     brk                    // 00
+bank03_data_9791:
+.errorif (* != $9791), "bank03_data_9791 shifted"
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9791
-bank03_sub_97a1:
+bank03_sub_97A1:
     brk                    // 00
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97a2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97b2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97c2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97d2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97e2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $ff, $f0    // data $97f2
-    .byte $05, $a2, $10, $4c, $f9, $be, $a0, $04, $ad, $32, $b3, $91, $4b, $c8, $ad, $33    // data $9802
-    .byte $b3, $91, $4b, $60, $a9, $00, $8d, $1a, $b3, $a9, $06, $20, $94, $c5, $a9, $ff    // data $9812
-    .byte $20, $b4, $c5, $ad, $23, $b3, $20, $b4, $c5, $ad, $24, $b3, $20, $b4, $c5, $ad    // data $9822
-    .byte $32, $b3, $20, $b4, $c5, $ad, $33, $b3, $4c, $b4, $c5, $ad, $11, $b3, $f0, $05    // data $9832
-    .byte $a2, $0f, $4c, $f9, $be, $ad, $ff, $b2, $f0, $05, $a2, $07, $4c, $fc, $be, $ad    // data $9842
-    .byte $39, $b3, $f0, $09, $ad, $06, $cb, $ae, $07, $cb, $4c, $a2, $be, $60, $20, $37    // data $9852
-    .byte $c1, $ad, $33, $b3, $8d, $09, $cb, $ad, $32, $b3, $8d, $08, $cb, $cd, $06, $cb    // data $9862
-    .byte $ad, $33, $b3, $ed, $07, $cb, $90, $05, $a2, $12, $4c, $f9, $be, $4c, $03, $80    // data $9872
-    .byte $2c, $39, $b3, $30, $13, $20, $ad, $c2, $ad, $33, $b3, $f0, $05, $a2, $03, $20    // data $9882
-    .byte $fc, $be, $ad, $32, $b3, $8d, $47, $b3, $60, $a9, $01, $8d, $e1, $b6, $a9, $2c    // data $9892
-    .byte $8d, $0c, $c9, $a9, $ea, $8d, $0f, $c9, $d0, $3b, $a2, $00, $8e, $e1, $b6, $a9    // data $98a2
-    .byte $ea, $8d, $0c, $c9, $a9, $2c, $8d, $0f, $c9, $a9, $00, $8d, $02, $df, $8d, $04    // data $98b2
-    .byte $df, $8d, $07, $df, $a9, $ca, $8d, $03, $df, $a9, $01, $8d, $08, $df, $8e, $05    // data $98c2
-    .byte $df, $ad, $06, $80, $8d, $06, $df, $20, $27, $c9, $a9, $00, $8d, $06, $df, $20    // data $98d2
-    .byte $2a, $c9, $e8, $d0, $d4, $a9, $00, $8d, $23, $cb, $a9, $00, $8d, $24, $cb, $4c    // data $98e2
-    .byte $cf, $b2, $a9, $c0, $8d, $02, $df, $a9, $02, $8d, $03, $df, $a5, $3b, $8d, $04    // data $98f2
-    .byte $df, $a5, $3c, $8d, $05, $df, $c8, $8c, $07, $df, $ea, $a0, $00, $ea, $ac, $06    // data $9902
-    .byte $80, $8c, $06, $df, $8c, $08, $df, $a9, $00, $8d, $30, $d0, $20, $2a, $c9, $a9    // data $9912
-    .byte $fd, $8d, $30, $d0, $60, $a9, $ed, $2c, $a9, $ec, $8d, $01, $df, $78, $e6, $01    // data $9922
-    .byte $ad, $00, $ff, $8d, $00, $ff, $c6, $01, $60, $78, $a9, $37, $85, $01, $a2, $31    // data $9932
-    .byte $a0, $ea, $8e, $14, $03, $8c, $15, $03, $20, $81, $ff, $20, $84, $ff, $a9, $00    // data $9942
-    .byte $8d, $06, $df, $8d, $02, $df, $8d, $04, $df, $8d, $07, $df, $a9, $08, $8d, $03    // data $9952
-    .byte $df, $8d, $05, $df, $a9, $f8, $8d, $08, $df, $a9, $ed, $8d, $01, $df, $a9, $34    // data $9962
-    .byte $85, $01, $ad, $00, $ff, $8d, $00, $ff, $a9, $37, $85, $01, $58, $4c, $00, $80    // data $9972
-    .byte $bb, $bb, $00, $18, $65, $39, $85, $39, $60, $00, $00, $00, $00, $00, $00, $00    // data $9982
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9992
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99a2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99b2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99c2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99d2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99e2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99f2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9a02
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9a12
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9a22
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9a32
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9a42
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9a52
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9a62
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9a72
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9a82
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9a92
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9aa2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ab2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ac2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ad2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ae2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9af2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9b02
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9b12
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9b22
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9b32
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9b42
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9b52
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9b62
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9b72
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9b82
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9b92
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ba2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9bb2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9bc2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9bd2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9be2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9bf2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9c02
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9c12
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9c22
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9c32
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9c42
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9c52
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9c62
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9c72
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9c82
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9c92
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ca2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9cb2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9cc2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9cd2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ce2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9cf2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9d02
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9d12
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9d22
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9d32
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9d42
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9d52
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9d62
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9d72
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9d82
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9d92
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9da2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9db2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9dc2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9dd2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9de2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9df2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e02
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e12
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e22
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e32
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e42
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e52
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e62
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e72
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9e82
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $20, $ba, $de, $c6, $01    // data $9e92
-    .byte $20, $d5, $f3, $e6, $01, $60, $ea, $20, $ba, $de, $ea, $ea, $ea, $ea, $ea, $ea    // data $9ea2
-    .byte $ea, $ea, $ea, $8d, $00, $de, $68, $60, $48, $78, $a9, $18, $48, $a9, $20, $8d    // data $9eb2
-    .byte $00, $de, $00, $00, $00, $00, $00, $2c, $80, $80, $2c, $80, $80, $48, $ad, $f2    // data $9ec2
-    .byte $de, $8d, $00, $de, $68, $8d, $f7, $de, $8d, $00, $de, $60, $8d, $00, $de, $68    // data $9ed2
-    .byte $40, $ea, $85, $9e, $68, $8d, $00, $de, $a5, $9e, $60, $18, $00, $08, $10, $18    // data $9ee2
-    .byte $20, $1a, $80, $88, $90, $98, $00, $00, $00, $00, $00, $00, $00, $00, $ea    // data $9ef2
-bank03_sub_9f01:
-    nop                    // ea
-bank03_sub_9f02:
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
-bank03_sub_9f05:
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
+bank03_data_97A2:
+.errorif (* != $97A2), "bank03_data_97A2 shifted"
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97A2
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97B2
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97C2
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97D2
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97E2
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97F2
+    .byte $FF    // FF  undocumented/illegal at $9800
+    beq b03_9808           // F0 05
+    ldx #$10               // A2 10
+    jmp $bef9              // 4C F9 BE
+b03_9808:
+    ldy #$04               // A0 04
+    lda $b332              // AD 32 B3
+    sta ($4b),y            // 91 4B
+    iny                    // C8
+    lda $b333              // AD 33 B3
+    sta ($4b),y            // 91 4B
+    rts                    // 60
+    lda #$00               // A9 00
+    sta $b31a              // 8D 1A B3
+    lda #$06               // A9 06
+    jsr $c594              // 20 94 C5
+    lda #$ff               // A9 FF
+    jsr $c5b4              // 20 B4 C5
+    lda $b323              // AD 23 B3
+    jsr $c5b4              // 20 B4 C5
+    lda $b324              // AD 24 B3
+    jsr $c5b4              // 20 B4 C5
+    lda $b332              // AD 32 B3
+    jsr $c5b4              // 20 B4 C5
+    lda $b333              // AD 33 B3
+    jmp $c5b4              // 4C B4 C5
+    lda $b311              // AD 11 B3
+    beq b03_9847           // F0 05
+    ldx #$0f               // A2 0F
+    jmp $bef9              // 4C F9 BE
+b03_9847:
+    lda $b2ff              // AD FF B2
+    beq b03_9851           // F0 05
+    ldx #$07               // A2 07
+    jmp $befc              // 4C FC BE
+b03_9851:
+    lda $b339              // AD 39 B3
+    beq b03_985F           // F0 09
+    lda $cb06              // AD 06 CB
+    ldx $cb07              // AE 07 CB
+    jmp $bea2              // 4C A2 BE
+b03_985F:
+    rts                    // 60
+    jsr $c137              // 20 37 C1
+    lda $b333              // AD 33 B3
+    sta $cb09              // 8D 09 CB
+    lda $b332              // AD 32 B3
+    sta $cb08              // 8D 08 CB
+    cmp $cb06              // CD 06 CB
+    lda $b333              // AD 33 B3
+    sbc $cb07              // ED 07 CB
+    bcc b03_987F           // 90 05
+    ldx #$12               // A2 12
+    jmp $bef9              // 4C F9 BE
+b03_987F:
+    jmp $8003              // 4C 03 80
+    bit $b339              // 2C 39 B3
+    bmi b03_989A           // 30 13
+    jsr $c2ad              // 20 AD C2
+    lda $b333              // AD 33 B3
+    beq b03_9894           // F0 05
+    ldx #$03               // A2 03
+    jsr $befc              // 20 FC BE
+b03_9894:
+    lda $b332              // AD 32 B3
+    sta $b347              // 8D 47 B3
+b03_989A:
+    rts                    // 60
+    lda #$01               // A9 01
+    sta $b6e1              // 8D E1 B6
+    lda #$2c               // A9 2C
+    sta $c90c              // 8D 0C C9
+    lda #$ea               // A9 EA
+    sta $c90f              // 8D 0F C9
+    bne b03_98E7           // D0 3B
+    ldx #$00               // A2 00
+    stx $b6e1              // 8E E1 B6
+    lda #$ea               // A9 EA
+    sta $c90c              // 8D 0C C9
+    lda #$2c               // A9 2C
+    sta $c90f              // 8D 0F C9
+b03_98BB:
+    lda #$00               // A9 00
+    sta $df02              // 8D 02 DF   REU C64 base lo
+    sta $df04              // 8D 04 DF   REU addr lo
+    sta $df07              // 8D 07 DF   REU length lo
+    lda #$ca               // A9 CA
+    sta $df03              // 8D 03 DF   REU C64 base hi
+    lda #$01               // A9 01
+    sta $df08              // 8D 08 DF   REU length hi
+    stx $df05              // 8E 05 DF   REU addr hi
+    lda $8006              // AD 06 80
+    sta $df06              // 8D 06 DF   REU bank
+    jsr $c927              // 20 27 C9
+    lda #$00               // A9 00
+    sta $df06              // 8D 06 DF   REU bank
+    jsr $c92a              // 20 2A C9
+    inx                    // E8
+    bne b03_98BB           // D0 D4
+b03_98E7:
+    lda #$00               // A9 00
+    sta $cb23              // 8D 23 CB
+    lda #$00               // A9 00
+    sta $cb24              // 8D 24 CB
+    jmp $b2cf              // 4C CF B2
+    lda #$c0               // A9 C0
+    sta $df02              // 8D 02 DF   REU C64 base lo
+    lda #$02               // A9 02
+    sta $df03              // 8D 03 DF   REU C64 base hi
+    lda $3b                // A5 3B
+    sta $df04              // 8D 04 DF   REU addr lo
+    lda $3c                // A5 3C
+    sta $df05              // 8D 05 DF   REU addr hi
+    iny                    // C8
+    sty $df07              // 8C 07 DF   REU length lo
+    nop                    // EA
+    ldy #$00               // A0 00
+    nop                    // EA
+    ldy $8006              // AC 06 80
+    sty $df06              // 8C 06 DF   REU bank
+    sty $df08              // 8C 08 DF   REU length hi
+    lda #$00               // A9 00
+    sta $d030              // 8D 30 D0
+    jsr $c92a              // 20 2A C9
+    lda #$fd               // A9 FD
+    sta $d030              // 8D 30 D0
+    rts                    // 60
+    lda #$ed               // A9 ED
+    bit $eca9              // 2C A9 EC
+    sta $df01              // 8D 01 DF   REU command (b7=execute)
     sei                    // 78
-    cld                    // d8
-    sta $a5                // 85 a5
-    stx $a6                // 86 a6
-    sty $a7                // 84 a7
+    inc $01                // E6 01   CPU port: mem banking
+    lda $ff00              // AD 00 FF
+    sta $ff00              // 8D 00 FF
+    dec $01                // C6 01   CPU port: mem banking
+    rts                    // 60
+    sei                    // 78
+    lda #$37               // A9 37
+    sta $01                // 85 01   CPU port: mem banking
+    ldx #$31               // A2 31
+    ldy #$ea               // A0 EA
+    stx $0314              // 8E 14 03   CINV IRQ vector
+    sty $0315              // 8C 15 03
+    jsr $ff81              // 20 81 FF   KERNAL CINT: init screen
+    jsr $ff84              // 20 84 FF   KERNAL IOINIT: init CIAs/IRQ
+    lda #$00               // A9 00
+    sta $df06              // 8D 06 DF   REU bank
+    sta $df02              // 8D 02 DF   REU C64 base lo
+    sta $df04              // 8D 04 DF   REU addr lo
+    sta $df07              // 8D 07 DF   REU length lo
+    lda #$08               // A9 08
+    sta $df03              // 8D 03 DF   REU C64 base hi
+    sta $df05              // 8D 05 DF   REU addr hi
+    lda #$f8               // A9 F8
+    sta $df08              // 8D 08 DF   REU length hi
+    lda #$ed               // A9 ED
+    sta $df01              // 8D 01 DF   REU command (b7=execute)
+    lda #$34               // A9 34
+    sta $01                // 85 01   CPU port: mem banking
+    lda $ff00              // AD 00 FF
+    sta $ff00              // 8D 00 FF
+    lda #$37               // A9 37
+    sta $01                // 85 01   CPU port: mem banking
+    cli                    // 58
+    jmp $8000              // 4C 00 80
+    .byte $BB    // BB  undocumented/illegal at $9982
+    .byte $BB    // BB  undocumented/illegal at $9983
+    brk                    // 00
+    clc                    // 18
+    adc $39                // 65 39
+    sta $39                // 85 39
+    rts                    // 60
+bank03_data_998B:
+.errorif (* != $998B), "bank03_data_998B shifted"
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $998B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $999B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99AB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99BB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99CB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99DB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99EB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99FB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A0B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A1B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A2B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A3B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A4B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A5B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A6B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A7B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A8B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A9B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9AAB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ABB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ACB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ADB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9AEB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9AFB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B0B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B1B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B2B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B3B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B4B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B5B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B6B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B7B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B8B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B9B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BAB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BBB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BCB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BDB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BEB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BFB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C0B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C1B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C2B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C3B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C4B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C5B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C6B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C7B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C8B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C9B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CAB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CBB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CCB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CDB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CEB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CFB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D0B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D1B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D2B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D3B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D4B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D5B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D6B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D7B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D8B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D9B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DAB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DBB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DCB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DDB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DEB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DFB
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E0B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E1B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E2B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E3B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E4B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E5B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E6B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E7B
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E8B
+    .byte $00, $00    // data $9E9B
+    jsr $deba              // 20 BA DE
+    dec $01                // C6 01   CPU port: mem banking
+    jsr $f3d5              // 20 D5 F3
+    inc $01                // E6 01   CPU port: mem banking
+    rts                    // 60
+    nop                    // EA
+    jsr $deba              // 20 BA DE
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    sta $de00              // 8D 00 DE   RR control: b0 GAME,b1 EXROM,b2 cart off,b3/b4/b7 bank,b5 RAM,b6 unfreeze
+    pla                    // 68
+    rts                    // 60
+    pha                    // 48
+    sei                    // 78
+    lda #$18               // A9 18
+    pha                    // 48
+    lda #$20               // A9 20
+    sta $de00              // 8D 00 DE   RR control: b0 GAME,b1 EXROM,b2 cart off,b3/b4/b7 bank,b5 RAM,b6 unfreeze
+    brk                    // 00
+    brk                    // 00
+    brk                    // 00
+    brk                    // 00
+    brk                    // 00
+    bit $8080              // 2C 80 80
+    bit $8080              // 2C 80 80
+    pha                    // 48
+    lda $def2              // AD F2 DE
+    sta $de00              // 8D 00 DE   RR control: b0 GAME,b1 EXROM,b2 cart off,b3/b4/b7 bank,b5 RAM,b6 unfreeze
+    pla                    // 68
+    sta $def7              // 8D F7 DE
+    sta $de00              // 8D 00 DE   RR control: b0 GAME,b1 EXROM,b2 cart off,b3/b4/b7 bank,b5 RAM,b6 unfreeze
+    rts                    // 60
+    sta $de00              // 8D 00 DE   RR control: b0 GAME,b1 EXROM,b2 cart off,b3/b4/b7 bank,b5 RAM,b6 unfreeze
+    pla                    // 68
+    rti                    // 40
+    nop                    // EA
+    sta $9e                // 85 9E
+    pla                    // 68
+    sta $de00              // 8D 00 DE   RR control: b0 GAME,b1 EXROM,b2 cart off,b3/b4/b7 bank,b5 RAM,b6 unfreeze
+    lda $9e                // A5 9E
+    rts                    // 60
+    clc                    // 18
+    brk                    // 00
+    php                    // 08
+    bpl $9f0a              // 10 18
+    jsr $801a              // 20 1A 80
+    dey                    // 88
+    bcc $9e90              // 90 98
+bank03_data_9EF8:
+.errorif (* != $9EF8), "bank03_data_9EF8 shifted"
+    .byte $00, $00, $00, $00, $00, $00, $00, $00    // data $9EF8
+    nop                    // EA
+// --- $9F0A: cross-bank call stub (bank03's copy; NOP sled $9F00-$9F09 so
+// jsr $9F00/$9F02/... entry offsets select the destination bank via the
+// $DEED table). 2-byte inline arg after the jsr = target address.
+// Ends with jmp $DEDE (sta $de00 / pla / rti). See bank00 $9F01.
+bank03_sub_9F01:
+    nop                    // EA
+bank03_sub_9F02:
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+bank03_sub_9F05:
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    sei                    // 78
+    cld                    // D8
+    sta $a5                // 85 A5
+    stx $a6                // 86 A6
+    sty $a7                // 84 A7
     php                    // 08
     pla                    // 68
-    sta $a8                // 85 a8
+    sta $a8                // 85 A8
     pla                    // 68
-    sta $9e                // 85 9e
+    sta $9e                // 85 9E
     clc                    // 18
     adc #$02               // 69 02
-    tax                    // aa
+    tax                    // AA
     pla                    // 68
-    sta $9f                // 85 9f
+    sta $9f                // 85 9F
     adc #$00               // 69 00
     pha                    // 48
-    txa                    // 8a
+    txa                    // 8A
     pha                    // 48
-    lda $9e                // a5 9e
-    bne bank03_sub_9f2b              // d0 02
-    dec $9f                // c6 9f
-bank03_sub_9f2b:
-    dec $9e                // c6 9e
-    ldy #$00               // a0 00
-    lda ($9e),y            // b1 9e
+    lda $9e                // A5 9E
+    bne bank03_sub_9F2B              // D0 02
+    dec $9f                // C6 9F
+bank03_sub_9F2B:
+    dec $9e                // C6 9E
+    ldy #$00               // A0 00
+    lda ($9e),y            // B1 9E
     sec                    // 38
-    sbc #$00               // e9 00
-    tax                    // aa
-    lda $deed              // ad ed de
+    sbc #$00               // E9 00
+    tax                    // AA
+    lda $deed              // AD ED DE
     pha                    // 48
-    lda #$de               // a9 de
+    lda #$de               // A9 DE
     pha                    // 48
-    lda #$e3               // a9 e3
+    lda #$e3               // A9 E3
     pha                    // 48
-    ldy #$03               // a0 03
-    lda ($9e),y            // b1 9e
+    ldy #$03               // A0 03
+    lda ($9e),y            // B1 9E
     pha                    // 48
     dey                    // 88
-    lda ($9e),y            // b1 9e
+    lda ($9e),y            // B1 9E
     pha                    // 48
-    lda $a8                // a5 a8
+    lda $a8                // A5 A8
     pha                    // 48
-    lda $a5                // a5 a5
+    lda $a5                // A5 A5
     pha                    // 48
-    lda $deee,x            // bd ee de
-    ldx $a6                // a6 a6
-    ldy $a7                // a4 a7
-    jmp $dede              // 4c de de
+    lda $deee,x            // BD EE DE
+    ldx $a6                // A6 A6
+    ldy $a7                // A4 A7
+    jmp $dede              // 4C DE DE
 bank03_api_23:
-    lda $2b                // a5 2b
-    ldy $2c                // a4 2c
+    lda $2b                // A5 2B   BASIC prog start lo
+    ldy $2c                // A4 2C   BASIC prog start hi
     sta $22                // 85 22
     sty $23                // 84 23
     clc                    // 18
-bank03_sub_9f61:
-    ldy #$01               // a0 01
-    lda ($22),y            // b1 22
-    beq bank03_sub_9f86              // f0 1f
-    ldy #$04               // a0 04
-bank03_sub_9f69:
-    iny                    // c8
-    beq bank03_sub_9f87              // f0 1b
-    lda ($22),y            // b1 22
-    bne bank03_sub_9f69              // d0 f9
-    iny                    // c8
+bank03_sub_9F61:
+    ldy #$01               // A0 01
+    lda ($22),y            // B1 22
+    beq bank03_sub_9F86              // F0 1F
+    ldy #$04               // A0 04
+bank03_sub_9F69:
+    iny                    // C8
+    beq bank03_sub_9F87              // F0 1B
+    lda ($22),y            // B1 22
+    bne bank03_sub_9F69              // D0 F9
+    iny                    // C8
     tya                    // 98
     adc $22                // 65 22
-    tax                    // aa
-    ldy #$00               // a0 00
+    tax                    // AA
+    ldy #$00               // A0 00
     sta ($22),y            // 91 22
-    lda $23                // a5 23
+    lda $23                // A5 23
     adc #$00               // 69 00
-    iny                    // c8
+    iny                    // C8
     sta ($22),y            // 91 22
     stx $22                // 86 22
     sta $23                // 85 23
-    bcc bank03_sub_9f61              // 90 db
-bank03_sub_9f86:
+    bcc bank03_sub_9F61              // 90 DB
+bank03_sub_9F86:
     rts                    // 60
-bank03_sub_9f87:
-    lda #$00               // a9 00
-    ldy #$01               // a0 01
+bank03_sub_9F87:
+    lda #$00               // A9 00
+    ldy #$01               // A0 01
     sta ($22),y            // 91 22
     rts                    // 60
 bank03_api_11:
-    lda $d021              // ad 21 d0
-    and #$0f               // 29 0f
-    ldx #$01               // a2 01
-    cmp #$01               // c9 01
-    bne bank03_sub_9f9a              // d0 01
-    dex                    // ca
-bank03_sub_9f9a:
-    stx $0286              // 8e 86 02
+    lda $d021              // AD 21 D0   VIC background color
+    and #$0f               // 29 0F
+    ldx #$01               // A2 01
+    cmp #$01               // C9 01
+    bne bank03_sub_9F9A              // D0 01
+    dex                    // CA
+bank03_sub_9F9A:
+    stx $0286              // 8E 86 02   current text color
     rts                    // 60
-    .byte $20, $02, $9f, $33, $80, $8e, $39, $03, $a2, $05, $a0, $1d, $20, $76, $85, $a6    // data $9f9e
-    .byte $ba, $a9, $00, $20, $cd, $bd, $a9, $20, $4c, $16, $e7, $20, $00, $9f, $57, $80    // data $9fae
-    .byte $d0, $03, $4c, $5d, $84, $a9, $0d, $4c, $16, $e7    // data $9fbe
+bank03_data_9F9E:
+.errorif (* != $9F9E), "bank03_data_9F9E shifted"
+    .byte $20, $02, $9F, $33, $80, $8E, $39, $03, $A2, $05, $A0, $1D, $20, $76, $85, $A6    // data $9F9E
+    .byte $BA, $A9, $00, $20, $CD, $BD, $A9, $20, $4C, $16, $E7, $20, $00, $9F, $57, $80    // data $9FAE
+    .byte $D0, $03, $4C, $5D, $84, $A9, $0D, $4C, $16, $E7    // data $9FBE
 bank03_api_21:
     jsr bank03_sub_8362              // 20 62 83
-    ora $2020              // 0d 20 20
-    jsr $5943              // 20 43 59
-    .byte $42    // undocumented opcode
-    eor $52                // 45 52
-    bvc $a02b              // 50 55
-    lsr $2058              // 4e 58 20
-    .byte $52    // undocumented opcode
-    eor $54                // 45 54
-    .byte $52    // undocumented opcode
-    .byte $4f    // undocumented opcode
-    jsr $4552              // 20 52 45
-    bvc $a02f              // 50 4c
-    eor ($59,x)            // 41 59
-    jsr $3436              // 20 36 34
-    .byte $4b    // undocumented opcode
-    .byte $42    // undocumented opcode
-    jsr $202d              // 20 2d 20
-    .byte $33    // undocumented opcode
-    rol $5038              // 2e 38 50
-    ora $6000              // 0d 00 60
+    .byte $0D, $20, $20, $20, $43, $59, $42, $45, $52, $50, $55, $4E, $58, $20, $52, $45    // data $9FCB  text: ".   CYBERPUNX RE"
+    .byte $54, $52, $4F, $20, $52, $45, $50, $4C, $41, $59, $20, $36, $34, $4B, $42, $20    // data $9FDB  text: "TRO REPLAY 64KB "
+    .byte $2D, $20, $33, $2E, $38, $50, $0D, $00    // data $9FEB  text: "- 3.8P.."
+    rts                    // 60
     brk                    // 00
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ff5
+bank03_data_9FF5:
+.errorif (* != $9FF5), "bank03_data_9FF5 shifted"
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FF5

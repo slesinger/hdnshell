@@ -1,2573 +1,391 @@
-// disassembly for rr38p-tmp12reu.bin bank 5
-// bank file offset: $a000-$bfff
-// cartridge window: $8000-$9fff
-// vectors: coldstart=$8009, warmstart=$800c, signature=c3 c2 cd 38 30
-// reachable instructions: 69 bytes decoded as code: 113
-// entry points: $8009, $800c, $800f
-// jump table from cold start:
-//   $8009 -> $fcef
-//   $800c -> $800f
-// external branch/jsr/jmp targets: $dede, $f6bc, $f6ed, $fcef, $fe72
+// Disassembly for rr38p-tmp12reu.bin bank 5
+// Bank file offset: $A000-$BFFF
+// Cartridge window: $8000-$9FFF
+// Vectors: coldstart=$8009, warmstart=$800C, signature=c3 c2 cd 38 30
+// Reachable instructions: 69 bytes decoded as code: 113
+// Entry points: $8009, $800C, $800F
+// Jump table from cold start:
+//   $8009 -> $FCEF
+//   $800C -> $800F
+// External branch/jsr/jmp targets: $DEDE, $F6BC, $F6ED, $FCEF, $FE72
 
-// symbol table (auto-generated)
+// Symbol table (auto-generated)
 //   $8009 bank05_cold_start
-//   $800c bank05_warm_start
-//   $800f bank05_api_01
-//   $801a bank05_sub_801a
-//   $9f01 bank05_sub_9f01
-//   $9f2b bank05_sub_9f2b
-//   $fcef bank05_api_00
+//   $800C bank05_warm_start
+//   $800F bank05_api_01
+//   $801A bank05_sub_801A
+//   $9F01 bank05_sub_9F01
+//   $9F2B bank05_sub_9F2B
+//   $FCEF bank05_api_00
 
-// external symbol equates
-.const bank05_api_00 = $fcef
+// External symbol equates
+.const bank05_api_00 = $FCEF
 
 .pc = $8000
 
-    .byte $09, $80, $0c, $80, $c3, $c2, $cd, $38, $30    // data $8000
+bank05_data_8000:
+.errorif (* != $8000), "bank05_data_8000 shifted"
+    .byte $09, $80, $0C, $80, $C3, $C2, $CD, $38, $30    // data $8000
+// Cold start jmp $FCEF points into the ultimax-mode address of this
+// bank's payload area; these banks are never boot banks (reset always
+// starts in bank 0), the header is boilerplate.
 bank05_cold_start:
-    jmp bank05_api_00              // 4c ef fc
+    jmp bank05_api_00              // 4C EF FC
 bank05_warm_start:
-    jmp bank05_api_01              // 4c 0f 80
+    jmp bank05_api_01              // 4C 0F 80
 bank05_api_01:
-    jsr $f6bc              // 20 bc f6
-    jsr $f6ed              // 20 ed f6
-    beq bank05_sub_801a              // f0 03
-    jmp $fe72              // 4c 72 fe
-bank05_sub_801a:
-    ldx #$fb               // a2 fb
-    txs                    // 9a
-    jsr bank05_sub_9f01              // 20 01 9f
-    .byte $0c    // undocumented opcode
-    .byte $80    // undocumented opcode
+    jsr $f6bc              // 20 BC F6
+    jsr $f6ed              // 20 ED F6
+    beq bank05_sub_801A              // F0 03
+    jmp $fe72              // 4C 72 FE
+bank05_sub_801A:
+    ldx #$fb               // A2 FB
+    txs                    // 9A
+    jsr bank05_sub_9F01              // 20 01 9F
+    .byte $0C, $80         // inline arg: cross-bank call target $800C
     brk                    // 00
-
-// ===========================================================================
-// HONDANI SHELL (wedge edition)
-// ===========================================================================
-// Occupies the reclaimed flash-utility region $8023-$9011 (user-approved
-// takeover 2026-07-04: this virtual cartridge has no flash ROM, so the stock
-// FLASH UTIL / ZAP feature is dead weight; the rest of its code at
-// $9200-$9dff is left in place as inert bytes but is no longer functional).
-//
-// Entered only through the fixed jump table at $9012/$9015/$9018 (see below),
-// with bank05 paged into $8000-$9fff by one of the RAM stubs at ie_ram+:
-//   - $9012 wedge_dispatch: every direct-mode line BASIC couldn't execute
-//     (via the IERROR RAM stub installed by bank01's line_tap). Recognized
-//     shell commands run locally; everything else goes to the cloud chatbot.
-//   - $9015 wedge_install: installs/refreshes the CINV ($0314) keyboard-watch
-//     stub for C=+CTRL+digit console switching (via bank01's xb2 RAM trampoline,
-//     called on every non-empty typed line).
-//   - $9018 console_switch: performs the actual console switch (via the CINV
-//     RAM stub, from IRQ context).
-// See wedge/wedge-analysis.md for the full architecture.
-// ===========================================================================
-
-// --- Ultimate command interface at $df1c-$df1f (unrelated to this cart's
-// --- own $de00/$de01 banking registers)
-.const UII_CONTROL = $df1c
-.const UII_STATUS  = $df1c
-.const UII_CMD     = $df1d
-.const UII_RESP    = $df1e
-.const UII_STATDAT = $df1f
-.const UII_ST_ERROR  = $08
-.const UII_ST_STATE  = $30
-.const UII_ST_STATAV = $40
-.const UII_ST_DATAAV = $80
-.const UII_CTL_PUSH  = $01
-.const UII_CTL_ACC   = $02
-
-// --- Ultimate command targets / command ids used here
-.const TARGET_DOS1     = $01
-.const TARGET_NETWORK  = $03
-.const TARGET_CONTROL  = $04
-.const DOS_CMD_IDENTIFY       = $01
-.const DOS_CMD_CHANGE_DIR     = $11
-.const DOS_CMD_GET_PATH       = $12
-.const DOS_CMD_OPEN_DIR       = $13
-.const DOS_CMD_READ_DIR       = $14
-.const DOS_CMD_COPY_HOME_PATH = $17
-.const DOS_CMD_CREATE_DIR     = $16
-.const DOS_CMD_MOUNT_DISK     = $23
-.const DOS_CMD_UMOUNT_DISK    = $24
-.const DOS_CMD_GET_TIME       = $26
-.const CTRL_CMD_FREEZE        = $05
-.const NET_CMD_GET_IP    = $05
-.const NET_TCP_CONNECT   = $07
-.const NET_SOCKET_CLOSE  = $09
-.const NET_SOCKET_READ   = $10
-.const NET_SOCKET_WRITE  = $11
-
-// --- KERNAL / BASIC ROM entries (both ROMs are visible in this cart's
-// --- standard "8K game" memory map, cart ROM only at $8000-$9fff)
-.const SCNKEY  = $ff9f
-.const SETLFS  = $ffba
-.const SETNAM  = $ffbd
-.const READST  = $ffb7
-.const OPEN    = $ffc0
-.const CLOSE   = $ffc3
-.const CHKIN   = $ffc6
-.const CHKOUT  = $ffc9
-.const CLRCHN  = $ffcc
-.const CHRIN   = $ffcf
-.const CHROUT  = $ffd2
-.const GETIN   = $ffe4
-.const LINPRT  = $bdcd            // BASIC: print A(hi)/X(lo) as unsigned decimal
-.const KERNAL_RESET = $fce2
-.const SHFLAG  = $028d            // modifier bits: 1=shift, 2=C=, 4=ctrl
-.const SFDX    = $cb              // matrix code of key currently held (64 = none)
-.const NDX     = $c6              // keyboard buffer length
-.const LOAD    = $ffd5            // A=0 load/1 verify; X/Y=start addr (used only if SA=0)
-.const SAVE    = $ffd8            // A=zp addr of 2-byte start ptr; X/Y=end+1 addr
-.const TXTTAB  = $2b              // +$2c: start-of-BASIC-program ptr -- SAVE's own default
-                                   // start-ptr slot (see cmd_memcpy); borrowed transiently
-
-// --- RAM layout (2026-07-04 round 6): everything lives in the pages 1-3
-// --- system areas, so that no LOADable program address ($0400+, in practice
-// --- $0801+) ever overlaps wedge state -- $cf00-$cfff is completely vacated
-// --- (it was prime game RAM and got trampled by real loads). All of this is
-// --- plain C64 RAM, never repaged by RR banking. The resident stubs sit in
-// --- the datassette buffer past the freezer's $0334/$0335 resume vector and
-// --- the ML monitor's $0336-$033b state (MON/TASS lines disarm the hooks
-// --- anyway, see wi_sniff). Keep every constant here in sync with the
-// --- duplicated block in rr38p-tmp12reu.bank01.asm.
-//
-// Transient per-line / per-command scratch (fine to be trampled between
-// lines -- rewritten before every use):
-.const wc_buf     = $0110     // ll/dir entry buffer; $0100-$010f is skipped
-.const wc_buf_max = 64        //   because BASIC's FOUT/LINPRT builds number
-                              //   strings there (ll prints block counts!)
-.const cf_shadow    = $02a7   // raw typed line, null-terminated (bank01 line_tap)
-                              //   ($02a7-$02f0: 73 chars + null; the freeze
-                              //   button's resume path scribbles $02a7-$02ca,
-                              //   harmless -- rewritten on the next line)
-// $02f1-$02fb: overlay union -- these three sets are never live at the same
-// time (memcpy does no network I/O, reset never returns, net commands never
-// run inside either):
-.const cf_socket_id  = $02f1
-.const cf_status0    = $02f2
-.const cf_status1    = $02f3
-.const cf_state      = $02f4  // net_read_and_print framing state (see there)
-.const cf_got_data   = $02f5
-.const cf_spin_idx   = $02f6
-.const cf_retries_lo = $02f7  // 16-bit "give up waiting" countdown
-.const cf_retries_hi = $02f8
-.const cf_msglen_lo  = $02f9  // 16-bit remaining-content countdown
-.const cf_msglen_hi  = $02fa
-.const mc_start     = $02f1  // +$02f2: parsed $start address (memcpy)
-.const mc_end       = $02f3  // +$02f4: parsed $end address (inclusive)
-.const mc_savetxt   = $02f5  // +$02f6: TXTTAB ($2b/$2c) saved across SAVE
-.const mc_devnum    = $02f7  // resolved KERNAL device number (8/9/10)
-.const mc_hexval    = $02f8  // +$02f9: parse_hex16's accumulator
-.const mc_fnstart   = $02fa  // cf_shadow offset of the filename's first byte
-.const mc_fnlen     = $02fb  // filename length in bytes
-.const reset_ram    = $02f1  // cmd_reset relocates its bank0+reset stub here
-// $02fc-$02ff: scratch that IS live concurrently with the net set above:
-.const w_dig1        = $02fc  // print_dec_byte scratch: hundreds digit
-.const w_dig2        = $02fd  // print_dec_byte scratch: tens digit
-.const w_hidx        = $02fe  // wc_match: haystack inner-compare index
-.const w_hstart      = $02ff  // wc_match: haystack outer try-start offset
-// Reuses wc_match's w_hstart byte: wc_match always zeroes it itself before
-// use (see wcm_haspat), and it's otherwise only touched by the ll/dir
-// wildcard filter -- a command that (like everything else) can't run while
-// cs_modal has taken over, so the two uses never collide.
-.const w_key_stage = $02ff   // key-repeat pacing (cs_fwd): 0 = next repeat of
-                             // the held key gets the INITIAL delay; nonzero =
-                             // already past that, use the FAST delay instead
-// Reuses wc_match's w_hidx byte: wc_match always writes it (via `stx w_hidx`)
-// before ever reading it, same non-collision reasoning as w_key_stage above.
-.const last_matrix = $02fe  // SFDX value (matrix code) of the key currently
-                            // being auto-repeated by cs_modal; $40 sentinel
-                            // (SFDX's own "no key down" value) means none
-// Two-stage key-repeat pacing for a held key forwarded to a server console
-// (mirrors BASIC's own SPACE-key repeat feel): the first repeat waits the
-// longer INITIAL delay, every repeat after that only waits the shorter FAST
-// delay. Both are counted in vsyncs (wait_frames/wait_vbl) -- the VIC raster
-// generator free-runs off the video/colour clock, not the 6510's instruction
-// clock, so this stays correct whether the Ultimate 64 is running stock or
-// overclocked, unlike a CPU-cycle-counted busy-wait would be.
-.const INITIAL_REPEAT_DELAY_FRAMES = 25   // ~500ms @ 50Hz PAL / ~417ms @ 60Hz NTSC
-.const FAST_REPEAT_DELAY_FRAMES    = 3    // ~60ms @ 50Hz PAL / ~50ms @ 60Hz NTSC
-//
-// Resident block (datassette buffer $0340-$03f9) -- must be intact whenever
-// the hooks are armed; refreshed from ROM templates on every typed line:
-.const ie_ram       = $0340   // IERROR stub + xb2 trampoline (bank01 copies it)
-.const il_shim_ram  = $0372   // ILOAD shim: first KERNAL LOAD disarms all hooks
-.const cinv_ram     = $03a0   // CINV keyboard-watch stub ($03a0-$03e6, 71 bytes)
-// State ($03e7-$03fb -- ends exactly at the last datassette-buffer byte):
-.const ie_orig_vec  = $03e7   // +$03e8: original IERROR vector (bank01-owned)
-.const ie_errcode   = $03e9   // BASIC error index that fired (kept, not printed)
-.const w_dev        = $03ea   // current device char: '8','9','S','C','H','T','F'
-.const w_console    = $03eb   // console id, upper nibble: $00=local, $20-$70=server
-.const w_cinv_orig  = $03ec   // +$03ed: original CINV ($0314) vector
-.const w_latch      = $03ee   // C=+CTRL+digit one-shot latch for the CINV stub
-.const w_parse_y    = $03ef   // dispatcher: cf_shadow offset of first non-space char
-.const w_arg        = $03f0   // dispatcher: cf_shadow offset of the command argument
-.const w_quiet      = $03f1   // nonzero: net_read_and_print + net_spin stay silent
-.const w_bank       = $03f2   // CINV stub: saved $de00 bank bits across the switch
-.const w_len        = $03f3   // generic scratch
-.const w_jmp        = $03f4   // +$03f5: dispatcher's indirect handler vector
-.const w_new        = $03f6   // console_switch: target console id scratch
-.const w_skip       = $03f7   // wi_sniff verdict: 1 = launch line, bank01 must
-                              //   skip the shadow copy (read by line_tap)
-.const il_orig      = $03f8   // +$03f9: original ILOAD ($0330) vector
-.const w_magic      = $03fa   // +$03fb: $a5,$c3 once one-time defaults (w_dev,
-                              //   w_console, ...) have been set -- survives
-                              //   disarm/rearm cycles so `#t` etc. stick
-
-// ===========================================================================
-// wedge_dispatch -- fixed jump-table entry ($9012, called from the IERROR
-// stub). Runs the real parser/dispatcher below, then prints "\rREADY.\r"
-// before returning -- the IERROR stub re-enters BASIC via jmp ($0302), which
-// is the *middle* of BASIC's warm-start (past the point that normally prints
-// READY.), so without this every recognized command and every cloud/CLI
-// reply would leave the prompt looking stuck (hardware-confirmed 2026-07-04
-// missing-READY report).
-// ===========================================================================
-wedge_dispatch:
-    jsr wedge_dispatch_body
-    jsr print_cr
-    lda #msg_ready - msg_blob
-    jsr print_msg
-    jmp print_cr
-
-// wedge_dispatch_body -- parse cf_shadow (the raw pre-crunch typed line).
-// Recognized commands run locally and rts back to the wrapper above; a
-// leading ':' (PySIC) is forwarded raw via send_cli (no "I:" wrapper, so
-// PythonEvalHandler sees its own prefix directly); anything else
-// unrecognized is forwarded to the cloud chatbot with the "I:" routing
-// prefix -- same fallback as before, the temporary ERR=$xx diagnostic
-// print is retired (mechanism is confirmed).
-wedge_dispatch_body:
-    ldy #$00
-wd_skipsp:
-    lda cf_shadow,y
-    bne wd_notend
-    rts                        // blank line: nothing to do
-wd_notend:
-    cmp #$20
-    bne wd_first
-    iny
-    bne wd_skipsp
-wd_first:
-    sty w_parse_y
-    cmp #$23                   // '#' -- device-switch family
-    bne wd_check_pysic
-    jmp cmd_hash
-wd_check_pysic:
-    cmp #$3a                   // ':' -- PySIC (python eval) prefix: forward
-    bne wd_scan                // raw, skipping the "I:" chat wrapper entirely
-    jmp send_cli
-wd_scan:
-    ldx #$00                   // X walks the keyword table
-wd_next:
-    ldy w_parse_y
-wd_cmp:
-    lda wedge_words,x
-    bne wd_more
-    jmp wd_chat                // table end: no keyword matched
-wd_more:
-    and #$7f                   // case-blind: PETSCII $c1-$da folds onto $41-$5a
-    sta w_len
-    lda cf_shadow,y
-    and #$7f
-    cmp w_len
-    bne wd_mismatch
-    lda wedge_words,x          // chars match -- was that the final char (bit7)?
-    bmi wd_boundary
-    inx
-    iny
-    bne wd_cmp
-wd_boundary:
-    iny                        // word complete: typed char after it must end the word
-    lda cf_shadow,y
-    beq wd_hit
-    cmp #$20
-    beq wd_hit
-wd_mismatch:                   // skip to end of this table word + its address
-    lda wedge_words,x
-    bne wd_skip1
-    jmp wd_chat                // safety: ran off the table end
-wd_skip1:
-    inx
-    and #$80
-    beq wd_mismatch
-    inx                        // past the handler address
-    inx
-    jmp wd_next
-wd_hit:                        // Y is on the boundary char; skip spaces to the arg
-    lda cf_shadow,y
-    beq wd_argdone
-    cmp #$20
-    bne wd_argdone
-    iny
-    bne wd_hit
-wd_argdone:
-    sty w_arg
-    lda wedge_words+1,x        // X still on the final (bit7) char
-    sta w_jmp
-    lda wedge_words+2,x
-    sta w_jmp+1
-    jmp (w_jmp)
-
-// Keyword table: PETSCII word with bit7 set on the last char (same
-// convention as the cart's own table), then the handler address.
-// Exact match + word boundary only -- no 3-letter abbreviation quirk.
-wedge_words:
-    .byte $53,$54,$41,$54,$55,$d3            // STATUS
-    .byte <cmd_status, >cmd_status
-    .byte $54,$49,$4d,$c5                    // TIME
-    .byte <cmd_time, >cmd_time
-    .byte $52,$45,$53,$45,$d4                // RESET
-    .byte <cmd_reset, >cmd_reset
-    .byte $4d,$45,$4e,$d5                    // MENU (was FRZ -- renamed, see cmd_menu)
-    .byte <cmd_menu, >cmd_menu
-    .byte $4c,$cc                            // LL
-    .byte <cmd_dir, >cmd_dir
-    .byte $44,$49,$d2                        // DIR
-    .byte <cmd_dir, >cmd_dir
-    .byte $4d,$4e,$d4                        // MNT
-    .byte <cmd_mnt, >cmd_mnt
-    .byte $55,$4d,$4e,$d4                    // UMNT
-    .byte <cmd_umnt, >cmd_umnt
-    .byte $43,$c4                            // CD
-    .byte <cmd_cd, >cmd_cd
-    .byte $50,$57,$c4                        // PWD
-    .byte <cmd_pwd, >cmd_pwd
-    .byte $49,$4e,$46,$cf                    // INFO (the cart's own stock command;
-    .byte <cmd_info, >cmd_info               // see cmd_info -- recognized here purely so
-                                              // it's swallowed instead of chat-forwarded)
-    .byte $48,$45,$4c,$d0                    // HELP
-    .byte <cmd_help, >cmd_help
-    .byte $4d,$4b,$44,$49,$d2                // MKDIR
-    .byte <cmd_mkdir, >cmd_mkdir
-    .byte $43,$d0                            // CP
-    .byte <cmd_cp, >cmd_cp
-    .byte $4d,$45,$4d,$43,$50,$d9            // MEMCPY
-    .byte <cmd_memcpy, >cmd_memcpy
-    .byte $00
-
-// ===========================================================================
-// Command bodies
-// ===========================================================================
-
-// status -- firmware identify string, local IP, server host + reachability
-cmd_status:
-    lda #DOS_CMD_IDENTIFY
-    jsr dos_simple_print
-    jsr print_cr
-    lda #msg_ip - msg_blob
-    jsr print_msg
-    jsr net_print_ip
-    jsr print_cr
-    lda #msg_server - msg_blob
-    jsr print_msg
-    ldx #$00
-cst_host:
-    lda net_test_host,x
-    beq cst_probe
-    jsr CHROUT
-    inx
-    bne cst_host
-cst_probe:
-    jsr net_connect            // reachability probe: connect, then close
-    bcs cst_unreach
-    jsr net_close
-    lda #msg_ok - msg_blob
-    jmp print_msg
-cst_unreach:
-    lda #msg_unreach - msg_blob
-    jmp print_msg
-
-// info -- no-op: INFO is the cart's own stock command (prints "RR REV: ..."
-// straight from ROM, before BASIC ever reaches our IERROR hook). But its
-// completion still raises a direct-mode error same as any other cart command
-// (hardware-confirmed 2026-07-04: INFO's own output was followed by a stray
-// chat reply), which our "any direct-mode error" hook would otherwise forward
-// to the cloud as an unrecognized line. Recognizing INFO here just swallows
-// that forward -- the cart has already done all the real work by the time
-// this runs.
-cmd_info:
-    rts
-
-// time -- Ultimate RTC date/time string
-cmd_time:
-    lda #DOS_CMD_GET_TIME
-    jsr dos_simple_print
-    jmp print_cr
-
-// menu -- freeze the CLI's state and enter the Ultimate menu (control target
-// command $05, the only "freeze" the UCI/REST API exposes -- on this
-// platform freezing *is* dropping into the menu, there's no separate silent
-// freeze; renamed from "frz" since that name suggested otherwise).
-cmd_menu:
-    lda #CTRL_CMD_FREEZE
-    ldx #TARGET_CONTROL
-    jsr dos_begin
-    jmp dos_finish_quiet
-
-// reset -- select bank0 (so the CBM80 cold vector lands in the cart's own
-// menu, same as a hardware reset) and jump through the KERNAL reset. The
-// bank write repages this very ROM window, so the tail runs from RAM.
-cmd_reset:
-    ldx #reset_stub_end - reset_stub - 1
-crs_copy:
-    lda reset_stub,x
-    sta reset_ram,x
-    dex
-    bpl crs_copy
-    jmp reset_ram
-reset_stub:
-    lda #$00
-    sta $de00
-    jmp KERNAL_RESET
-reset_stub_end:
-
-// #<device> -- switch the current device; bare '#' prints it.
-// '8'/'9'/'S' are IEC devices (8/9/10), 'C' is the server-side CSDB module,
-// 'N' is the server-side network drive (proxy onto the hondani server's
-// workspace folder -- see cmd_cp), 'H'/'T'/'F' cd the Ultimate DOS filesystem
-// to home / /TEMP / /FLASH (improvement over the old hdnsh, which only
-// stored the marker).
-cmd_hash:
-    ldy w_parse_y
-    iny
-    lda cf_shadow,y
-    bne ch_notbare
-    lda w_dev                  // bare '#': print the current device letter
-    jsr CHROUT
-    jmp print_cr
-ch_notbare:
-    and #$7f
-    cmp #$38                   // '8'
-    beq ch_store
-    cmp #$39                   // '9'
-    beq ch_store
-    cmp #$53                   // 'S' -- SoftIEC (IEC device 10)
-    beq ch_store
-    cmp #$43                   // 'C' -- CSDB (server-side module)
-    beq ch_csdb
-    cmp #$4e                   // 'N' -- server-side network drive (same
-    beq ch_csdb                // "notify + forward raw line" mechanism as CSDB)
-    cmp #$48                   // 'H' -- Ultimate home directory
-    beq ch_home
-    cmp #$54                   // 'T' -- /TEMP
-    beq ch_temp
-    cmp #$46                   // 'F' -- /FLASH
-    beq ch_flash
-    jmp wd_chat                // unknown device letter: let the cloud answer
-ch_store:
-    sta w_dev
-    rts
-ch_csdb:
-    sta w_dev
-    jmp send_cli               // server activates its CSDB module and replies
-ch_home:
-    sta w_dev
-    lda #DOS_CMD_COPY_HOME_PATH
-    jsr dos_simple_quiet
-    jmp ch_pwd
-ch_temp:
-    sta w_dev
-    ldy #txt_temp - path_blob
-    jsr dos_chdir_blob
-    jmp ch_pwd
-ch_flash:
-    sta w_dev
-    ldy #txt_flash - path_blob
-    jsr dos_chdir_blob
-ch_pwd:
-    lda #DOS_CMD_GET_PATH      // show where we landed
-    jsr dos_simple_print
-    jmp print_cr
-
-// cd <path> -- change directory on whichever device w_dev currently selects.
-// 'C'/'N' forward the raw line to the server's active module (CSDB / network
-// drive, respectively); '8'/'9'/'S' send a "CD:<path>" command-channel string
-// (works on IEC drives/servers that support subdirectories, e.g. CMD/SD2IEC-
-// style firmware, same convention as the old src/cmd_cd.asm); 'H'/'T'/'F' use
-// the Ultimate DOS CHANGE_DIR command with the typed path (unlike #h/#t/#f,
-// which only cd to fixed locations).
-cmd_cd:
-    ldy w_arg
-    lda cf_shadow,y
-    bne ccd_hasarg
-    lda #msg_err - msg_blob    // no argument
-    jmp print_msg
-ccd_hasarg:
-    lda w_dev
-    cmp #$43                   // 'C' -- CSDB: raw line to the server
-    beq ccd_csdb
-    cmp #$4e                   // 'N' -- network drive: same, server tracks its own cwd
-    beq ccd_csdb
-    cmp #$38                   // '8'
-    beq ccd_iec
-    cmp #$39                   // '9'
-    beq ccd_iec
-    cmp #$53                   // 'S' (SoftIEC = IEC device 10)
-    beq ccd_iec
-    lda #DOS_CMD_CHANGE_DIR    // 'H'/'T'/'F': Ultimate DOS filesystem
-    ldx #TARGET_DOS1
-    jsr dos_begin
-    ldy w_arg
-ccd_path:
-    lda cf_shadow,y
-    beq ccd_send
-    sta UII_CMD
-    iny
-    bne ccd_path
-ccd_send:
-    jsr dos_finish_quiet
-    lda #DOS_CMD_GET_PATH      // show where we landed
-    jsr dos_simple_print
-    jmp print_cr
-ccd_csdb:
-    jmp send_cli
-ccd_iec:
-    ldx #$08                   // device number for SETLFS
-    cmp #$39
-    bne ccd_not9
-    ldx #$09
-ccd_not9:
-    cmp #$53
-    bne ccd_notS
-    ldx #$0a
-ccd_notS:
-    stx w_len
-    lda #15                    // logical file 15, secondary address 15 (command channel)
-    ldy #15
-    jsr SETLFS
-    lda #$00
-    jsr SETNAM
-    jsr OPEN
-    bcs ccd_err
-    ldx #15
-    jsr CHKOUT
-    lda #$43                   // "CD:"
-    jsr CHROUT
-    lda #$44
-    jsr CHROUT
-    lda #$3a
-    jsr CHROUT
-    ldy w_arg
-ccd_iloop:
-    lda cf_shadow,y
-    beq ccd_idone
-    jsr CHROUT
-    iny
-    bne ccd_iloop
-ccd_idone:
-    jsr CLRCHN
-    lda #15
-    jsr CLOSE
-    jmp print_cr
-ccd_err:
-    lda #msg_err - msg_blob
-    jmp print_msg
-
-// pwd -- print the current directory. 'C'/'N' forward to the server's
-// active module (CSDB / network drive); 'H'/'T'/'F' ask the Ultimate DOS
-// filesystem (same GET_PATH used internally by #h/#t/#f); '8'/'9'/'S' have no
-// queryable path over plain IEC command-channel conventions, so this reports
-// "NOT SUPPORTED" there (same as the old hdnsh's cmd_pwd.asm).
-cmd_pwd:
-    lda w_dev
-    cmp #$43                   // 'C' -- CSDB: raw line to the server
-    beq cpw_csdb
-    cmp #$4e                   // 'N' -- network drive: same
-    beq cpw_csdb
-    cmp #$38                   // '8'
-    beq cpw_nosup
-    cmp #$39                   // '9'
-    beq cpw_nosup
-    cmp #$53                   // 'S' (SoftIEC = IEC device 10)
-    beq cpw_nosup
-    lda #DOS_CMD_GET_PATH      // 'H'/'T'/'F'
-    jsr dos_simple_print
-    jmp print_cr
-cpw_csdb:
-    jmp send_cli
-cpw_nosup:
-    lda #msg_nosup - msg_blob
-    jmp print_msg
-
-// ll / dir -- list the current device
-cmd_dir:
-    lda w_dev
-    cmp #$43                   // 'C': ask the server's CSDB module
-    beq cd_server
-    cmp #$4e                   // 'N': ask the server's network-drive module
-    beq cd_server
-    jmp cd_notc
-cd_server:
-    jmp send_cli
-cd_notc:
-    cmp #$38                   // '8'
-    beq cd_kern
-    cmp #$39                   // '9'
-    beq cd_kern
-    cmp #$53                   // 'S' (SoftIEC = IEC device 10)
-    beq cd_kern
-    jmp wd_uii_dir             // 'H'/'T'/'F': Ultimate DOS current directory
-cd_kern:
-    jmp kernal_dir
-
-// mnt <image path> -- mount a disk image (on the Ultimate filesystem,
-// relative to its current directory) as drive 8
-cmd_mnt:
-    ldy w_arg
-    lda cf_shadow,y
-    bne cm_hasarg
-    lda #msg_err - msg_blob    // no argument
-    jmp print_msg
-cm_hasarg:
-    lda #DOS_CMD_MOUNT_DISK
-    ldx #TARGET_DOS1
-    jsr dos_begin
-    lda #$08                   // drive 8
-    sta UII_CMD
-    ldy w_arg
-cm_path:
-    lda cf_shadow,y
-    beq cm_send
-    sta UII_CMD
-    iny
-    bne cm_path
-cm_send:
-    jmp dos_finish_quiet
-
-// umnt -- unmount drive 8's image
-cmd_umnt:
-    lda #DOS_CMD_UMOUNT_DISK
-    ldx #TARGET_DOS1
-    jsr dos_begin
-    lda #$08                   // drive 8
-    sta UII_CMD
-    jmp dos_finish_quiet
-
-// mkdir <name> -- create a directory on the Ultimate filesystem, relative to
-// the current directory. Only meaningful for 'H'/'T'/'F' -- classic IEC
-// drives/servers (8/9/S) and the CSDB module (C) have no create-directory
-// convention here, so those report "NOT SUPPORTED" (same as the old hdnsh's
-// cmd_mkdir.asm).
-cmd_mkdir:
-    ldy w_arg
-    lda cf_shadow,y
-    bne cmk_hasarg
-    lda #msg_err - msg_blob    // no argument
-    jmp print_msg
-cmk_hasarg:
-    lda w_dev
-    cmp #$48                   // 'H'
-    beq cmk_uii
-    cmp #$54                   // 'T'
-    beq cmk_uii
-    cmp #$46                   // 'F'
-    beq cmk_uii
-    lda #msg_nosup - msg_blob
-    jmp print_msg
-cmk_uii:
-    lda #DOS_CMD_CREATE_DIR
-    ldx #TARGET_DOS1
-    jsr dos_begin
-    ldy w_arg
-cmk_path:
-    lda cf_shadow,y
-    beq cmk_send
-    sta UII_CMD
-    iny
-    bne cmk_path
-cmk_send:
-    jmp dos_finish_quiet
-
-// cp <name> -- copy a file between the Ultimate filesystem and either the
-// current network-drive (#n) directory or CSDB (#c), via the server's own
-// FTP round trip onto this C64U's built-in FTP server (the same mechanism
-// cloud/handlers/csdb_handler.py's cp already uses to push release files
-// here -- see wedge-analysis.md). 'N'/'C' (GET): forward the typed line
-// as-is ("cp <name>") -- the server's currently active module (netdrive or
-// CSDB) decides what it means: netdrive FTPs a workspace file, CSDB
-// downloads/unzips a release file -- either way it lands in this C64U's own
-// /TEMP (use #t + the filename afterward; this is also the long-documented
-// CSDB workflow, see docs/user_manual/csdb.md). 'H'/'T'/'F' (PUT): rewrite
-// the line as "PUT <name>" -- the server FTP-pulls the file from this
-// C64U's /TEMP and drops it into the #n session's current server-side
-// directory (CSDB has no PUT direction). Deliberately always anchored on
-// /TEMP for the local side rather than "wherever cd took you": the wire
-// protocol has no way to query the Ultimate DOS current directory from the
-// server side, so relaying an arbitrary local path isn't possible without a
-// new query round trip -- not attempted in this first pass. '8'/'9'/'S'
-// have no local filesystem/session to bridge, so those report
-// "NOT SUPPORTED".
-cmd_cp:
-    ldy w_arg
-    lda cf_shadow,y
-    bne ccp_hasarg
-    lda #msg_err - msg_blob    // no argument
-    jmp print_msg
-ccp_hasarg:
-    lda w_dev
-    cmp #$4e                   // 'N': GET -- typed line is already "cp <name>"
-    beq ccp_get
-    cmp #$43                   // 'C': CSDB's own long-documented "cp <name>"
-    beq ccp_get                // download (see docs/user_manual/csdb.md) --
-                                // same raw-forward mechanism as 'N', the
-                                // server's active module (CSDB vs netdrive)
-                                // decides what it means
-    cmp #$48                   // 'H'
-    beq ccp_put
-    cmp #$54                   // 'T'
-    beq ccp_put
-    cmp #$46                   // 'F'
-    beq ccp_put
-    lda #msg_nosup - msg_blob
-    jmp print_msg
-ccp_get:
-    jmp send_cli
-ccp_put:
-    // stash the filename argument (wc_buf is free here -- no ll/dir listing
-    // in progress), then rebuild cf_shadow as "PUT <name>" before forwarding.
-    ldy w_arg
-    ldx #$00
-ccp_savearg:
-    lda cf_shadow,y
-    sta wc_buf,x
-    beq ccp_saved
-    iny
-    inx
-    cpx #wc_buf_max
-    bne ccp_savearg
-    lda #$00
-    sta wc_buf,x
-ccp_saved:
-    ldx #$00
-ccp_pfx:
-    lda ccp_put_pfx,x
-    beq ccp_copyarg
-    sta cf_shadow,x
-    inx
-    bne ccp_pfx
-ccp_copyarg:
-    ldy #$00
-ccp_argloop:
-    lda wc_buf,y
-    sta cf_shadow,x
-    beq ccp_argdone
-    inx
-    iny
-    bne ccp_argloop
-ccp_argdone:
-    jmp send_cli
-ccp_put_pfx:
-    .byte $50,$55,$54,$20,$00  // "PUT "
-
-// memcpy $start-$end filename  -- save a memory range to a file
-// memcpy filename $start       -- load a file into memory at an explicit
-//                                  start address (relocatable: any load
-//                                  address embedded in the file is ignored)
-//
-// Device is whichever w_dev currently selects (H/T/F/8 all resolve to
-// KERNAL device 8 -- the same physical Ultimate drive #h/#t/#f already just
-// cd on; 9->9, S->10), or an explicit "#X:" prefix on the filename overrides
-// it for this one command only (w_dev itself is left untouched). C/N have no
-// local-memory bridge (yet) -- NOT SUPPORTED, same scoping decision as cp.
-//
-// This is exactly the technique BASIC's own SAVE/LOAD tokens use under the
-// hood (see docs/inspiration/c64/mapc6411.txt's $E156/$E168 writeups):
-// temporarily repoint TXTTAB ($2b/$2c) at the requested start address for
-// SAVE (restored after, regardless of success), and pass the start address
-// directly in X/Y for LOAD with SA=0 (tells LOAD to ignore any embedded
-// address and use X/Y instead -- this is what makes the restore relocatable).
-// Straight KERNAL SETLFS/SETNAM/LOAD/SAVE, no new file I/O of our own --
-// bank01's ILOAD/ISAVE patch already fast-paths these through Ultimate DOS
-// for device 8, same as a plain "SAVE"..",8,1" typed at the BASIC prompt.
-cmd_memcpy:
-    ldy w_arg
-    lda cf_shadow,y
-    bne cmc_hasarg
-    lda #msg_err - msg_blob
-    jmp print_msg
-cmc_hasarg:
-    cmp #$24                   // '$' -- "$start-$end filename" (SAVE form)
-    beq cmc_save
-    jmp cmc_load                // else "filename $start" (LOAD form)
-
-// --- SAVE form: $start-$end filename ---
-cmc_save:
-    ldy w_arg
-    iny                         // skip '$'
-    jsr parse_hex16
-    lda mc_hexval
-    sta mc_start
-    lda mc_hexval+1
-    sta mc_start+1
-    lda cf_shadow,y
-    cmp #$2d                    // '-'
-    beq cmc_save_dash
-    jmp cmc_synerr
-cmc_save_dash:
-    iny
-    jsr parse_hex16
-    lda mc_hexval
-    sta mc_end
-    lda mc_hexval+1
-    sta mc_end+1
-cmc_save_sp:
-    lda cf_shadow,y
-    bne cmc_save_spchk           // no filename
-    jmp cmc_synerr
-cmc_save_spchk:
-    cmp #$20
-    bne cmc_save_fn
-    iny
-    bne cmc_save_sp
-cmc_save_fn:
-    jsr cmc_parse_dev           // A=device letter (override or w_dev); Y past any "#X:"
-    sty mc_fnstart
-    jsr resolve_devnum
-    bcc cmc_save_devok
-    jmp cmc_nosup
-cmc_save_devok:
-    sta mc_devnum
-    ldy mc_fnstart
-    jsr cmc_fnlen               // X=filename length
-    stx mc_fnlen
-    lda #$02                    // logical file 2
-    ldx mc_devnum
-    ldy #$01                    // SA=1: embed the load address in the file (standard convention)
-    jsr SETLFS
-    lda #<cf_shadow
-    clc
-    adc mc_fnstart
-    tax
-    lda #>cf_shadow
-    adc #$00
-    tay
-    lda mc_fnlen
-    jsr SETNAM
-    lda TXTTAB
-    sta mc_savetxt
-    lda TXTTAB+1
-    sta mc_savetxt+1
-    lda mc_start
-    sta TXTTAB
-    lda mc_start+1
-    sta TXTTAB+1
-    lda mc_end                  // SAVE wants X/Y = address of the byte AFTER
-    clc                         // the last byte to save (end is inclusive)
-    adc #$01
-    tax
-    lda mc_end+1
-    adc #$00
-    tay
-    lda #$2b
-    jsr SAVE
-    php
-    lda mc_savetxt
-    sta TXTTAB
-    lda mc_savetxt+1
-    sta TXTTAB+1
-    plp
-    bcc cmc_save_ok
-    jmp cmc_err
-cmc_save_ok:
-    lda #msg_ok - msg_blob
-    jmp print_msg
-
-// --- LOAD form: filename $start ---
-cmc_load:
-    ldy w_arg
-    jsr cmc_parse_dev
-    sty mc_fnstart
-    jsr resolve_devnum
-    bcc cmc_load_devok
-    jmp cmc_nosup
-cmc_load_devok:
-    sta mc_devnum
-    ldy mc_fnstart
-    jsr cmc_fnlen                // X=filename length; Y left at the terminator
-    stx mc_fnlen
-cmc_load_sp:
-    lda cf_shadow,y
-    bne cmc_load_spchk           // no address given
-    jmp cmc_synerr
-cmc_load_spchk:
-    cmp #$20
-    bne cmc_load_dollar
-    iny
-    bne cmc_load_sp
-cmc_load_dollar:
-    cmp #$24                     // '$'
-    beq cmc_load_isdollar
-    jmp cmc_synerr
-cmc_load_isdollar:
-    iny
-    jsr parse_hex16
-    lda #$02                     // logical file 2
-    ldx mc_devnum
-    ldy #$00                     // SA=0: ignore any embedded load address, use X/Y (relocatable)
-    jsr SETLFS
-    lda #<cf_shadow
-    clc
-    adc mc_fnstart
-    tax
-    lda #>cf_shadow
-    adc #$00
-    tay
-    lda mc_fnlen
-    jsr SETNAM
-    lda #$00                     // 0 = LOAD (not verify)
-    ldx mc_hexval
-    ldy mc_hexval+1
-    jsr LOAD
-    bcc cmc_load_ok
-    jmp cmc_err
-cmc_load_ok:
-    lda #msg_ok - msg_blob
-    jmp print_msg
-
-cmc_nosup:
-    lda #msg_nosup - msg_blob
-    jmp print_msg
-cmc_synerr:
-cmc_err:
-    lda #msg_err - msg_blob
-    jmp print_msg
-
-// cmc_parse_dev -- Y = cf_shadow offset of a filename token (leading spaces
-// already skipped). If it starts "#X:" (X = a device letter), returns A=X
-// and advances Y past the 3-char prefix; otherwise returns A=w_dev and Y
-// unchanged. Never touches w_dev itself -- this is a one-command override.
-cmc_parse_dev:
-    lda cf_shadow,y
-    cmp #$23                     // '#'
-    bne cmc_pd_default
-    lda cf_shadow+2,y            // char after the letter must be ':'
-    cmp #$3a
-    bne cmc_pd_default
-    lda cf_shadow+1,y
-    pha
-    tya
-    clc
-    adc #$03
-    tay
-    pla
-    rts
-cmc_pd_default:
-    lda w_dev
-    rts
-
-// cmc_fnlen -- Y = start offset; returns X = length up to the next space or
-// null. Y ends up on that terminator (space or null), which the LOAD-form
-// caller relies on to continue parsing the address token right after.
-cmc_fnlen:
-    ldx #$00
-cmc_fl_loop:
-    lda cf_shadow,y
-    beq cmc_fl_done
-    cmp #$20
-    beq cmc_fl_done
-    iny
-    inx
-    bne cmc_fl_loop
-cmc_fl_done:
-    rts
-
-// resolve_devnum -- A=device letter in; on return, carry clear and A=KERNAL
-// device number (H/T/F/8->8, 9->9, S->10), or carry set (unsupported: C/N/
-// anything else -- no local-memory bridge for those).
-resolve_devnum:
-    cmp #$48                     // 'H'
-    beq rdn_8
-    cmp #$54                     // 'T'
-    beq rdn_8
-    cmp #$46                     // 'F'
-    beq rdn_8
-    cmp #$38                     // '8'
-    beq rdn_8
-    cmp #$39                     // '9'
-    beq rdn_9
-    cmp #$53                     // 'S'
-    beq rdn_10
-    sec
-    rts
-rdn_8:
-    lda #$08
-    clc
-    rts
-rdn_9:
-    lda #$09
-    clc
-    rts
-rdn_10:
-    lda #$0a
-    clc
-    rts
-
-// parse_hex16 -- Y = index of the first hex digit in cf_shadow. Parses as
-// many hex digits (0-9, A-F, uppercase only) as are present into mc_hexval
-// (16-bit, big-endian typing order), leaving Y on the first non-hex-digit
-// character (the caller's terminator check).
-parse_hex16:
-    lda #$00
-    sta mc_hexval
-    sta mc_hexval+1
-ph_loop:
-    lda cf_shadow,y
-    jsr hex_digit_val
-    bcs ph_done
-    pha
-    asl mc_hexval
-    rol mc_hexval+1
-    asl mc_hexval
-    rol mc_hexval+1
-    asl mc_hexval
-    rol mc_hexval+1
-    asl mc_hexval
-    rol mc_hexval+1
-    pla
-    ora mc_hexval
-    sta mc_hexval
-    iny
-    bne ph_loop
-ph_done:
-    rts
-
-// hex_digit_val -- A = char in; returns A=0-15/carry clear if 0-9 or A-F,
-// or carry set (not a hex digit, A unchanged in meaning -- caller only acts
-// on carry).
-hex_digit_val:
-    cmp #$30
-    bcc hdv_bad
-    cmp #$3a
-    bcc hdv_digit
-    cmp #$41
-    bcc hdv_bad
-    cmp #$47
-    bcs hdv_bad
-    sec
-    sbc #$37
-    clc
-    rts
-hdv_digit:
-    sec
-    sbc #$30
-    clc
-    rts
-hdv_bad:
-    sec
-    rts
-
-// help -- if the cloud is reachable, forward the whole typed line (bare
-// "help", "help topics", or "help <question>") to the chatbot exactly like
-// an unrecognized command, so the server can answer contextually (see
-// docs/user_manual/user_manual.md's "Getting Help" section: help behaves
-// differently connected vs. not). If unreachable, wd_chat's own fallback
-// (net_fail) is completely silent, which would leave "help" looking like it
-// did nothing -- print a local, static pointer instead.
-cmd_help:
-    jsr net_connect
-    bcs chp_local
-    jsr net_close
-    jmp wd_chat
-chp_local:
-    lda #msg_help - msg_blob
-    jmp print_msg
-
-// ---------------------------------------------------------------------------
-// wc_match -- does the pattern typed as this command's argument (w_arg,
-// offset into cf_shadow; may be empty) occur as a substring of the
-// null-terminated line buffered at wc_buf? A trailing '*' in the pattern
-// matches any remainder, giving the "outrun*" prefix convention; a pattern
-// with no '*' still matches anywhere in the line rather than requiring an
-// exact whole-line match, since we don't know the exact column layout of
-// every listing source (KERNAL block-count-prefixed names vs. Ultimate DOS
-// entries) -- substring search works either way without needing to know it.
-// Output: carry clear = match (including an empty pattern -- no filter
-// means show everything), carry set = no match anywhere in the line.
-// ---------------------------------------------------------------------------
-wc_match:
-    ldy w_arg
-    lda cf_shadow,y
-    bne wcm_haspat
-    clc                        // empty pattern: always matches
-    rts
-wcm_haspat:
-    lda #$00
-    sta w_hstart
-wcm_outer:
-    ldx w_hstart
-    lda wc_buf,x
-    beq wcm_nomatch            // haystack exhausted: no match found anywhere
-    stx w_hidx
-    ldy w_arg
-wcm_inner:
-    lda cf_shadow,y
-    cmp #$2a                   // '*' in pattern: matches regardless of the rest
-    beq wcm_yes
-    ldx w_hidx
-    cmp wc_buf,x
-    beq wcm_advance
-    inc w_hstart                // mismatch: retry starting one byte further in
-    jmp wcm_outer
-wcm_advance:
-    iny
-    inc w_hidx
-    ldx w_hidx
-    lda wc_buf,x
-    beq wcm_hend                // haystack ends exactly here
-    jmp wcm_inner
-wcm_hend:
-    lda cf_shadow,y
-    beq wcm_yes                 // pattern also ends here: exact match
-    cmp #$2a
-    beq wcm_yes                 // pattern's only left is '*': still a match
-    inc w_hstart
-    jmp wcm_outer
-wcm_yes:
-    clc
-    rts
-wcm_nomatch:
-    sec
-    rts
-
-// ---------------------------------------------------------------------------
-// Directory listing over the Ultimate DOS (devices H/T/F): OPEN_DIR, then
-// READ_DIR and print entry chunks until the data queue stays empty --
-// same accept-loop shape as the old src/cmd_lsll.asm. Each chunk is now
-// buffered into wc_buf and matched against w_arg (see wc_match) before
-// printing, so "ll outrun*" only shows matching entries.
-// ---------------------------------------------------------------------------
-wd_uii_dir:
-    lda #DOS_CMD_OPEN_DIR
-    jsr dos_simple_quiet
-    lda #DOS_CMD_READ_DIR
-    ldx #TARGET_DOS1
-    jsr dos_begin
-    jsr net_push_and_check
-    bcc wud_pushok
-    jmp dos_fail
-wud_pushok:
-    jsr net_wait_not_busy
-    jsr dos_print_data_filtered  // first entry chunk
-    jsr dos_status_report
-    jsr net_accept
-wud_more:
-    lda UII_STATUS
-    and #UII_ST_DATAAV
-    beq wud_done
-    jsr dos_print_data_filtered
-    jsr net_accept
-    jmp wud_more
-wud_done:
-    rts
-
-// Buffer one response chunk into wc_buf (bounded to wc_buf_max, draining any
-// overflow unread so the queue stays in sync), then print it + CR only if it
-// matches w_arg's pattern (wc_match) -- otherwise the chunk is discarded
-// silently. Y is the fill count.
-dos_print_data_filtered:
-    ldy #$00
-dpdf_loop:
-    lda UII_STATUS
-    and #UII_ST_DATAAV
-    beq dpdf_term
-    lda UII_RESP
-    cpy #wc_buf_max
-    bcs dpdf_loop              // buffer full: keep draining, stop storing
-    sta wc_buf,y
-    iny
-    jmp dpdf_loop
-dpdf_term:
-    cpy #wc_buf_max
-    bcc dpdf_null
-    ldy #wc_buf_max - 1
-dpdf_null:
-    lda #$00
-    sta wc_buf,y
-    jsr wc_match
-    bcs dpdf_done              // no match: print nothing for this chunk
-    ldx #$00
-dpdf_print:
-    lda wc_buf,x
-    beq dpdf_cr
-    jsr CHROUT
-    inx
-    jmp dpdf_print
-dpdf_cr:
-    jmp print_cr
-dpdf_done:
-    rts
-
-// ---------------------------------------------------------------------------
-// Directory listing via the KERNAL (devices 8/9/S): open "$" and decode the
-// BASIC-program-shaped listing (link word, block count, name chars).
-// Input: A = device char ('8'/'9'/'S').
-// ---------------------------------------------------------------------------
-kernal_dir:
-    ldx #$08
-    cmp #$39
-    bne kd_not9
-    ldx #$09
-kd_not9:
-    cmp #$53
-    bne kd_notS
-    ldx #$0a
-kd_notS:
-    stx w_len                  // device number
-    lda #$01
-    ldx #<kd_dollar
-    ldy #>kd_dollar
-    jsr SETNAM
-    lda #$02                   // logical file 2
-    ldx w_len
-    ldy #$00                   // SA 0: "$" arrives as a BASIC program image
-    jsr SETLFS
-    jsr OPEN
-    bcs kd_err
-    ldx #$02
-    jsr CHKIN
-    bcs kd_err
-    jsr CHRIN                  // skip the 2-byte load address
-    jsr CHRIN
-kd_line:
-    jsr CHRIN                  // line link lo
-    sta w_len
-    jsr CHRIN                  // line link hi
-    ora w_len
-    beq kd_done                // null link: end of listing
-    jsr READST
-    bne kd_done
-    jsr CHRIN                  // block count lo
-    sta w_dig1                 // stashed until the filter decision is made
-    jsr CHRIN                  // block count hi
-    sta w_dig2
-    ldy #$00                   // Y = wc_buf fill count for this entry's name
-kd_chars:
-    jsr CHRIN
-    beq kd_nameend
-    pha
-    jsr READST
-    bne kd_done_pla
-    pla
-    cpy #wc_buf_max
-    bcs kd_chars               // buffer full: keep reading/discarding the rest
-    sta wc_buf,y
-    iny
-    jmp kd_chars
-kd_nameend:
-    lda #$00
-    sta wc_buf,y
-    jsr wc_match
-    bcs kd_eol                 // no match: skip printing this entry entirely
-    ldx w_dig1
-    lda w_dig2
-    jsr LINPRT                 // print A:X as decimal
-    lda #$20
-    jsr CHROUT
-    ldx #$00
-kd_print:
-    lda wc_buf,x
-    beq kd_pdone
-    jsr CHROUT
-    inx
-    jmp kd_print
-kd_pdone:
-    jsr print_cr
-kd_eol:
-    jmp kd_line
-kd_done_pla:
-    pla
-kd_done:
-    lda #$02
-    jsr CLOSE
-    jsr CLRCHN
-    rts
-kd_err:
-    lda #$02
-    jsr CLOSE
-    jsr CLRCHN
-    lda #msg_err - msg_blob
-    jmp print_msg
-kd_dollar:
-    .byte $24                  // "$"
-
-// ===========================================================================
-// Cloud paths: chatbot fallback and raw-CLI forwarding
-// ===========================================================================
-
-// Unrecognized line -> "I:" + line to the ChatHandler; print the reply.
-wd_chat:
-    jsr net_connect
-    bcs net_fail
-    lda #$02                   // CommandID.TEXT_INPUT | console 0
-    jsr nw_start
-    lda #$49                   // 'I'
-    sta UII_CMD
-    lda #$3a                   // ':'
-    sta UII_CMD
-    jsr nw_send_shadow
-    jsr nw_finish
-    bcs net_fail
-    lda #$00
-    sta w_quiet
-    jsr net_read_response
-    bcs net_fail
-    jsr net_close
-    rts
-net_fail:
-    rts
-
-// Raw line to the server's request dispatcher (server-side module routing:
-// "#c" activates CSDB, "dir"/"ll"/free text go to the active module).
-send_cli:
-    jsr net_connect
-    bcs net_fail
-    lda #$02                   // CommandID.TEXT_INPUT | console 0
-    jsr nw_start
-    jsr nw_send_shadow
-    jsr nw_finish
-    bcs net_fail
-    lda #$00
-    sta w_quiet
-    jsr net_read_response
-    jsr net_close
-    jmp print_cr
-
-// ===========================================================================
-// Console switching (C=+CTRL + 1..7)
-// ===========================================================================
-// console_switch runs in IRQ context (I flag set), reached from the CINV RAM
-// stub with X = digit index 0..6 (C=+CTRL+1 .. C=+CTRL+7 -- plain C=+digit
-// was the first cut, but on hardware that combo also fires the KERNAL's own
-// colour-select decode, so a qualifier was needed; C=+SHIFT was tried next but
-// that combo turned out to flip the character set (hardware-confirmed
-// 2026-07-04), so CTRL is used instead -- CTRL has decode priority in the
-// KERNAL's own table and carries no such side effect). C=+CTRL+1
-// returns to the local shell; 2..7 select the server-side consoles. While a
-// server console is
-// active this loops modally: it scans the keyboard itself (SCNKEY/GETIN,
-// interrupts stay off) and forwards every key to the server, which paints
-// the 40x25 screen straight into $0400/$d800 via the Ultimate DMA service.
-// The local screen is saved/restored by the *server* too (SAVE_SCREEN/
-// RESTORE_SCREEN commands DMA-read/-write it), so no C64 RAM buffer at all.
-console_switch:
-    cpx #$00
-    bne cs_to_server
-    lda w_console              // C=+CTRL+1: back to local
-    bne cs_go_local
-cs_ret:
-    rts                        // already local -- nothing to do
-cs_go_local:
-    lda #$00
-    sta w_console
-    jsr cs_wait_release
-    jmp scr_restore            // restore screen; rts unwinds to the IRQ chain
-cs_to_server:
-    txa                        // target console id nibble = (digit index + 1) << 4
-    clc
-    adc #$01
-    asl
-    asl
-    asl
-    asl
-    sta w_new
-    cmp w_console
-    beq cs_ret                 // already on that console
-    lda w_console
-    bne cs_already_remote
-    jsr scr_save               // leaving the local screen: server snapshots it
-    bcs cs_ret                 // server unreachable: stay local, ignore the key
-cs_already_remote:
-    lda w_new
-    sta w_console
-    jsr cs_wait_release
-    jsr scr_get
-cs_modal:
-    jsr SCNKEY                 // interrupts are off: scan the keyboard ourselves
-    lda SHFLAG
-    and #$06                   // C=+CTRL both held? (plain C=+digit changes colour, C=+SHIFT flips charset)
-    cmp #$06
-    bne cs_nodigit
-    lda SFDX
-    ldx #$06
-cs_dchk:
-    cmp cs_digit_tbl,x
-    beq cs_dmatch
-    dex
-    bpl cs_dchk
-    bmi cs_nodigit
-cs_dmatch:
-    cpx #$00
-    bne cs_dserver
-    lda #$00                   // C=+CTRL+1: leave modal mode, back to BASIC
-    sta w_console
-    jsr cs_wait_release
-    jmp scr_restore
-cs_dserver:
-    txa                        // hop directly to another server console
-    clc
-    adc #$01
-    asl
-    asl
-    asl
-    asl
-    cmp w_console
-    beq cs_modal               // same console: ignore
-    sta w_console
-    jsr cs_wait_release
-    jsr scr_get
-    jmp cs_modal
-cs_nodigit:
-    jsr GETIN
-    cmp #$00
-    beq cs_held_check           // nothing new translated -- is a key still physically down?
-    cmp #$81                   // safety net: swallow stray colour codes if any leak through
-    beq cs_modal
-    cmp #$95
-    bcc cs_fresh
-    cmp #$9b
-    bcc cs_modal
-cs_fresh:
-    // A translated character arrived from GETIN: always a confirmed, fresh
-    // physical keypress (SCNKEY's own matrix debounce already guarantees
-    // that part is reliable -- only its *autorepeat timing* isn't, see
-    // below). Remember which matrix code this was and reset our own repeat
-    // stage, then send immediately.
-    pha
-    ldy SFDX
-    sty last_matrix
-    lda #$00
-    sta w_key_stage
-    pla
-    jmp cs_send
-cs_held_check:
-    // No new translated char this scan. Rather than wait for SCNKEY to
-    // decide (on its own schedule) that it's time to inject another repeat
-    // character -- SCNKEY's repeat countdown assumes it's called at a
-    // steady 60Hz via the normal IRQ, but cs_modal calls it at whatever
-    // irregular rate this loop runs (fast when idle, paused for whole
-    // frames during our own waits below), so that countdown reaches zero
-    // and stays "ready to fire" almost immediately regardless of how long
-    // we actually wait -- we read the raw matrix code ourselves and decide
-    // when to resend it, using real raster/vsync time (see wait_frames),
-    // completely independent of SCNKEY's internal timing.
-    lda SFDX
-    cmp #$40                   // 64 = no key down
-    beq cs_modal
-    cmp last_matrix
-    bne cs_modal                // a different key is mid-debounce; wait for GETIN to produce it via cs_fresh
-    ldx w_key_stage
-    bne cs_held_fast
-    ldx #INITIAL_REPEAT_DELAY_FRAMES
-    jsr wait_frames
-    inc w_key_stage             // first repeat done -- fast pacing from now on
-    jmp cs_held_recheck
-cs_held_fast:
-    ldx #FAST_REPEAT_DELAY_FRAMES
-    jsr wait_frames
-cs_held_recheck:
-    // Re-confirm the SAME key is still physically down *after* the wait,
-    // before actually resending -- a plain single tap will very often still
-    // read as "held" on the scan immediately following the initial press
-    // (release+debounce takes real time), which is why simply checking once
-    // before the wait caused a single tap to sometimes send a phantom
-    // second move once the wait finished, regardless of whether the user
-    // had already released the key. If it's been released (or a different
-    // key is now down), just drop back into the loop with nothing sent.
-    lda SFDX
-    cmp #$40
-    beq cs_release
-    cmp last_matrix
-    bne cs_release
-    lda w_len                   // resend the already-translated code from the last send
-cs_send:
-    jsr key_send
-    // Flush the type-ahead buffer: we don't use anything SCNKEY queued on
-    // its own (see above), so drop it and let the next SCNKEY scan start
-    // clean.
-    lda #$00
-    sta NDX
-    jmp cs_modal
-cs_release:
-    jmp cs_modal
-
-// wait until no key is held, then flush the type-ahead buffer (drops the
-// stray colour code, if any, the combo itself produced)
-cs_wait_release:
-    jsr SCNKEY
-    lda SFDX
-    cmp #$40                   // 64 = no key down
-    bne cs_wait_release
-    lda #$00
-    sta NDX
-    rts
-
-cs_digit_tbl:
-    .byte 56, 59, 8, 11, 16, 19, 24    // matrix codes for keys 1-7
-
-// --- server screen commands (console 0 = local shell) --------------------
-// scr_save/scr_restore block on the server's ack (the DMA transfer has
-// finished by then), so save -> repaint -> restore can't race even though
-// every packet rides its own TCP connection.
-scr_save:
-    lda #$02                   // SERVER_CMD_SAVE_SCREEN
-    bne scr_cmd0               // (always)
-scr_restore:
-    lda #$03                   // SERVER_CMD_RESTORE_SCREEN
-scr_cmd0:
-    sta w_len
-    jsr net_connect
-    bcs scr_fail
-    lda #$00                   // CommandID.COMMAND | console 0
-    jsr nw_start
-    lda w_len
-    sta UII_CMD
-    lda #$00
-    sta UII_CMD
-    jsr nw_finish
-    bcs scr_fail_close
-    lda #$01
-    sta w_quiet                // wait for the ack, discard its text
-    jsr net_read_response
-    lda #$00
-    sta w_quiet
-    jsr net_close
-    clc
-    rts
-scr_fail_close:
-    jsr net_close
-scr_fail:
-    sec
-    rts
-
-// ask the server to DMA-paint w_console's full screen (no TCP response)
-scr_get:
-    jsr net_connect
-    bcs scr_get_done
-    lda w_console              // CommandID.COMMAND | console nibble
-    jsr nw_start
-    lda #$01                   // SERVER_CMD_GET_SCREEN
-    sta UII_CMD
-    lda #$00
-    sta UII_CMD
-    jsr nw_finish
-    jsr net_close
-scr_get_done:
-    rts
-
-// forward one key (A = PETSCII) + live modifier bits to w_console; the
-// server repaints the screen via DMA in response
-key_send:
-    sta w_len
-    jsr net_connect
-    bcs key_send_done
-    lda w_console
-    ora #$01                   // CommandID.KEYPRESS
-    jsr nw_start
-    lda w_len
-    sta UII_CMD
-    lda SHFLAG                 // raw modifier bits, same wire format as hdnsh
-    sta UII_CMD
-    lda #$00
-    sta UII_CMD
-    jsr nw_finish
-    jsr net_close
-key_send_done:
-    rts
-
-// Wait X vertical blanks (X preloaded by the caller). Used only to pace
-// repeats of a held key in cs_fwd (see there for why); clobbers A/X.
-wait_frames:
-    jsr wait_vbl
-    dex
-    bne wait_frames
-    rts
-
-// Wait for one full frame boundary (raster line 0), regardless of the
-// raster position at entry. The VIC raster counter free-runs off the
-// video/colour clock independent of the 6510, so this delay is accurate
-// real time whether the CPU is running stock or overclocked. Clobbers A.
-wait_vbl:
-!leave0:
-    jsr wv_is_line0
-    beq !leave0-                // if currently on line 0, wait to leave it
-!reach0:
-    jsr wv_is_line0
-    bne !reach0-                // wait to reach line 0 (top of next frame)
-    rts
-
-// Sets Z if the raster is exactly at line 0 -- a full 9-bit compare
-// ($d011 bit 7 is the raster line's MSB, $d012 the low 8 bits). Checking
-// $d012==0 alone (as this used to) aliases with line 256 (PAL) / line
-// ~256-261 (NTSC), which also read $d012==0 -- so the old check fired
-// early about half the time, turning the "wait one frame" delay into
-// anywhere from ~1 to ~255 lines depending on raster phase at entry. That
-// was the cause of repeat pacing feeling inconsistent (sometimes fast,
-// sometimes slow) even over a fast local network -- the timing primitive
-// itself was unreliable. Clobbers A.
-wv_is_line0:
-    lda $d011
-    and #$80
-    bne wv_not_line0
-    lda $d012
-    rts
-wv_not_line0:
-    lda #$01                    // force non-zero -> Z clear
-    rts
-
-// ===========================================================================
-// wedge_install -- called (via bank01's xb2 RAM trampoline, under SEI) on
-// every non-empty typed line. Round 6: this is now the arm/disarm decision
-// point. It first sniffs the raw input buffer ($0200): a line that hands the
-// machine over to a program (RUN/SYS, or the cart's own MONITOR/TASS/BOOT
-// entries) must run on a bit-for-bit stock machine, so the hooks are
-// *removed* instead of installed and w_skip tells bank01 to skip the shadow
-// copy too. Every other line (re)arms: the CINV stub, the ILOAD shim and the
-// stub bytes are refreshed from ROM templates unconditionally, so any
-// corruption (monitor session, freeze/resume, a program that scribbled the
-// datassette buffer) heals on the next typed line.
-// ===========================================================================
-wedge_install:
-    jsr wi_sniff
-    bcc wi_arm
-    jsr disarm_hooks           // launch line: hand over a stock machine
-    lda #$01
-    sta w_skip
-    rts
-wi_arm:
-    lda #$00
-    sta w_skip
-    ldx #cinv_stub_rom_end - cinv_stub_rom - 1
-wi_copy:
-    lda cinv_stub_rom,x        // refresh the stub bytes every line
-    sta cinv_ram,x
-    dex
-    bpl wi_copy
-    ldx #il_shim_rom_end - il_shim_rom - 1
-wi_scopy:
-    lda il_shim_rom,x          // refresh the ILOAD shim bytes every line
-    sta il_shim_ram,x
-    dex
-    bpl wi_scopy
-    lda w_magic                // one-time state defaults, keyed on a magic
-    cmp #$a5                   // pair so they survive disarm/rearm cycles
-    bne wi_defaults            // (w_dev must not reset to 'H' after every RUN)
-    lda w_magic+1
-    cmp #$c3
-    beq wi_vec
-wi_defaults:
-    lda #$00
-    sta w_console
-    sta w_latch
-    sta w_quiet
-    lda #$48                   // 'H': default device is the Ultimate home dir
-    sta w_dev
-    lda #$a5
-    sta w_magic
-    lda #$c3
-    sta w_magic+1
-wi_vec:
-    lda $0314                  // hook CINV (save the original for chaining,
-    cmp #<cinv_ram             // but never save ourselves)
-    bne wi_cinstall
-    lda $0315
-    cmp #>cinv_ram
-    beq wi_iload
-wi_cinstall:
-    lda $0314
-    sta w_cinv_orig
-    lda $0315
-    sta w_cinv_orig+1
-    lda #<cinv_ram
-    sta $0314
-    lda #>cinv_ram
-    sta $0315
-wi_iload:
-    lda $0330                  // hook ILOAD with the disarm shim (same
-    cmp #<il_shim_ram          // never-save-ourselves rule)
-    bne wi_linstall
-    lda $0331
-    cmp #>il_shim_ram
-    beq wi_done
-wi_linstall:
-    lda $0330
-    sta il_orig
-    lda $0331
-    sta il_orig+1
-    lda #<il_shim_ram
-    sta $0330
-    lda #>il_shim_ram
-    sta $0331
-wi_done:
-    rts
-
-// ---------------------------------------------------------------------------
-// wi_sniff -- classify the just-typed line (raw text in the $0200 input
-// buffer). Returns carry SET if it hands control to a program and the hooks
-// must come off first. Two match classes:
-//   - word:   RUN, SYS -- full word, or BASIC's crunch-rule abbreviation (a
-//             SHIFTed char completes the keyword: rU, sY, rUN); after a full
-//             word the next char must not be a letter, so chat lines like
-//             "running late?" still reach the cloud fallback.
-//   - prefix: MON, TAS, BOO -- mirrors the cart scanner's own 3-chars-then-
-//             swallow-letters quirk (MONITOR, TASS/TASM, BOOT), since those
-//             take over the machine the same way a launched program does.
-// ---------------------------------------------------------------------------
-.const WSF_WORD   = $01
-.const WSF_PREFIX = $02
-wi_sniff:
-    ldy #$00
-ws_sp:
-    lda $0200,y                // skip leading spaces
-    cmp #$20
-    bne ws_start
-    iny
-    bne ws_sp
-ws_start:
-    sty w_len                  // w_len = offset of the first real char
-    ldx #$00                   // x walks ws_tab
-ws_word:
-    ldy w_len
-ws_char:
-    lda ws_tab,x
-    bmi ws_last                // bit7 set: final char of the table word
-    cmp $0200,y
-    beq ws_adv
-    ora #$80                   // typed SHIFTed char = crunch-rule completion
-    cmp $0200,y
-    beq ws_hit
-    bne ws_next
-ws_adv:
-    inx
-    iny
-    jmp ws_char
-ws_last:
-    and #$7f
-    cmp $0200,y
-    beq ws_bound
-    ora #$80                   // SHIFTed final char also completes the word
-    cmp $0200,y
-    bne ws_next
-ws_hit:
-    sec
-    rts
-ws_bound:
-    inx                        // final char matched: X -> the class flag
-    lda ws_tab,x
-    and #WSF_PREFIX
-    bne ws_hit                 // prefix class: 3 chars are enough (cart rule)
-    iny                        // word class: next char must not be a letter
-    lda $0200,y
-    cmp #$41
-    bcc ws_hit
-    cmp #$5b
-    bcs ws_hit
-    bcc ws_flagnext            // a letter follows ("running..."): no match
-ws_next:                       // mismatch mid-word: X is on or before the
-    lda ws_tab,x               // end marker -- scan forward past it
-    inx
-    bpl ws_next
-ws_flagnext:                   // X -> the class-flag byte of the failed word
-    inx
-    lda ws_tab,x
-    bne ws_word
-    clc                        // table exhausted: ordinary line
-    rts
-ws_tab:
-    .byte $52,$55,$4e+$80, WSF_WORD      // RUN
-    .byte $53,$59,$53+$80, WSF_WORD      // SYS
-    .byte $4d,$4f,$4e+$80, WSF_PREFIX    // MON(ITOR)
-    .byte $54,$41,$53+$80, WSF_PREFIX    // TAS(S/M)
-    .byte $42,$4f,$4f+$80, WSF_PREFIX    // BOO(T)
-    .byte $00
-
-// ---------------------------------------------------------------------------
-// disarm_hooks -- restore every vector we own to its saved original, but
-// only if it still points at us (never clobber someone else's hook). Runs
-// under SEI (xb2 guarantees it). Also the shared teardown for the ILOAD
-// shim's job, except the shim does it from RAM with constants baked in.
-// ---------------------------------------------------------------------------
-disarm_hooks:
-    lda $0315
-    cmp #>cinv_ram
-    bne dh_ierr
-    lda $0314
-    cmp #<cinv_ram
-    bne dh_ierr
-    lda w_cinv_orig
-    sta $0314
-    lda w_cinv_orig+1
-    sta $0315
-dh_ierr:
-    lda $0301
-    cmp #>ie_ram
-    bne dh_iload
-    lda $0300
-    cmp #<ie_ram
-    bne dh_iload
-    lda ie_orig_vec
-    sta $0300
-    lda ie_orig_vec+1
-    sta $0301
-dh_iload:
-    lda $0331
-    cmp #>il_shim_ram
-    bne dh_done
-    lda $0330
-    cmp #<il_shim_ram
-    bne dh_done
-    lda il_orig
-    sta $0330
-    lda il_orig+1
-    sta $0331
-dh_done:
-    rts
-
-// ---------------------------------------------------------------------------
-// ILOAD shim -- relocated to il_shim_ram and left resident while armed.
-// KERNAL LOAD ($f49e) enters via jmp ($0330) with A/X/Y live, so both are
-// preserved. The moment *any* load starts -- BASIC LOAD, the cart's own
-// / % ^ fastload commands (they call $ffd5 too), a chain loader, memcpy --
-// it restores CINV, IERROR and ILOAD itself to the saved originals and
-// chains to the real loader. Whatever gets loaded therefore always runs on
-// a stock machine; the next typed line re-arms everything. No branches, so
-// it's freely relocatable.
-// ---------------------------------------------------------------------------
-il_shim_rom:
-    php
-    sei
-    pha
-    lda w_cinv_orig
-    sta $0314
-    lda w_cinv_orig+1
-    sta $0315
-    lda ie_orig_vec
-    sta $0300
-    lda ie_orig_vec+1
-    sta $0301
-    lda il_orig
-    sta $0330
-    lda il_orig+1
-    sta $0331
-    pla
-    plp
-    jmp ($0330)                // chain to the real (restored) loader
-il_shim_rom_end:
-// Layout guards -- the resident block must fit its slots exactly; a template
-// growing past its slot corrupts the next one at runtime, silently.
-.errorif il_shim_ram + (il_shim_rom_end - il_shim_rom) > cinv_ram, "il_shim overruns cinv_ram"
-.errorif cinv_ram + (cinv_stub_rom_end - cinv_stub_rom) > ie_orig_vec, "cinv stub overruns the state block"
-
-// ---------------------------------------------------------------------------
-// CINV keyboard-watch stub -- relocated to cinv_ram ($03a0) and left
-// resident. Runs on every IRQ, from RAM, because the IRQ can fire while any
-// cartridge bank is paged in. Checks for C= + 1..7 (matrix code in SFDX,
-// C= bit in SHFLAG); on a fresh match it saves the current bank via the RR
-// status register's banking-feedback bits, pages in bank05, and calls
-// console_switch with X = digit index. w_latch makes it one-shot per press.
-// ---------------------------------------------------------------------------
-cinv_stub_rom:
-.pseudopc cinv_ram {
-    lda SHFLAG
-    and #$06                   // C=+CTRL both held? (plain C=+digit changes colour, C=+SHIFT flips charset)
-    cmp #$06
-    bne cvr_clear
-    lda SFDX
-    ldx #$06
-cvr_chk:
-    cmp cs_ram_digits,x
-    beq cvr_match
-    dex
-    bpl cvr_chk
-cvr_clear:
-    lda #$00
-    sta w_latch
-cvr_chain:
-    jmp (w_cinv_orig)
-cvr_match:
-    lda w_latch
-    bne cvr_chain              // still held from the last switch: ignore
-    lda #$01
-    sta w_latch
-    lda $de00                  // RR status read: bits 3/4/7 = bank feedback
-    and #$98
-    sta w_bank
-    lda #$88                   // page in bank05
-    sta $de00
-    jsr console_switch         // X = digit index 0..6
-    lda w_bank                 // restore whatever bank was live before
-    sta $de00
-    jmp (w_cinv_orig)
-cs_ram_digits:
-    .byte 56, 59, 8, 11, 16, 19, 24    // matrix codes for keys 1-7
-}
-cinv_stub_rom_end:
-
-// ===========================================================================
-// Ultimate DOS helpers (command interface, TARGET_DOS1/CONTROL)
-// ===========================================================================
-
-// A = DOS command id, no payload; print the response data
-dos_simple_print:
-    ldx #TARGET_DOS1
-    jsr dos_begin
-    jmp dos_finish_print
-
-// A = DOS command id, no payload; discard the response data
-dos_simple_quiet:
-    ldx #TARGET_DOS1
-    jsr dos_begin
-    jmp dos_finish_quiet
-
-// X = target, A = command id; leaves the UCI ready for payload bytes
-dos_begin:
-    pha
-    jsr net_wait_idle
-    txa
-    sta UII_CMD
-    pla
-    sta UII_CMD
-    rts
-
-dos_finish_print:              // push; print response data; report status
-    jsr net_push_and_check
-    bcs dos_fail
-    jsr net_wait_not_busy
-    jsr dos_print_data
-    jmp dos_status_finish
-dos_finish_quiet:              // push; discard response data; report status
-    jsr net_push_and_check
-    bcs dos_fail
-    jsr net_wait_not_busy
-    jsr net_drain_data
-dos_status_finish:
-    jsr dos_status_report
-    jmp net_accept
-dos_fail:
-    lda #msg_err - msg_blob    // the UCI rejected the command outright
-    jmp print_msg
-
-// print the whole response-data queue via CHROUT
-dos_print_data:
-dpd_loop:
-    lda UII_STATUS
-    and #UII_ST_DATAAV
-    beq dpd_done
-    lda UII_RESP
-    jsr CHROUT
-    jmp dpd_loop
-dpd_done:
-    rts
-
-// Drain the status queue. Success ("00...") stays silent; anything else is
-// printed as-is (e.g. "05,DIRECTORY NOT FOUND") plus CR. The first two chars
-// land in cf_status0/1 so net_accept's carry convention keeps working.
-dos_status_report:
-    lda #$00
-    sta cf_status0
-    sta cf_status1
-    lda UII_STATUS
-    and #UII_ST_STATAV
-    beq dsr_ok
-    lda UII_STATDAT
-    sta cf_status0
-    lda UII_STATUS
-    and #UII_ST_STATAV
-    beq dsr_check
-    lda UII_STATDAT
-    sta cf_status1
-dsr_check:
-    lda cf_status0
-    cmp #$30
-    bne dsr_bad
-    lda cf_status1
-    cmp #$30
-    bne dsr_bad
-dsr_drain:                     // success: swallow the rest silently
-    lda UII_STATUS
-    and #UII_ST_STATAV
-    beq dsr_ok
-    lda UII_STATDAT
-    jmp dsr_drain
-dsr_ok:
-    rts
-dsr_bad:
-    lda cf_status0
-    jsr CHROUT
-    lda cf_status1
-    beq dsr_cr
-    jsr CHROUT
-dsr_rest:
-    lda UII_STATUS
-    and #UII_ST_STATAV
-    beq dsr_cr
-    lda UII_STATDAT
-    jsr CHROUT
-    jmp dsr_rest
-dsr_cr:
-    jmp print_cr
-
-// Y = offset of a null-terminated path inside path_blob: DOS CHANGE_DIR
-dos_chdir_blob:
-    sty w_len
-    lda #DOS_CMD_CHANGE_DIR
-    ldx #TARGET_DOS1
-    jsr dos_begin
-    ldy w_len
-dcb_loop:
-    lda path_blob,y
-    beq dcb_send
-    sta UII_CMD
-    iny
-    bne dcb_loop
-dcb_send:
-    jmp dos_finish_quiet
-
-// NETWORK GET_IP_ADDRESS. Response is 12 raw binary bytes, not text --
-// [0-3]=IP, [4-7]=netmask, [8-11]=gateway, one byte per octet (confirmed
-// against docs/inspiration/ultimatedos-samples/u-sample.c's uii_getipaddress()
-// callers, which all index uii_data[0..11] the same way). Streaming those
-// bytes through CHROUT as if they were text (the old behaviour) printed
-// garbage control characters instead of an address -- hardware-confirmed
-// 2026-07-04. Y tracks the octet position (0-11) so dots/labels land right;
-// print_dec_byte does the actual decimal formatting.
-net_print_ip:
-    jsr net_wait_idle
-    lda #TARGET_NETWORK
-    sta UII_CMD
-    lda #NET_CMD_GET_IP
-    sta UII_CMD
-    lda #$00
-    sta UII_CMD
-    jsr net_push_and_check
-    bcs npi_done
-    jsr net_wait_not_busy
-    ldy #$00
-npi_loop:
-    lda UII_STATUS
-    and #UII_ST_DATAAV
-    beq npi_status
-    lda UII_RESP
-    jsr print_dec_byte
-    cpy #$03
-    beq npi_lbl_mask
-    cpy #$07
-    beq npi_lbl_gw
-    cpy #$0b
-    beq npi_next               // last byte (gateway's 4th octet): no trailing dot
-    lda #$2e                   // '.'
-    jsr CHROUT
-    jmp npi_next
-npi_lbl_mask:
-    jsr print_cr
-    lda #msg_netmask - msg_blob
-    jsr print_msg
-    jmp npi_next
-npi_lbl_gw:
-    jsr print_cr
-    lda #msg_gateway - msg_blob
-    jsr print_msg
-npi_next:
-    iny
-    jmp npi_loop
-npi_status:
-    jsr net_read_status
-    jsr net_accept
-npi_done:
-    rts
-
-// A = 0..255; prints decimal digits via CHROUT, no leading zeros/spaces.
-// Classic "subtract until borrow" 6502 byte-to-decimal conversion (X counts
-// how many times 100/10 divide in); w_dig1/w_dig2 hold the hundreds/tens
-// digit across the two passes, w_bank is reused as a transient "already
-// printed a digit" flag so e.g. "105" doesn't come out as "15".
-print_dec_byte:
-    ldx #$ff
-    sec
-pdb_hloop:
-    inx
-    sbc #100
-    bcs pdb_hloop
-    adc #100
-    stx w_dig1
-    ldx #$ff
-    sec
-pdb_tloop:
-    inx
-    sbc #10
-    bcs pdb_tloop
-    adc #10
-    stx w_dig2
-    sta w_len                  // units digit, stashed while the others print
-    lda #$00
-    sta w_bank                 // "printed something yet" flag
-    lda w_dig1
-    beq pdb_no100
-    clc
-    adc #$30
-    jsr CHROUT
-    inc w_bank
-pdb_no100:
-    lda w_dig2
-    bne pdb_have10
-    lda w_bank
-    beq pdb_no10
-pdb_have10:
-    lda w_dig2
-    clc
-    adc #$30
-    jsr CHROUT
-pdb_no10:
-    lda w_len
-    clc
-    adc #$30
-    jmp CHROUT
-
-// ===========================================================================
-// Cloud TCP helpers (network target; framing confirmed on hardware, see
-// wedge-analysis.md §8)
-// ===========================================================================
-
-// Open a TCP connection to the cloud server.
-// Output: carry clear on success (socket id in cf_socket_id), set on failure.
-net_connect:
-    jsr net_wait_idle
-    lda #TARGET_NETWORK
-    sta UII_CMD
-    lda #NET_TCP_CONNECT
-    sta UII_CMD
-    lda #<6464
-    sta UII_CMD
-    lda #>6464
-    sta UII_CMD
-    ldx #$00
-nc_ip:
-    lda net_test_host,x
-    sta UII_CMD
-    inx
-    cmp #$00
-    bne nc_ip
-    jsr net_push_and_check
-    bcs nc_fail
-    jsr net_wait_not_busy
-    lda UII_RESP               // response data: socket id
-    sta cf_socket_id
-    jsr net_drain_data
-    jsr net_read_status
-    jmp net_accept             // carry clear iff status was "00"
-nc_fail:
-    sec
-    rts
-
-// A = packet command byte (CommandID | console nibble): start a SOCKET_WRITE
-// and emit the $fe packet magic + command byte; caller streams the payload
-// into UII_CMD, then calls nw_finish.
-nw_start:
-    pha
-    jsr net_wait_idle
-    lda #TARGET_NETWORK
-    sta UII_CMD
-    lda #NET_SOCKET_WRITE
-    sta UII_CMD
-    lda cf_socket_id
-    sta UII_CMD
-    lda #$fe                   // packet magic byte
-    sta UII_CMD
-    pla
-    sta UII_CMD
-    rts
-
-// stream the raw typed line (cf_shadow) including its terminating null
-nw_send_shadow:
-    ldy #$00
-nws_loop:
-    lda cf_shadow,y
-    sta UII_CMD
-    iny
-    cmp #$00
-    bne nws_loop
-    rts
-
-// push the assembled SOCKET_WRITE and settle its response/status.
-// Output: carry clear ok, set on failure.
-nw_finish:
-    jsr net_push_and_check
-    bcs nwf_done
-    jsr net_wait_not_busy
-    jsr net_drain_data
-    jsr net_read_status
-    jmp net_accept
-nwf_done:
-    rts
-
-// Poll SOCKET_READ until the length-prefixed response has fully arrived (or
-// the ~8000-iteration budget runs out), streaming content through
-// net_read_and_print (silent when w_quiet is set).
-// Output: carry clear = finished/normal, carry set = a read push failed.
-net_read_response:
-    lda #$00
-    sta cf_state               // fresh response: discard $ff filler first
-    sta cf_spin_idx
-    lda #<8000
-    sta cf_retries_lo
-    lda #>8000
-    sta cf_retries_hi
-nrr_loop:
-    jsr net_wait_idle
-    lda #TARGET_NETWORK
-    sta UII_CMD
-    lda #NET_SOCKET_READ
-    sta UII_CMD
-    lda cf_socket_id
-    sta UII_CMD
-    lda #$e8                   // read block length lo
-    sta UII_CMD
-    lda #$00                   // read block length hi
-    sta UII_CMD
-    jsr net_push_and_check
-    bcs nrr_fail
-    jsr net_wait_not_busy_spin // the wait where LLM latency actually shows up
-    jsr net_read_and_print
-    bcs nrr_had_data
-    jsr net_spin               // nothing new yet: animate the wait
-nrr_had_data:
-    jsr net_read_status
-    jsr net_accept
-    bcc nrr_done               // status "00": socket fully drained
-    lda cf_state
-    cmp #$03
-    beq nrr_done               // full content printed: stop early
-    lda cf_retries_lo
-    bne nrr_declo
-    dec cf_retries_hi
-nrr_declo:
-    dec cf_retries_lo
-    lda cf_retries_lo
-    ora cf_retries_hi
-    bne nrr_loop
-nrr_done:
-    clc
-    rts
-nrr_fail:
-    sec
-    rts
-
-// close the socket in cf_socket_id
-net_close:
-    jsr net_wait_idle
-    lda #TARGET_NETWORK
-    sta UII_CMD
-    lda #NET_SOCKET_CLOSE
-    sta UII_CMD
-    lda cf_socket_id
-    sta UII_CMD
-    jsr net_push_and_check
-    bcs ncl_done
-    jsr net_wait_not_busy
-    jsr net_drain_data
-    jsr net_read_status
-    jsr net_accept
-ncl_done:
-    rts
-
-// pushes the command just written to UII_CMD, then checks the ERROR status
-// bit. Output: carry clear = ok, carry set = error (command rejected)
-net_push_and_check:
-    lda UII_CONTROL
-    ora #UII_CTL_PUSH
-    sta UII_CONTROL
-    lda UII_STATUS
-    and #UII_ST_ERROR
-    beq npc_ok
-    sec
-    rts
-npc_ok:
-    clc
-    rts
-
-net_wait_idle:
-    lda UII_STATUS
-    and #UII_ST_STATE
-    bne net_wait_idle
-    rts
-
-net_wait_not_busy:
-    lda UII_STATUS
-    and #UII_ST_STATE
-    cmp #$10
-    beq net_wait_not_busy
-    rts
-
-// Same as net_wait_not_busy, but advances the "still waiting" spinner every
-// 256 poll iterations (Y is free here).
-net_wait_not_busy_spin:
-    ldy #$00
-nwbs_loop:
-    lda UII_STATUS
-    and #UII_ST_STATE
-    cmp #$10
-    bne nwbs_done
-    iny
-    bne nwbs_loop
-    jsr net_spin
-    jmp nwbs_loop
-nwbs_done:
-    rts
-
-// drains the response-data queue without printing
-net_drain_data:
-    lda UII_STATUS
-    and #UII_ST_DATAAV
-    beq ndd_done
-    lda UII_RESP
-    jmp net_drain_data
-ndd_done:
-    rts
-
-// drains the status queue, keeping only the first two bytes (the "00"/error
-// code convention from the original src/c64u_common.asm)
-net_read_status:
-    lda #$00
-    sta cf_status0
-    sta cf_status1
-    ldx #$00
-nrs_loop:
-    lda UII_STATUS
-    and #UII_ST_STATAV
-    beq nrs_done
-    lda UII_STATDAT
-    cpx #$00
-    bne nrs_not0
-    sta cf_status0
-    jmp nrs_next
-nrs_not0:
-    cpx #$01
-    bne nrs_next
-    sta cf_status1
-nrs_next:
-    inx
-    jmp nrs_loop
-nrs_done:
-    rts
-
-// Output: carry clear if the last read status was "00", set otherwise
-net_accept:
-    lda UII_CONTROL
-    ora #UII_CTL_ACC
-    sta UII_CONTROL
-na_wait:
-    lda UII_STATUS
-    and #UII_CTL_ACC
-    bne na_wait
-    lda cf_status0
-    cmp #$30
-    bne na_fail
-    lda cf_status1
-    cmp #$30
-    bne na_fail
-    clc
-    rts
-na_fail:
-    sec
-    rts
-
-// 2-frame blinking wait indicator, overwriting itself via cursor-left.
-// Silent while w_quiet is set (screen save/restore acks must not draw).
-net_spin:
-    lda w_quiet
-    beq ns_go
-    rts
-ns_go:
-    ldx cf_spin_idx
-    lda spin_chars,x
-    jsr CHROUT
-    lda #$9d                   // cursor left
-    jsr CHROUT
-    inx
-    cpx #spin_chars_end - spin_chars
-    bne ns_nowrap
-    ldx #$00
-ns_nowrap:
-    stx cf_spin_idx
-    rts
-spin_chars:
-    .byte $2e, $3a             // '.' ':'
-spin_chars_end:
-
-// Response framing (confirmed against a hardware hex dump, 2026-07-03):
-//   [N x $ff idle/filler bytes] [len lo] [len hi] [exactly len content bytes]
-// cf_state: 0 = discarding filler (first other byte = len lo), 1 = len hi,
-//           2 = printing content (16-bit countdown), 3 = done, discard rest.
-// Output: carry set if any byte was seen this call, clear if queue was empty.
-net_read_and_print:
-    lda #$00
-    sta cf_got_data
-nrp_loop:
-    lda UII_STATUS
-    and #UII_ST_DATAAV
-    beq nrp_done
-    inc cf_got_data
-    lda UII_RESP
-    ldx cf_state
-    cpx #$03
-    beq nrp_loop               // message finished: discard the rest
-    cpx #$02
-    beq nrp_content
-    cpx #$01
-    beq nrp_lenhi
-    cmp #$ff                   // state 0: skip filler
-    beq nrp_loop
-    sta cf_msglen_lo
-    ldx #$01
-    stx cf_state
-    jmp nrp_loop
-nrp_lenhi:
-    sta cf_msglen_hi
-    ldx #$02
-    stx cf_state
-    jmp nrp_loop
-nrp_content:
-    ldx w_quiet
-    bne nrp_count
-    jsr CHROUT
-nrp_count:
-    lda cf_msglen_lo
-    bne nrp_declo
-    dec cf_msglen_hi
-nrp_declo:
-    dec cf_msglen_lo
-    lda cf_msglen_lo
-    ora cf_msglen_hi
-    bne nrp_loop
-    ldx #$03
-    stx cf_state               // fully printed
-    jmp nrp_loop
-nrp_done:
-    lda cf_got_data
-    bne nrp_got
-    clc
-    rts
-nrp_got:
-    sec
-    rts
-
-// ===========================================================================
-// Small print helpers + string data
-// ===========================================================================
-print_cr:
-    lda #$0d
-    jmp CHROUT
-
-// A = offset of a null-terminated message inside msg_blob
-print_msg:
-    tax
-pm_loop:
-    lda msg_blob,x
-    beq pm_done
-    jsr CHROUT
-    inx
-    bne pm_loop
-pm_done:
-    rts
-
-msg_blob:
-msg_ip:
-    .byte $49,$50,$20,$41,$44,$44,$52,$3a,$20,$00                  // "IP ADDR: "
-msg_server:
-    .byte $53,$45,$52,$56,$45,$52,$20,$00                          // "SERVER "
-msg_ok:
-    .byte $20,$4f,$4b,$0d,$00                                      // " OK" + CR
-msg_unreach:
-    .byte $20,$4e,$4f,$54,$20,$52,$45,$41,$43,$48,$41,$42,$4c,$45,$0d,$00  // " NOT REACHABLE" + CR
-msg_err:
-    .byte $3f,$45,$52,$52,$0d,$00                                  // "?ERR" + CR
-msg_ready:
-    .byte $52,$45,$41,$44,$59,$2e,$00                              // "READY."
-msg_netmask:
-    .byte $4e,$45,$54,$4d,$41,$53,$4b,$3a,$20,$00                  // "NETMASK: " (own line, see npi_lbl_mask)
-msg_gateway:
-    .byte $47,$41,$54,$45,$57,$41,$59,$3a,$20,$00                  // "GATEWAY: " (own line, see npi_lbl_gw)
-msg_nosup:
-    .byte $4e,$4f,$54,$20,$53,$55,$50,$50,$4f,$52,$54,$45,$44,$0d,$00  // "NOT SUPPORTED" + CR
-msg_help:
-    .byte $4e,$4f,$20,$43,$4c,$4f,$55,$44,$20,$43,$4f,$4e,$4e,$45,$43,$54,$49,$4f,$4e,$0d  // "NO CLOUD CONNECTION" + CR
-    .byte $43,$48,$45,$43,$4b,$20,$4e,$45,$54,$57,$4f,$52,$4b,$2c,$20,$53,$54,$41,$54,$55,$53,$0d  // "CHECK NETWORK, STATUS" + CR
-    .byte $53,$45,$45,$20,$55,$53,$45,$52,$20,$4d,$41,$4e,$55,$41,$4c,$0d,$00  // "SEE USER MANUAL" + CR
-
-path_blob:
-txt_temp:
-    .byte $2f,$54,$45,$4d,$50,$00                                  // "/TEMP"
-txt_flash:
-    .byte $2f,$46,$4c,$41,$53,$48,$00                              // "/FLASH"
-
-net_test_host:
-    .byte $31,$39,$32,$2e,$31,$36,$38,$2e,$31,$2e,$32,$00          // "192.168.1.2" -- FIXME hardcoded, confirm it matches your cloud_server.py host
-
-wedge_code_end:
-    .fill $9012 - wedge_code_end, $00    // free space up to the jump table; a negative count here means the module outgrew $8023-$9011 -- the build fails loudly instead of shifting bytes
-
-// ---------------------------------------------------------------------------
-// Fixed entry points into this bank -- bank01's RAM stubs jsr to these
-// absolute addresses, so this table must stay at $9012/$9015/$9018 forever.
-// $9012 is the same entry the retired hondani_shell_entry lived at.
-// ---------------------------------------------------------------------------
-wedge_entry_tab:
-    jmp wedge_dispatch         // $9012: typed-line fallback (from the IERROR stub)
-    jmp wedge_install          // $9015: install/refresh the CINV hook (from xb2)
-    jmp console_switch         // $9018: C=+CTRL+digit console switch (from the CINV stub, X=digit)
-wedge_entry_tab_end:
-
-    .fill $9200 - wedge_entry_tab_end, $00    // rest of the old $9012-$91ff pocket, free again
-
-    .byte $a9, $00, $8d    // data $91f3 (unchanged original code resumes here)
-    .byte $20, $d0, $8d, $21, $d0, $a9, $0f, $8d, $86, $02, $a2, $00, $9d, $00, $d8, $9d    // data $9203
-    .byte $00, $d9, $9d, $00, $da, $9d, $00, $db, $e8, $d0, $f1, $bd, $00, $69, $9d, $00    // data $9213
-    .byte $04, $bd, $00, $6a, $9d, $00, $05, $bd, $00, $6b, $9d, $00, $06, $bd, $00, $6c    // data $9223
-    .byte $9d, $00, $07, $e8, $d0, $e5, $20, $e4, $ff, $c9, $20, $d0, $f9, $a2, $08, $a0    // data $9233
-    .byte $01, $20, $ba, $ff, $a9, $10, $a2, $c0, $a0, $68, $20, $bd, $ff, $a9, $01, $85    // data $9243
-    .byte $fb, $a9, $08, $85, $fc, $a9, $fb, $a2, $00, $a0, $2c, $20, $d8, $ff, $a2, $00    // data $9253
-    .byte $4c, $9a, $68, $9d, $01, $08, $e8, $d0, $f7, $ee, $65, $68, $ee, $68, $68, $ad    // data $9263
-    .byte $65, $68, $c9, $68, $d0, $ea, $a2, $08, $a0, $01, $20, $ba, $ff, $a9, $10, $a2    // data $9273
-    .byte $b0, $a0, $68, $20, $bd, $ff, $a9, $01, $85, $fb, $a9, $08, $85, $fc, $a9, $fb    // data $9283
-    .byte $a2, $00, $a0, $26, $20, $d8, $ff, $ee, $20, $d0, $ce, $20, $d0, $4c, $9a, $68    // data $9293
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $46, $4c, $41    // data $92a3
-    .byte $53, $48, $20, $55, $54, $49, $4c, $20, $56, $33, $2e, $38, $50, $46, $4c, $41    // data $92b3
-    .byte $53, $48, $20, $55, $54, $49, $4c, $20, $56, $33, $2e, $38, $50, $00, $00, $00    // data $92c3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $92d3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $92e3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $10, $0c, $05    // data $92f3
-    .byte $01, $13, $05, $20, $0e, $0f, $14, $05, $20, $20, $20, $20, $20, $20, $20, $20    // data $9303
+bank05_data_8023:
+.errorif (* != $8023), "bank05_data_8023 shifted"
+// --- $8023-$9EB9: bank05 payload ------------------------------------------
+// $8100-$85FF: first 5 pages of the Turbo Macro Pro+REU V1.2 image; the
+// bank04 installer copies them to C64 RAM $9000-$94FF ("TMP 1.2  REU"
+// banner screen and entry code). The rest of this bank holds the
+// FLASH UTIL V3.8P module and TMP editor status-line text (see strings
+// around $92B0/$84E5). Data at this window address, not runnable here.
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8023
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8033
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8043
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8053
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8063
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8073
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8083
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8093
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80A3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80B3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80C3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80D3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80E3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $4C, $B7, $80    // data $80F3
+    .byte $4C, $EA, $81, $01, $00, $54, $4D, $50, $20, $31, $2E, $32, $20, $20, $20, $52    // data $8103
+    .byte $45, $55, $20, $4C, $2F, $A2, $40, $01, $00, $00, $01, $0C, $0F, $07, $0B, $09    // data $8113
+    .byte $09, $FF, $FF, $2D, $2D, $2D, $2D, $02, $5F, $91, $20, $20, $20, $20, $20, $20    // data $8123
+    .byte $20, $20, $20, $20, $20, $20, $20, $02, $5F, $33, $20, $20, $20, $20, $20, $20    // data $8133
+    .byte $20, $20, $20, $20, $20, $20, $20, $02, $5F, $11, $20, $20, $20, $20, $20, $20    // data $8143
+    .byte $20, $20, $20, $20, $20, $20, $20, $02, $5F, $D2, $20, $20, $20, $20, $20, $20    // data $8153
+    .byte $20, $20, $20, $20, $20, $20, $20, $54, $55, $52, $42, $4F, $30, $00, $08, $00    // data $8163
+    .byte $FF, $0A, $18, $02, $00, $00, $EB, $17, $0F, $00, $00, $00, $00, $F8, $14, $00    // data $8173
+    .byte $00, $00, $AC, $8B, $02, $C0, $03, $90, $03, $CE, $8B, $02, $20, $9F, $FF, $4C    // data $8183
+    .byte $7E, $EA, $78, $A0, $31, $A2, $EA, $8C, $14, $03, $8E, $15, $03, $58, $60, $20    // data $8193
+    .byte $B8, $8C, $A2, $03, $20, $8B, $8E, $A9, $12, $20, $81, $92, $C9, $59, $F0, $01    // data $81A3
+    .byte $60, $8D, $EC, $7F, $78, $A9, $37, $85, $01, $20, $81, $FF, $20, $84, $FF, $A0    // data $81B3
+    .byte $85, $A2, $80, $8C, $14, $03, $8E, $15, $03, $A9, $36, $85, $01, $A9, $00, $8D    // data $81C3
+    .byte $03, $DD, $8D, $80, $84, $20, $BF, $E3, $AD, $01, $DC, $29, $20, $F0, $0D, $A0    // data $81D3
+    .byte $05, $88, $30, $0B, $B9, $6A, $80, $D9, $EC, $7F, $F0, $F5, $20, $68, $81, $78    // data $81E3
+    .byte $20, $A0, $A4, $A9, $80, $8D, $8A, $02, $20, $44, $E5, $A9, $0E, $20, $D2, $FF    // data $81F3
+    .byte $A2, $02, $20, $9C, $8E, $20, $70, $A1, $A2, $23, $20, $31, $8B, $20, $8E, $8E    // data $8203
+    .byte $20, $70, $A1, $E0, $02, $B0, $04, $A9, $00, $F0, $0A, $E0, $04, $B0, $04, $A9    // data $8213
+    .byte $03, $D0, $02, $A9, $07, $8D, $70, $80, $18, $69, $30, $8D, $A2, $91, $8D, $C6    // data $8223
+    .byte $91, $A5, $BA, $C9, $08, $B0, $04, $A9, $07, $85, $BA, $20, $84, $88, $90, $03    // data $8233
+    .byte $20, $3F, $88, $20, $02, $8E, $AD, $1B, $80, $8D, $20, $D0, $AD, $1C, $80, $8D    // data $8243
+    .byte $21, $D0, $A9, $00, $8D, $7E, $80, $8D, $11, $CB, $85, $C6, $20, $3A, $A1, $20    // data $8253
+    .byte $BA, $82, $4C, $45, $84, $A0, $04, $B9, $6A, $80, $99, $EC, $7F, $88, $10, $F7    // data $8263
+    .byte $C8, $8C, $04, $CB, $8C, $05, $CB, $8C, $0C, $CB, $8C, $0D, $CB, $8C, $06, $CB    // data $8273
+    .byte $8C, $07, $CB, $8C, $0A, $CB, $8C, $0B, $CB, $8C, $13, $CB, $AD, $24, $80, $8D    // data $8283
+    .byte $0F, $CB, $AD, $25, $80, $8D, $10, $CB, $AD, $22, $80, $8D, $00, $CB, $AD, $23    // data $8293
+    .byte $80, $8D, $0E, $CB, $A9, $60, $8D, $00, $EC, $A9, $EC, $8D, $30, $EC, $A9, $60    // data $82A3
+    .byte $8D, $19, $CB, $A9, $EC, $8D, $1A, $CB, $A9, $EB, $8D, $01, $CB, $A9, $7F, $8D    // data $82B3
+    .byte $02, $CB, $A0, $16, $8C, $12, $CB, $C8, $A9, $7F, $99, $28, $CB, $88, $10, $FA    // data $82C3
+    .byte $A0, $18, $A9, $00, $99, $00, $CC, $88, $10, $FA, $A0, $BF, $A9, $20, $99, $40    // data $82D3
+    .byte $CB, $88, $10, $FA, $4C, $C7, $97, $A5, $01, $48, $78, $A0, $00, $84, $01, $38    // data $82E3
+    .byte $AD, $06, $CB, $ED, $08, $CB, $48, $AD, $07, $CB, $ED, $09, $CB, $8D, $72, $80    // data $82F3
+    .byte $68, $AA, $B0, $16, $20, $2C, $82, $E8, $D0, $FA, $EE, $72, $80, $D0, $F5, $20    // data $8303
+    .byte $65, $82, $8D, $03, $CB, $68, $85, $01, $58, $60, $E8, $CA, $D0, $05, $CE, $72    // data $8313
+    .byte $80, $30, $EC, $20, $48, $82, $4C, $1E, $82, $EE, $06, $CB, $D0, $03, $EE, $07    // data $8323
+    .byte $CB, $20, $65, $82, $29, $3F, $18, $ED, $01, $CB, $49, $FF, $8D, $01, $CB, $90    // data $8333
+    .byte $03, $CE, $02, $CB, $60, $20, $65, $82, $29, $3F, $18, $6D, $01, $CB, $8D, $01    // data $8343
+    .byte $CB, $90, $03, $EE, $02, $CB, $AD, $06, $CB, $D0, $03, $CE, $07, $CB, $CE, $06    // data $8353
+    .byte $CB, $60, $18, $AD, $06, $CB, $85, $39, $AD, $07, $CB, $69, $CC, $85, $3A, $B1    // data $8363
+    .byte $39, $60, $20, $B8, $8C, $18, $AD, $0A, $CB, $6D, $0D, $CB, $AA, $AD, $0B, $CB    // data $8373
+    .byte $69, $00, $A8, $60, $20, $F0, $E9, $20, $24, $EA, $A0, $27, $B1, $3B, $C9, $20    // data $8383
+    .byte $F0, $12, $AA, $29, $1F, $8D, $A6, $82, $8A, $4A, $4A, $4A, $4A, $4A, $AA, $BD    // data $8393
+    .byte $B2, $82, $09, $00, $91, $D1, $AD, $7B, $80, $91, $F3, $88, $10, $DE, $60, $80    // data $83A3
+    .byte $20, $00, $40, $C0, $60, $40, $60, $A9, $00, $8D, $7A, $80, $20, $CD, $82, $EE    // data $83B3
+    .byte $7A, $80, $AD, $7A, $80, $C9, $17, $90, $F3, $60, $48, $20, $DE, $82, $68, $AA    // data $83C3
+    .byte $A9, $00, $A0, $02, $85, $3B, $84, $3C, $4C, $87, $82, $18, $6D, $0A, $CB, $8D    // data $83D3
+    .byte $08, $CB, $AD, $0B, $CB, $69, $00, $8D, $09, $CB, $20, $EA, $81, $20, $93, $A4    // data $83E3
+    .byte $B0, $33, $AD, $06, $CB, $CD, $3C, $CB, $AD, $07, $CB, $ED, $3D, $CB, $90, $1E    // data $83F3
+    .byte $AD, $13, $CB, $CD, $3F, $CB, $90, $16, $AD, $3E, $CB, $CD, $06, $CB, $AD, $3F    // data $8403
+    .byte $CB, $ED, $07, $CB, $90, $08, $18, $AD, $21, $80, $8D, $7B, $80, $60, $AD, $1F    // data $8413
+    .byte $80, $8D, $7B, $80, $60, $AD, $20, $80, $8D, $7B, $80, $60, $AD, $84, $80, $49    // data $8423
+    .byte $80, $8D, $84, $80, $60, $2C, $84, $80, $30, $60, $A9, $E6, $A0, $83, $85, $39    // data $8433
+    .byte $84, $3A, $20, $A4, $8E, $2C, $0F, $CB, $30, $05, $A9, $20, $8D, $1A, $01, $2C    // data $8443
+    .byte $10, $CB, $30, $05, $A9, $20, $8D, $18, $01, $A0, $00, $AD, $0C, $CB, $A2, $02    // data $8453
+    .byte $20, $31, $8B, $20, $36, $84, $8A, $A2, $07, $20, $31, $8B, $A2, $0F, $AD, $15    // data $8463
+    .byte $CB, $20, $0A, $8B, $AD, $14, $CB, $20, $0A, $8B, $A5, $BA, $A0, $00, $A2, $1D    // data $8473
+    .byte $20, $31, $8B, $AD, $07, $80, $A0, $00, $A2, $25, $20, $31, $8B, $AD, $06, $80    // data $8483
+    .byte $A0, $00, $A2, $27, $20, $31, $8B, $4C, $CF, $83, $A9, $0E, $A0, $84, $85, $39    // data $8493
+    .byte $84, $3A, $20, $A4, $8E, $AC, $05, $CB, $AD, $04, $CB, $A2, $04, $20, $31, $8B    // data $84A3
+    .byte $A2, $0A, $AD, $1A, $CB, $20, $0A, $8B, $AD, $19, $CB, $20, $0A, $8B, $A2, $24    // data $84B3
+    .byte $AD, $15, $CB, $20, $0A, $8B, $AD, $14, $CB, $20, $0A, $8B, $AD, $7B, $80, $48    // data $84C3
+    .byte $AD, $1E, $80, $8D, $7B, $80, $20, $24, $A1, $A2, $18, $20, $87, $82, $68, $8D    // data $84D3
+    .byte $7B, $80, $60, $58, $3A, $20, $20, $20, $4C, $3A, $20, $20, $20, $20, $20, $42    // data $84E3
+    .byte $3A, $24, $20, $20, $20, $20, $20, $49, $4E, $3A, $43, $2F, $4C, $20, $23, $3A    // data $84F3
+    .byte $20, $20, $20, $42, $41, $4E, $4B, $3A, $20, $2F, $A0, $4C, $42, $4C, $3A, $20    // data $8503
+    .byte $20, $20, $20, $2F, $24, $20, $20, $20, $20, $2D, $24, $46, $44, $33, $30, $20    // data $8513
+    .byte $20, $20, $20, $20, $53, $52, $43, $3A, $24, $30, $38, $30, $30, $2D, $24, $20    // data $8523
+    .byte $20, $20, $A0, $18, $AD, $0A, $CB, $6D, $0D, $CB, $AA, $AD, $0B, $CB, $69, $00    // data $8533
+    .byte $A8, $60, $A2, $FA, $9A, $A9, $06, $85, $01, $58, $20, $38, $83, $2C, $7E, $80    // data $8543
+    .byte $10, $06, $AE, $0D, $CB, $20, $D3, $82, $AE, $0D, $CB, $20, $7F, $84, $8D, $7C    // data $8553
+    .byte $80, $2C, $11, $CB, $30, $0C, $20, $CE, $84, $20, $23, $85, $20, $E8, $85, $4C    // data $8563
+    .byte $45, $84, $C9, $5F, $D0, $F6, $8D, $11, $CB, $4C, $45, $84, $A9, $00, $F0, $03    // data $8573
+    .byte $4C, $2A, $8A, $A9, $28, $8D, $05, $DC, $20, $F0, $E9, $A9, $00, $8D, $7C, $80    // data $8583
+    .byte $20, $BC, $84, $A9, $46, $2C, $11, $CB, $10, $01, $4A, $AA, $88, $D0, $03, $CA    // data $8593
+    .byte $F0, $EE, $A5, $C6, $F0, $F6, $20, $E4, $FF, $AA, $AD, $7C, $80, $F0, $03, $20    // data $85A3
+    .byte $BC, $84, $8A, $A2, $40, $8E, $05, $DC, $60, $AC, $0C, $CB, $B1, $D1, $49, $80    // data $85B3
+    .byte $91, $D1, $AD, $7C, $80, $49, $FF, $8D, $7C, $80, $60, $A2, $13, $CA, $30, $16    // data $85C3
+    .byte $DD, $EA, $84, $D0, $F8, $20, $DE, $84, $4C, $45, $84, $8A, $0A, $AA, $BD, $FE    // data $85D3
+    .byte $84, $48, $BD, $FD, $84, $48, $60, $91, $11, $1D, $9D, $8D, $0D, $14, $94, $85    // data $85E3
+    .byte $88, $89, $8C, $86, $8A, $87, $8B, $13, $03, $93, $3B, $86, $85, $86, $D5, $86    // data $85F3
+    .byte $C6, $86, $05, $87, $EB, $86, $15, $87, $ED, $8B, $5D, $87, $88, $87, $7A, $87    // data $8603
+    .byte $B1, $87, $33, $87, $36, $87, $39, $87, $3C, $87, $0E, $87, $2E, $83, $E1, $94    // data $8613
+    .byte $C9, $5F, $D0, $21, $58, $20, $E4, $FF, $F0, $FB, $A2, $35, $CA, $30, $08, $DD    // data $8623
+    .byte $49, $85, $D0, $F8, $20, $3D, $85, $4C, $45, $84, $8A, $0A, $AA, $BD, $7F, $85    // data $8633
+    .byte $48, $BD, $7E, $85, $48, $60, $94, $41, $5F, $31, $20, $5A, $14, $43, $45, $57    // data $8643
+    .byte $33, $34, $35, $4D, $47, $46, $48, $4B, $42, $53, $4C, $2A, $40, $4E, $51, $9D    // data $8653
+    .byte $1D, $37, $38, $91, $11, $52, $54, $59, $3A, $3B, $0D, $5E, $5C, $3D, $2F, $55    // data $8663
+    .byte $D5, $CB, $49, $32, $2B, $2D, $36, $44, $21, $D2, $23, $E4, $8B, $F6, $8B, $08    // data $8673
+    .byte $8C, $34, $97, $10, $8C, $2F, $86, $1E, $8C, $A1, $80, $D7, $93, $5B, $94, $FC    // data $8683
+    .byte $8B, $9A, $8B, $0E, $97, $07, $95, $49, $95, $57, $96, $51, $96, $D2, $97, $54    // data $8693
+    .byte $98, $A2, $9A, $61, $9B, $9E, $88, $78, $9C, $BA, $9C, $54, $87, $54, $87, $57    // data $86A3
+    .byte $87, $83, $8B, $8A, $8B, $60, $87, $8B, $87, $85, $9D, $38, $9E, $35, $9E, $C6    // data $86B3
+    .byte $95, $ED, $94, $F3, $9E, $C4, $9E, $D3, $9E, $0E, $9F, $E2, $9E, $1A, $9F, $1D    // data $86C3
+    .byte $9F, $C1, $97, $5B, $A0, $6E, $89, $91, $89, $89, $89, $F3, $89, $3E, $88, $26    // data $86D3
+    .byte $89, $5B, $A2, $02, $8C, $20, $2B, $86, $2C, $10, $CB, $10, $17, $AD, $27, $02    // data $86E3
+    .byte $C9, $20, $D0, $44, $A2, $27, $BD, $FF, $01, $9D, $00, $02, $CA, $F0, $05, $EC    // data $86F3
+    .byte $0C, $CB, $B0, $F2, $AD, $7C, $80, $AE, $0C, $CB, $9D, $00, $02, $4C, $E1, $86    // data $8703
+    .byte $A6, $C6, $F0, $13, $A9, $00, $85, $C6, $BD, $76, $02, $C9, $03, $D0, $08, $20    // data $8713
+    .byte $8B, $95, $A2, $05, $4C, $60, $8E, $60, $AD, $7E, $80, $D0, $0B, $AD, $0D, $CB    // data $8723
+    .byte $20, $DE, $82, $A9, $FF, $8D, $7E, $80, $60, $20, $B8, $8C, $AD, $0D, $CB, $C9    // data $8733
+    .byte $05, $B0, $26, $AC, $0A, $CB, $98, $0D, $0B, $CB, $F0, $18, $CE, $0A, $CB, $98    // data $8743
+    .byte $D0, $03, $CE, $0B, $CB, $A9, $04, $20, $70, $86, $A9, $D8, $20, $70, $86, $A9    // data $8753
+    .byte $00, $4C, $CD, $82, $AD, $0D, $CB, $F0, $03, $CE, $0D, $CB, $60, $A2, $00, $86    // data $8763
+    .byte $3D, $85, $3E, $A2, $70, $8E, $75, $80, $18, $69, $03, $8D, $76, $80, $A9, $28    // data $8773
+    .byte $4C, $36, $92, $20, $B8, $8C, $AD, $0D, $CB, $C9, $12, $90, $1D, $A9, $01, $20    // data $8783
+    .byte $3A, $A1, $B0, $0F, $A9, $04, $20, $B1, $86, $A9, $D8, $20, $B1, $86, $A9, $16    // data $8793
+    .byte $4C, $CD, $82, $AD, $0D, $CB, $C9, $16, $B0, $03, $EE, $0D, $CB, $60, $A2, $28    // data $87A3
+    .byte $86, $3D, $85, $3E, $A2, $98, $8E, $75, $80, $18, $69, $03, $8D, $76, $80, $A9    // data $87B3
+    .byte $28, $4C, $D8, $91, $CE, $0C, $CB, $10, $09, $20, $B8, $8C, $20, $58, $87, $4C    // data $87C3
+    .byte $3C, $86, $60, $AD, $0C, $CB, $C9, $27, $A9, $00, $90, $09, $B0, $28, $AD, $0C    // data $87D3
+    .byte $CB, $C9, $27, $B0, $1E, $EE, $0C, $CB, $60, $AD, $0E, $CB, $2C, $0F, $CB, $10    // data $87E3
+    .byte $15, $8D, $0C, $CB, $20, $2B, $86, $20, $B8, $8C, $20, $C0, $87, $9A, $92, $CA    // data $87F3
+    .byte $C9, $D3, $BF, $EE, $EE, $4A, $86, $AE, $8A, $D2, $BD, $8C, $D2, $8D, $8B, $01    // data $8803
+    .byte $E4, $B5, $92, $8F, $2D, $33, $AE, $96, $72, $2E, $73, $AF, $97, $59, $85, $FB    // data $8813
+    .byte $58, $6B, $0C, $E1, $21, $00, $CA, $07, $01, $86, $2B, $F7, $7D, $85, $2C, $76    // data $8823
+    .byte $33, $A5, $2B, $A9, $BC, $71, $A8, $4C, $AE, $A7, $DF, $03, $6A, $08, $B4, $3E    // data $8833
+    .byte $80, $88, $90, $98, $00, $FF, $10, $D0, $6A, $AF, $3B, $10, $B6, $E2, $8E, $16    // data $8843
+    .byte $62, $85, $AD, $11, $14, $05, $92, $E4, $AF, $97, $43, $31, $8E, $ED, $99, $36    // data $8853
+    .byte $8E, $30, $69, $05, $F2, $10, $69, $04, $45, $E5, $E6, $E4, $62, $91, $80, $91    // data $8863
+    .byte $9A, $15, $46, $05, $90, $F0, $1C, $CD, $9F, $43, $40, $89, $FF, $45, $55, $0E    // data $8873
+    .byte $85, $55, $C0, $38, $2C, $FB, $2D, $8E, $B2, $66, $14, $1A, $C4, $B8, $16, $F0    // data $8883
+    .byte $BA, $32, $2C, $4B, $B2, $75, $4C, $C1, $41, $CC, $69, $AC, $90, $0E, $B9, $96    // data $8893
+    .byte $4E, $11, $A6, $80, $8E, $C0, $37, $81, $1B, $C1, $8D, $C6, $82, $E3, $C2, $71    // data $88A3
+    .byte $83, $B8, $C3, $BD, $DB, $B3, $9D, $00, $C4, $DD, $1A, $71, $DF, $A8, $1F, $05    // data $88B3
+    .byte $8D, $D4, $16, $4D, $EA, $31, $51, $17, $CB, $32, $97, $4D, $F3, $54, $F1, $C9    // data $88C3
+    .byte $58, $E7, $ED, $ED, $08, $9B, $CC, $DA, $D3, $3F, $E1, $D1, $C9, $BB, $AE, $9A    // data $88D3
+    .byte $22, $D0, $CE, $BF, $F3, $8C, $7D, $23, $4E, $DC, $4B, $F7, $65, $BC, $31, $32    // data $88E3
+    .byte $E4, $50, $99, $00, $C0, $F0, $CF, $F8, $61, $9E, $EE, $A1, $AD, $32, $B3, $37    // data $88F3
+    .byte $C5, $EE, $65, $A9, $15, $ED, $A6, $D0, $EE, $67, $64, $A6, $97, $BA, $32, $69    // data $8903
+    .byte $4F, $2B, $8C, $02, $D9, $4C, $8D, $EF, $D3, $9A, $2A, $17, $53, $12, $D2, $A8    // data $8913
+    .byte $CC, $4D, $17, $9D, $9D, $2E, $76, $26, $99, $C8, $41, $DA, $F6, $E0, $07, $9F    // data $8923
+    .byte $6E, $24, $83, $77, $F0, $4A, $0B, $9D, $8A, $C9, $6C, $69, $31, $6E, $FA, $2A    // data $8933
+    .byte $BD, $BE, $C5, $6F, $E8, $DD, $C8, $C0, $1D, $E0, $77, $A5, $A2, $86, $28, $5D    // data $8943
+    .byte $8B, $B8, $02, $56, $3E, $E0, $90, $D0, $D1, $EF, $71, $0E, $4B, $89, $17, $3E    // data $8953
+    .byte $A9, $17, $D4, $19, $FB, $97, $85, $2A, $6B, $B2, $86, $20, $E5, $87, $CB, $25    // data $8963
+    .byte $96, $91, $EC, $5D, $B9, $44, $72, $56, $58, $E5, $CB, $D0, $7D, $F0, $43, $EF    // data $8973
+    .byte $F9, $04, $1B, $25, $4F, $44, $21, $D0, $63, $50, $95, $95, $A2, $EE, $50, $AD    // data $8983
+    .byte $51, $D8, $3D, $E2, $31, $4C, $19, $EF, $38, $D8, $BA, $D6, $A9, $67, $F0, $5E    // data $8993
+    .byte $1F, $28, $A0, $03, $71, $40, $53, $E3, $A2, $27, $BD, $78, $04, $9D, $3F, $52    // data $89A3
+    .byte $C1, $CA, $EE, $F7, $BD, $AD, $BB, $37, $A9, $47, $07, $CA, $F5, $2D, $38, $1A    // data $89B3
+    .byte $51, $3D, $4C, $EF, $3B, $5F, $84, $C9, $09, $9D, $35, $D8, $17, $C6, $F2, $C2    // data $89C3
+    .byte $A8, $A3, $98, $56, $4C, $AD, $A6, $9F, $BD, $B6, $1F, $8D, $D8, $F9, $E0, $43    // data $89D3
+    .byte $CC, $FD, $75, $16, $22, $C4, $EF, $04, $75, $16, $83, $6E, $18, $A9, $A6, $6D    // data $89E3
+    .byte $A3, $ED, $19, $34, $82, $2E, $40, $B0, $1A, $1C, $22, $15, $A9, $A3, $EA, $FE    // data $89F3
+    .byte $86, $02, $DC, $36, $0C, $17, $06, $3D, $04, $34, $1B, $FA, $04, $BA, $37, $30    // data $8A03
+    .byte $FD, $EE, $CA, $C3, $BE, $16, $B5, $F1, $BC, $0C, $FA, $C7, $BD, $84, $B7, $4C    // data $8A13
+    .byte $D8, $38, $AE, $BF, $62, $AC, $15, $76, $FC, $DD, $27, $C9, $FF, $EF, $14, $B8    // data $8A23
+    .byte $A4, $B7, $DC, $B4, $94, $6A, $DA, $F8, $F7, $E0, $2E, $BB, $53, $76, $BC, $CA    // data $8A33
+    .byte $91, $DE, $09, $EB, $40, $8C, $92, $1D, $47, $87, $58, $07, $15, $8D, $00, $DE    // data $8A43
+    .byte $C7, $07, $92, $FE, $17, $0D, $32, $71, $51, $22, $D1, $18, $57, $4A, $10, $71    // data $8A53
+    .byte $AA, $D9, $4E, $30, $8A, $4B, $26, $99, $87, $0B, $28, $78, $30, $2B, $90, $0D    // data $8A63
+    .byte $FD, $B2, $03, $36, $F4, $B2, $1A, $30, $41, $45, $EA, $55, $84, $C9, $42, $D0    // data $8A73
+    .byte $E3, $FA, $08, $56, $A1, $09, $91, $02, $14, $10, $B3, $5D, $18, $22, $98, $38    // data $8A83
+    .byte $A9, $16, $35, $53, $7A, $4C, $C6, $ED, $9B, $8D, $B6, $03, $4C, $E5, $39, $B9    // data $8A93
+    .byte $85, $BB, $99, $9E, $9E, $A0, $F3, $FD, $CC, $90, $F3, $AE, $49, $23, $A0, $6F    // data $8AA3
+    .byte $53, $BA, $44, $C0, $48, $A2, $AE, $C6, $2D, $FF, $58, $E8, $20, $B9, $1D, $1E    // data $8AB3
+    .byte $8D, $9B, $68, $8B, $F0, $11, $DF, $15, $90, $00, $C6, $02, $0E, $22, $A1, $0A    // data $8AC3
+    .byte $D9, $29, $3D, $F6, $96, $00, $87, $F6, $94, $86, $04, $01, $4D, $34, $55, $BD    // data $8AD3
+    .byte $87, $C0, $FE, $08, $D0, $2D, $B9, $B2, $3D, $65, $35, $4E, $F0, $23, $21, $BB    // data $8AE3
+    .byte $F5, $19, $01, $62, $F5, $C9, $28, $7C, $84, $A9, $91, $C8, $A9, $A9, $37, $AE    // data $8AF3
+    .byte $4C, $E1, $3A, $A7, $FE, $4F, $4E, $93, $17, $AD, $BB, $16, $16, $DC, $A9, $84    // data $8B03
+    .byte $8D, $C5, $C0, $44, $A0, $88, $36, $03, $F7, $DD, $82, $DE, $48, $22, $93, $38    // data $8B13
+    .byte $68, $9D, $AC, $C0, $F5, $6E, $49, $3E, $D0, $14, $43, $F0, $07, $C9, $53, $7D    // data $8B23
+    .byte $F9, $78, $2C, $A9, $58, $3C, $D1, $1A, $8D, $83, $11, $3E, $A9, $82, $E3, $CC    // data $8B33
+    .byte $AD, $01, $34, $A5, $00, $71, $CC, $DA, $68, $79, $9D, $7A, $C1, $3F, $AA, $96    // data $8B43
+    .byte $3E, $79, $D0, $A9, $0D, $E5, $B9, $40, $3B, $03, $C8, $C8, $C4, $B7, $D0, $F5    // data $8B53
+    .byte $9F, $0D, $15, $20, $91, $89, $16, $AE, $A7, $27, $A8, $1E, $A0, $02, $CB, $2E    // data $8B63
+    .byte $5D, $48, $EF, $6E, $03, $EC, $60, $A9, $20, $37, $9D, $68, $A8, $B1, $D1, $8F    // data $8B73
+    .byte $53, $67, $68, $8B, $A0, $10, $76, $0B, $76, $2A, $00, $4A, $18, $6D, $47, $E2    // data $8B83
+    .byte $AA, $BD, $8E, $AA, $DC, $22, $BF, $3E, $58, $CE, $9E, $F3, $34, $06, $91, $8F    // data $8B93
+    .byte $95, $30, $4C, $68, $E6, $4E, $13, $EE, $85, $C9, $BC, $97, $91, $76, $2C, $7C    // data $8BA3
+    .byte $80, $18, $A8, $0A, $EE, $19, $60, $88, $38, $EA, $70, $78, $66, $71, $E9, $39    // data $8BB3
+    .byte $4F, $69, $95, $14, $55, $C9, $62, $B0, $10, $AD, $15, $F1, $22, $7B, $18, $86    // data $8BC3
+    .byte $24, $67, $B2, $6C, $18, $CF, $A1, $81, $20, $0A, $23, $9C, $55, $A3, $F0, $18    // data $8BD3
+    .byte $DA, $84, $03, $52, $19, $CE, $A8, $61, $0E, $54, $68, $AD, $0F, $BD, $47, $0A    // data $8BE3
+    .byte $AA, $EC, $AA, $24, $90, $50, $BA, $E4, $9A, $68, $67, $F0, $22, $CB, $25, $2B    // data $8BF3
+    .byte $38, $41, $3B, $A3, $ED, $C4, $1A, $2D, $3D, $B8, $7D, $8B, $14, $C9, $01, $F0    // data $8C03
+    .byte $FC, $57, $ED, $0E, $AD, $EC, $6B, $65, $18, $27, $91, $A2, $A9, $BE, $5B, $59    // data $8C13
+    .byte $AE, $A2, $CA, $ED, $F0, $8A, $54, $29, $B6, $EE, $E7, $FE, $5C, $1E, $1D, $BA    // data $8C23
+    .byte $BE, $E9, $E7, $F0, $69, $B1, $3E, $D1, $9A, $F9, $6D, $E6, $2D, $48, $20, $42    // data $8C33
+    .byte $F1, $5D, $59, $55, $67, $45, $3C, $C9, $4E, $4F, $D0, $F2, $E1, $CE, $25, $F5    // data $8C43
+    .byte $A0, $D5, $3B, $FF, $91, $FE, $88, $10, $BE, $D2, $FC, $3C, $EE, $AB, $49, $64    // data $8C53
+    .byte $DA, $CB, $30, $20, $AB, $2D, $E1, $CC, $64, $BC, $46, $77, $2E, $78, $20, $D8    // data $8C63
+    .byte $5F, $2D, $A1, $DC, $0F, $FD, $77, $46, $28, $32, $F0, $3E, $78, $3F, $4B, $1C    // data $8C73
+    .byte $FA, $A9, $A5, $AD, $21, $33, $29, $FE, $BB, $8D, $C9, $9D, $43, $FB, $69, $04    // data $8C83
+    .byte $AA, $42, $0D, $8A, $A8, $20, $A7, $B5, $2E, $CD, $5D, $E9, $5D, $AC, $B2, $A9    // data $8C93
+    .byte $10, $85, $AE, $A2, $1F, $80, $B1, $FA, $D1, $8A, $F0, $0A, $CA, $FF, $F7, $C6    // data $8CA3
+    .byte $CB, $AE, $AA, $F3, $4C, $03, $3D, $FC, $8A, $B4, $8B, $27, $FA, $D0, $02, $E6    // data $8CB3
+    .byte $2F, $A9, $D5, $03, $B2, $58, $69, $07, $64, $CD, $B8, $EE, $32, $A5, $6D, $F4    // data $8CC3
+    .byte $19, $AB, $A5, $F5, $8A, $20, $1A, $8B, $A9, $01, $8D, $7E, $47, $60, $00, $79    // data $8CD3
+    .byte $A5, $2B, $58, $78, $94, $E6, $AD, $E5, $02, $3D, $C8, $FB, $22, $42, $A5, $FA    // data $8CE3
+    .byte $62, $B6, $0D, $A9, $08, $BF, $5E, $E4, $E7, $FF, $36, $13, $24, $97, $38, $23    // data $8CF3
+    .byte $2B, $C6, $42, $4D, $EE, $28, $6B, $0A, $49, $AA, $9A, $88, $18, $D7, $01, $57    // data $8D03
+    .byte $98, $57, $AD, $19, $57, $69, $6A, $9D, $99, $2B, $75, $6D, $8D, $10, $3F, $BE    // data $8D13
+    .byte $42, $37, $AD, $85, $AF, $C0, $D0, $03, $E4, $88, $6A, $1A, $AD, $EE, $D0, $0B    // data $8D23
+    .byte $3B, $51, $F4, $3E, $37, $1B, $23, $B2, $20, $A9, $69, $0D, $C4, $17, $F9, $00    // data $8D33
+    .byte $58, $FC, $B9, $FE, $75, $40, $75, $FD, $78, $AE, $78, $0E, $A9, $80, $85, $FF    // data $8D43
+    .byte $BD, $06, $22, $8D, $FF, $01, $DE, $A0, $00, $B1, $FE, $91, $FC, $FF, $C8, $DA    // data $8D53
+    .byte $F9, $C5, $E6, $94, $D2, $FF, $AA, $A0, $AA, $EF, $E8, $A5, $FD, $AF, $C9, $80    // data $8D63
+    .byte $D0, $DC, $A2, $FC, $58, $C0, $DC, $40, $6E, $C1, $37, $41, $1B, $C2, $8D, $C6    // data $8D73
+    .byte $42, $E3, $C3, $71, $43, $BD, $B4, $C4, $B4, $AE, $44, $E8, $D0, $DF, $8E, $11    // data $8D83
+    .byte $FD, $58, $AD, $A5, $57, $0F, $8D, $12, $3F, $F7, $8E, $3C, $4C, $E8, $F1, $40    // data $8D93
+    .byte $69, $69, $4E, $07, $8A, $1E, $90, $CB, $CC, $CF, $D6, $C4, $2D, $C1, $97, $D9    // data $8DA3
+    .byte $20, $A6, $D8, $E8, $38, $AF, $4F, $A9, $46, $54, $C5, $0D, $9D, $35, $76, $5E    // data $8DB3
+    .byte $4D, $A2, $DA, $36, $B9, $D4, $58, $55, $43, $55, $5B, $42, $CD, $46, $46, $B5    // data $8DC3
+    .byte $49, $4C, $DD, $5C, $2D, $4F, $2C, $B9, $53, $50, $62, $19, $58, $D0, $EA, $C7    // data $8DD3
+    .byte $8A, $57, $49, $C2, $39, $18, $8C, $E2, $D9, $2F, $3D, $67, $44, $21, $B2, $54    // data $8DE3
+    .byte $CE, $90, $C6, $24, $D0, $46, $13, $3D, $16, $63, $D5, $CE, $29, $BE, $A9, $D3    // data $8DF3
+    .byte $C5, $0C, $4C, $71, $D9, $1A, $CC, $C9, $E2, $3F, $E3, $D3, $2F, $C3, $B7, $29    // data $8E03
+    .byte $A2, $47, $30, $31, $5A, $D6, $41, $4C, $55, $AF, $45, $F0, $33, $37, $A6, $9D    // data $8E13
+    .byte $16, $E4, $41, $88, $9B, $DB, $48, $52, $4D, $15, $32, $55, $76, $3D, $50, $54    // data $8E23
+    .byte $49, $BC, $F2, $28, $31, $36, $79, $0E, $CD, $C1, $C2, $F5, $02, $52, $53, $29    // data $8E33
+    .byte $47, $89, $52, $CC, $75, $2C, $CA, $88, $54, $83, $B7, $A2, $41, $44, $3F, $4E    // data $8E43
+    .byte $53, $3A, $DB, $24, $F5, $94, $D7, $95, $52, $4B, $49, $5D, $59, $28, $6C, $C6    // data $8E53
+    .byte $4C, $6B, $41, $53, $48, $D2, $CF, $CD, $FC, $D0, $1B, $96, $0D, $CE, $0B, $75    // data $8E63
+    .byte $43, $48, $AB, $41, $AA, $47, $CA, $53, $CA, $44, $4F, $4E, $E2, $20, $D3, $50    // data $8E73
+    .byte $41, $6F, $43, $45, $2E, $F0, $98, $FA, $45, $01, $FF, $39, $45, $4E, $44, $2B    // data $8E83
+    .byte $78, $07, $C0, $00, $35, $82, $52, $33, $38, $50, $2D, $FB, $AD, $55, $4E, $54    // data $8E93
+    .byte $20, $5A, $5F, $45, $52, $4F, $2F, $43, $50, $58, $2D, $FF, $BD, $42, $E5, $30    // data $8EA3
+    .byte $01, $C0, $4F, $00, $00, $54, $34, $48, $89, $11, $EE, $66, $AA, $28, $CC, $48    // data $8EB3
+    .byte $43, $3D, $99, $E1, $EE, $EA, $AA, $2C, $CA, $E6, $02, $46, $24, $C4, $48, $80    // data $8EC3
+    .byte $18, $01, $41, $E8, $A9, $00, $85, $FC, $85, $FB, $E0, $01, $90, $28, $A5, $FD    // data $8ED3
+    .byte $4A, $D0, $18, $AD, $23, $01, $D0, $0A, $C6, $01, $8E, $E7, $DB, $E6, $01, $CE    // data $8EE3
+    .byte $24, $01, $CE, $23, $01, $AD, $D4, $28, $90, $1B, $6A, $26, $FC, $26, $FB, $CA    // data $8EF3
+    .byte $D0, $DE, $85, $FD, $A5, $FC, $60, $C6, $01, $58, $4C, $10, $08, $CA, $C6, $FF    // data $8F03
+    .byte $C6, $AF, $88, $B1, $AE, $91, $FE, $98, $D0, $F8, $8A, $D0, $F0, $20, $00, $01    // data $8F13
+    .byte $F0, $0A, $A5, $FE, $D0, $02, $C6, $FF, $C6, $FE, $90, $B7, $C8, $20, $00, $01    // data $8F23
+    .byte $F0, $FA, $C0, $11, $B0, $D1, $BE, $33, $03, $20, $01, $01, $79, $67, $03, $85    // data $8F33
+    .byte $A7, $A5, $FB, $79, $9B, $03, $48, $D0, $06, $A4, $A7, $C0, $04, $90, $02, $A0    // data $8F43
+    .byte $03, $BE, $B3, $01, $20, $01, $01, $79, $B6, $01, $A8, $38, $A5, $FE, $E5, $A7    // data $8F53
+    .byte $85, $FE, $B0, $02, $C6, $FF, $BE, $34, $03, $20, $01, $01, $79, $68, $03, $90    // data $8F63
+    .byte $03, $E6, $FB, $18, $65, $FE, $85, $AE, $A5, $FB, $79, $9C, $03, $65, $FF, $85    // data $8F73
+    .byte $AF, $A4, $A7, $68, $AA, $90, $90, $02, $04, $04, $30, $20, $10, $E8, $98, $29    // data $8F83
+    .byte $0F, $F0, $13, $8A, $4A, $A6, $FC, $2A, $26, $FB, $CA, $10, $FA, $79, $67, $03    // data $8F93
+    .byte $AA, $A5, $FB, $79, $9B, $03, $99, $9C, $03, $8A, $99, $68, $03, $A2, $04, $20    // data $8FA3
+    .byte $01, $01, $99, $34, $03, $C8, $C0, $34, $D0, $D3, $A0, $36, $B9, $CB, $29, $99    // data $8FB3
+    .byte $E6, $07, $88, $D0, $F7, $4C, $4A, $01, $80, $00, $A0, $2C, $BA, $D8, $5B, $D8    // data $8FC3
+    .byte $A9, $3D, $8D, $57, $19, $03, $D2, $21, $A1, $AE, $EE, $15, $CA, $88, $8C, $6B    // data $8FD3
+    .byte $26, $CE, $1B, $AE, $11, $D0, $B5, $DD, $78, $11, $AF, $16, $34, $C6, $D7, $A2    // data $8FE3
+    .byte $18, $46, $1A, $1E, $D4, $88, $BF, $FA, $F6, $78, $3C, $81, $24, $5C, $00, $AA    // data $8FF3
+    .byte $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA, $00    // data $9003
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9013
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9023
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9033
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9043
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9053
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9063
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9073
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9083
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9093
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $90A3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $90B3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $90C3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $90D3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $90E3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $90F3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9103
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9113
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9123
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9133
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9143
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9153
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9163
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9173
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9183
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9193
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $91A3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $91B3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $91C3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $91D3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $91E3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $A9, $00, $8D    // data $91F3
+    .byte $20, $D0, $8D, $21, $D0, $A9, $0F, $8D, $86, $02, $A2, $00, $9D, $00, $D8, $9D    // data $9203
+    .byte $00, $D9, $9D, $00, $DA, $9D, $00, $DB, $E8, $D0, $F1, $BD, $00, $69, $9D, $00    // data $9213
+    .byte $04, $BD, $00, $6A, $9D, $00, $05, $BD, $00, $6B, $9D, $00, $06, $BD, $00, $6C    // data $9223
+    .byte $9D, $00, $07, $E8, $D0, $E5, $20, $E4, $FF, $C9, $20, $D0, $F9, $A2, $08, $A0    // data $9233
+    .byte $01, $20, $BA, $FF, $A9, $10, $A2, $C0, $A0, $68, $20, $BD, $FF, $A9, $01, $85    // data $9243
+    .byte $FB, $A9, $08, $85, $FC, $A9, $FB, $A2, $00, $A0, $2C, $20, $D8, $FF, $A2, $00    // data $9253
+    .byte $4C, $9A, $68, $9D, $01, $08, $E8, $D0, $F7, $EE, $65, $68, $EE, $68, $68, $AD    // data $9263
+    .byte $65, $68, $C9, $68, $D0, $EA, $A2, $08, $A0, $01, $20, $BA, $FF, $A9, $10, $A2    // data $9273
+    .byte $B0, $A0, $68, $20, $BD, $FF, $A9, $01, $85, $FB, $A9, $08, $85, $FC, $A9, $FB    // data $9283
+    .byte $A2, $00, $A0, $26, $20, $D8, $FF, $EE, $20, $D0, $CE, $20, $D0, $4C, $9A, $68    // data $9293
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $46, $4C, $41    // data $92A3
+    .byte $53, $48, $20, $55, $54, $49, $4C, $20, $56, $33, $2E, $38, $50, $46, $4C, $41    // data $92B3
+    .byte $53, $48, $20, $55, $54, $49, $4C, $20, $56, $33, $2E, $38, $50, $00, $00, $00    // data $92C3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $92D3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $92E3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $10, $0C, $05    // data $92F3
+    .byte $01, $13, $05, $20, $0E, $0F, $14, $05, $20, $20, $20, $20, $20, $20, $20, $20    // data $9303
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9313
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9323
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9333
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $14, $08, $09    // data $9343
-    .byte $13, $20, $10, $12, $0f, $07, $12, $01, $0d, $20, $0a, $15, $13, $14, $20, $13    // data $9353
-    .byte $01, $16, $05, $13, $20, $0f, $0e, $05, $20, $14, $09, $0e, $19, $20, $06, $09    // data $9363
-    .byte $0c, $05, $20, $20, $20, $14, $0f, $20, $14, $08, $05, $20, $04, $09, $13, $0b    // data $9373
-    .byte $20, $09, $0e, $20, $04, $12, $09, $16, $05, $20, $38, $2e, $20, $20, $20, $20    // data $9383
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $10, $0c, $05    // data $9393
-    .byte $01, $13, $05, $20, $13, $01, $16, $05, $20, $14, $08, $09, $13, $20, $10, $12    // data $93a3
-    .byte $0f, $07, $12, $01, $0d, $20, $01, $14, $0c, $05, $01, $13, $14, $20, $14, $17    // data $93b3
-    .byte $0f, $20, $20, $20, $20, $0f, $12, $20, $14, $08, $12, $05, $05, $20, $14, $09    // data $93c3
-    .byte $0d, $05, $13, $20, $06, $0f, $12, $20, $06, $15, $14, $15, $12, $05, $20, $15    // data $93d3
-    .byte $13, $01, $07, $05, $20, $01, $0e, $04, $20, $14, $0f, $20, $20, $02, $05, $20    // data $93e3
-    .byte $13, $15, $12, $05, $20, $14, $0f, $20, $08, $01, $16, $05, $20, $09, $14, $20    // data $93f3
-    .byte $08, $01, $0e, $04, $19, $2e, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9403
+    .byte $13, $20, $10, $12, $0F, $07, $12, $01, $0D, $20, $0A, $15, $13, $14, $20, $13    // data $9353
+    .byte $01, $16, $05, $13, $20, $0F, $0E, $05, $20, $14, $09, $0E, $19, $20, $06, $09    // data $9363
+    .byte $0C, $05, $20, $20, $20, $14, $0F, $20, $14, $08, $05, $20, $04, $09, $13, $0B    // data $9373
+    .byte $20, $09, $0E, $20, $04, $12, $09, $16, $05, $20, $38, $2E, $20, $20, $20, $20    // data $9383
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $10, $0C, $05    // data $9393
+    .byte $01, $13, $05, $20, $13, $01, $16, $05, $20, $14, $08, $09, $13, $20, $10, $12    // data $93A3
+    .byte $0F, $07, $12, $01, $0D, $20, $01, $14, $0C, $05, $01, $13, $14, $20, $14, $17    // data $93B3
+    .byte $0F, $20, $20, $20, $20, $0F, $12, $20, $14, $08, $12, $05, $05, $20, $14, $09    // data $93C3
+    .byte $0D, $05, $13, $20, $06, $0F, $12, $20, $06, $15, $14, $15, $12, $05, $20, $15    // data $93D3
+    .byte $13, $01, $07, $05, $20, $01, $0E, $04, $20, $14, $0F, $20, $20, $02, $05, $20    // data $93E3
+    .byte $13, $15, $12, $05, $20, $14, $0F, $20, $08, $01, $16, $05, $20, $09, $14, $20    // data $93F3
+    .byte $08, $01, $0E, $04, $19, $2E, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9403
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9413
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9423
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $01, $02, $0f    // data $9433
-    .byte $15, $14, $20, $33, $36, $20, $02, $0c, $0f, $03, $0b, $13, $20, $17, $09, $0c    // data $9443
-    .byte $0c, $20, $02, $05, $20, $0e, $05, $05, $04, $05, $04, $20, $20, $2e, $2e, $2e    // data $9453
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $01, $02, $0F    // data $9433
+    .byte $15, $14, $20, $33, $36, $20, $02, $0C, $0F, $03, $0B, $13, $20, $17, $09, $0C    // data $9443
+    .byte $0C, $20, $02, $05, $20, $0E, $05, $05, $04, $05, $04, $20, $20, $2E, $2E, $2E    // data $9453
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9463
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9473
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9483
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9493
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $94a3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $94b3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $94c3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $14, $08    // data $94d3
-    .byte $01, $0e, $0b, $13, $20, $06, $0f, $12, $20, $19, $0f, $15, $12, $20, $01, $14    // data $94e3
-    .byte $14, $05, $0e, $14, $09, $0f, $0e, $20, $2e, $2e, $2e, $20, $20, $20, $20, $20    // data $94f3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $94A3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $94B3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $94C3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $14, $08    // data $94D3
+    .byte $01, $0E, $0B, $13, $20, $06, $0F, $12, $20, $19, $0F, $15, $12, $20, $01, $14    // data $94E3
+    .byte $14, $05, $0E, $14, $09, $0F, $0E, $20, $2E, $2E, $2E, $20, $20, $20, $20, $20    // data $94F3
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9503
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9513
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9523
@@ -2578,12 +396,12 @@ wedge_entry_tab_end:
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9573
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9583
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9593
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95a3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95b3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95c3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95d3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95e3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95f3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95A3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95B3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95C3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95D3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95E3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $95F3
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9603
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9613
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9623
@@ -2594,205 +412,252 @@ wedge_entry_tab_end:
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9673
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9683
     .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $9693
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $96a3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $96b3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $96c3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $96d3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $96e3
-    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $b3, $60, $a9    // data $96f3
-    .byte $ff, $8d, $19, $b3, $60, $20, $37, $c1, $ad, $33, $b3, $10, $21, $60, $20, $37    // data $9703
-    .byte $c1, $ad, $33, $b3, $30, $18, $60, $20, $37, $c1, $ad, $32, $b3, $0d, $33, $b3    // data $9713
-    .byte $d0, $0c, $60, $20, $37, $c1, $ad, $32, $b3, $0d, $33, $b3, $d0, $05, $a9, $01    // data $9723
-    .byte $8d, $0a, $b3, $60, $20, $c3, $c2, $2c, $1f, $b3, $10, $05, $a2, $02, $4c, $f9    // data $9733
-    .byte $be, $60, $ad, $06, $b3, $8d, $08, $b3, $60, $a9, $00, $8d, $08, $b3, $60, $2c    // data $9743
-    .byte $53, $2c, $52, $ad, $ff, $b2, $f0, $05, $a2, $07, $4c, $f9, $be, $20, $f5, $b8    // data $9753
-    .byte $ce, $ff, $b2, $20, $c0, $b8, $18, $6d, $29, $b3, $aa, $a0, $00, $b9, $52, $c1    // data $9763
-    .byte $9d, $d2, $b2, $e8, $c8, $c0, $04, $d0, $f4, $a9, $06, $a8, $a6, $ba, $20, $ba    // data $9773
-    .byte $ff, $18, $a2, $d4, $a0, $b2, $ad, $2a, $b3, $69, $04, $20, $bd, $ff, $20, $c0    // data $9783
-    .byte $ff, $20, $68, $bc, $ad, $01, $cb, $8d, $04, $b3, $ad, $02, $cb, $8d, $05, $b3    // data $9793
-    .byte $a9, $29, $8d, $01, $cb, $a9, $02, $8d, $02, $cb, $ce, $fd, $b2, $60, $ad, $ff    // data $97a3
-    .byte $b2, $f0, $05, $a2, $07, $4c, $f9, $be, $ce, $fe, $b2, $60, $20, $ad, $c2, $ad    // data $97b3
-    .byte $32, $b3, $8d, $fa, $b2, $ad, $33, $b3, $8d, $fb, $b2, $60, $20, $c0, $b8, $aa    // data $97c3
-    .byte $20, $c0, $b8, $20, $b6, $b8, $ca, $d0, $f7, $60, $20, $c0, $b8, $aa, $20, $c0    // data $97d3
-    .byte $b8, $20, $b6, $b8, $ca, $d0, $f7, $a9, $00, $4c, $b6, $b8, $20, $c0, $b8, $aa    // data $97e3
-    .byte $ca, $f0, $09, $20, $c0, $b8, $20, $b6, $b8, $ca, $d0, $f7, $20, $c0, $b8, $09    // data $97f3
-    .byte $80, $20, $b6, $b8, $60, $20, $ad, $c2, $ad, $33, $b3, $d0, $0c, $ad, $32, $b3    // data $9803
-    .byte $20, $b6, $b8, $20, $db, $b8, $4c, $08, $c2, $2c, $1f, $b3, $30, $f2, $a2, $03    // data $9813
-    .byte $4c, $fc, $be, $20, $ad, $c2, $ad, $32, $b3, $20, $b6, $b8, $ad, $33, $b3, $20    // data $9823
-    .byte $b6, $b8, $20, $db, $b8, $4c, $26, $c2, $20, $ad, $c2, $38, $ad, $32, $b3, $e9    // data $9833
-    .byte $01, $08, $20, $b6, $b8, $28, $ad, $33, $b3, $e9, $00, $20, $b6, $b8, $20, $db    // data $9843
-    .byte $b8, $4c, $3b, $c2, $ad, $39, $b3, $f0, $0c, $20, $37, $c1, $ad, $32, $b3, $ae    // data $9853
-    .byte $33, $b3, $4c, $a2, $be, $60, $20, $99, $be, $20, $c3, $c2, $ad, $39, $b3, $d0    // data $9863
-    .byte $29, $ad, $07, $b3, $f0, $24, $a5, $4d, $cd, $32, $b3, $d0, $07, $a5, $4e, $cd    // data $9873
-    .byte $33, $b3, $f0, $20, $a2, $01, $20, $c9, $ff, $a9, $00, $20, $d2, $ff, $20, $cc    // data $9883
-    .byte $ff, $e6, $4d, $d0, $e1, $e6, $4e, $4c, $79, $c2, $ad, $32, $b3, $85, $4d, $ad    // data $9893
-    .byte $33, $b3, $85, $4e, $60, $a2, $02, $4c, $fc, $be, $20, $c3, $c2, $2c, $1f, $b3    // data $98a3
-    .byte $30, $01, $60, $a9, $44, $8d, $33, $b3, $2c, $39, $b3, $30, $f5, $4c, $a8, $c2    // data $98b3
-    .byte $a9, $00, $8d, $31, $b3, $8d, $1f, $b3, $20, $c0, $b8, $c9, $44, $f0, $04, $c9    // data $98c3
-    .byte $45, $d0, $06, $8d, $31, $b3, $4c, $e3, $c2, $c9, $46, $d0, $06, $ce, $31, $b3    // data $98d3
-    .byte $ee, $29, $b3, $ce, $29, $b3, $20, $1a, $c3, $ad, $31, $b3, $f0, $18, $30, $16    // data $98e3
-    .byte $c9, $45, $d0, $07, $a9, $00, $8d, $33, $b3, $f0, $0b, $ad, $33, $b3, $8d, $32    // data $98f3
-    .byte $b3, $a9, $00, $8d, $33, $b3, $60, $ce, $2c, $b3, $ad, $32, $b3, $8d, $34, $b3    // data $9903
-    .byte $ad, $33, $b3, $8d, $35, $b3, $60, $20, $c5, $c4, $ad, $34, $b3, $8d, $32, $b3    // data $9913
-    .byte $ad, $35, $b3, $8d, $33, $b3, $ad, $2c, $b3, $d0, $db, $20, $c0, $b8, $c9, $4b    // data $9923
-    .byte $f0, $d8, $c9, $5b, $f0, $d1, $8d, $38, $b3, $20, $c5, $c4, $20, $4a, $c3, $ad    // data $9933
-    .byte $2c, $b3, $d0, $c2, $4c, $2e, $c3, $ad, $38, $b3, $29, $0f, $aa, $d0, $14, $18    // data $9943
-    .byte $ad, $32, $b3, $6d, $34, $b3, $8d, $32, $b3, $ad, $33, $b3, $6d, $35, $b3, $8d    // data $9953
-    .byte $33, $b3, $60, $ca, $d0, $14, $38, $ad, $32, $b3, $ed, $34, $b3, $8d, $32, $b3    // data $9963
-    .byte $ad, $33, $b3, $ed, $35, $b3, $8d, $33, $b3, $60, $ca, $d0, $40, $ad, $32, $b3    // data $9973
-    .byte $8d, $36, $b3, $ad, $33, $b3, $8d, $37, $b3, $a9, $00, $8d, $32, $b3, $8d, $33    // data $9983
-    .byte $b3, $a2, $10, $4e, $35, $b3, $6e, $34, $b3, $90, $18, $18, $ad, $36, $b3, $6d    // data $9993
-    .byte $32, $b3, $8d, $32, $b3, $ad, $37, $b3, $6d, $33, $b3, $8d, $33, $b3, $90, $03    // data $99a3
-    .byte $4c, $21, $c2, $0e, $36, $b3, $2e, $37, $b3, $ca, $d0, $d7, $60, $ca, $d0, $32    // data $99b3
-    .byte $a9, $00, $8d, $36, $b3, $8d, $37, $b3, $a2, $10, $18, $2e, $32, $b3, $2e, $33    // data $99c3
-    .byte $b3, $ca, $30, $e8, $2e, $36, $b3, $2e, $37, $b3, $38, $ad, $36, $b3, $ed, $34    // data $99d3
-    .byte $b3, $a8, $ad, $37, $b3, $ed, $35, $b3, $90, $e1, $8d, $37, $b3, $8c, $36, $b3    // data $99e3
-    .byte $b0, $d9, $ca, $ca, $ca, $ca, $d0, $13, $ad, $32, $b3, $2d, $34, $b3, $8d, $32    // data $99f3
-    .byte $b3, $ad, $33, $b3, $2d, $35, $b3, $8d, $33, $b3, $60, $ca, $d0, $13, $ad, $32    // data $9a03
-    .byte $b3, $0d, $34, $b3, $8d, $32, $b3, $ad, $33, $b3, $0d, $35, $b3, $8d, $33, $b3    // data $9a13
-    .byte $60, $ad, $32, $b3, $4d, $34, $b3, $8d, $32, $b3, $ad, $33, $b3, $4d, $35, $b3    // data $9a23
-    .byte $8d, $33, $b3, $60, $8a, $29, $07, $8d, $21, $b3, $20, $c0, $b8, $8d, $20, $b3    // data $9a33
-    .byte $ad, $1b, $b3, $f0, $09, $20, $12, $c7, $ad, $22, $b3, $f0, $01, $60, $ad, $21    // data $9a43
-    .byte $b3, $29, $07, $0a, $69, $e0, $85, $3a, $ad, $20, $b3, $0a, $85, $39, $90, $02    // data $9a53
-    .byte $e6, $3a, $a5, $01, $48, $78, $a9, $05, $85, $01, $a0, $00, $b1, $39, $8d, $34    // data $9a63
-    .byte $b3, $c8, $b1, $39, $8d, $35, $b3, $68, $85, $01, $58, $ad, $34, $b3, $2d, $35    // data $9a73
-    .byte $b3, $c9, $ff, $d0, $0d, $20, $12, $c7, $ad, $22, $b3, $c9, $ff, $f0, $03, $ce    // data $9a83
-    .byte $1f, $b3, $60, $a5, $4d, $8d, $34, $b3, $a5, $4e, $8d, $35, $b3, $60, $20, $c0    // data $9a93
-    .byte $b8, $38, $e9, $30, $cd, $17, $b3, $f0, $07, $90, $05, $a2, $0a, $4c, $fc, $be    // data $9aa3
-    .byte $0a, $18, $6d, $14, $b3, $a8, $b1, $43, $8d, $35, $b3, $c8, $b1, $43, $8d, $34    // data $9ab3
-    .byte $b3, $60, $20, $c0, $b8, $c9, $4a, $f0, $30, $aa, $29, $08, $8d, $2c, $b3, $8a    // data $9ac3
-    .byte $29, $10, $f0, $03, $4c, $37, $c4, $8a, $29, $07, $c9, $05, $f0, $b5, $c9, $07    // data $9ad3
-    .byte $f0, $bc, $a9, $00, $8d, $35, $b3, $20, $c0, $b8, $8d, $34, $b3, $8a, $29, $01    // data $9ae3
-    .byte $f0, $06, $20, $c0, $b8, $8d, $35, $b3, $60, $ad, $38, $b3, $48, $ad, $32, $b3    // data $9af3
-    .byte $48, $ad, $33, $b3, $48, $20, $1a, $c3, $68, $8d, $33, $b3, $68, $8d, $32, $b3    // data $9b03
-    .byte $68, $8d, $38, $b3, $60, $8d, $3e, $b3, $8c, $3f, $b3, $a9, $ff, $8d, $41, $b3    // data $9b13
-    .byte $a2, $08, $a0, $30, $38, $ad, $3e, $b3, $fd, $63, $c5, $8d, $40, $b3, $ad, $3f    // data $9b23
-    .byte $b3, $fd, $64, $c5, $90, $0c, $8d, $3f, $b3, $ad, $40, $b3, $8d, $3e, $b3, $c8    // data $9b33
-    .byte $d0, $e2, $98, $c9, $30, $d0, $05, $2c, $41, $b3, $30, $06, $20, $d2, $ff, $8d    // data $9b43
-    .byte $41, $b3, $ca, $ca, $10, $cc, $2c, $41, $b3, $10, $04, $98, $4c, $d2, $ff, $60    // data $9b53
-    .byte $01, $00, $0a, $00, $64, $00, $e8, $03, $10, $27, $a9, $c0, $2c, $a9, $80, $8d    // data $9b63
-    .byte $1a, $b3, $ad, $1b, $b3, $f0, $05, $a2, $0e, $4c, $f9, $be, $ad, $11, $b3, $f0    // data $9b73
-    .byte $05, $a2, $0f, $4c, $f9, $be, $a5, $4f, $a6, $50, $20, $a2, $be, $ce, $0d, $b3    // data $9b83
-    .byte $60, $8d, $0f, $b3, $38, $a5, $4f, $ed, $0f, $b3, $85, $4f, $a5, $50, $e9, $00    // data $9b93
-    .byte $85, $50, $a0, $00, $ad, $0f, $b3, $0d, $1a, $b3, $91, $4f, $c8, $8c, $10, $b3    // data $9ba3
-    .byte $60, $ac, $10, $b3, $ee, $10, $b3, $91, $4f, $60, $20, $99, $be, $a9, $ff, $8d    // data $9bb3
-    .byte $27, $b3, $ad, $12, $b3, $8d, $13, $b3, $ee, $11, $b3, $ad, $16, $b3, $20, $4a    // data $9bc3
-    .byte $c6, $ad, $15, $b3, $20, $4a, $c6, $20, $37, $c1, $ad, $33, $b3, $8d, $16, $b3    // data $9bd3
-    .byte $ad, $32, $b3, $8d, $15, $b3, $a9, $00, $8d, $18, $b3, $ac, $29, $b3, $cc, $0e    // data $9be3
-    .byte $b3, $f0, $48, $b9, $d2, $b2, $30, $43, $c9, $4f, $d0, $2a, $20, $c0, $b8, $20    // data $9bf3
-    .byte $c0, $b8, $a0, $80, $8c, $1a, $b3, $18, $48, $69, $01, $20, $94, $c5, $68, $aa    // data $9c03
-    .byte $20, $c0, $b8, $20, $b4, $c5, $ca, $d0, $f7, $a5, $50, $20, $4a, $c6, $a5, $4f    // data $9c13
-    .byte $20, $4a, $c6, $4c, $38, $c6, $20, $ad, $c2, $ad, $33, $b3, $20, $4a, $c6, $ad    // data $9c23
-    .byte $32, $b3, $20, $4a, $c6, $ee, $18, $b3, $4c, $ee, $c5, $ad, $13, $b3, $8d, $14    // data $9c33
-    .byte $b3, $ad, $18, $b3, $8d, $17, $b3, $ac, $12, $b3, $91, $43, $ee, $12, $b3, $d0    // data $9c43
-    .byte $05, $a2, $09, $4c, $f9, $be, $60, $ad, $11, $b3, $d0, $05, $a2, $0b, $4c, $f9    // data $9c53
-    .byte $be, $20, $99, $be, $ce, $11, $b3, $d0, $14, $a9, $00, $8d, $12, $b3, $8d, $13    // data $9c63
-    .byte $b3, $8d, $17, $b3, $2c, $28, $b3, $70, $03, $4c, $cc, $c6, $60, $ac, $13, $b3    // data $9c73
-    .byte $8c, $12, $b3, $b1, $43, $8d, $16, $b3, $c8, $b1, $43, $8d, $15, $b3, $ac, $12    // data $9c83
-    .byte $b3, $88, $b1, $43, $8d, $17, $b3, $0a, $49, $ff, $18, $6d, $12, $b3, $69, $fd    // data $9c93
-    .byte $8d, $13, $b3, $8d, $14, $b3, $4c, $77, $c6, $ac, $1c, $b3, $ee, $1c, $b3, $d0    // data $9ca3
-    .byte $05, $a2, $0c, $4c, $f9, $be, $ad, $1c, $b3, $8d, $1d, $b3, $ee, $1b, $b3, $ad    // data $9cb3
-    .byte $1b, $b3, $91, $47, $a9, $ff, $91, $45, $60, $ad, $1b, $b3, $d0, $05, $a2, $0d    // data $9cc3
-    .byte $4c, $f9, $be, $20, $99, $be, $ce, $1b, $b3, $f0, $2e, $ad, $1b, $b3, $8d, $1e    // data $9cd3
-    .byte $b3, $20, $7f, $ba, $a9, $00, $8d, $1d, $b3, $ac, $1c, $b3, $88, $b1, $47, $cd    // data $9ce3
-    .byte $1e, $b3, $d0, $11, $cc, $1d, $b3, $90, $05, $c8, $8c, $1d, $b3, $88, $a9, $ff    // data $9cf3
-    .byte $91, $45, $ce, $1e, $b3, $98, $d0, $e4, $60, $4c, $7f, $ba, $a9, $ff, $2c, $a9    // data $9d03
-    .byte $00, $8d, $42, $b3, $a9, $00, $8d, $22, $b3, $a5, $50, $85, $4c, $a5, $4f, $85    // data $9d13
-    .byte $4b, $a0, $00, $b1, $4b, $c9, $06, $d0, $4e, $a0, $02, $b1, $4b, $cd, $20, $b3    // data $9d23
-    .byte $d0, $45, $c8, $b1, $4b, $cd, $21, $b3, $d0, $3d, $a0, $01, $b1, $4b, $c9, $ff    // data $9d33
-    .byte $f0, $1d, $2c, $42, $b3, $10, $05, $a2, $10, $4c, $fc, $be, $a8, $88, $b1, $45    // data $9d43
-    .byte $f0, $25, $b1, $47, $cd, $22, $b3, $90, $1e, $8d, $22, $b3, $4c, $65, $c7, $8d    // data $9d53
-    .byte $22, $b3, $a0, $04, $b1, $4b, $8d, $34, $b3, $c8, $b1, $4b, $8d, $35, $b3, $ad    // data $9d63
-    .byte $22, $b3, $cd, $1b, $b3, $b0, $08, $20, $83, $c7, $b0, $03, $4c, $24, $c7, $60    // data $9d73
-    .byte $a0, $00, $b1, $4b, $29, $3f, $18, $65, $4b, $85, $4b, $90, $02, $e6, $4c, $c5    // data $9d83
-    .byte $47, $a5, $4c, $e5, $48, $60, $ad, $23, $b3, $8d, $20, $b3, $ad, $24, $b3, $8d    // data $9d93
-    .byte $21, $b3, $20, $12, $c7, $ad, $22, $b3, $cd, $1b, $b3, $d0, $05, $a2, $01, $4c    // data $9da3
-    .byte $fc, $be, $a9, $00, $8d, $1a, $b3, $a9, $06, $20, $94, $c5, $ad, $1d, $b3, $20    // data $9db3
-    .byte $b4, $c5, $ad, $23, $b3, $20, $b4, $c5, $ad, $24, $b3, $20, $b4, $c5, $ad, $25    // data $9dc3
-    .byte $b3, $20, $b4, $c5, $ad, $26, $b3, $4c, $b4, $c5, $20, $37, $c1, $a9, $00, $8d    // data $9dd3
-    .byte $09, $b3, $8d, $22, $b3, $ad, $23, $b3, $8d, $20, $b3, $ad, $24, $b3, $8d, $21    // data $9de3
-    .byte $b3, $20, $51, $c4, $ad, $1f, $b3, $d0, $1a, $ad, $22, $b3, $c9    // data $9df3 (unchanged, ends $9dff)
-
-// The $9e00-$9e9c pocket is free again -- net_spin / net_wait_not_busy_spin /
-// net_read_and_print moved into the main module region at $8023+ along with
-// everything else (see the HONDANI SHELL module above).
-free_9e00:
-    .fill $9e9d - free_9e00, $00
-
-    .byte $20, $ba, $de, $ea, $ea, $ea    // data $9e9d (unchanged original code resumes here)
-    .byte $ea, $ea, $ea, $ea, $ea, $ea, $20, $ba, $de, $ea, $ea, $ea, $ea, $ea, $ea, $ea    // data $9ea3
-    .byte $ea, $ea, $8d, $00, $de, $68, $60, $48, $78, $a9, $88, $48, $a9, $20, $8d, $00    // data $9eb3
-    .byte $de, $00, $00, $00, $00, $00, $2c, $80, $80, $2c, $80, $80, $48, $ad, $f2, $de    // data $9ec3
-    .byte $8d, $00, $de, $68, $8d, $f7, $de, $8d, $00, $de, $60, $8d, $00, $de, $68, $40    // data $9ed3
-    .byte $ea, $85, $9e, $68, $8d, $00, $de, $a5, $9e, $60, $88, $00, $08, $10, $18, $20    // data $9ee3
-    .byte $1a, $80, $88, $90, $98, $00, $00, $00, $00, $00, $00, $00, $00, $ea    // data $9ef3
-bank05_sub_9f01:
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
-    nop                    // ea
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $96A3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $96B3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $96C3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $96D3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20    // data $96E3
+    .byte $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $20, $B3, $60, $A9    // data $96F3
+    .byte $FF, $8D, $19, $B3, $60, $20, $37, $C1, $AD, $33, $B3, $10, $21, $60, $20, $37    // data $9703
+    .byte $C1, $AD, $33, $B3, $30, $18, $60, $20, $37, $C1, $AD, $32, $B3, $0D, $33, $B3    // data $9713
+    .byte $D0, $0C, $60, $20, $37, $C1, $AD, $32, $B3, $0D, $33, $B3, $D0, $05, $A9, $01    // data $9723
+    .byte $8D, $0A, $B3, $60, $20, $C3, $C2, $2C, $1F, $B3, $10, $05, $A2, $02, $4C, $F9    // data $9733
+    .byte $BE, $60, $AD, $06, $B3, $8D, $08, $B3, $60, $A9, $00, $8D, $08, $B3, $60, $2C    // data $9743
+    .byte $53, $2C, $52, $AD, $FF, $B2, $F0, $05, $A2, $07, $4C, $F9, $BE, $20, $F5, $B8    // data $9753
+    .byte $CE, $FF, $B2, $20, $C0, $B8, $18, $6D, $29, $B3, $AA, $A0, $00, $B9, $52, $C1    // data $9763
+    .byte $9D, $D2, $B2, $E8, $C8, $C0, $04, $D0, $F4, $A9, $06, $A8, $A6, $BA, $20, $BA    // data $9773
+    .byte $FF, $18, $A2, $D4, $A0, $B2, $AD, $2A, $B3, $69, $04, $20, $BD, $FF, $20, $C0    // data $9783
+    .byte $FF, $20, $68, $BC, $AD, $01, $CB, $8D, $04, $B3, $AD, $02, $CB, $8D, $05, $B3    // data $9793
+    .byte $A9, $29, $8D, $01, $CB, $A9, $02, $8D, $02, $CB, $CE, $FD, $B2, $60, $AD, $FF    // data $97A3
+    .byte $B2, $F0, $05, $A2, $07, $4C, $F9, $BE, $CE, $FE, $B2, $60, $20, $AD, $C2, $AD    // data $97B3
+    .byte $32, $B3, $8D, $FA, $B2, $AD, $33, $B3, $8D, $FB, $B2, $60, $20, $C0, $B8, $AA    // data $97C3
+    .byte $20, $C0, $B8, $20, $B6, $B8, $CA, $D0, $F7, $60, $20, $C0, $B8, $AA, $20, $C0    // data $97D3
+    .byte $B8, $20, $B6, $B8, $CA, $D0, $F7, $A9, $00, $4C, $B6, $B8, $20, $C0, $B8, $AA    // data $97E3
+    .byte $CA, $F0, $09, $20, $C0, $B8, $20, $B6, $B8, $CA, $D0, $F7, $20, $C0, $B8, $09    // data $97F3
+    .byte $80, $20, $B6, $B8, $60, $20, $AD, $C2, $AD, $33, $B3, $D0, $0C, $AD, $32, $B3    // data $9803
+    .byte $20, $B6, $B8, $20, $DB, $B8, $4C, $08, $C2, $2C, $1F, $B3, $30, $F2, $A2, $03    // data $9813
+    .byte $4C, $FC, $BE, $20, $AD, $C2, $AD, $32, $B3, $20, $B6, $B8, $AD, $33, $B3, $20    // data $9823
+    .byte $B6, $B8, $20, $DB, $B8, $4C, $26, $C2, $20, $AD, $C2, $38, $AD, $32, $B3, $E9    // data $9833
+    .byte $01, $08, $20, $B6, $B8, $28, $AD, $33, $B3, $E9, $00, $20, $B6, $B8, $20, $DB    // data $9843
+    .byte $B8, $4C, $3B, $C2, $AD, $39, $B3, $F0, $0C, $20, $37, $C1, $AD, $32, $B3, $AE    // data $9853
+    .byte $33, $B3, $4C, $A2, $BE, $60, $20, $99, $BE, $20, $C3, $C2, $AD, $39, $B3, $D0    // data $9863
+    .byte $29, $AD, $07, $B3, $F0, $24, $A5, $4D, $CD, $32, $B3, $D0, $07, $A5, $4E, $CD    // data $9873
+    .byte $33, $B3, $F0, $20, $A2, $01, $20, $C9, $FF, $A9, $00, $20, $D2, $FF, $20, $CC    // data $9883
+    .byte $FF, $E6, $4D, $D0, $E1, $E6, $4E, $4C, $79, $C2, $AD, $32, $B3, $85, $4D, $AD    // data $9893
+    .byte $33, $B3, $85, $4E, $60, $A2, $02, $4C, $FC, $BE, $20, $C3, $C2, $2C, $1F, $B3    // data $98A3
+    .byte $30, $01, $60, $A9, $44, $8D, $33, $B3, $2C, $39, $B3, $30, $F5, $4C, $A8, $C2    // data $98B3
+    .byte $A9, $00, $8D, $31, $B3, $8D, $1F, $B3, $20, $C0, $B8, $C9, $44, $F0, $04, $C9    // data $98C3
+    .byte $45, $D0, $06, $8D, $31, $B3, $4C, $E3, $C2, $C9, $46, $D0, $06, $CE, $31, $B3    // data $98D3
+    .byte $EE, $29, $B3, $CE, $29, $B3, $20, $1A, $C3, $AD, $31, $B3, $F0, $18, $30, $16    // data $98E3
+    .byte $C9, $45, $D0, $07, $A9, $00, $8D, $33, $B3, $F0, $0B, $AD, $33, $B3, $8D, $32    // data $98F3
+    .byte $B3, $A9, $00, $8D, $33, $B3, $60, $CE, $2C, $B3, $AD, $32, $B3, $8D, $34, $B3    // data $9903
+    .byte $AD, $33, $B3, $8D, $35, $B3, $60, $20, $C5, $C4, $AD, $34, $B3, $8D, $32, $B3    // data $9913
+    .byte $AD, $35, $B3, $8D, $33, $B3, $AD, $2C, $B3, $D0, $DB, $20, $C0, $B8, $C9, $4B    // data $9923
+    .byte $F0, $D8, $C9, $5B, $F0, $D1, $8D, $38, $B3, $20, $C5, $C4, $20, $4A, $C3, $AD    // data $9933
+    .byte $2C, $B3, $D0, $C2, $4C, $2E, $C3, $AD, $38, $B3, $29, $0F, $AA, $D0, $14, $18    // data $9943
+    .byte $AD, $32, $B3, $6D, $34, $B3, $8D, $32, $B3, $AD, $33, $B3, $6D, $35, $B3, $8D    // data $9953
+    .byte $33, $B3, $60, $CA, $D0, $14, $38, $AD, $32, $B3, $ED, $34, $B3, $8D, $32, $B3    // data $9963
+    .byte $AD, $33, $B3, $ED, $35, $B3, $8D, $33, $B3, $60, $CA, $D0, $40, $AD, $32, $B3    // data $9973
+    .byte $8D, $36, $B3, $AD, $33, $B3, $8D, $37, $B3, $A9, $00, $8D, $32, $B3, $8D, $33    // data $9983
+    .byte $B3, $A2, $10, $4E, $35, $B3, $6E, $34, $B3, $90, $18, $18, $AD, $36, $B3, $6D    // data $9993
+    .byte $32, $B3, $8D, $32, $B3, $AD, $37, $B3, $6D, $33, $B3, $8D, $33, $B3, $90, $03    // data $99A3
+    .byte $4C, $21, $C2, $0E, $36, $B3, $2E, $37, $B3, $CA, $D0, $D7, $60, $CA, $D0, $32    // data $99B3
+    .byte $A9, $00, $8D, $36, $B3, $8D, $37, $B3, $A2, $10, $18, $2E, $32, $B3, $2E, $33    // data $99C3
+    .byte $B3, $CA, $30, $E8, $2E, $36, $B3, $2E, $37, $B3, $38, $AD, $36, $B3, $ED, $34    // data $99D3
+    .byte $B3, $A8, $AD, $37, $B3, $ED, $35, $B3, $90, $E1, $8D, $37, $B3, $8C, $36, $B3    // data $99E3
+    .byte $B0, $D9, $CA, $CA, $CA, $CA, $D0, $13, $AD, $32, $B3, $2D, $34, $B3, $8D, $32    // data $99F3
+    .byte $B3, $AD, $33, $B3, $2D, $35, $B3, $8D, $33, $B3, $60, $CA, $D0, $13, $AD, $32    // data $9A03
+    .byte $B3, $0D, $34, $B3, $8D, $32, $B3, $AD, $33, $B3, $0D, $35, $B3, $8D, $33, $B3    // data $9A13
+    .byte $60, $AD, $32, $B3, $4D, $34, $B3, $8D, $32, $B3, $AD, $33, $B3, $4D, $35, $B3    // data $9A23
+    .byte $8D, $33, $B3, $60, $8A, $29, $07, $8D, $21, $B3, $20, $C0, $B8, $8D, $20, $B3    // data $9A33
+    .byte $AD, $1B, $B3, $F0, $09, $20, $12, $C7, $AD, $22, $B3, $F0, $01, $60, $AD, $21    // data $9A43
+    .byte $B3, $29, $07, $0A, $69, $E0, $85, $3A, $AD, $20, $B3, $0A, $85, $39, $90, $02    // data $9A53
+    .byte $E6, $3A, $A5, $01, $48, $78, $A9, $05, $85, $01, $A0, $00, $B1, $39, $8D, $34    // data $9A63
+    .byte $B3, $C8, $B1, $39, $8D, $35, $B3, $68, $85, $01, $58, $AD, $34, $B3, $2D, $35    // data $9A73
+    .byte $B3, $C9, $FF, $D0, $0D, $20, $12, $C7, $AD, $22, $B3, $C9, $FF, $F0, $03, $CE    // data $9A83
+    .byte $1F, $B3, $60, $A5, $4D, $8D, $34, $B3, $A5, $4E, $8D, $35, $B3, $60, $20, $C0    // data $9A93
+    .byte $B8, $38, $E9, $30, $CD, $17, $B3, $F0, $07, $90, $05, $A2, $0A, $4C, $FC, $BE    // data $9AA3
+    .byte $0A, $18, $6D, $14, $B3, $A8, $B1, $43, $8D, $35, $B3, $C8, $B1, $43, $8D, $34    // data $9AB3
+    .byte $B3, $60, $20, $C0, $B8, $C9, $4A, $F0, $30, $AA, $29, $08, $8D, $2C, $B3, $8A    // data $9AC3
+    .byte $29, $10, $F0, $03, $4C, $37, $C4, $8A, $29, $07, $C9, $05, $F0, $B5, $C9, $07    // data $9AD3
+    .byte $F0, $BC, $A9, $00, $8D, $35, $B3, $20, $C0, $B8, $8D, $34, $B3, $8A, $29, $01    // data $9AE3
+    .byte $F0, $06, $20, $C0, $B8, $8D, $35, $B3, $60, $AD, $38, $B3, $48, $AD, $32, $B3    // data $9AF3
+    .byte $48, $AD, $33, $B3, $48, $20, $1A, $C3, $68, $8D, $33, $B3, $68, $8D, $32, $B3    // data $9B03
+    .byte $68, $8D, $38, $B3, $60, $8D, $3E, $B3, $8C, $3F, $B3, $A9, $FF, $8D, $41, $B3    // data $9B13
+    .byte $A2, $08, $A0, $30, $38, $AD, $3E, $B3, $FD, $63, $C5, $8D, $40, $B3, $AD, $3F    // data $9B23
+    .byte $B3, $FD, $64, $C5, $90, $0C, $8D, $3F, $B3, $AD, $40, $B3, $8D, $3E, $B3, $C8    // data $9B33
+    .byte $D0, $E2, $98, $C9, $30, $D0, $05, $2C, $41, $B3, $30, $06, $20, $D2, $FF, $8D    // data $9B43
+    .byte $41, $B3, $CA, $CA, $10, $CC, $2C, $41, $B3, $10, $04, $98, $4C, $D2, $FF, $60    // data $9B53
+    .byte $01, $00, $0A, $00, $64, $00, $E8, $03, $10, $27, $A9, $C0, $2C, $A9, $80, $8D    // data $9B63
+    .byte $1A, $B3, $AD, $1B, $B3, $F0, $05, $A2, $0E, $4C, $F9, $BE, $AD, $11, $B3, $F0    // data $9B73
+    .byte $05, $A2, $0F, $4C, $F9, $BE, $A5, $4F, $A6, $50, $20, $A2, $BE, $CE, $0D, $B3    // data $9B83
+    .byte $60, $8D, $0F, $B3, $38, $A5, $4F, $ED, $0F, $B3, $85, $4F, $A5, $50, $E9, $00    // data $9B93
+    .byte $85, $50, $A0, $00, $AD, $0F, $B3, $0D, $1A, $B3, $91, $4F, $C8, $8C, $10, $B3    // data $9BA3
+    .byte $60, $AC, $10, $B3, $EE, $10, $B3, $91, $4F, $60, $20, $99, $BE, $A9, $FF, $8D    // data $9BB3
+    .byte $27, $B3, $AD, $12, $B3, $8D, $13, $B3, $EE, $11, $B3, $AD, $16, $B3, $20, $4A    // data $9BC3
+    .byte $C6, $AD, $15, $B3, $20, $4A, $C6, $20, $37, $C1, $AD, $33, $B3, $8D, $16, $B3    // data $9BD3
+    .byte $AD, $32, $B3, $8D, $15, $B3, $A9, $00, $8D, $18, $B3, $AC, $29, $B3, $CC, $0E    // data $9BE3
+    .byte $B3, $F0, $48, $B9, $D2, $B2, $30, $43, $C9, $4F, $D0, $2A, $20, $C0, $B8, $20    // data $9BF3
+    .byte $C0, $B8, $A0, $80, $8C, $1A, $B3, $18, $48, $69, $01, $20, $94, $C5, $68, $AA    // data $9C03
+    .byte $20, $C0, $B8, $20, $B4, $C5, $CA, $D0, $F7, $A5, $50, $20, $4A, $C6, $A5, $4F    // data $9C13
+    .byte $20, $4A, $C6, $4C, $38, $C6, $20, $AD, $C2, $AD, $33, $B3, $20, $4A, $C6, $AD    // data $9C23
+    .byte $32, $B3, $20, $4A, $C6, $EE, $18, $B3, $4C, $EE, $C5, $AD, $13, $B3, $8D, $14    // data $9C33
+    .byte $B3, $AD, $18, $B3, $8D, $17, $B3, $AC, $12, $B3, $91, $43, $EE, $12, $B3, $D0    // data $9C43
+    .byte $05, $A2, $09, $4C, $F9, $BE, $60, $AD, $11, $B3, $D0, $05, $A2, $0B, $4C, $F9    // data $9C53
+    .byte $BE, $20, $99, $BE, $CE, $11, $B3, $D0, $14, $A9, $00, $8D, $12, $B3, $8D, $13    // data $9C63
+    .byte $B3, $8D, $17, $B3, $2C, $28, $B3, $70, $03, $4C, $CC, $C6, $60, $AC, $13, $B3    // data $9C73
+    .byte $8C, $12, $B3, $B1, $43, $8D, $16, $B3, $C8, $B1, $43, $8D, $15, $B3, $AC, $12    // data $9C83
+    .byte $B3, $88, $B1, $43, $8D, $17, $B3, $0A, $49, $FF, $18, $6D, $12, $B3, $69, $FD    // data $9C93
+    .byte $8D, $13, $B3, $8D, $14, $B3, $4C, $77, $C6, $AC, $1C, $B3, $EE, $1C, $B3, $D0    // data $9CA3
+    .byte $05, $A2, $0C, $4C, $F9, $BE, $AD, $1C, $B3, $8D, $1D, $B3, $EE, $1B, $B3, $AD    // data $9CB3
+    .byte $1B, $B3, $91, $47, $A9, $FF, $91, $45, $60, $AD, $1B, $B3, $D0, $05, $A2, $0D    // data $9CC3
+    .byte $4C, $F9, $BE, $20, $99, $BE, $CE, $1B, $B3, $F0, $2E, $AD, $1B, $B3, $8D, $1E    // data $9CD3
+    .byte $B3, $20, $7F, $BA, $A9, $00, $8D, $1D, $B3, $AC, $1C, $B3, $88, $B1, $47, $CD    // data $9CE3
+    .byte $1E, $B3, $D0, $11, $CC, $1D, $B3, $90, $05, $C8, $8C, $1D, $B3, $88, $A9, $FF    // data $9CF3
+    .byte $91, $45, $CE, $1E, $B3, $98, $D0, $E4, $60, $4C, $7F, $BA, $A9, $FF, $2C, $A9    // data $9D03
+    .byte $00, $8D, $42, $B3, $A9, $00, $8D, $22, $B3, $A5, $50, $85, $4C, $A5, $4F, $85    // data $9D13
+    .byte $4B, $A0, $00, $B1, $4B, $C9, $06, $D0, $4E, $A0, $02, $B1, $4B, $CD, $20, $B3    // data $9D23
+    .byte $D0, $45, $C8, $B1, $4B, $CD, $21, $B3, $D0, $3D, $A0, $01, $B1, $4B, $C9, $FF    // data $9D33
+    .byte $F0, $1D, $2C, $42, $B3, $10, $05, $A2, $10, $4C, $FC, $BE, $A8, $88, $B1, $45    // data $9D43
+    .byte $F0, $25, $B1, $47, $CD, $22, $B3, $90, $1E, $8D, $22, $B3, $4C, $65, $C7, $8D    // data $9D53
+    .byte $22, $B3, $A0, $04, $B1, $4B, $8D, $34, $B3, $C8, $B1, $4B, $8D, $35, $B3, $AD    // data $9D63
+    .byte $22, $B3, $CD, $1B, $B3, $B0, $08, $20, $83, $C7, $B0, $03, $4C, $24, $C7, $60    // data $9D73
+    .byte $A0, $00, $B1, $4B, $29, $3F, $18, $65, $4B, $85, $4B, $90, $02, $E6, $4C, $C5    // data $9D83
+    .byte $47, $A5, $4C, $E5, $48, $60, $AD, $23, $B3, $8D, $20, $B3, $AD, $24, $B3, $8D    // data $9D93
+    .byte $21, $B3, $20, $12, $C7, $AD, $22, $B3, $CD, $1B, $B3, $D0, $05, $A2, $01, $4C    // data $9DA3
+    .byte $FC, $BE, $A9, $00, $8D, $1A, $B3, $A9, $06, $20, $94, $C5, $AD, $1D, $B3, $20    // data $9DB3
+    .byte $B4, $C5, $AD, $23, $B3, $20, $B4, $C5, $AD, $24, $B3, $20, $B4, $C5, $AD, $25    // data $9DC3
+    .byte $B3, $20, $B4, $C5, $AD, $26, $B3, $4C, $B4, $C5, $20, $37, $C1, $A9, $00, $8D    // data $9DD3
+    .byte $09, $B3, $8D, $22, $B3, $AD, $23, $B3, $8D, $20, $B3, $AD, $24, $B3, $8D, $21    // data $9DE3
+    .byte $B3, $20, $51, $C4, $AD, $1F, $B3, $D0, $1A, $AD, $22, $B3, $C9, $00, $00, $00    // data $9DF3
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E03
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E13
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E23
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E33
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E43
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E53
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E63
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E73
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E83
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $20, $BA, $DE, $EA, $EA, $EA    // data $9E93
+    .byte $EA, $EA, $EA, $EA, $EA, $EA, $20, $BA, $DE, $EA, $EA, $EA, $EA, $EA, $EA, $EA    // data $9EA3
+    .byte $EA, $EA, $8D, $00, $DE, $68, $60    // data $9EB3
+    pha                    // 48
     sei                    // 78
-    cld                    // d8
-    sta $a5                // 85 a5
-    stx $a6                // 86 a6
-    sty $a7                // 84 a7
+    lda #$88               // A9 88
+    pha                    // 48
+    lda #$20               // A9 20
+    sta $de00              // 8D 00 DE
+    brk                    // 00
+    brk                    // 00
+    brk                    // 00
+    brk                    // 00
+    brk                    // 00
+    bit $8080              // 2C 80 80
+    bit $8080              // 2C 80 80
+    pha                    // 48
+    lda $def2              // AD F2 DE
+    sta $de00              // 8D 00 DE
+    pla                    // 68
+    sta $def7              // 8D F7 DE
+    sta $de00              // 8D 00 DE
+    rts                    // 60
+    sta $de00              // 8D 00 DE
+    pla                    // 68
+    rti                    // 40
+    nop                    // EA
+    sta $9e                // 85 9E
+    pla                    // 68
+    sta $de00              // 8D 00 DE
+    lda $9e                // A5 9E
+    rts                    // 60
+    dey                    // 88
+    brk                    // 00
+    php                    // 08
+    bpl $9f0a              // 10 18
+    jsr $801a              // 20 1A 80
+    dey                    // 88
+    bcc $9e90              // 90 98
+    .byte $00, $00, $00, $00, $00, $00, $00, $00    // data $9EF8
+    nop                    // EA
+bank05_sub_9F01:
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    nop                    // EA
+    sei                    // 78
+    cld                    // D8
+    sta $a5                // 85 A5
+    stx $a6                // 86 A6
+    sty $a7                // 84 A7
     php                    // 08
     pla                    // 68
-    sta $a8                // 85 a8
+    sta $a8                // 85 A8
     pla                    // 68
-    sta $9e                // 85 9e
+    sta $9e                // 85 9E
     clc                    // 18
     adc #$02               // 69 02
-    tax                    // aa
+    tax                    // AA
     pla                    // 68
-    sta $9f                // 85 9f
+    sta $9f                // 85 9F
     adc #$00               // 69 00
     pha                    // 48
-    txa                    // 8a
+    txa                    // 8A
     pha                    // 48
-    lda $9e                // a5 9e
-    bne bank05_sub_9f2b              // d0 02
-    dec $9f                // c6 9f
-bank05_sub_9f2b:
-    dec $9e                // c6 9e
-    ldy #$00               // a0 00
-    lda ($9e),y            // b1 9e
+    lda $9e                // A5 9E
+    bne bank05_sub_9F2B              // D0 02
+    dec $9f                // C6 9F
+bank05_sub_9F2B:
+    dec $9e                // C6 9E
+    ldy #$00               // A0 00
+    lda ($9e),y            // B1 9E
     sec                    // 38
-    sbc #$00               // e9 00
-    tax                    // aa
-    lda $deed              // ad ed de
+    sbc #$00               // E9 00
+    tax                    // AA
+    lda $deed              // AD ED DE
     pha                    // 48
-    lda #$de               // a9 de
+    lda #$de               // A9 DE
     pha                    // 48
-    lda #$e2               // a9 e2
+    lda #$e2               // A9 E2
     pha                    // 48
-    ldy #$03               // a0 03
-    lda ($9e),y            // b1 9e
+    ldy #$03               // A0 03
+    lda ($9e),y            // B1 9E
     pha                    // 48
     dey                    // 88
-    lda ($9e),y            // b1 9e
+    lda ($9e),y            // B1 9E
     pha                    // 48
-    lda $a8                // a5 a8
+    lda $a8                // A5 A8
     pha                    // 48
-    lda $a5                // a5 a5
+    lda $a5                // A5 A5
     pha                    // 48
-    lda $deee,x            // bd ee de
-    ldx $a6                // a6 a6
-    ldy $a7                // a4 a7
-    jmp $dede              // 4c de de
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9f58
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9f68
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9f78
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9f88
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9f98
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9fa8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9fb8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9fc8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9fd8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9fe8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00    // data $9ff8
+    lda $deee,x            // BD EE DE
+    ldx $a6                // A6 A6
+    ldy $a7                // A4 A7
+    jmp $dede              // 4C DE DE
+bank05_data_9F58:
+.errorif (* != $9F58), "bank05_data_9F58 shifted"
+// --- HONDANI: bank5 routine (wedge step 1) ---------------------------------
+// Lives in genuinely unused ROM: after the cross-bank glue code ($9F01-$9F57)
+// and OUTSIDE the $8023-$9EB9 payload image that the bank04 installer copies
+// to C64 RAM. NOT inside the $9012-$91FF zero run, which is part of that
+// copied payload. Nothing calls this yet (step 1 = inert placement only).
+hondani_bank5:
+    inc $d020              // EE 20 D0
+    rts                    // 60
+.errorif (* != $9F5C), "hondani_bank5 overflow"
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // pad to $9F68
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F68
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F78
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F88
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F98
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FA8
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FB8
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FC8
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FD8
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FE8
+    .byte $00, $00, $00, $00, $00, $00, $00, $00    // data $9FF8

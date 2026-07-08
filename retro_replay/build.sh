@@ -24,6 +24,12 @@ done
 cat "$OUT"/bank00.bin "$OUT"/bank01.bin "$OUT"/bank02.bin "$OUT"/bank03.bin \
     "$OUT"/bank04.bin "$OUT"/bank05.bin "$OUT"/bank06.bin "$OUT"/bank07.bin > "$OUT/rr38p-built.bin"
 
+# Package as a Retro Replay .crt (VICE cartconv, cart type 36/"rr") for flashing on Ultimate64/C64U.
+CARTCONV="${CARTCONV:-cartconv}"
+"$CARTCONV" -t rr -i "$OUT/rr38p-built.bin" -o "$OUT/hdn-rr38p-tmp12reu.crt" \
+    -n "HONDANI RETRO REPLAY" >/dev/null
+echo "Built: $OUT/hdn-rr38p-tmp12reu.crt"
+
 if cmp -s "$OUT/rr38p-built.bin" rr38p-tmp12reu.bin; then
     echo "OK: built image is byte-identical to rr38p-tmp12reu.bin"
 else
