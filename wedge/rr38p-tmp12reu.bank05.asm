@@ -97,25 +97,6 @@ bank05_sub_801a:
 .const NET_SOCKET_READ   = $10
 .const NET_SOCKET_WRITE  = $11
 
-// --- Real (not UCI) REU registers, used only by boot_banner's REU-size probe.
-// Distinct from the cart's own $de00/$de01 banking registers, same as UII above.
-.const REU_STATUS      = $df00
-.const REU_COMMAND     = $df01
-.const REU_C64_ADDR_LO = $df02
-.const REU_C64_ADDR_HI = $df03
-.const REU_REU_ADDR_LO = $df04
-.const REU_REU_ADDR_HI = $df05
-.const REU_REU_BANK    = $df06
-.const REU_LENGTH_LO   = $df07
-.const REU_LENGTH_HI   = $df08
-.const reu_probe_tmp   = $fc   // zero-page scratch, free on stock C64 ($fb-$fe unused);
-                                 // only touched transiently during the cold-start probe
-.const reu_probe_res   = $fd   // reu_detect's result (bank count) across the restore loop
-.const reu_save        = $0201 // 9 bytes ($0201-$0209): original REU bytes saved across
-                                 // the probe -- $0200 itself is the 1-byte DMA window.
-                                 // Boot-time only; the same page doubles as wc_buf/mcio
-                                 // scratch during later command dispatch.
-
 // --- KERNAL / BASIC ROM entries (both ROMs are visible in this cart's
 // --- standard "8K game" memory map, cart ROM only at $8000-$9fff)
 .const SCNKEY  = $ff9f
@@ -130,7 +111,6 @@ bank05_sub_801a:
 .const CHRIN   = $ffcf
 .const CHROUT  = $ffd2
 .const GETIN   = $ffe4
-.const STOP    = $ffe1            // Z set on return if RUN/STOP is currently held
 .const LINPRT  = $bdcd            // BASIC: print A(hi)/X(lo) as unsigned decimal
 .const KERNAL_RESET = $fce2
 .const SHFLAG  = $028d            // modifier bits: 1=shift, 2=C=, 4=ctrl
@@ -153,32 +133,9 @@ bank05_sub_801a:
 //
 // Transient per-line / per-command scratch (fine to be trampled between
 // lines -- rewritten before every use):
-//
-// wc_buf history (round 10, 2026-07-06): it lived at $0110-$014f in rounds
-// 6-9 -- WRONG, and the cause of the "any fast load after an ll/dir/cp
-// crashes into the freeze menu" hangs. The cart firmware keeps RESIDENT
-// machinery in the low stack page: a 23-byte helper routine at $0120-$0136
-// (installed from bank01 ROM $8df2 by the directory-print path at $8db7,
-// then *called on every fastload* -- $8926's loader does jsr $de9d, whose
-// trampoline body is jsr $0120) plus variables at $0134/$0135, $0158/$0159,
-// $015e (a SAVED STACK POINTER that gets TXS'd!) and $0168. Any ll/dir/cp
-// that buffered an entry there destroyed that code, and the next F1/%/LOAD
-// executed garbage at $0120 -> BRK -> CBINV ($decd) -> RR freeze menu.
-// $0110-$01c0 is cart-owned territory ($0170-$01c0 is additionally the
-// TASS/TMP launcher's relocation target) -- never put wedge state there.
-// The BASIC input buffer at $0200 is free during command dispatch instead:
-// the typed line was already shadow-copied to cf_shadow by line_tap, the
-// sniffer read it before dispatch, and BASIC reads a fresh line into it
-// only after we re-enter the main loop -- nothing consumes stale $0200
-// content after an ll/dir/cp has run.
-.const wc_buf     = $0200     // ll/dir entry buffer (BASIC input buffer,
-.const wc_buf_max = 64        //   free during dispatch -- see above; 64+1
-                              //   bytes used, $0200-$0240, well inside the
-                              //   89-byte buffer)
-.const mcio_ram   = $0245     // memcpy's bank-bracket LOAD/SAVE stub (see
-                              //   mcio_stub) -- past wc_buf, still inside
-                              //   the $0200-$0258 input buffer; never live
-                              //   at the same time as wc_buf's ll/dir use
+.const wc_buf     = $0110     // ll/dir entry buffer; $0100-$010f is skipped
+.const wc_buf_max = 64        //   because BASIC's FOUT/LINPRT builds number
+                              //   strings there (ll prints block counts!)
 .const cf_shadow    = $02a7   // raw typed line, null-terminated (bank01 line_tap)
                               //   ($02a7-$02f0: 73 chars + null; the freeze
                               //   button's resume path scribbles $02a7-$02ca,
@@ -256,14 +213,6 @@ bank05_sub_801a:
 .const w_magic      = $03fa   // +$03fb: $a5,$c3 once one-time defaults (w_dev,
                               //   w_console, ...) have been set -- survives
                               //   disarm/rearm cycles so `#t` etc. stick
-.const w_to         = $03fc   // +$03fd: UCI wait-loop timeout countdown (round
-                              //   10) -- $03fc-$03ff sits past the datassette
-                              //   buffer ($033c-$03fb) and below the screen,
-                              //   plain unused RAM on a stock C64. If a
-                              //   C=+CTRL console switch IRQ lands inside a
-                              //   foreground UCI wait (KERNAL IEC CLI windows)
-                              //   it reuses these bytes -- worst case the
-                              //   foreground timeout stretches, never hangs
 
 // ===========================================================================
 // wedge_dispatch -- fixed jump-table entry ($9012, called from the IERROR
@@ -275,13 +224,11 @@ bank05_sub_801a:
 // missing-READY report).
 // ===========================================================================
 wedge_dispatch:
-    lda ie_errcode             // bit7 = BASIC's "print READY, no error" pass
-    bmi wd_ready               // (LDX #$80 / JMP ($0300), forwarded here by the
-                               // IERROR stub): nothing was typed, nothing to
-                               // parse -- just print the shell's READY prompt
     jsr wedge_dispatch_body
-wd_ready:
-    jmp print_ready            // capitals + SETMSG, no color changes -- see below
+    jsr print_cr
+    lda #msg_ready - msg_blob
+    jsr print_msg
+    jmp print_cr
 
 // wedge_dispatch_body -- parse cf_shadow (the raw pre-crunch typed line).
 // Recognized commands run locally and rts back to the wrapper above; a
@@ -905,7 +852,6 @@ cmc_save_devok:
     sta TXTTAB
     lda mc_start+1
     sta TXTTAB+1
-    jsr mcio_prep_save          // build the bank-bracket RAM stub (see mcio_stub)
     lda mc_end                  // SAVE wants X/Y = address of the byte AFTER
     clc                         // the last byte to save (end is inclusive)
     adc #$01
@@ -914,7 +860,7 @@ cmc_save_devok:
     adc #$00
     tay
     lda #$2b
-    jsr mcio_ram                // KERNAL SAVE, but with bank01 paged in -- see mcio_stub
+    jsr SAVE
     php
     lda mc_savetxt
     sta TXTTAB
@@ -969,11 +915,10 @@ cmc_load_isdollar:
     tay
     lda mc_fnlen
     jsr SETNAM
-    jsr mcio_prep_load           // build the bank-bracket RAM stub (see mcio_stub)
     lda #$00                     // 0 = LOAD (not verify)
     ldx mc_hexval
     ldy mc_hexval+1
-    jsr mcio_ram                 // KERNAL LOAD, but with bank01 paged in -- see mcio_stub
+    jsr LOAD
     bcc cmc_load_ok
     jmp cmc_err
 cmc_load_ok:
@@ -987,61 +932,6 @@ cmc_synerr:
 cmc_err:
     lda #msg_err - msg_blob
     jmp print_msg
-
-// ---------------------------------------------------------------------------
-// mcio_stub -- bank-bracket for memcpy's KERNAL LOAD/SAVE (round 10 fix).
-// KERNAL LOAD/SAVE dispatch through the ILOAD/ISAVE vectors ($0330/$0332),
-// which this cart keeps pointed at $de6d/$de6f -- trampolines in the I/O1
-// mirror, i.e. bytes $9e6d/$9e6f OF WHICHEVER BANK IS CURRENTLY PAGED IN.
-// cmd_memcpy runs with bank05 paged, and bank05's $9e6d/$9e6f are $00 --
-// so a direct jsr LOAD/SAVE from here executed BRK -> CBINV ($decd) -> the
-// RR freeze menu ("memcpy zatuhava"). This stub runs from RAM (it survives
-// the repage), swaps bank01 in for the duration of the KERNAL call so the
-// fastload trampolines see the bytes they were written against, then swaps
-// bank05 back, preserving A/X/Y/flags in both directions. The jsr target
-// is patched by mcio_prep_load/_save before each use.
-// Relocated to mcio_ram ($0200 input-buffer area, free during dispatch --
-// memcpy never runs concurrently with ll/dir's wc_buf use of the same page).
-// ---------------------------------------------------------------------------
-mcio_stub:
-    pha
-    lda #$08                   // bank01: the bank ILOAD/ISAVE's mirror code expects
-    sta $de00
-    pla
-mcio_jsr:
-    jsr $ffff                  // patched to LOAD ($ffd5) / SAVE ($ffd8)
-    php
-    pha
-    lda #$88                   // back to bank05 (this module)
-    sta $de00
-    pla
-    plp
-    rts
-mcio_stub_end:
-.errorif mcio_ram + (mcio_stub_end - mcio_stub) > $0259, "mcio_stub overruns the input buffer"
-
-mcio_prep_save:
-    lda #<SAVE
-    ldx #>SAVE
-    bne mcio_prep              // always (>SAVE = $ff)
-mcio_prep_load:
-    lda #<LOAD
-    ldx #>LOAD
-mcio_prep:
-    pha                        // lo
-    txa
-    pha                        // hi
-    ldx #mcio_stub_end - mcio_stub - 1
-mcp_copy:
-    lda mcio_stub,x
-    sta mcio_ram,x
-    dex
-    bpl mcp_copy
-    pla
-    sta mcio_ram + (mcio_jsr - mcio_stub) + 2   // hi operand
-    pla
-    sta mcio_ram + (mcio_jsr - mcio_stub) + 1   // lo operand
-    rts
 
 // cmc_parse_dev -- Y = cf_shadow offset of a filename token (leading spaces
 // already skipped). If it starts "#X:" (X = a device letter), returns A=X
@@ -1214,12 +1104,8 @@ wcm_inner:
     lda cf_shadow,y
     cmp #$2a                   // '*' in pattern: matches regardless of the rest
     beq wcm_yes
-    jsr wc_fold                // case-insensitive: fold the pattern char...
-    sta w_len                  //   (w_len is free here -- kernal_dir/DOS paths
-    ldx w_hidx                 //    both rewrite it before their next read)
-    lda wc_buf,x
-    jsr wc_fold                //   ...and the haystack char to the same form
-    cmp w_len
+    ldx w_hidx
+    cmp wc_buf,x
     beq wcm_advance
     inc w_hstart                // mismatch: retry starting one byte further in
     jmp wcm_outer
@@ -1244,22 +1130,6 @@ wcm_nomatch:
     sec
     rts
 
-// wc_fold -- normalize A to a case-insensitive canonical form for wc_match.
-// Strips the PETSCII high bit ($c1-$da uppercase -> $41-$5a, same fold the
-// keyword dispatcher uses) AND folds ASCII lowercase ($61-$7a, as an Ultimate
-// DOS READ_DIR entry can carry) onto $41-$5a, so a pattern typed in either
-// case/charset matches a listing entry in either case -- "ll giana*" now
-// matches GIANA-SISTERS.D64. Only A is modified (X/Y preserved).
-wc_fold:
-    and #$7f                    // PETSCII $c1-$da -> $41-$5a
-    cmp #$61                    // < 'a': already canonical (or non-letter)
-    bcc wcf_done
-    cmp #$7b                    // > 'z': non-letter, leave as-is
-    bcs wcf_done
-    and #$df                    // ASCII $61-$7a -> $41-$5a
-wcf_done:
-    rts
-
 // ---------------------------------------------------------------------------
 // Directory listing over the Ultimate DOS (devices H/T/F): OPEN_DIR, then
 // READ_DIR and print entry chunks until the data queue stays empty --
@@ -1282,8 +1152,6 @@ wud_pushok:
     jsr dos_status_report
     jsr net_accept
 wud_more:
-    jsr STOP                   // RUN/STOP aborts, but drain the rest first (below)
-    beq wud_abort
     lda UII_STATUS
     and #UII_ST_DATAAV
     beq wud_done
@@ -1292,21 +1160,6 @@ wud_more:
     jmp wud_more
 wud_done:
     rts
-// RUN/STOP pressed: keep reading + accepting response blocks without printing,
-// so the DOS directory queue drains fully and the next command starts clean.
-wud_abort:
-    lda UII_STATUS
-    and #UII_ST_DATAAV
-    beq wud_done
-wud_ab_drain:
-    lda UII_STATUS
-    and #UII_ST_DATAAV
-    beq wud_ab_next
-    lda UII_RESP               // discard the byte
-    jmp wud_ab_drain
-wud_ab_next:
-    jsr net_accept
-    jmp wud_abort
 
 // Buffer one response chunk into wc_buf (bounded to wc_buf_max, draining any
 // overflow unread so the queue stays in sync), then print it + CR only if it
@@ -1370,21 +1223,13 @@ kd_notS:
     ldy #$00                   // SA 0: "$" arrives as a BASIC program image
     jsr SETLFS
     jsr OPEN
-    bcc kd_opened
-    jmp kd_err
-kd_opened:
+    bcs kd_err
     ldx #$02
     jsr CHKIN
-    bcc kd_chkok
-    jmp kd_err
-kd_chkok:
+    bcs kd_err
     jsr CHRIN                  // skip the 2-byte load address
     jsr CHRIN
 kd_line:
-    jsr STOP                   // RUN/STOP aborts the listing (kd_done: close + clrchn)
-    bne kd_scan
-    jmp kd_done
-kd_scan:
     jsr CHRIN                  // line link lo
     sta w_len
     jsr CHRIN                  // line link hi
@@ -1453,7 +1298,7 @@ kd_dollar:
 // Unrecognized line -> "I:" + line to the ChatHandler; print the reply.
 wd_chat:
     jsr net_connect
-    bcs net_fail               // no socket was opened: nothing to close
+    bcs net_fail
     lda #$02                   // CommandID.TEXT_INPUT | console 0
     jsr nw_start
     lda #$49                   // 'I'
@@ -1462,15 +1307,13 @@ wd_chat:
     sta UII_CMD
     jsr nw_send_shadow
     jsr nw_finish
-    bcs wdc_fail_close
+    bcs net_fail
     lda #$00
     sta w_quiet
     jsr net_read_response
-    bcs wdc_fail_close
+    bcs net_fail
     jsr net_close
     rts
-wdc_fail_close:                // round 10: a failed write/read used to leave
-    jmp net_close              // the socket open -- close it so retries start clean
 net_fail:
     rts
 
@@ -1483,7 +1326,7 @@ send_cli:
     jsr nw_start
     jsr nw_send_shadow
     jsr nw_finish
-    bcs wdc_fail_close         // round 10: close the socket on a failed write
+    bcs net_fail
     lda #$00
     sta w_quiet
     jsr net_read_response
@@ -2384,7 +2227,6 @@ nrr_loop:
     jsr net_push_and_check
     bcs nrr_fail
     jsr net_wait_not_busy_spin // the wait where LLM latency actually shows up
-    bcs nrr_fail               // round 10: bounded -- a wedged read gives up
     jsr net_read_and_print
     bcs nrr_had_data
     jsr net_spin               // nothing new yet: animate the wait
@@ -2443,88 +2285,33 @@ npc_ok:
     clc
     rts
 
-// ROUND 10: every UCI wait is now BOUNDED. These used to be unconditional
-// busy-loops -- if the command interface was ever left busy / mid-handshake
-// (firmware hiccup, a command aborted halfway, the Ultimate menu freezing the
-// machine mid-transaction), the next wedge command spun here forever with
-// interrupts off: dead cursor, dead keyboard, only the freeze button left.
-// That is exactly the reported "m:/memcpy/cd started hanging with no crt or
-// server change" failure shape. On timeout they simply return -- the pushes
-// and status/accept handshakes that follow every wait already surface errors
-// (?ERR / silent fail / NOT REACHABLE) and BASIC gets its READY back.
-
-// Wait for the UCI state machine to go idle (~3s cap). Preserves X --
-// dos_begin keeps its target register in X across this call.
 net_wait_idle:
-    lda #$03
-    sta w_to+1
-    ldy #$00
-    sty w_to
-nwi_loop:
     lda UII_STATUS
     and #UII_ST_STATE
-    beq nwi_done
-    iny
-    bne nwi_loop
-    inc w_to
-    bne nwi_loop
-    dec w_to+1
-    bne nwi_loop
-nwi_done:
+    bne net_wait_idle
     rts
 
-// Wait for the pushed command to finish (~6s cap -- DOS ops like mounting a
-// large image are legitimately slow). Preserves X.
 net_wait_not_busy:
-    lda #$06
-    sta w_to+1
-    ldy #$00
-    sty w_to
-nwb_loop:
     lda UII_STATUS
     and #UII_ST_STATE
     cmp #$10
-    bne nwb_done
-    iny
-    bne nwb_loop
-    inc w_to
-    bne nwb_loop
-    dec w_to+1
-    bne nwb_loop
-nwb_done:
+    beq net_wait_not_busy
     rts
 
-// Same wait, but advances the "still waiting" spinner every 256 polls and
-// carries a much larger budget (~35s: a SOCKET_READ stays busy firmware-side
-// until the LLM reply actually arrives -- this is where that latency shows
-// up, see wedge-analysis.md §8). Output: carry set = timed out, clear = done.
+// Same as net_wait_not_busy, but advances the "still waiting" spinner every
+// 256 poll iterations (Y is free here).
 net_wait_not_busy_spin:
-    lda #<8192
-    sta w_to
-    lda #>8192
-    sta w_to+1
-nwbs_loop:
     ldy #$00
-nwbs_poll:
+nwbs_loop:
     lda UII_STATUS
     and #UII_ST_STATE
     cmp #$10
     bne nwbs_done
     iny
-    bne nwbs_poll
-    jsr net_spin
-    lda w_to
-    bne nwbs_declo
-    dec w_to+1
-nwbs_declo:
-    dec w_to
-    lda w_to
-    ora w_to+1
     bne nwbs_loop
-    sec                        // budget exhausted: give up on this response
-    rts
+    jsr net_spin
+    jmp nwbs_loop
 nwbs_done:
-    clc
     rts
 
 // drains the response-data queue without printing
@@ -2568,18 +2355,10 @@ net_accept:
     lda UII_CONTROL
     ora #UII_CTL_ACC
     sta UII_CONTROL
-    lda #$00                   // round 10: the accept handshake is bounded
-    sta w_to                   // too (~1s) -- same rationale as the waits above
-    ldy #$00
 na_wait:
     lda UII_STATUS
     and #UII_CTL_ACC
-    beq na_after
-    iny
     bne na_wait
-    inc w_to
-    bne na_wait
-na_after:
     lda cf_status0
     cmp #$30
     bne na_fail
@@ -2703,7 +2482,7 @@ msg_unreach:
 msg_err:
     .byte $3f,$45,$52,$52,$0d,$00                                  // "?ERR" + CR
 msg_ready:
-    .byte $d2,$c5,$c1,$c4,$d9,$2e,$00                              // "READY." (capitals: petscii $c1-$da, renders uppercase in the lowercase charset)
+    .byte $52,$45,$41,$44,$59,$2e,$00                              // "READY."
 msg_netmask:
     .byte $4e,$45,$54,$4d,$41,$53,$4b,$3a,$20,$00                  // "NETMASK: " (own line, see npi_lbl_mask)
 msg_gateway:
@@ -2714,12 +2493,6 @@ msg_help:
     .byte $4e,$4f,$20,$43,$4c,$4f,$55,$44,$20,$43,$4f,$4e,$4e,$45,$43,$54,$49,$4f,$4e,$0d  // "NO CLOUD CONNECTION" + CR
     .byte $43,$48,$45,$43,$4b,$20,$4e,$45,$54,$57,$4f,$52,$4b,$2c,$20,$53,$54,$41,$54,$55,$53,$0d  // "CHECK NETWORK, STATUS" + CR
     .byte $53,$45,$45,$20,$55,$53,$45,$52,$20,$4d,$41,$4e,$55,$41,$4c,$0d,$00  // "SEE USER MANUAL" + CR
-msg_banner:
-    .byte $20,$20,$20,$20,$2a,$2a,$2a,$2a,$20,$c3,$cf,$cd,$cd,$cf,$c4,$cf,$d2,$c5,$20,$36,$34,$20,$d3,$c8,$c5,$cc,$cc,$20,$d6,$32,$20,$2a,$2a,$2a,$2a,$00  // "    **** COMMODORE 64 SHELL V2 ****" (4-space indent; capitals: petscii $c1-$da)
-msg_mreu:
-    .byte $cd,$20,$d2,$c5,$d5,$20,$00  // "M REU " (capitals)
-msg_hdncpx:
-    .byte $2c,$20,$c8,$c4,$ce,$2f,$c3,$d0,$d8,$0d,$00  // ", HDN/CPX" (capitals) + CR
 
 path_blob:
 txt_temp:
@@ -2742,263 +2515,9 @@ wedge_entry_tab:
     jmp wedge_dispatch         // $9012: typed-line fallback (from the IERROR stub)
     jmp wedge_install          // $9015: install/refresh the CINV hook (from xb2)
     jmp console_switch         // $9018: C=+CTRL+digit console switch (from the CINV stub, X=digit)
-    jmp boot_banner            // $901b: cold-start boot banner (from bank01's boot_hook)
 wedge_entry_tab_end:
 
-// ===========================================================================
-// Cold-start boot banner -- replaces the stock "**** COMMODORE 64 BASIC V2
-// ****" / BYTES FREE print (bank01's cold-start hook calls here instead of
-// the real $e422). Prints "**** COMMODORE 64 SHELL V2 ****", a line with the
-// detected REU size and the Ultimate DOS identify string, then installs the
-// IERROR stub (bb_install) so the cold-start tail's own READY already goes
-// through the wedge (print_ready: capitals, light blue).
-// ===========================================================================
-boot_banner:
-    jsr print_cr                // leading blank line, matches the old ROM's row-1 (not row-0) banner start
-    lda #msg_banner - msg_blob  // banner text itself carries its own 4-space left indent
-    jsr print_msg
-    jsr print_cr
-    jsr print_cr                // blank line between the banner and the REU/identify line
-    lda #$20
-    jsr CHROUT
-    jsr reu_detect              // carry clear = no REU (skip the "NNM REU " part)
-    bcc bb_dos
-    cmp #$00
-    bne bb_havemb
-    lda #16                     // bank counter wrapped past 256 = full 16MB
-    jmp bb_gotmb
-bb_havemb:
-    lsr
-    lsr
-    lsr
-    lsr                          // banks (64KB each) -> MB
-bb_gotmb:
-    jsr print_dec_byte
-    lda #msg_mreu - msg_blob
-    jsr print_msg
-bb_dos:
-    lda #DOS_CMD_IDENTIFY
-    jsr dos_simple_print
-    lda #msg_hdncpx - msg_blob
-    jsr print_msg
-    jmp bb_install             // boot-time IERROR-stub install, so the very
-                               // first READY (cold-start tail: $e386 = LDX #$80
-                               // / JMP ($0300)) already goes through the wedge
-                               // and prints capitals + light blue
-
-// Probe the real (non-UCI) REU registers for presence/size.
-// Output: carry clear = no REU (A=0). Carry set = REU present; A = bank
-// count (64KB units, always a power of two), except A=0 also means "256
-// banks" = full 16MB (disambiguated from "absent" by carry being set).
-//
-// ROUND 10 REWRITE -- the probe is now NON-DESTRUCTIVE. The round-7..9
-// version wrote a byte to offset 0 of EVERY 64KB bank on every cold boot,
-// permanently corrupting whatever lives in the REU -- and on this build
-// ("tmp12reu") the REU is not empty: Turbo Macro Pro's launch image lives
-// there (the cart's `\` handler at $9d1d DMAs REU $0800-$ffff into C64 RAM
-// and jumps into it, and the TASS install path manages that image). Poking
-// the REU at boot is both a transparency violation (the shell must leave
-// the machine as if it weren't there) and the prime suspect for "TASM after
-// reset dies into the freeze menu". Now: every REU byte the probe touches
-// is read out first (reu_save) and written back afterwards -- including the
-// aliased case, where a rung write actually lands on bank 0 -- and the
-// ladder is powers of two (1,2,4,...,128), so at most 9 bytes are touched
-// at all instead of 256. Real REU sizes are powers of two, so the result
-// is exact.
-reu_detect:
-    lda #$00                    // read + save bank 0's byte first
-    ldx #$91                    // REU->C64 command
-    jsr reu_xfer
-    lda $0200
-    sta reu_save
-    lda #$aa                    // presence check: write $aa, read it back
-    sta $0200
-    lda #$00
-    ldx #$90                    // C64->REU command
-    jsr reu_xfer
-    lda #$55
-    sta $0200
-    lda #$00
-    ldx #$91
-    jsr reu_xfer
-    lda $0200
-    cmp #$aa
-    beq rd_present
-    clc                          // no REU -- the $aa write went nowhere
-    lda #$00
-    rts
-rd_present:
-    ldy #$00                     // Y = rung index into rd_banks (1,2,4,...)
-rd_loop:
-    sty reu_probe_tmp
-    lda rd_banks,y               // read + save this rung bank's byte (under
-    ldx #$91                     // aliasing this reads bank 0's $aa -- which
-    jsr reu_xfer                 // is exactly what the restore must put back)
-    ldy reu_probe_tmp
-    lda $0200
-    sta reu_save+1,y
-    lda #$00                     // probe byte (anything != $aa)
-    sta $0200
-    lda rd_banks,y
-    ldx #$90
-    jsr reu_xfer
-    lda #$ff                     // re-read bank 0: unchanged = no wrap yet
-    sta $0200
-    lda #$00
-    ldx #$91
-    jsr reu_xfer
-    lda $0200
-    cmp #$aa
-    bne rd_wrapped
-    ldy reu_probe_tmp
-    iny
-    cpy #$08
-    bne rd_loop
-    lda #$00                     // all 8 rungs distinct: 256 banks / 16MB
-    beq rd_restore               // (always; Y=8 rungs to restore)
-rd_wrapped:
-    ldy reu_probe_tmp            // wrapped at rung Y: size = rd_banks[Y] banks
-    lda rd_banks,y
-    iny                          // rungs 0..Y were written -> Y+1 to restore
-rd_restore:
-    sta reu_probe_res
-    sty reu_probe_tmp            // rung count still to restore
-rdr_loop:
-    ldy reu_probe_tmp
-    dey
-    bmi rdr_bank0
-    sty reu_probe_tmp
-    lda reu_save+1,y             // write the saved byte back to its rung bank
-    sta $0200
-    lda rd_banks,y
-    ldx #$90
-    jsr reu_xfer
-    jmp rdr_loop
-rdr_bank0:
-    lda reu_save                 // finally restore bank 0's original byte
-    sta $0200
-    lda #$00
-    ldx #$90
-    jsr reu_xfer
-    sec
-    lda reu_probe_res
-    rts
-rd_banks:
-    .byte 1, 2, 4, 8, 16, 32, 64, 128
-
-// A = bank, X = command ($90 = C64->REU, $91 = REU->C64): 1-byte transfer
-// between $0200 and REU offset 0 of the given bank.
-reu_xfer:
-    sta REU_REU_BANK
-    lda #$00
-    sta REU_C64_ADDR_LO
-    sta REU_REU_ADDR_LO
-    sta REU_REU_ADDR_HI
-    lda #$02
-    sta REU_C64_ADDR_HI
-    lda #$01
-    sta REU_LENGTH_LO
-    lda #$00
-    sta REU_LENGTH_HI
-    stx REU_COMMAND
-    nop
-    nop
-    rts
-
-// ---------------------------------------------------------------------------
-// bb_install -- boot-time install of the ie_ram block (IERROR stub + xb2
-// trampoline). Historically this only happened on the first typed line
-// (bank01's line_tap), which meant the cold-boot READY still came from stock
-// BASIC ($a474: lowercase, and white after bank03's $9f8e color-set ran).
-// Installing at boot routes the very first READY through the stub too, so
-// print_ready below controls case + color from the first prompt on.
-// line_tap's install is idempotent (it checks $0300 against ie_ram), so it
-// simply sees this install and skips its own; its re-install path still
-// matters after a launch line disarmed the hooks and a game trampled $0340.
-// $0300 here is stock $e38b (bank01_api_00 ran jsr $e453 before boot_hook),
-// which is exactly the right ie_orig_vec to save.
-// ---------------------------------------------------------------------------
-bb_install:
-    ldx #ie_stub_tpl_end - ie_stub_tpl - 1
-bbi_copy:
-    lda ie_stub_tpl,x
-    sta ie_ram,x
-    dex
-    bpl bbi_copy
-    lda $0300
-    sta ie_orig_vec
-    lda $0301
-    sta ie_orig_vec+1
-    lda #<ie_ram
-    sta $0300
-    lda #>ie_ram
-    sta $0301
-    rts
-
-// ---------------------------------------------------------------------------
-// print_ready -- the shell's READY prompt: capitals (petscii $c1-$da render
-// uppercase in the lowercase charset), replicating stock $a474's SETMSG side
-// effect (LDA #$80 / JSR $ff90 -- direct-mode KERNAL messages on) since the
-// stub's jmp ($0302) bypasses $a474 entirely. Deliberately does NOT touch
-// $0286 (current text color): round 8 forced light blue here, but the user
-// (2026-07-06 feedback) wants the shell to never touch color at all -- if
-// they set the cursor/text color to something else, READY and everything
-// else should print in that color too. The stock white this used to paper
-// over is now fixed at the source (bank03_api_11 neutered), so there's
-// nothing left to undo here.
-// Reached from wedge_dispatch for both the bit7 "print READY" pass and the
-// tail of every dispatched/forwarded line.
-// ---------------------------------------------------------------------------
-print_ready:
-    jsr print_cr
-    lda #msg_ready - msg_blob
-    jsr print_msg
-    jsr print_cr
-    lda #$80
-    jmp $ff90                  // KERNAL SETMSG, rts from there
-
-// ---------------------------------------------------------------------------
-// ie_stub_tpl -- byte-for-byte duplicate of bank01's ierror_stub_rom..
-// ierror_stub_rom_end block (rr38p-tmp12reu.bank01.asm), copied to ie_ram
-// by bb_install at boot. KEEP IN SYNC: bank01's line_tap re-copies ITS
-// template over the same RAM after games, and calls into the block at fixed
-// offset (xb2 = +33), so any drift between the two copies corrupts the
-// steady-state wedge. The .errorif guards below pin the layout.
-// ---------------------------------------------------------------------------
-ie_stub_tpl:
-    txa                        // X bit7 = "print READY, no error"
-    bmi tpl_direct
-    lda $3a                    // CURLIN high: $ff = direct mode
-    cmp #$ff
-    beq tpl_direct
-    jmp (ie_orig_vec)          // program-mode error: stock handler untouched
-tpl_direct:
-    stx ie_errcode
-    sei
-    lda #$88                   // bank05
-    sta $de00
-    jsr $9012                  // wedge_dispatch
-    lda #$08                   // bank01
-    sta $de00
-    cli
-    jmp ($0302)
-tpl_xb2:
-    sei
-    lda #$88                   // bank05
-    sta $de00
-    jsr $9015                  // wedge_install
-    lda #$08                   // bank01
-    sta $de00
-    cli
-    rts
-ie_stub_tpl_end:
-.errorif tpl_xb2 - ie_stub_tpl != 33, "ie_stub_tpl: xb2 offset drifted from bank01's ierror stub block"
-.errorif ie_stub_tpl_end - ie_stub_tpl != 49, "ie_stub_tpl: size drifted from bank01's ierror stub block"
-.errorif ie_ram + (ie_stub_tpl_end - ie_stub_tpl) > $0372, "ie_ram block overruns il_shim_ram"
-
-boot_banner_end:
-
-    .fill $9200 - boot_banner_end, $00    // rest of the old $9012-$91ff pocket, free again
+    .fill $9200 - wedge_entry_tab_end, $00    // rest of the old $9012-$91ff pocket, free again
 
     .byte $a9, $00, $8d    // data $91f3 (unchanged original code resumes here)
     .byte $20, $d0, $8d, $21, $d0, $a9, $0f, $8d, $86, $02, $a2, $00, $9d, $00, $d8, $9d    // data $9203

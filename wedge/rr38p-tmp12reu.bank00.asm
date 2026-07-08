@@ -207,39 +207,15 @@ bank00_api_11:
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80c7
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80d7
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80e7
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $54, $41    // data $80f7-$8101 (unchanged original data)
-
-// ---------------------------------------------------------------------------
-// b00_title -- extended freeze-menu title banner ("BY COUNT ZERO + HDN").
-// The stock title lives as an inline string right after the second jsr inside
-// bank00_sub_87b2 (see there); inline strings can't grow in place without
-// shifting everything after them, so that jsr is replaced with a same-size
-// `jmp b00_title`, and this block re-prints the title from its own, longer
-// inline copy, then jumps back to $87e5 -- the exact address where
-// bank00_sub_8763's return-address fixup would have resumed after the stock
-// string. The stock string bytes at $87b8-$87e4 stay in place as dead data.
-// Placed in the confirmed-free zero pocket $8102-$817e (raw byte-scan of the
-// stock .bin; bank00_api_00 at $817f must stay put, hence the .fill guard).
-// String escapes (see bank00_sub_8763): $01 <n> = print n spaces; string is
-// null-terminated. Line 2 is 19 chars, so 11 leading spaces ((40-19)/2
-// rounded up, same rounding the stock 13-char/14-space line used).
-// ---------------------------------------------------------------------------
-b00_title:
-    jsr bank00_sub_8763
-    .byte $93                                                                        // clear screen
-    .byte $01, $09                                                                   // 9 spaces
-    .byte $43, $59, $42, $45, $52, $50, $55, $4e, $58, $20                           // "CYBERPUNX "
-    .byte $52, $45, $54, $52, $4f, $20                                               // "RETRO "
-    .byte $52, $45, $50, $4c, $41, $59                                               // "REPLAY"
-    .byte $0d
-    .byte $01, $0b                                                                   // 11 spaces
-    .byte $42, $59, $20, $43, $4f, $55, $4e, $54, $20, $5a, $45, $52, $4f            // "BY COUNT ZERO"
-    .byte $20, $2b, $20, $48, $44, $4e                                               // " + HDN"
-    .byte $0d, $0d, $0d, $00
-    jmp $87e5              // resume exactly where the stock inline string ended
-b00_title_end:
-
-    .fill $817f - b00_title_end, $00    // remaining confirmed-free bytes in this pocket
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $54, $41, $00, $00, $00, $00, $00    // data $80f7
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8107
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8117
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8127
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8137
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8147
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8157
+    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8167
+    .byte $00, $00, $00, $00, $00, $00, $00, $00    // data $8177
 bank00_api_00:
     lda #$40               // a9 40
     sta $de01              // 8d 01 de
@@ -746,11 +722,7 @@ bank00_sub_87ad:
     jmp $e716              // 4c 16 e7
 bank00_sub_87b2:
     jsr bank00_sub_8b9d              // 20 9d 8b
-    jmp b00_title          // was: jsr bank00_sub_8763 (20 63 87) printing the
-                           // stock inline title below -- rerouted to b00_title
-                           // (same 3 bytes), which prints the extended
-                           // "BY COUNT ZERO + HDN" version and jumps back to
-                           // $87e5. The inline string below is now dead data.
+    jsr bank00_sub_8763              // 20 63 87
     .byte $93    // undocumented opcode
     ora ($09,x)            // 01 09
     .byte $43    // undocumented opcode
