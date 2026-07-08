@@ -17,8 +17,9 @@ Stock functionality must remain fully intact.
 | 2 | Bank01 scanner hook recognizing `HONDANI`, handler still bank01-local (`inc $d020` in bank01 free space) | `HONDANI` flashes border; all stock commands (esp. `HELP`-adjacent 3-letter-prefix quirk, `OLD`, `FIND`, `MONITOR`, `/`, `$`) still work | ✅ HW tested OK 2026-07-08 |
 | 3 | Cross-bank call bank01 → bank5 `$9F58` via the stock `$DEDE` gate (hand-rolled frame; **no** `$CF00` RAM stub needed); bank5 routine now `dec $d020` | `HONDANI` steps border **backward** (proves bank5 code ran); all stock commands still work | ✅ HW tested OK 2026-07-08 |
 | 4 | UCI reachability micro-test: read UCI ident register `$DF1D` (expect `$C9`) from the banked-in bank5 context; border green/red verdict, raw byte parked at `$CF20` | `HONDANI` → green border and `PEEK($CF20)`=201 ⇒ UCI visible while RR banked in; red ⇒ it is not | ✅ HW tested OK 2026-07-08: **green**, `PEEK($CF20)`=201, `PEEK($DF1D)`=201 |
-| 5a | Move wedge code to its permanent home: bank2 `$991E` (1378-byte free run); relocate the step-4 probe there unchanged, revert bank5 to stock | Same as step 4 (`HONDANI` → green, `PEEK($CF20)`=201) but running from bank2; freezer backup/save must still work (bank2 = freezer tools bank) | 🔶 built, awaiting hardware test |
-| 5b | Full cloud round-trip in bank2: connect `192.168.1.2:6464`, send `TEXT_INPUT` "PING", CHROUT reply, close, green/red border | `HONDANI` prints server reply | ⬜ |
+| 5a | Move wedge code to its permanent home: bank2 `$991E` (1378-byte free run); relocate the step-4 probe there unchanged, revert bank5 to stock | Same as step 4 (`HONDANI` → green, `PEEK($CF20)`=201) but running from bank2; freezer backup/save must still work (bank2 = freezer tools bank) | ✅ HW tested OK 2026-07-08 (incl. freezer) |
+| 5b | Full cloud round-trip in bank2: connect `192.168.1.2:6464`, send `TEXT_INPUT` "PING", CHROUT reply, close, green/red border | `HONDANI` prints server reply then green border (server must be running) | ✅ HW tested OK 2026-07-08 (reply `?ERROR` printed, green; repeats + freeze/monitor fine; server-down → red; **bug found**: freeze on first call after server came back — fixed in 5c) |
+| 5c | UCI-state hardening: connect-fail path accepts/drains the transaction; all wait loops bounded ~1 s with `$0E` (ACC\|ABORT\|CLR_ERR) recovery kick — no code path can hang the machine | Server-down → red; **then server up → next `HONDANI` works without reset** (the 5b freeze case); everything else as 5b | 🔶 built, awaiting hardware test |
 
 ## Step 0 — clean baseline (2026-07-08)
 
@@ -378,3 +379,158 @@ bits, accept/drain discipline), `c64u_network.asm` (command sequences),
 - Known accepted simplification: on a connect that returns a socket id but
   bad status, we don't close the id (no socket exists on refused connect;
   revisit for the real fallback).
+
+## Step 5b — full cloud round-trip (2026-07-08)
+
+Implemented exactly per the design notes above. `hondani_net` at bank2
+`$991E` (now `$991E-$9AC1`, 420 bytes incl. data; pocket guard at `$9B0E`,
+run holds 1378) replaces the 5a probe. **bank1 untouched** — same entry
+`$991E`, same gate frame.
+
+Flow: `sei` → UCI ident check → TCP connect (`$07`, port `$1940` LE,
+`"192.168.1.2",0`) → socket id from data queue → write (`$11`, id,
+`$FE $02 "PING"`) → read loop (`$10`, id, chunk `$00E8`; 2-byte LE length
+prefix: `$FFFF` → retry up to 256×, `$0000` → EOF) → CHROUT the reply
+bytes → close (`$09`, id) → border green; any failure → close if a socket
+exists → border red → `cli` / `rts` → READY.
+
+Every UCI transaction goes through shared helpers: `hn_hdr` (wait idle,
+send target+cmd), `hn_push` (push, state-error check + CLR_ERR, wait
+not-busy), `hn_wdav` (DATA_AV with ~64K-poll timeout), `hn_fin` (drain
+data queue, capture first 4 status bytes to `$CF30+`, DATA_ACC handshake,
+success = status begins `"00"`).
+
+### Verification
+
+- Full-image diff vs stock: **500 bytes** — bank1 ranges bit-identical to
+  the hardware-tested 5a build; bank2 `$991E-$9AC1` only.
+- Whole routine machine-disassembled from the rebuilt binary and audited
+  end-to-end: all branch targets, both fail trampolines (connect-phase →
+  no close; post-connect → close first), the `$2C` skip, data tables, and
+  the register discipline against `c64u_common.asm` semantics.
+- Deployed to both `wedge/*.crt` names.
+
+### Hardware test checklist (Honza)
+
+Server side first: HDN cloud server running and reachable at
+`192.168.1.2:6464` (same box/port as the old shell tests).
+
+1. `HONDANI` → server reply prints on screen, border **green**, `READY.`
+   (machine frozen ~a second is normal — IRQs are off during the exchange).
+2. Repeat `HONDANI` a few times — must work repeatedly (socket close
+   verified server-side if you can check logs).
+3. **Server down test**: stop the server, `HONDANI` → border **red** after
+   the retry window (up to ~10 s), machine alive, `READY.` returns. Then
+   `PRINT PEEK($CF30)` and `PEEK($CF31)` — tell me the values (status
+   breadcrumbs; 48 = '0').
+4. Stock sanity: `$`, `FIND`, `MONITOR`+exit, numbered line + `RUN`,
+   freeze → resume, `TASS` launch/exit.
+5. If red with server up: report `PEEK($CF30)`, `PEEK($CF31)`,
+   `PEEK($CF21)` (socket id), `PEEK($CF20)` (ident, expect 201).
+
+**Result: ✅ hardware tested OK (Honza, 2026-07-08).** Reply `?ERROR`
+printed + green border (the server's dispatcher doesn't know the command
+"PING" — the round trip itself is proven; a friendlier server-side reply
+is a server-repo task, not a wedge task). Repeats fine, including freeze/
+monitor in between. Server down → red border, machine alive.
+**One bug**: with the server back up after a red-border attempt, the next
+`HONDANI` froze the machine; after reset everything worked again. Root
+cause + fix = step 5c.
+
+## Step 5c — UCI-state hardening (2026-07-08)
+
+### The 5b freeze, root-caused
+
+Connect to a dead server: the UCI completes the `$07` command with an
+error *status* but no response *data* (no socket id), so `hn_wdav` timed
+out and the connect-phase failure path jumped to the red border **without
+draining/accepting the transaction**. The UCI stayed in a data state
+(state bits ≠ 00) forever. The *next* `HONDANI` then spun in `hn_hdr`'s
+unbounded wait-for-idle → machine frozen (only the C64 side; a reset
+cleared it because the Ultimate resets UCI state too).
+
+### Fix (all inside the bank2 routine; bank1 untouched)
+
+1. `hn_jfail` (connect-phase failure) now runs `hn_fin` first — drains
+   both queues and performs the DATA_ACC handshake, returning UCI to idle.
+2. **Every** wait loop is now bounded to ~64K polls (~1 s): wait-for-idle
+   (`hn_widl`), wait-not-busy (in `hn_push`), the DATA_ACC ack wait
+   (in `hn_fin`); `hn_wdav` already was.
+3. Recovery kick: if idle-wait times out, `hn_hdr` writes `$0E`
+   (DATA_ACC|ABORT|CLR_ERR) to `$DF1C` and waits again — this un-wedges a
+   stuck transaction from a previous call. Same kick if a pushed command
+   stays busy > ~1 s (e.g. connect to an unreachable host): abort it,
+   fail red instead of hanging.
+4. New scratch byte: `$CF26` (outer poll counter).
+
+No code path can leave the machine frozen now: worst case is a red border
+after a few seconds and a recovered-to-idle UCI for the next call.
+
+### Verification
+
+- Routine now `$991E-$9B03` (486 bytes; guard `$9B0E`, 10 spare). Diff vs
+  stock: **563 bytes**, bank1 (90, unchanged from tested 5a/5b) + bank2.
+- Full machine-disassembly audit of the rebuilt binary: connect-fail path
+  goes `jsr hn_fin` → `jmp hn_fail`; all bounded loops and both `$0E`
+  kick sites verified; data tables relocated intact (`$9AF2` IP,
+  `$9AFE` msg) with matching operands in the send loops.
+- Deployed to both `wedge/*.crt` names.
+
+### Hardware test checklist (Honza) — the 5b regression suite plus:
+
+1. Server up: `HONDANI` → reply + green (as 5b).
+2. Server down: `HONDANI` → red after ≤ ~5 s.
+3. **The fixed case**: start server, `HONDANI` again → must work, no
+   reset needed. Repeat the down/up cycle twice.
+4. Quick stock sanity: `$`, freeze → resume, `TASS` launch/exit.
+
+**Result: _pending_**
+
+## State snapshot & continuation guide (for the next session)
+
+**Deployed image** = step 5c (`wedge/*.crt`, byte-verified, awaiting the
+5c hardware checklist above). If Honza reports 5c ✅, mark it in the plan
+table and move on; if the freeze persists, the breadcrumbs are
+`PEEK($CF30/31)` status chars, `PEEK($CF21)` socket id, `PEEK($CF20)`
+ident (expect 201).
+
+**Where everything lives:**
+
+- `wedge/rr38p-tmp12reu.bankNN.asm` — byte-exact KickAss sources; build
+  with `./build.sh` (assembles, byte-checks anchors via `.errorif`,
+  packages `.crt`, deploys to BOTH `wedge/*.crt` names).
+- Verify any change by byte-diffing `build/rr38p-tmp12reu.rebuilt.bin`
+  against stock `rr38p-tmp12reu.bin` (python, ranges per bank) — every
+  diff byte must be explainable.
+- bank1 `$83FF`: 3-byte hook (`jmp $9D74`) replacing `tax/bne $8407` in
+  the BASIC scanner. bank1 `$9D74-$9DCD` pocket: `HONDANI` keyword check
+  (state-preserving; falls back to stock scanner at `$8407`) + matched
+  path (mimics stock `$848D`, pushes `$E3/$7A` so handlers rts to READY)
+  + the hand-rolled cross-bank gate frame → bank2 `$991E` with `$DE00`
+  value `$10`. Word list at `$9DC7`.
+- bank2 `$991E-$9B03` (`hondani_net`): the whole network routine — see
+  its big header comment for protocol, scratch map (`$CF20-$CF33`), and
+  design constraints. Free space continues to `$9E7F` (~900 bytes) and
+  bank3 `$998B-$9E9C` (1298) is the surveyed reserve.
+- Full mechanism docs: `rr38p-tmp12reu.analysis.md` (gate/trampoline,
+  corrected `$DEEE` table facts), this file (step history, safety
+  surveys, corruption post-mortem of the old attempts).
+
+**Cardinal rules (cost us the previous tree):** never write inside bank5
+`$8023-$9EB9` (TMP payload); keep every change byte-diff-explainable; one
+small hardware-tested step at a time; stock behavior is sacred.
+
+**Roadmap after 5c:**
+
+1. Send the *typed line* instead of hardcoded "PING": read from the BASIC
+   input buffer `$0200` (the keyword check already knows TXTPTR), length-
+   bounded; still via the `HONDANI <text>` keyword for now.
+2. Print a CR before the reply; handle replies > one `$E8` chunk (loop
+   until EOF).
+3. Move the trigger from the `HONDANI` keyword to the true direct-mode
+   error fallback (IERROR path — study how stock prints `?SYNTAX ERROR`
+   and hook the direct-mode branch only), so any unrecognized line goes
+   to the cloud. This is the "chat fallback" milestone from
+   `conversion_story.md`.
+4. Longer term: local command set, screen save/restore via server DMA
+   (`SERVER_CMD_SAVE_SCREEN` etc. in `cloud/sdk/command_handler.py`).

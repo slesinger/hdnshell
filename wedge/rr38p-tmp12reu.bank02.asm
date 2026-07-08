@@ -3388,60 +3388,299 @@ b02_9914:
     rts                    // 60
 bank02_data_991E:
 .errorif (* != $991E), "bank02_data_991E shifted"
-// --- HONDANI: bank2 network-code home (wedge step 5a) -----------------------
+// --- HONDANI: bank2 network-code home (wedge step 5b) -----------------------
 // $991E-$9E7F is a 1378-byte zero run and the chosen permanent home for the
 // HDN network code. Safety survey (2026-07-08): no code reference and no
 // data read into $991E-$9E7F from ANY bank (no abs reads >= $9900 in banks
 // 2/3; the bank04 TMP installer only reads window $8100-$9DFF of banks
-// 5-7; no cross-bank inline call targets into $99xx-$9Exx). The zero run
-// sits after the last drive-code blob (b02_9911 ends $991D) and before the
-// $9E80+ data. The broken previous attempts overwrote bank5 $8023-$91xx --
-// the TMP payload -- which is what corrupted the cart; this region shares
-// none of that.
-// Step 5a: the step-4 UCI ident probe relocated here UNCHANGED, to prove
-// the placement and the bank01->bank2 gate call/return on hardware before
-// real network code lands (step 5b).
+// 5-7; no cross-bank inline call targets into $99xx-$9Exx). The broken
+// previous attempts overwrote bank5 $8023-$91xx -- the TMP payload -- which
+// is what corrupted the cart; this region shares none of that.
+//
+// Step 5b: full HDN cloud round-trip over the Ultimate Command Interface
+// ($DF1C-$DF1F, visibility from this banked-in context hardware-proven in
+// steps 4/5a). TCP connect to 192.168.1.2:6464, send the wire packet
+// $FE (magic) $02 (TEXT_INPUT, console 0) "PING", print the raw PETSCII
+// reply via CHROUT, close the socket. Border: green = reply printed,
+// red = any failure. Interrupts stay off for the whole exchange (a jiffy
+// IRQ WILL fire during a multi-ms exchange; no RR hook may run with bank2
+// in the window). No zero page is touched. Scratch (plain RAM above the
+// TMP top $CEFF, PEEKable breadcrumbs after a red border):
+//   $CF20 UCI ident readback     $CF21 socket id
+//   $CF22/$CF23 read length lo/hi $CF24 retry counter  $CF25 got-data flag
+//   $CF26 wait-loop outer counter (5c)
+//   $CF30-$CF33 first status-queue bytes, PETSCII ("00..." = OK)
+// UCI protocol per src-discontinued/c64u_common.asm + c64u_network.asm and
+// docs/inspiration/ultimate_lib.c: SOCKET_READ response data = 2-byte LE
+// length prefix ($FFFF = nothing yet -> retry, $0000 = EOF), then payload.
+// Known 5b simplifications (fine for PING, revisit for the real fallback):
+// single $E8-byte read chunk (longer replies truncated); no close on a
+// refused connect (no socket exists then).
 hondani_net:
-    lda $df1d              // AD 1D DF   UCI ident register ($C9 = present)
-    sta $cf20              // 8D 20 CF   raw value for PEEK inspection
-    ldx #$05               // A2 05      green = UCI visible
-    cmp #$c9               // C9 C9
-    beq hn_sig             // F0 02
-    ldx #$02               // A2 02      red
-hn_sig:
-    stx $d020              // 8E 20 D0   border = verdict
-    rts                    // 60
-.errorif (* != $9930), "hondani_net overflow"
-    .fill $993E - *, $00   // pad to $993E (was: zeros)
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $993E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $994E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $995E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $996E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $997E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $998E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $999E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99AE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99BE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99CE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99DE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99EE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99FE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A0E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A1E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A2E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A3E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A4E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A5E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A6E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A7E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A8E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A9E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9AAE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ABE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ACE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ADE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9AEE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9AFE
+    sei                    // no IRQ while UCI is mid-transaction
+    lda $df1d              // UCI ident register ($C9 = present)
+    sta $cf20
+    cmp #$c9
+    bne hn_jfail
+// ---- connect: target $03 cmd $07, port 6464 LE, "192.168.1.2",0 ------------
+    lda #$07               // NET_CMD_TCP_SOCKET_CONNECT
+    jsr hn_hdr
+    lda #$40               // port 6464 = $1940, lo byte first
+    sta $df1d
+    lda #$19
+    sta $df1d
+    ldx #$00
+hn_iplp:
+    lda hn_ip,x
+    sta $df1d              // host string incl. the $00 terminator
+    inx
+    cmp #$00
+    bne hn_iplp
+    jsr hn_push
+    bcs hn_jfail
+    jsr hn_wdav            // socket id must appear in the data queue
+    bcs hn_jfail
+    lda $df1e
+    sta $cf21              // socket id
+    jsr hn_fin
+    bcc hn_conok
+hn_jfail:
+    jsr hn_fin             // 5c fix: consume whatever the failed transaction
+                           // queued. Bailing without accepting left UCI stuck
+                           // in a data state and the NEXT call froze in its
+                           // wait-for-idle (the observed server-restart hang).
+    jmp hn_fail            // connect-phase failures: no socket to close
+hn_conok:
+// ---- write: cmd $11, socket id, $FE $02 "PING" ------------------------------
+    lda #$11               // NET_CMD_SOCKET_WRITE
+    jsr hn_hdr
+    lda $cf21
+    sta $df1d
+    ldx #$00
+hn_wlp:
+    lda hn_msg,x
+    sta $df1d
+    inx
+    cpx #hn_msg_end - hn_msg
+    bne hn_wlp
+    jsr hn_push
+    bcc hn_w1
+    jmp hn_failc
+hn_w1:
+    jsr hn_fin
+    bcc hn_w2
+    jmp hn_failc
+hn_w2:
+// ---- read with retry: cmd $10, socket id, chunk len $00E8 -------------------
+    lda #$00
+    sta $cf24              // retry counter (wraps: 256 attempts)
+    sta $cf25              // got-data flag
+hn_rd:
+    lda #$10               // NET_CMD_SOCKET_READ
+    jsr hn_hdr
+    lda $cf21
+    sta $df1d
+    lda #$e8               // chunk length lo
+    sta $df1d
+    lda #$00               // chunk length hi
+    sta $df1d
+    jsr hn_push
+    bcs hn_failc
+    jsr hn_wdav
+    bcs hn_failc
+    lda $df1e              // length prefix lo
+    sta $cf22
+    jsr hn_wdav
+    bcs hn_failc
+    lda $df1e              // length prefix hi
+    sta $cf23
+    and $cf22
+    cmp #$ff               // $FFFF = no data yet
+    beq hn_nodat
+    lda $cf22
+    ora $cf23
+    beq hn_eof             // $0000 = connection closed by peer
+hn_prlp:                   // print the queued reply bytes
+    lda $df1c
+    and #$80               // DATA_AV
+    beq hn_prdn
+    lda $df1e
+    jsr $ffd2              // CHROUT (KERNAL, polled -- fine under sei)
+    jmp hn_prlp
+hn_prdn:
+    lda #$01
+    sta $cf25
+    jsr hn_fin             // status/accept; verdict irrelevant, reply is out
+    jmp hn_okcl
+hn_nodat:
+    jsr hn_fin             // finish the empty transaction
+    dec $cf24
+    bne hn_rd              // try again
+    beq hn_failc           // 256 retries exhausted
+hn_eof:
+    jsr hn_fin
+    lda $cf25
+    bne hn_okcl            // EOF after data = fine
+hn_failc:
+    jsr hn_close           // failure with an open socket: close it first
+    jmp hn_fail
+hn_okcl:
+    jsr hn_close
+    lda #$05               // green = reply printed
+    .byte $2c              // bit abs: skip the red lda
+hn_fail:
+    lda #$02               // red = something failed (see $CF30/$CF31)
+    sta $d020
+    cli
+    rts                    // -> $DEE3 restores bank01 -> $E37B READY
+// ---- close: cmd $09, socket id ----------------------------------------------
+hn_close:
+    lda #$09               // NET_CMD_SOCKET_CLOSE
+    jsr hn_hdr
+    lda $cf21
+    sta $df1d
+    jsr hn_push
+    jmp hn_fin
+// ---- helpers ----------------------------------------------------------------
+// 5c hardening: every wait loop is bounded (~64K polls, ~1 s) so no UCI state
+// can ever freeze the machine; stuck states get an ABORT|ACC|CLR_ERR kick.
+// A = command id: wait until UCI idle (recover if stuck), send target $03 + cmd
+hn_hdr:
+    tax
+    jsr hn_widl
+    bcc hn_hsend
+    lda #$0e               // ACC|ABORT|CLR_ERR: kick a wedged UCI back to idle
+    sta $df1c
+    jsr hn_widl            // second chance; send regardless (push checks error)
+hn_hsend:
+    lda #$03               // TARGET_NETWORK
+    sta $df1d
+    stx $df1d
+    rts
+// bounded wait for idle state; C=1 on timeout; preserves X
+hn_widl:
+    ldy #$00
+    sty $cf26
+hn_wi:
+    lda $df1c
+    and #$30               // state bits: 00 = idle
+    beq hn_wiok
+    iny
+    bne hn_wi
+    inc $cf26
+    bne hn_wi
+    sec
+    rts
+hn_wiok:
+    clc
+    rts
+// push the assembled command; C=1 on state error or busy-timeout
+hn_push:
+    lda $df1c
+    ora #$01               // PUSH_CMD
+    sta $df1c
+    lda $df1c
+    and #$08               // state error?
+    bne hn_perr
+    ldy #$00
+    sty $cf26
+hn_pw:
+    lda $df1c
+    and #$30
+    cmp #$10               // 01 = command busy
+    bne hn_pok
+    iny
+    bne hn_pw
+    inc $cf26
+    bne hn_pw
+    lda #$0e               // command stuck (e.g. connect to a dead host):
+    sta $df1c              // abort it so UCI returns to idle
+    sec
+    rts
+hn_pok:
+    clc
+    rts
+hn_perr:
+    lda #$08               // CLR_ERR
+    sta $df1c
+    sec
+    rts
+// wait for DATA_AV; C=1 on timeout (~64K polls)
+hn_wdav:
+    ldx #$00
+    ldy #$00
+hn_wd:
+    lda $df1c
+    and #$80
+    bne hn_wdok
+    inx
+    bne hn_wd
+    iny
+    bne hn_wd
+    sec
+    rts
+hn_wdok:
+    clc
+    rts
+// drain data queue, capture first 4 status bytes to $CF30+, accept the
+// transaction; C=0 iff status begins "00"
+hn_fin:
+    lda #$00
+    sta $cf30
+    sta $cf31
+hn_fd:
+    lda $df1c
+    and #$80               // leftover response data?
+    beq hn_fs0
+    lda $df1e
+    jmp hn_fd
+hn_fs0:
+    ldx #$00
+hn_fsl:
+    lda $df1c
+    and #$40               // STAT_AV
+    beq hn_facc
+    lda $df1f
+    cpx #$04
+    bcs hn_fsl             // drain but keep only the first 4 bytes
+    sta $cf30,x
+    inx
+    bne hn_fsl             // always
+hn_facc:
+    lda $df1c
+    ora #$02               // DATA_ACC
+    sta $df1c
+    ldy #$00
+    sty $cf26
+hn_fak:
+    lda $df1c
+    and #$02               // wait for the ack handshake to clear (bounded)
+    beq hn_fchk
+    iny
+    bne hn_fak
+    inc $cf26
+    bne hn_fak
+hn_fchk:
+    lda $cf30
+    cmp #$30               // '0'
+    bne hn_fbad
+    lda $cf31
+    cmp #$30               // '0'
+    bne hn_fbad
+    clc
+    rts
+hn_fbad:
+    sec
+    rts
+// ---- data -------------------------------------------------------------------
+hn_ip:
+    .byte $31, $39, $32, $2E, $31, $36, $38, $2E, $31, $2E, $32, $00    // "192.168.1.2",0
+hn_msg:
+    .byte $fe, $02                                  // magic, TEXT_INPUT (console 0)
+    .byte $50, $49, $4e, $47                        // "PING" (PETSCII upper)
+hn_msg_end:
+.errorif (* > $9B0E), "hondani_net overflowed its pocket"
+    .fill $9B0E - *, $00   // pad to $9B0E (was: zeros)
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B0E
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B1E
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B2E
