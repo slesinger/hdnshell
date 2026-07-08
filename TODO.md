@@ -14,13 +14,15 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ----
 FEEDBACK
 
-#fable
-HDN Shell wedge System hangs in scenario: #h -> pwd -> F1 (to load giana sisters from mounted drive 8)
-System works scenario: #h -> F1 (to load giana sisters from mounted drive 8) - intro shows, I can play game
-Po resetu, #h -> "cd sd" nebo "cd /" dojde k divnemu zakousnuti (prepnuti fontu, protoze pismenka se zmeni v horizontalni cary) a skoku do freeze menu RR cartidge. Totez se deje po resetu i:hi -> zatuhne stejne.
-Stejne zatuhnuti se stani i po resetu a prikazu "TASM".
-These are maybe two different problems, but maybe related. Understand the history from wedge/wedge-analysis.md. I am affraid that these problems are related to quite recent changes. Do a deep analysis. It is critical to resolve these issues as they are critical success factors for the whole HDN Shell product.
-Again, not sure if it is related but when I switch C=+CTRL+3 to coding agent and then C=+CTRL+2 to IDE server app, mostly it hangs. I can see an exclamation mark on the screen like if data are written to wrong address and the screen is by coincidence one such address. There is something very fishy in the modified Retro Replay cartridge and I am hoping that it has some common denominator that resolving one will improve others, too.
+The wedge folder contains asm files that is the latest development, has all features but it is hanging quite significantly. It hangs when I type TASM (even after fresh poweron) while with original cartridge it works. In the wedge-previous its does not work already. The very original asm files of the Retro Replay cartridge are located in temp folder should you need it for reference. 
+Another good test case where it hangs is, after fresh poweron to type:
+#h <press enter key>
+cd /  <press enter key>
+But this is working fine:
+#h <press enter key>
+ll  <press enter key>
+cd /  <press enter key>
+Modify only files inside the "wedge" folder. Take files from "wedge-previous" as a good reference where there are only basic changes compared to the original but it was not hanging that much yet. Build on top of the original, refrain to make risky changes and reapply features based on the documente change log in wedge-analysis.md file where all was good until round 7. After that things went south. Reapply changes only up to round 7!
 Make sure that the HDN shell operation as as much hidden and transparent as possible. It should enable bank5 only when needed and then it should be disabled again. From outside it, memory-vise, it should be as if the HDN shell is not there at all. The user should not be able to see any difference compared to Retro Replay. See the Retro Replay documentation https://wiki.icomp.de/wiki/Retro_Replay .
 Ask me any questions before you proceed to ensure you understand the task well.
 
