@@ -167,8 +167,11 @@ Two safety nets against accidental byte insertion/removal:
 ## The cross-bank call mechanism (used everywhere)
 
 The RR hardware mirrors each bank's `$9E00-$9EFF` page into I/O2 space at
-`$DE00-$DEFF`, and **every bank carries byte-identical trampoline code at
-the shared offsets** ($9EBA-$9F00). Because a write to `$DE00` instantly
+`$DE00-$DEFF`. The trampoline pages are **NOT byte-identical across banks**
+(verified 2026-07-08 — an earlier version of this doc claimed they were),
+but the critical gate/restore window **`$9EDE-$9EEC` IS identical in bank1
+and bank5**, which is what makes mid-page bank flips seamless there.
+Because a write to `$DE00` instantly
 repages the `$8000-$9FFF` window the code executes from, all bank switching
 funnels through this mirrored page:
 
@@ -178,8 +181,14 @@ funnels through this mirrored page:
 - `$DEE3`: `sta $9e / pla / sta $de00 / lda $9e / rts` — restore the
   caller's bank and return.
 - `$DED0` / `$DEDA`: `jmp ($fffc)` / `jmp ($fff8)` — reset / ultimax-NMI.
-- `$DEED`: bank-select value table (`$00,$08,$10,$18,$20` = banks 0-4;
-  bank bits of $DE00 are 3, 4 and 7).
+- `$DEEE`: bank-select value table, indexed by (jsr-operand-lo − stub base).
+  In **bank1** it reads `00 08 10 18 20 0a 23 80` = banks 0-4 then special
+  modes (`$0A` cart-off, `$23` ultimax/RAM, `$80` bank4) — **no bank5-7
+  entries**; stock never *calls* into banks 5-7, it only window-reads them.
+  In **bank5** the table is `00 08 10 18 20 1a 80 88 90` (has bank5/6
+  entries for installer use). Bank bits of $DE00 are 3, 4 and 7
+  (bank5=`$88`, bank6=`$90`, bank7=`$98`). `$DEED` holds the bank's own
+  restore value (`$08` in bank1, `$88` in bank5), read by banks 4-7's stub.
 
 Each bank has a *cross-bank call stub* with a NOP sled so that several
 `jsr` entry addresses share one body; the entry offset picks the
@@ -188,10 +197,10 @@ destination bank from the `$DEED` table:
 | Bank | Stub | Notes |
 |---|---|---|
 | 00 | `$9F01/$9F03/$9F05` | |
-| 01 | `$9F4E/$9F50/$9F51..$9F55` | `$9F51`..`$9F55` select banks 3..7 |
+| 01 | `$9F4E/$9F50/$9F51..` | x = operand−$4E indexes `$DEEE`: `$9F4E`→bank0, `$9F50`→bank2, `$9F51`→bank3, `$9F52`→bank4-RAM(`$20`), `$9F53`→**cart off** (`$0A`), NOT banks 5-7 (earlier "$9F51..$9F55 = banks 3..7" was wrong) |
 | 02 | `$9F00/$9F02/$9F04` | |
 | 03 | `$9F00..$9F09` (sled) body `$9F0A` | |
-| 04-07 | `$9F01...` | same body, only used during install |
+| 04-07 | `$9F01...` | same body (starts with `sei`), reads own restore value from `$DEED`, only used during install |
 
 Calling convention: `jsr <stub>` followed by a **2-byte inline argument** =
 target address in the destination bank. The stub pulls the return address,

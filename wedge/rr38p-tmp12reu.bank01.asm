@@ -4187,9 +4187,27 @@ hondani_matched:
     lda #$7a
     pha                    // handler's rts continues at $E37B, like stock
     jsr $0073              // CHRGET past the word (stock: jmp $0073 + rts trick)
-// --- HONDANI action (step 2: still bank01-local; bank5 comes in step 3) ----
-    inc $d020              // EE 20 D0
-    rts                    // -> $E37B (BASIC READY loop)
+// --- HONDANI action (step 5a: cross-bank call to bank2 $991E) --------------
+// Hand-rolled copy of the frame the stock $9F4E stub builds (same frame the
+// stock `jsr $9F50` bank2 calls produce, just built inline). Gate ($9EDE)
+// and restore ($9EE3) bytes are verified identical across banks, so the
+// mirror-page flips mid-routine are seamless. After hondani_net's rts,
+// $DEE3 restores bank01 and its final rts lands on the $E3/$7A continuation
+// pushed above -> $E37B READY.
+    lda #$08               // $DEE3 restore value: bank01
+    pha
+    lda #$de
+    pha
+    lda #$e2               // hondani_net's rts -> $DEE3 (restore bank01)
+    pha
+    lda #$99
+    pha
+    lda #$1e               // rti target: hondani_net = bank2 $991E
+    pha
+    php                    // flags for the gate's rti
+    pha                    // A for the gate's pla (value irrelevant)
+    lda #$10               // $DE00 bank2 value (bit 4), same as stock $DEEE table
+    jmp $dede              // gate: sta $de00 / pla / rti
 hondani_word:
     .byte $48, $4F, $4E, $44, $41, $4E, $49, $00    // "HONDANI",0 (PETSCII)
     .fill $9E10 - *, $00   // pad pocket back to original size

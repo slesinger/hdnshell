@@ -3388,8 +3388,31 @@ b02_9914:
     rts                    // 60
 bank02_data_991E:
 .errorif (* != $991E), "bank02_data_991E shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $991E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $992E
+// --- HONDANI: bank2 network-code home (wedge step 5a) -----------------------
+// $991E-$9E7F is a 1378-byte zero run and the chosen permanent home for the
+// HDN network code. Safety survey (2026-07-08): no code reference and no
+// data read into $991E-$9E7F from ANY bank (no abs reads >= $9900 in banks
+// 2/3; the bank04 TMP installer only reads window $8100-$9DFF of banks
+// 5-7; no cross-bank inline call targets into $99xx-$9Exx). The zero run
+// sits after the last drive-code blob (b02_9911 ends $991D) and before the
+// $9E80+ data. The broken previous attempts overwrote bank5 $8023-$91xx --
+// the TMP payload -- which is what corrupted the cart; this region shares
+// none of that.
+// Step 5a: the step-4 UCI ident probe relocated here UNCHANGED, to prove
+// the placement and the bank01->bank2 gate call/return on hardware before
+// real network code lands (step 5b).
+hondani_net:
+    lda $df1d              // AD 1D DF   UCI ident register ($C9 = present)
+    sta $cf20              // 8D 20 CF   raw value for PEEK inspection
+    ldx #$05               // A2 05      green = UCI visible
+    cmp #$c9               // C9 C9
+    beq hn_sig             // F0 02
+    ldx #$02               // A2 02      red
+hn_sig:
+    stx $d020              // 8E 20 D0   border = verdict
+    rts                    // 60
+.errorif (* != $9930), "hondani_net overflow"
+    .fill $993E - *, $00   // pad to $993E (was: zeros)
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $993E
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $994E
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $995E

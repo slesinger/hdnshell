@@ -641,17 +641,10 @@ bank05_sub_9F2B:
     jmp $dede              // 4C DE DE
 bank05_data_9F58:
 .errorif (* != $9F58), "bank05_data_9F58 shifted"
-// --- HONDANI: bank5 routine (wedge step 1) ---------------------------------
-// Lives in genuinely unused ROM: after the cross-bank glue code ($9F01-$9F57)
-// and OUTSIDE the $8023-$9EB9 payload image that the bank04 installer copies
-// to C64 RAM. NOT inside the $9012-$91FF zero run, which is part of that
-// copied payload. Nothing calls this yet (step 1 = inert placement only).
-hondani_bank5:
-    inc $d020              // EE 20 D0
-    rts                    // 60
-.errorif (* != $9F5C), "hondani_bank5 overflow"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // pad to $9F68
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F68
+// Steps 1-4 hosted the HONDANI probe routine here ($9F58, the free zero run
+// after the cross-bank glue). Step 5a moved the wedge code to its permanent
+// home in bank2 ($991E, 1378-byte free run) and reverted this bank to stock.
+    .fill $9F78 - *, $00   // stock zeros $9F58-$9F77
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F78
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F88
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F98
