@@ -3421,8 +3421,17 @@ bank02_data_991E:
 // keyword (its jsr $0073), and the scanner runs PRE-crunch, so the buffer
 // at ($7A) is the raw PETSCII exactly as typed, $00-terminated. Bare
 // `HONDANI` sends an empty payload (server answers ?ERROR/AI -- fine).
-// Known simplifications (revisit in step 7): single $E8-byte read chunk
-// (longer replies truncated); no close on a refused connect (no socket
+//
+// Step 7: a CR is printed before the first reply byte, and the read loop
+// keeps fetching $E8-byte chunks until the reply is over. The server
+// holds the connection open after responding (cloud_server.py recv
+// loop), so EOF alone can't terminate a reply; we mirror the pattern
+// cloud_test_client.py uses (long timeout before the first chunk, short
+// one after): before any data the $FFFF-retry window is the full 256
+// attempts (survives LLM latency, HW-proven in step 6), after a chunk
+// has printed it is shortened to $20 attempts (~a short pause) -- a
+// quiet gap after data, or an EOF, means the reply is complete (green).
+// Remaining simplification: no close on a refused connect (no socket
 // exists then).
 hondani_net:
     sei                    // no IRQ while UCI is mid-transaction
@@ -3487,7 +3496,7 @@ hn_w1:
 hn_w2:
 // ---- read with retry: cmd $10, socket id, chunk len $00E8 -------------------
     lda #$00
-    sta $cf24              // retry counter (wraps: 256 attempts)
+    sta $cf24              // retry counter (0 = 256 attempts, first-chunk window)
     sta $cf25              // got-data flag
 hn_rd:
     lda #$10               // NET_CMD_SOCKET_READ
@@ -3514,6 +3523,12 @@ hn_rd:
     lda $cf22
     ora $cf23
     beq hn_eof             // $0000 = connection closed by peer
+    lda $cf25              // first chunk of the reply?
+    bne hn_prlp
+    lda #$0d
+    jsr $ffd2              // CR before the reply (step 7)
+    lda #$01
+    sta $cf25
 hn_prlp:                   // print the queued reply bytes
     lda $df1c
     and #$80               // DATA_AV
@@ -3522,15 +3537,17 @@ hn_prlp:                   // print the queued reply bytes
     jsr $ffd2              // CHROUT (KERNAL, polled -- fine under sei)
     jmp hn_prlp
 hn_prdn:
-    lda #$01
-    sta $cf25
-    jsr hn_fin             // status/accept; verdict irrelevant, reply is out
-    jmp hn_okcl
+    jsr hn_fin             // status/accept; verdict irrelevant, chunk is out
+    lda #$20               // short gap window now that data has flowed
+    sta $cf24
+    jmp hn_rd              // fetch the next chunk (step 7 multi-chunk)
 hn_nodat:
     jsr hn_fin             // finish the empty transaction
     dec $cf24
     bne hn_rd              // try again
-    beq hn_failc           // 256 retries exhausted
+    lda $cf25              // retry window exhausted:
+    bne hn_okcl            //   after data = quiet gap, reply complete
+    beq hn_failc           //   no data at all = server never answered
 hn_eof:
     jsr hn_fin
     lda $cf25
@@ -3689,64 +3706,168 @@ hn_fbad:
 // ---- data -------------------------------------------------------------------
 hn_ip:
     .byte $31, $39, $32, $2E, $31, $36, $38, $2E, $31, $2E, $32, $00    // "192.168.1.2",0
-.errorif (* > $9B0E), "hondani_net overflowed its pocket"
-    .fill $9B0E - *, $00   // pad to $9B0E (was: zeros)
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B0E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B1E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B2E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B3E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B4E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B5E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B6E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B7E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B8E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B9E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BAE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BBE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BCE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BDE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BEE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BFE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C0E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C1E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C2E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C3E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C4E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C5E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C6E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C7E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C8E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C9E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CAE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CBE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CCE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CDE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CEE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CFE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D0E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D1E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D2E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D3E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D4E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D5E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D6E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D7E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D8E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D9E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DAE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DBE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DCE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DDE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DEE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DFE
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E0E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E1E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E2E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E3E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E4E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E5E
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E6E
-    .byte $00, $00    // data $9E7E
+.errorif (* > $9B2E), "hondani_net overflowed its pocket"
+    .fill $9B2E - *, $00   // pad to $9B2E (was: zeros; pocket grown for step 7)
+// --- step 9b: hondani_err -- auto-dispatch an unrecognized typed line -------
+// Bank2 entry for the armed IERROR stub (RAM $0340). Called with bank2 mapped
+// and IRQ already off (the stub did `sei`); X = BASIC error index, $3A live.
+// MUST NOT sei/cli -- the stub owns the IRQ window and restores bank1 before
+// re-enabling IRQ, so an IRQ can never fire while bank2 is mapped.
+//
+// Trigger: direct-mode SYNTAX ERROR only (X=$0B, $3A=$FF). Then it connects to
+// the HDN server and sends the raw pre-crunch line captured by the step-8 tap
+// at $02A7 (TXTPTR is mid-crunched-line at IERROR time, so the shadow copy is
+// the source -- NOT ($7a)). Reply is CHROUT'd exactly like hondani_net.
+//
+// Return contract (the stub branches on carry):
+//   C=0  -> line handled (server reachable, reply printed) -> stub warm-starts
+//           BASIC (READY.), skipping the stock ?SYNTAX ERROR. No border change.
+//   C=1  -> not handled -> stub falls through to the stock IERROR vector. X is
+//           always restored to the original error index ($0B) so the stock
+//           handler prints the right message. Reached when: not our error
+//           class (X preserved untouched), no UCI, or the server is unreachable
+//           (per decision: server-reachable-even-if-"?ERROR" counts as handled).
+//
+// Self-contained on purpose: it shares only the pure leaf helpers (hn_hdr,
+// hn_push, hn_fin, hn_wdav, hn_close, hn_ip) so the hardware-proven HONDANI
+// path (hondani_net) stays byte-for-byte untouched. Address PINNED at $9B2E
+// (the bank1 stub hardcodes `jsr $9b2e`).
+hondani_err:
+.errorif (* != $9B2E), "hondani_err moved (bank1 stub hardcodes $9B2E)"
+    cpx #$0b               // SYNTAX ERROR index?
+    bne he_pass
+    lda $3a                // CURLIN hi = $FF only in direct mode
+    cmp #$ff
+    bne he_pass
+    lda $df1d              // UCI ident ($C9 = present)
+    cmp #$c9
+    bne he_unreach         // no UCI -> can't dispatch -> stock error
+// ---- connect: target $03 cmd $07, port 6464 LE, "192.168.1.2",0 ------------
+    lda #$07
+    jsr hn_hdr
+    lda #$40
+    sta $df1d
+    lda #$19
+    sta $df1d
+    ldx #$00
+he_iplp:
+    lda hn_ip,x            // shared "192.168.1.2",0
+    sta $df1d
+    inx
+    cmp #$00
+    bne he_iplp
+    jsr hn_push
+    bcs he_unreach
+    jsr hn_wdav            // socket id must appear
+    bcs he_unreach
+    lda $df1e
+    sta $cf21              // socket id
+    jsr hn_fin
+    bcc he_conok
+he_unreach:
+    jsr hn_fin             // 5c: drain/accept so UCI returns to idle
+    ldx #$0b               // restore error index for the stock handler
+    sec
+    rts
+he_pass:
+    sec                    // not our error class -> stock IERROR (X untouched)
+    rts
+he_conok:
+// ---- write: cmd $11, socket id, $FE $02, then the $02A7 shadow line ---------
+    lda #$11
+    jsr hn_hdr
+    lda $cf21
+    sta $df1d
+    lda #$fe               // wire magic
+    sta $df1d
+    lda #$02               // TEXT_INPUT (console 0)
+    sta $df1d
+    ldy #$00
+he_wlp:
+    lda $02a7,y            // raw pre-crunch line (step-8 shadow tap)
+    beq he_wdone           // $00 terminator
+    sta $df1d
+    iny
+    cpy #$59               // safety bound (matches the tap's copy limit)
+    bne he_wlp
+he_wdone:
+    jsr hn_push
+    bcc he_w1
+    jmp he_cfail
+he_w1:
+    jsr hn_fin
+    bcc he_w2
+    jmp he_cfail
+he_w2:
+// ---- read with retry (multi-chunk, CR before reply) -- mirrors step 7 -------
+    lda #$00
+    sta $cf24              // retry counter (0 = 256, first-chunk window)
+    sta $cf25              // got-data flag / CR-once latch
+he_rd:
+    lda #$10               // NET_CMD_SOCKET_READ
+    jsr hn_hdr
+    lda $cf21
+    sta $df1d
+    lda #$e8               // chunk len lo
+    sta $df1d
+    lda #$00               // chunk len hi
+    sta $df1d
+    jsr hn_push
+    bcs he_cfail
+    jsr hn_wdav
+    bcs he_cfail
+    lda $df1e              // length prefix lo
+    sta $cf22
+    jsr hn_wdav
+    bcs he_cfail
+    lda $df1e              // length prefix hi
+    sta $cf23
+    and $cf22
+    cmp #$ff               // $FFFF = no data yet
+    beq he_nodat
+    lda $cf22
+    ora $cf23
+    beq he_eof             // $0000 = peer closed
+    lda $cf25              // first chunk of the reply?
+    bne he_prlp
+    lda #$0d
+    jsr $ffd2              // CR before the reply
+    lda #$01
+    sta $cf25
+he_prlp:
+    lda $df1c
+    and #$80               // DATA_AV
+    beq he_prdn
+    lda $df1e
+    jsr $ffd2              // CHROUT
+    jmp he_prlp
+he_prdn:
+    jsr hn_fin             // status/accept; chunk is out
+    lda #$20               // short gap window now that data has flowed
+    sta $cf24
+    jmp he_rd              // next chunk
+he_nodat:
+    jsr hn_fin
+    dec $cf24
+    bne he_rd              // retry
+    lda $cf25              // window exhausted:
+    bne he_okcl            //   after data = quiet gap, reply complete
+    beq he_cfail           //   no data at all = server never answered
+he_eof:
+    jsr hn_fin
+    lda $cf25
+    bne he_okcl            // EOF after data = fine
+he_cfail:
+    jsr hn_close           // failure with an open socket: close it
+    ldx #$0b               // restore error index for the stock handler
+    sec
+    rts
+he_okcl:
+    jsr hn_close
+    clc                    // handled: reply printed
+    rts
+    .fill $9E80 - *, $00   // remaining bank2 free zeros up to real data $9E80
+.errorif (* != $9E80), "bank02 free run overflow"
     dec $01                // C6 01   CPU port: mem banking
     lda ($bb),y            // B1 BB
     inc $01                // E6 01   CPU port: mem banking

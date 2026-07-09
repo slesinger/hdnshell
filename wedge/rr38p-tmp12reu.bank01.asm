@@ -4162,6 +4162,58 @@ hondani_loop:
     iny
     bne hondani_loop       // always taken
 hondani_nomatch:
+// --- step 8: inert line tap (every non-empty, non-HONDANI typed line) -------
+// Runs with CHRGET flags + Y safely on the stack (pushed above) and X = the
+// current char (must survive -- only A/Y are used here). Three jobs, all
+// behavior-neutral:
+//  1. (Re)copy the 3-byte IERROR pass-through stub to $0340 (tape buffer;
+//     freezer only touches $0334-$033B). Re-copied every line so nothing
+//     that scribbles the buffer can leave a dangling vector.
+//  2. Idempotently point IERROR ($0300/$0301) at the stub, saving the
+//     previous vector to $03E7/$03E8 first. Stock RR rewrites $0300 in a
+//     few flows (e.g. MERGE's $0150 trampoline, a $85C9 command hook) and
+//     re-runs $E453 after -- the per-line reinstall absorbs all of that,
+//     and because the stub is a pure jmp ($03E7) pass-through, ANY
+//     interleaving behaves exactly stock.
+//  3. Shadow-copy the raw pre-crunch line from ($7A) to $02A7 (unused
+//     page-2 area; freezer resume scribbles $02A7-$02CA -- harmless,
+//     rewritten every line). By IERROR time BASIC has tokenized $0200
+//     ("STORY" would arrive as "ST<OR>Y"), hence this early copy. Bound:
+//     store index <= $58, so the terminator lands at $02FF at worst --
+//     never touches $0300.
+// Step 9 will replace the stub with the real direct-mode-syntax-error ->
+// cloud dispatch; this step proves the install/copy mechanics alone.
+    ldy #hd_stub_end - hd_stub - 1
+hd_stubcopy:
+    lda hd_stub,y
+    sta $0340,y
+    dey
+    bpl hd_stubcopy
+    lda $0300              // already ours?
+    cmp #$40
+    bne hd_install
+    lda $0301
+    cmp #$03
+    beq hd_installed
+hd_install:
+    lda $0300              // save whatever was live so the stub can
+    sta $03e7              // fall through to it
+    lda $0301
+    sta $03e8
+    lda #$40               // point IERROR at the RAM stub
+    sta $0300
+    lda #$03
+    sta $0301
+hd_installed:
+    ldy #$00
+hd_shadow:
+    lda ($7a),y
+    sta $02a7,y            // copies the $00 terminator too, then exits
+    beq hd_done
+    iny
+    cpy #$59               // safety bound (BASIC always null-terminates)
+    bcc hd_shadow
+hd_done:
     pla
     tay                    // restore Y
     plp                    // restore CHRGET carry
@@ -4210,6 +4262,8 @@ hondani_matched:
     jmp $dede              // gate: sta $de00 / pla / rti
 hondani_word:
     .byte $48, $4F, $4E, $44, $41, $4E, $49, $00    // "HONDANI",0 (PETSCII)
+// Step 9a: the IERROR stub template moved out of this (full) pocket to the
+// survey-clean $9E3A run so it can grow from 3 to 23 bytes (see hd_stub there).
     .fill $9E10 - *, $00   // pad pocket back to original size
 .errorif (* != $9E10), "hondani pocket overflow"
     lda #$20               // A9 20
@@ -4237,8 +4291,35 @@ hondani_word:
     rts                    // 60
 bank01_data_9E3A:
 .errorif (* != $9E3A), "bank01_data_9E3A shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E3A
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E4A
+// --- step 9a: armed IERROR stub template ------------------------------------
+// Was 31 zero bytes ($9E3A-$9E58), survey-clean: no operand anywhere in any
+// bank references this run. Copied to RAM $0340 by hd_stubcopy every typed
+// line and RUN THERE. Entered via jmp ($0300) with X = BASIC error index.
+// Banks in bank2, calls hondani_err ($9B2E), banks back to bank1. C=0 => the
+// line was handled -> re-enter BASIC's main loop (IMAIN, skips the stock
+// error); C=1 => fall through to the saved stock IERROR vector ($03E7).
+// Position-independence: every absolute operand is a fixed address ($de00,
+// $9b2e, ($0302), ($03e7)); the only self-relative op is `bcs hd_pass`, whose
+// displacement stays correct when the copy runs at $0340. X is left untouched
+// on every C=1 path so the stock handler still sees the original error index.
+hd_stub:
+    sei                    // 78
+    lda #$10               // A9 10   RR control: select bank2
+    sta $de00              // 8D 00 DE
+    jsr $9b2e              // 20 2E 9B   hondani_err (bank2, pinned address)
+    lda #$08               // A9 08   RR control: restore bank1
+    sta $de00              // 8D 00 DE
+    cli                    // 58
+    bcs hd_pass            // B0 03   C=1 -> stock IERROR
+    jmp $e37b              // 4C 7B E3   handled -> BASIC warm start: prints
+                           //            READY. + re-enters the wedge main loop
+                           //            (same continuation every wedge command
+                           //            rts's to; IMAIN $0302 alone skips READY)
+hd_pass:
+    jmp ($03e7)            // 6C E7 03   saved stock IERROR vector
+hd_stub_end:
+    .fill $9E59 - *, $00   // remaining zero fill to $9E59 (was all zeros)
+.errorif (* != $9E59), "bank01 9E3A stub overflow"
     dec $01                // C6 01   CPU port: mem banking
     lda ($bb),y            // B1 BB
     inc $01                // E6 01   CPU port: mem banking

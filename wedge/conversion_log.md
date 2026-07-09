@@ -20,10 +20,11 @@ Stock functionality must remain fully intact.
 | 5a | Move wedge code to its permanent home: bank2 `$991E` (1378-byte free run); relocate the step-4 probe there unchanged, revert bank5 to stock | Same as step 4 (`HONDANI` → green, `PEEK($CF20)`=201) but running from bank2; freezer backup/save must still work (bank2 = freezer tools bank) | ✅ HW tested OK 2026-07-08 (incl. freezer) |
 | 5b | Full cloud round-trip in bank2: connect `192.168.1.2:6464`, send `TEXT_INPUT` "PING", CHROUT reply, close, green/red border | `HONDANI` prints server reply then green border (server must be running) | ✅ HW tested OK 2026-07-08 (reply `?ERROR` printed, green; repeats + freeze/monitor fine; server-down → red; **bug found**: freeze on first call after server came back — fixed in 5c) |
 | 5c | UCI-state hardening: connect-fail path accepts/drains the transaction; all wait loops bounded ~1 s with `$0E` (ACC\|ABORT\|CLR_ERR) recovery kick — no code path can hang the machine | Server-down → red; **then server up → next `HONDANI` works without reset** (the 5b freeze case); everything else as 5b | ✅ HW tested OK 2026-07-08 |
-| 6 | `HONDANI <text>`: send the typed rest-of-line (raw, pre-crunch, via TXTPTR) as the TEXT_INPUT payload instead of hardcoded "PING" | `HONDANI HELP` prints the server help text; `HONDANI STATUS`, `HONDANI : 2+2` work; bare `HONDANI` still round-trips; stock sweep | 🔶 built, awaiting hardware test |
-| 7 | Print CR before the reply; read-loop until EOF so replies longer than one `$E8` chunk print fully | `HONDANI HELP` prints the *full* multi-line help; `HONDANI I: <question>` prints a long AI answer | |
-| 8 | **Inert** line tap: shadow-copy each raw typed line to `$02A7`, install pass-through IERROR stub at `$0340` (only `jmp` to saved vector). Zero behavior change | Everything 100% stock incl. error messages (`FOO` → `?SYNTAX ERROR`), **first line after cold boot**, RUN/STOP+RESTORE then typing, freeze → resume, TASS | |
-| 9 | Arm the stub: direct-mode **`?SYNTAX ERROR` only** (X=$0B, `$3A`=$FF) → send shadow line to server, print reply, re-enter main loop; server down/refused → fall through to stock `?SYNTAX ERROR` | `HELLO WORLD` → AI reply; `PRINT 1/0` → stock error; `10 FOO`+`RUN` → stock error; server down → stock `?SYNTAX ERROR` after ≤ ~5 s | |
+| 6 | `HONDANI <text>`: send the typed rest-of-line (raw, pre-crunch, via TXTPTR) as the TEXT_INPUT payload instead of hardcoded "PING" | `HONDANI HELP` prints the server help text; `HONDANI STATUS`, `HONDANI : 2+2` work; bare `HONDANI` still round-trips; stock sweep | ✅ HW tested OK 2026-07-08 |
+| 7 | Print CR before the reply; read-loop until EOF **or a quiet gap after data** so replies longer than one `$E8` chunk print fully (server holds the connection open — EOF alone never comes) | `HONDANI HELP` prints the *full* multi-line help; `HONDANI I: <question>` prints a long AI answer | ✅ HW tested OK 2026-07-09 |
+| 8 | **Inert** line tap: shadow-copy each raw typed line to `$02A7`, install pass-through IERROR stub at `$0340` (only `jmp` to saved vector). Zero behavior change | Everything 100% stock incl. error messages (`FOO` → `?SYNTAX ERROR`), **first line after cold boot**, RUN/STOP+RESTORE then typing, freeze → resume, TASS | ✅ HW tested OK 2026-07-09 |
+| 9a | **Arm the stub, no network** (split from 9). Final RAM-stub form: on a direct-mode syntax error (X=$0B, `$3A`=$FF) bank in bank2, call `hondani_err`, bank back; C=0 → print `HDN` marker + re-enter BASIC (IMAIN); any other error → C=1 → fall through to stock. Bank1 frozen after this test. | `FOO` → prints `HDN` then `READY.` (no `?SYNTAX ERROR`); `PRINT 1/0` → `?DIVISION BY ZERO`; `10 FOO`+`RUN` → `?SYNTAX ERROR IN 10`; **first line after cold boot** ok; freeze→resume; `HONDANI HELP` still round-trips; full stock sweep | 🔶 built, awaiting hardware test |
+| 9b | Replace the 9a marker in `hondani_err` (bank2 only) with the real dispatch: send the `$02A7` shadow line to the server, print the reply, C=0; server unreachable → C=1 (stock `?SYNTAX ERROR`). No border change (per decision). | `HELLO WORLD` → AI reply then `READY.`; `PRINT 1/0` → stock error; `10 FOO`+`RUN` → stock error; server down → stock `?SYNTAX ERROR` after ≤ ~5 s | 🔶 built, awaiting hardware test |
 
 ## Step 0 — clean baseline (2026-07-08)
 
@@ -592,16 +593,343 @@ Server running at 192.168.1.2:6464.
    `?SYNTAX ERROR`, `10 PRINT"A"`+`LIST`+`RUN`, empty RETURN,
    freeze → resume, `TASS` launch/exit.
 
+**Result: ✅ hardware tested OK (Honza, 2026-07-08).**
+
+## Step 7 — CR before reply + multi-chunk read loop (2026-07-08)
+
+### Design fact that shaped this step
+
+`cloud_server.py`'s `handle_client` recv-loops and never closes the
+connection after responding — so the `$0000` EOF the 5b read loop
+treated as the terminator **never arrives** after a normal reply; the
+wedge itself closes the socket. End-of-reply must be detected the same
+way `cloud_test_client.py` does it: long timeout before the first
+chunk, short one after ("stop once we have at least one chunk and a
+short pause").
+
+### Change (bank2 read phase only; connect/write/close untouched)
+
+- **CR before the reply**: on the first non-empty chunk only, print
+  `$0D` and latch the got-data flag `$CF25` (moved up from the old
+  post-print position — it now doubles as the CR-once latch).
+- **Multi-chunk loop**: after printing a chunk, finish the transaction
+  and jump back to `hn_rd` for the next one, with the retry window
+  reloaded to `$20` (32 polls ≈ a short pause) instead of the 256 used
+  while waiting for the first chunk (which must survive LLM latency —
+  HW-proven in step 6).
+- **Retry-exhausted split**: window empty *after* data = quiet gap =
+  reply complete → green; *without* any data = server never answered →
+  red. EOF path unchanged (data → green, no data → red).
+- Pocket guard moved `$9B0E` → `$9B2E` (two zero rows absorbed into the
+  fill; the free run continues to `$9E7F` regardless).
+
+### Verification
+
+- Diff vs stock: **588 bytes** = 568 (step 6) + 20 (15 CR block + 5
+  retry-split), bank2 `$991E-$9B1C` only; banks 0/3-7 byte-identical to
+  stock, bank1 source untouched (`git diff`: bank02.asm only).
+- Independent machine-disassembly audit (subagent, no source access),
+  12/12 claims PASS: CR latch `bne` lands exactly on the print loop,
+  post-chunk path jumps *back* to `hn_rd` (`$999B`), `dec $cf24 / bne`
+  displacement `$8F` (-113) in range, retry-exhausted split verified
+  into the green/red `.byte $2C` trick, no ZP writes, only external
+  call CHROUT, tail `$9B1D-$9B2D` zero.
+- Deployed to both `wedge/*.crt` names.
+
+### Hardware test checklist (Honza)
+
+Server at 192.168.1.2:6464.
+
+1. `HONDANI HELP` → **full** multi-line help prints (step 6 cut it at
+   ~232 chars), starting on a fresh line (the new CR), green border.
+2. `HONDANI I: EXPLAIN RASTER INTERRUPTS IN 5 SENTENCES` → long AI
+   answer prints completely (several seconds frozen first is normal),
+   green. Eyeball the tail — no missing ending = the gap heuristic
+   works; a truncated tail mid-sentence would mean the `$20` window is
+   too tight (report it, I'll widen).
+3. `HONDANI : 2+2` → short reply still fine, green.
+4. Repeat a long reply twice in a row (UCI state must stay clean
+   across multi-chunk exchanges).
+5. Server down → red ≤ ~5 s; server up → next call works (5c
+   recovery).
+6. Stock sweep: `$`, `FIND`, `MONITOR`+exit, `HONDANIX` →
+   `?SYNTAX ERROR`, `10 PRINT"A"`+`RUN`, freeze → resume, `TASS`.
+
+**Result: ✅ hardware tested OK (Honza, 2026-07-08).** Full multi-line
+replies print, gap heuristic ends them cleanly.
+
+## Step 8 — inert line tap: shadow copy + pass-through IERROR stub (2026-07-08)
+
+### Pre-work: does stock RR touch `$0300`? (yes — and it's fine)
+
+Grepped all banks. C64-side truth: bank1 redirects IERROR during two
+wedge flows (a `$85C9` ROM hook; MERGE's `$0150` RAM trampoline together
+with IMAIN) and stock re-runs `$E453` (BASIC vector re-copy) after such
+flows; bank0 clears/sets it at boot. The bank2/bank3 "`$0300`" hits are
+**relocated 1541 drive code** (operands next to `$1800/$1802` VIA regs —
+same false-positive class as the documented `jmp $99b5`). Consequences:
+our hook can be wiped at any time → the **per-line reinstall** absorbs
+that; and because the stub is a pure `jmp ($03E7)` pass-through, any
+interleaving with stock's own redirects behaves exactly stock. The
+freezer restores page 3 wholesale from its snapshot, so stub + vector
+always come back *consistent*.
+
+### Change (bank1 pocket only; bank2 untouched since step 7)
+
+`hondani_nomatch` (runs on every non-empty, non-HONDANI typed line —
+numbered lines included, harmlessly) now does, before the stock-state
+restore:
+
+1. Re-copy the 3-byte stub `jmp ($03E7)` to `$0340` every line
+   (self-heals tape-buffer scribbles; freezer only touches
+   `$0334-$033B`).
+2. If `$0300/$0301` ≠ `$0340`: save current vector to `$03E7/$03E8`,
+   then point `$0300` at the stub. Idempotent.
+3. Shadow-copy the raw pre-crunch line `($7A) → $02A7` including the
+   `$00` terminator, store index bounded ≤ `$58` so the worst-case
+   write is `$02FF` — never page 3.
+
+Tap clobbers only A/Y (X = scanner char survives; CHRGET carry stays
+`php`-protected exactly as before — the reference tree's first-line-
+after-boot bug can't recur). `HONDANIX`-style near-misses go through
+the tap too (they're future fallback candidates). Pocket now **full**:
+155/156 bytes + 1 fill; `"HONDANI",0` word at `$9E04`, stub template at
+`$9E0C`.
+
+### Verification
+
+- Diff vs stock: **648 bytes** = 588 (step 7) + 60 (64 new minus 4
+  coinciding with stock zeros). bank2 ranges = step-7 build exactly
+  (source untouched; per-bank assembly is deterministic); banks 0/3-7
+  stock. Build archived as `build/archive-step8.bin` (new habit: keep
+  per-step archives for future byte comparisons).
+- Independent disassembly audit (subagent, binary only): 8/8 PASS —
+  hook bytes, full checker+tap structure opcode-for-opcode, `bcs` of
+  the HONDANIX path retargeted to the tap start, X never written in the
+  tap, writes confined to `$0340-42/$0300-01/$03E7-E8/$02A7-$02FF`,
+  all branch targets on instruction boundaries, `$9E10+` byte-identical
+  to stock, **zero** bank1 differences outside the two intended sites.
+
+### Hardware test checklist (Honza) — everything must be 100% stock
+
+1. **First line after cold boot**: boot, immediately type `PRINT 10` →
+   prints `10` (this exact case caught the reference tree's carry bug).
+2. Errors stock: `FOO` → `?SYNTAX ERROR`; `PRINT 1/0` →
+   `?DIVISION BY ZERO`; `10 FOO` then `RUN` → `?SYNTAX ERROR IN 10`.
+   Machine normal after each.
+3. Observability (proves the tap runs): after any typed line,
+   `PRINT PEEK(768);PEEK(769)` → `64 3` (vector → `$0340`);
+   `PRINT PEEK(832);PEEK(833);PEEK(834)` → `108 231 3` (the stub);
+   `PRINT PEEK(999);PEEK(1000)` → the saved original vector, expect
+   `139 227` (`$E38B`); `PRINT PEEK(679)` → `80` — the shadow buffer's
+   first char is the `P` of the very PRINT line you typed (per-line
+   copy demonstrating itself).
+4. Stock sweep: `$`, `FIND`, `AUTO`, `OLD`, `MONITOR`+exit, `OFF`/`ON`,
+   `TASM`→TASS+exit, numbered lines+`LIST`+`RUN`, empty RETURN.
+5. Freeze → menu → resume, then type a line and re-check the PEEKs of
+   item 3. RUN/STOP+RESTORE, then `FOO` → still stock error.
+6. If convenient: a MERGE (it redirects `$0300` itself — must work).
+7. `HONDANI HELP` still round-trips (match path bypasses the tap).
+
+**Result: ✅ hardware tested OK (Honza, 2026-07-09).**
+
+## Milestone decisions for step 9 (Honza, 2026-07-09)
+
+1. **Border feedback**: auto-dispatch (any typed line → server) is **visually
+   invisible** — no green/red flash. The `HONDANI` keyword keeps its green/red
+   border feedback; the transparent "type anything" path does not.
+2. **Granularity**: step 9 is **split into 9a + 9b**, each hardware-tested.
+3. **Fall-through**: a line goes to the stock `?SYNTAX ERROR` **only when the
+   server is unreachable**. Any reachable-server reply (even the server's own
+   `?ERROR` text) counts as fully handled — no stock error.
+
+## Step 9a — arm the stub (mechanism only, no network) (2026-07-09)
+
+### Why this split
+
+Step 9 arms the previously-inert IERROR stub — the riskiest change. 9a builds
+the **final** RAM-stub form and freezes bank1, but routes to a bank2
+`hondani_err` that does **no network** — it just proves the trigger + carry +
+re-entry mechanics. After 9a passes hardware, **9b touches only bank2**
+(swap the marker for the real dispatch), which is the same low-risk,
+bank2-only iteration we did in 5b→7.
+
+### Space survey (mandatory, done)
+
+The bank1 main pocket `$9D74-$9E0F` is full (3-byte inert stub only). The
+armed stub is 23 bytes, so it moves to the stock zero run **`$9E3A-$9E58`
+(31 bytes)**. Survey: **no operand in any bank references `$9E3A-$9E5F`**
+(grep of all `lda/sta/jmp/jsr/...` operands) — matches the existing
+`.errorif (* != $9E3A)` data guard and real code resuming at `$9E59`. Safe.
+
+### Change
+
+- **bank1** — the 3-byte `hd_stub` template (`jmp ($03e7)`) is removed from
+  the pocket (those bytes revert to stock zeros) and re-homed at `$9E3A` as
+  the 23-byte armed template:
+  `sei; lda #$10/sta $de00 (bank2); jsr $9b2e; lda #$08/sta $de00 (bank1);
+  cli; bcs hd_pass; jmp ($0302); hd_pass: jmp ($03e7)`.
+  Copied to RAM `$0340` by the existing `hd_stubcopy` loop (its `ldy #N`
+  immediate auto-grows 2→22) and **runs there**. Position-independent: every
+  absolute operand is a fixed address; only `bcs` is self-relative (stays
+  correct at `$0340`). X untouched on every C=1 path (stock handler still
+  sees the error index). The `jsr $9b2e` target is **pinned**.
+- **bank2** — new `hondani_err` pinned at `$9B2E` (in the `$9B2E-$9E7F` free
+  run): `cpx #$0b / bne he_pass`; `lda $3a / cmp #$ff / bne he_pass`
+  (direct-mode syntax error only); print CR `"HDN"` CR via CHROUT; `clc`
+  (handled). Anything else → `he_pass: sec` (X preserved). Entered
+  bank2-mapped with IRQ already off (the stub did `sei`); returns via `rts`,
+  and the **stub** restores bank1 then `cli` — so no IRQ can fire while
+  bank2 is mapped (the reason `hondani_err` must *not* `cli` itself).
+
+### Verification (Sonnet subagent, build + byte-diff + disassembly)
+
+- `./build.sh`: clean, all `.errorif` guards pass, deployed to both
+  `wedge/*.crt`.
+- Full-image diff vs stock `rr38p-tmp12reu.bin`: **705 bytes across bank1 +
+  bank2 only**; banks 0/3/4/5/6/7 **byte-identical**. Old pocket stub site
+  `$9E0C-$9E0E` is back to stock zeros.
+- Both new blocks disassembled from the rebuilt binary and matched
+  opcode-for-opcode: bank1 stub (`bcs` disp `$03`, `jsr $9b2e`, both `jmp`
+  indirect `$6C`), bank2 `hondani_err` (both `bne` land on `he_pass`, five
+  `jsr $ffd2`, immediates `0D 48 44 4E 0D`). Trailing fill all zero.
+
+### Hardware test checklist (Honza) — stock behavior is sacred
+
+1. **The new behavior**: `FOO` (garbage) at the `READY.` prompt → prints
+   `HDN` on its own line, then `READY.` — and **no** `?SYNTAX ERROR`. Repeat
+   a few times; machine stays alive.
+2. **Non-syntax errors stay stock**: `PRINT 1/0` → `?DIVISION BY ZERO`;
+   `?FOO` typos that aren't syntax errors behave stock.
+3. **Program-mode stays stock**: `10 FOO` then `RUN` → `?SYNTAX ERROR IN 10`
+   (program mode, not the `HDN` path).
+4. **First line after cold boot**: boot, immediately type `PRINT 10` → `10`
+   (the reference tree's carry bug case).
+5. `HONDANI HELP` still round-trips (server up) — the keyword path is
+   independent of the stub.
+6. Stock sweep: `$`, `FIND`, `AUTO`, `OLD`, `MONITOR`+exit, `OFF`/`ON`,
+   `TASM`→TASS+exit, numbered lines + `LIST` + `RUN`, empty RETURN.
+7. Freeze → menu → resume, then `FOO` → still prints `HDN` (stub reinstalled
+   per line); RUN/STOP+RESTORE then `FOO` → `HDN`.
+8. Observability unchanged from step 8: after any typed line
+   `PRINT PEEK(768);PEEK(769)` → `64 3`.
+
+**Result (first build): ✅ mostly — `FOO` prints `HDN`, all stock behavior
+correct — but `READY.` never reappeared** after the `HDN` marker (machine
+alive, accepting input, just no prompt). Root cause: the handled path used
+`jmp ($0302)` (IMAIN = `$A483`), which is BASIC's main *input* loop — the
+`READY.` message is printed by the warm-start code *before* that loop, so
+entering IMAIN directly skips it.
+
+**Fix**: handled path now `jmp $e37b` (KERNAL BASIC warm start) instead —
+the exact continuation every stock wedge command `rts`'s to (step-2 note:
+pushing `$E3/$7A`). It resets direct mode, prints `READY.`, and re-enters
+the wedge main loop. 3-byte change (`6C 02 03` → `4C 7B E3`), stub still 23
+bytes, `bcs` displacement unchanged; rebuilt + re-verified (banks 0/3-7
+identical, bank2 unchanged).
+
+**Result (after the `$e37b` fix): ✅ hardware tested OK (Honza, 2026-07-09).**
+`FOO` → `HDN` + `READY.`; all stock behavior intact. **Bank1 is now FROZEN**
+(9a binary archived as `build/archive-9a.bin`).
+
+## Step 9b — auto-dispatch the typed line to the server (2026-07-09)
+
+### Change (bank2 only; bank1 + `hondani_net` byte-identical to 9a)
+
+`hondani_err` at the pinned `$9B2E` grows from the 9a marker into the real
+dispatch. It is **self-contained** — it shares only the pure leaf helpers
+(`hn_hdr`, `hn_push`, `hn_fin`, `hn_wdav`, `hn_close`, `hn_ip`), so the
+hardware-proven HONDANI path (`hondani_net`) stays **byte-for-byte
+untouched** (zero regression risk). Flow mirrors `hondani_net` (connect →
+write `$FE $02` + line → multi-chunk read with CR-before-reply → close) with
+four deliberate differences:
+
+1. **No `sei`/`cli`** anywhere — the RAM stub owns the IRQ window and
+   restores bank1 *before* re-enabling IRQ, so no IRQ can fire while bank2
+   is mapped. (`hondani_net` must `sei`/`cli` because it is reached from the
+   `$DEDE` rti gate; `hondani_err` must not, or an IRQ would hit bank2.)
+2. **Payload from `$02A7`** (`lda $02a7,y`), the step-8 shadow copy — TXTPTR
+   is mid-crunched-line at IERROR time, so `($7a)` is unusable.
+3. **No border paint** (per the step-9 decision: auto-dispatch is invisible).
+4. **Carry return, not `$d020`**: `C=0` = server reachable + reply printed =
+   handled (stub warm-starts BASIC, no stock error); `C=1` = fall through to
+   stock `?SYNTAX ERROR`. Every `C=1` path except the "not our error class"
+   early-out reloads `ldx #$0b` so the stock handler prints the right message
+   (`he_pass` alone preserves the caller's X untouched). `C=1` is reached on:
+   wrong error class, no UCI (`$DF1D`≠`$C9`), or an unreachable/timed-out
+   server — a *reachable* server's reply (even its own `?ERROR`) is handled.
+
+### Verification (Sonnet subagent, build + dual byte-diff + disassembly)
+
+- `./build.sh` clean; deployed to both `wedge/*.crt`. Build archived as
+  `build/archive-9b.bin`.
+- **Frozen-region proof** vs `build/archive-9a.bin`: bank1 **identical**;
+  bank2 `hondani_net` region `$991E-$9B1C` **identical**; banks 0/3-7
+  **identical**. The *only* change is bank2 `$9B31-$9C41` (the grown
+  `hondani_err`). vs stock: banks 0/3/4/5/6/7 byte-identical.
+- Full disassembly audit of `hondani_err` (114 instrs): entry gate
+  (`cpx #$0b` / `$3A`=`$FF` / `$DF1D`=`$C9`) correct; **zero `sei`/`cli`**;
+  payload load is `lda $02a7,y` (not `($7a),y`); IP load targets the shared
+  `hn_ip` (`$9B11`); the three `sec` returns match the `ldx #$0b` contract
+  (only `he_pass` bare); handled path `clc`/`rts` after `hn_close`; all
+  branches in range and on instruction boundaries; all six `jsr` targets
+  sane (`$FFD2` + the five helpers in `$991E-$9B1C`).
+
+### Hardware test checklist (Honza)
+
+Server running at 192.168.1.2:6464 for the "up" cases.
+
+1. **The headline feature**: type free text that isn't a command, e.g.
+   `HELLO WORLD` or `WHAT IS THE FASTEST C64 COPIER` → server reply prints
+   on a fresh line, then `READY.` — **no** `?SYNTAX ERROR`, **no** border
+   change. (LLM latency: machine frozen a few seconds is normal.)
+2. `: 2+2` (leading colon → server python-eval) → `4`, then `READY.`.
+   `I: EXPLAIN SPRITES IN ONE SENTENCE` → AI reply.
+3. **Non-syntax errors stay stock**: `PRINT 1/0` → `?DIVISION BY ZERO`.
+4. **Program mode stays stock**: `10 HELLO WORLD` then `RUN` →
+   `?SYNTAX ERROR IN 10` (no dispatch).
+5. **Server down** → after ≤ ~5 s, stock `?SYNTAX ERROR` appears (fall
+   through), machine alive; bring the server back → next line dispatches
+   again with no reset (5c recovery still holds).
+6. `HONDANI HELP` still works identically (independent path).
+7. Stock sweep: `$`, `FIND`, `MONITOR`+exit, numbered lines + `LIST` + `RUN`,
+   empty RETURN, freeze → resume, `TASS` launch/exit.
+8. First line after cold boot: `PRINT 10` → `10`.
+
 **Result: _pending_**
 
 ## State snapshot & continuation guide (for the next session)
 
-**Deployed image** = step 6 (`wedge/*.crt`, byte-verified + disassembly-
-audited, awaiting the step-6 hardware checklist above). If Honza reports
-6 ✅, mark it and build step 7 (CR + multi-chunk read loop — design notes
-in the step-6 header comment's "known simplifications"). On any red
-border the breadcrumbs are `PEEK($CF30/31)` status chars, `PEEK($CF21)`
-socket id, `PEEK($CF20)` ident (expect 201).
+**Deployed image** = step 9b (`wedge/*.crt`, byte-verified + disassembly-
+audited; steps 7, 8, 9a hardware-tested OK 2026-07-09; bank1 FROZEN since
+9a). Awaiting the step-9b hardware checklist above — this is the headline
+feature (any unrecognized direct-mode line → HDN server). Archives:
+`build/archive-9a.bin`, `build/archive-9b.bin`. If 9b passes, step 9 (the
+whole "type anything → AI") is DONE. On any failure the breadcrumbs are
+`PEEK($CF30/31)` status chars, `PEEK($CF21)` socket id, `PEEK($CF20)` ident
+(expect 201).
+
+**Step 9 design notes (space plan):** the main bank1 pocket is FULL.
+The armed stub template is ~33 bytes:
+`txa/bmi pass; lda $3a/cmp #$ff/bne pass; cpx #$0b/bne pass; sei;
+lda #$10/sta $de00; jsr <bank2 error entry>; lda #$08/sta $de00; cli;
+jmp ($0302); pass: jmp ($03e7)` — runs from RAM so the mid-stub bank
+flips are legal; re-enters BASIC via IMAIN like the reference tree did.
+Space: bank1 has a second stock zero run `$9E3A-$9E58` (31 bytes,
+**reference survey still required** — check no code/data reads target
+it, like the 5a survey did for bank2). 31 < 33, so move the 8-byte
+`"HONDANI",0` word (or the 3-byte step-8 stub template) there to free
+main-pocket room; keyword-loop `lda <word>,y` operand just retargets.
+The bank2 error entry reuses `hondani_net` but must send the `$02A7`
+shadow copy instead of `($7A)` (TXTPTR is mid-crunched-line at IERROR
+time) and set a flag so failure paths *return with carry set* instead
+of painting red, letting the stub fall through to the stock
+`?SYNTAX ERROR` per the offline-UX decision. Server-down latency note:
+the connect timeout (~1 s kick + retries) happens on EVERY unrecognized
+line while offline — acceptable per decision, revisit if annoying.
+During-MERGE caveat: `$3A`=`$FF` there too; a syntax error inside a
+MERGE would hit the fallback — accepted for now (MERGE errors are rare;
+pass-through for non-syntax errors keeps MERGE's own machinery intact).
 
 **Where everything lives:**
 
@@ -612,15 +940,18 @@ socket id, `PEEK($CF20)` ident (expect 201).
   against stock `rr38p-tmp12reu.bin` (python, ranges per bank) — every
   diff byte must be explainable.
 - bank1 `$83FF`: 3-byte hook (`jmp $9D74`) replacing `tax/bne $8407` in
-  the BASIC scanner. bank1 `$9D74-$9DCD` pocket: `HONDANI` keyword check
-  (state-preserving; falls back to stock scanner at `$8407`) + matched
-  path (mimics stock `$848D`, pushes `$E3/$7A` so handlers rts to READY)
-  + the hand-rolled cross-bank gate frame → bank2 `$991E` with `$DE00`
-  value `$10`. Word list at `$9DC7`.
-- bank2 `$991E-$9B08` (`hondani_net`): the whole network routine — see
-  its big header comment for protocol, scratch map (`$CF20-$CF33`), and
-  design constraints. Free space continues to `$9E7F` (~890 bytes) and
-  bank3 `$998B-$9E9C` (1298) is the surveyed reserve.
+  the BASIC scanner. bank1 pocket `$9D74-$9E0F` (FULL): `HONDANI`
+  keyword check (state-preserving; falls back to stock scanner at
+  `$8407`) + step-8 inline line tap at `$9D8B` (stub copy → `$0340`,
+  idempotent IERROR install with orig vector saved at `$03E7/8`, raw
+  line shadow → `$02A7`) + matched path (mimics stock `$848D`, pushes
+  `$E3/$7A` so handlers rts to READY) + cross-bank gate frame → bank2
+  `$991E` with `$DE00` value `$10`. Word at `$9E04`, stub template at
+  `$9E0C`.
+- bank2 `$991E-$9B1C` (`hondani_net`, guard `$9B2E`): the whole network
+  routine — see its big header comment for protocol, scratch map
+  (`$CF20-$CF33`), and design constraints. Free space continues to
+  `$9E7F` (~870 bytes) and bank3 `$998B-$9E9C` (1298) is the reserve.
 - Full mechanism docs: `rr38p-tmp12reu.analysis.md` (gate/trampoline,
   corrected `$DEEE` table facts), this file (step history, safety
   surveys, corruption post-mortem of the old attempts).
