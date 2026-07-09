@@ -27,7 +27,8 @@ Stock functionality must remain fully intact.
 | 9b | Replace the 9a marker in `hondani_err` (bank2 only) with the real dispatch: send the `$02A7` shadow line to the server, print the reply, C=0; server unreachable → C=1 (stock `?SYNTAX ERROR`). No border change (per decision). | `HELLO WORLD` → AI reply then `READY.`; `PRINT 1/0` → stock error; `10 FOO`+`RUN` → stock error; server down → stock `?SYNTAX ERROR` after ≤ ~5 s | ✅ HW tested OK (Honza) |
 | 10a | **Console-switch key hook — detect only, no network** (bank2 only, bank1 FROZEN). Typing `HONDANI` installs a CINV (`$0314`) RAM stub at `$03A0`; on each IRQ it checks `SHFLAG` for C=+CTRL and `SFDX` for keys 1..7 and, one-shot per press, writes the digit (1..7) to the border `$D020`, then chains to the original IRQ. No console switch, no packets, no bank switch. | After `HONDANI`: `C=+CTRL+1..7` sets the border to that digit's colour (1=white … 7=yellow); release/other keys leave it; **all stock behaviour + HONDANI/auto-dispatch/freeze/`TASS` still 100% as before** (the persistent IRQ hook must not disturb anything) | ✅ HW tested OK (Honza, 2026-07-09) |
 | 10b | **Cross-bank call from the IRQ stub** (bank2 only, bank1 FROZEN). The CINV stub's match path pages in bank2 (`$10`), `jsr`s a new bank2 `console_switch`, restores bank1 with the **constant `$08`**, and chains. `console_switch` does the *same* visible thing as 10a (border = digit) but from **bank2 code reached across the IRQ bank switch** — isolating that mechanism before 10c hangs the real switch on it. | Identical to 10a from the user's seat — `C=+CTRL+1..7` sets the border to that digit's colour, machine stays alive, all stock behaviour intact. Press at the `READY.` prompt. | ✅ HW tested OK (Honza, 2026-07-09) after the read-restore fix; re-arm with `HONDANI` after `TASS`/launch |
-| 10c | **Real console switch — view/navigate (no key forwarding)** (bank2 only, bank1 FROZEN). `console_switch` now: on `C=+CTRL+2..7`, `scr_save` (snapshot local screen server-side, block on ack), select console = digit, `scr_get` (server DMA-paints it), then enter `cs_modal` — a blocking loop (BASIC paused) that scans the keyboard itself and on another `C=+CTRL+digit` hops consoles or (digit 1) `scr_restore`s the local screen and returns. Server-side DMA does all screen transfer. No other keys forwarded yet. | With server + a console up: `HONDANI` to arm, then `C=+CTRL+2` → File Editor screen appears; `C=+CTRL+3..7` hop between server consoles; `C=+CTRL+1` → your BASIC screen restored exactly. Machine paused while in a console (don't type yet — that's 10d). Server down → switch is refused, stay local. | 🔶 built, awaiting hardware test |
+| 10c | **Real console switch — view/navigate (no key forwarding)** (bank2 only, bank1 FROZEN). `console_switch` now: on `C=+CTRL+2..7`, `scr_save` (snapshot local screen server-side, block on ack), select console = digit, `scr_get` (server DMA-paints it), then enter `cs_modal` — a blocking loop (BASIC paused) that scans the keyboard itself and on another `C=+CTRL+digit` hops consoles or (digit 1) `scr_restore`s the local screen and returns. Server-side DMA does all screen transfer. No other keys forwarded yet. | With server + a console up: `HONDANI` to arm, then `C=+CTRL+2` → File Editor screen appears; `C=+CTRL+3..7` hop between server consoles; `C=+CTRL+1` → your BASIC screen restored exactly. Machine paused while in a console. Server down → switch is refused, stay local. | ✅ HW tested OK (Honza, 2026-07-09) |
+| 10d | **Modal key forwarding** (bank2 only, bank1 FROZEN). `cs_modal` forwards typed keys: no `C=+CTRL` → `GETIN` → send PETSCII to `w_console` as a KEYPRESS (`key_send`), server DMA-repaints. Loop paced to ~60Hz (`cs_vsync`, raster line 250) so SCNKEY reads reliably. Modifiers sent as 0 (minimal). | In a server console, typing appears (letters/RETURN/cursor/DEL); first switch goes to the console you pressed; `C=+CTRL+1` reliably returns to BASIC; navigate works; no stray chars from `C=+CTRL` chords. | ✅ HW tested OK (Honza, 2026-07-09) after the 2 bug-fixes |
 
 ## Step 0 — clean baseline (2026-07-08)
 
@@ -1161,7 +1162,193 @@ regardless).
    `C=+CTRL+1` return = the switch logic is fine but the **server DMA paint** did
    not land (server/DMA config, not the wedge).
 
+**Result: ✅ hardware tested OK (Honza, 2026-07-09).** Switch in, navigate all
+server consoles, and return with the BASIC screen restored — all working; server
+DMA paint lands correctly.
+
+## Step 10d — modal key forwarding: type into a server console (2026-07-09)
+
+### Change (bank2 only; bank1 byte-identical to 10c/9b)
+
+`cs_modal` now forwards typed keys. When `C=+CTRL` is *not* held it calls `GETIN`
+(`$FFE4`); a non-zero PETSCII code is sent to `w_console` as a KEYPRESS packet
+(`key_send`) and the server DMA-repaints. When `C=+CTRL` *is* held it does the
+same digit-switch logic as 10c, and on a held combo that isn't a digit it flushes
+the keyboard buffer (`NDX`=0) so the chord char isn't forwarded when the combo
+lifts.
+
+- `key_send`: connect → SOCKET_WRITE `$FE, (w_console|KEYPRESS), <petscii>, $00`
+  → close (no ack; async DMA repaint). Reuses `cs_connect`/`hn_*`.
+- Auto-repeat is **disabled** for the duration of a console (`RPTFLG $028A` saved
+  to `$CF28`, set to `$40` on entry, restored on return). SCNKEY's own repeat
+  countdown assumes steady 60 Hz calls and misfires from this tight loop; turning
+  repeat off gives clean one-char-per-press. Proper two-stage key-repeat pacing
+  is a later step (per the "minimal modal first" decision).
+- Modifiers sent as `0`: `GETIN` already folds shift/C= into the PETSCII code, so
+  basic typing needs no modifier byte. (A real `SHFLAG`→`ModifierFlags` map is a
+  later refinement — note the C=/CTRL bits are *swapped* between them.)
+- New scratch: `$CF28` (saved RPTFLG), `$CF29` (key being sent).
+
+### Verification
+
+- `./build.sh` clean; all `.errorif` guards pass. Deployed to both `wedge/*.crt`;
+  archived `build/archive-10d.bin`.
+- Diff vs `build/archive-10c.bin`: **bank1 identical** (FROZEN); banks 0/3-7
+  identical; only bank2 changed. vs stock: banks 0/3/4/5/6/7 byte-identical.
+- Hand-decoded the new/changed bytes: `console_switch` RPTFLG save/`#$40`/restore
+  around `cs_modal`; `cs_modal` top `bne cm_keys`; no-digit path `LDA #0 / STA
+  $C6`; `cm_keys` = `JSR $FFE4 / BEQ / JSR key_send / JMP`; `key_send` wire bytes
+  `$FE / ($03EF ORA #$01) / petscii / $00`.
+
+### Hardware test checklist (Honza)
+
+Server up, console 2 (File Editor) available. `HONDANI` to arm, `C=+CTRL+2`.
+
+1. **Type**: letters/digits/space appear in the File Editor (each key round-trips
+   to the server, which repaints the whole screen via DMA — expect a little
+   latency per key). RETURN, cursor keys, DEL work.
+2. **One char per press** (no runaway auto-repeat). Holding a key does *not*
+   spam (repeat is off for now).
+3. **Navigate while typing works**: `C=+CTRL+3` etc. still hop consoles;
+   `C=+CTRL+1` restores the BASIC screen exactly; typing at `READY.` is normal
+   again.
+4. A held `C=+CTRL` plus a non-digit key must not leak a stray char into the
+   console or into BASIC after you return.
+5. Stock sanity with the hook live (as before). Server down mid-session:
+   keystrokes just fail quietly (console stops updating), `C=+CTRL+1` still
+   returns you to local.
+
+**Result (first build): ❌ two bugs** (Honza, 2026-07-09): (a) the first switch
+from local *always* went to console 5 (Telegram) regardless of digit; (b)
+`C=+CTRL+1` mostly failed to return to BASIC (2..7 in-console switching worked).
+
+**Root causes + fixes (bank2 only; bank1 still byte-identical/FROZEN):**
+
+- **(a) X clobbered.** `console_switch` did `jsr scr_save` *then* `txa` to build
+  the console nibble — but `scr_save`→`cs_connect`→`hn_fin` leave `X=4`, so it
+  always computed `(4+1)<<4 = $50` = console 5. In-console switching (`cm_server`)
+  reads `X` immediately after the digit scan, so it was unaffected. **Fix:**
+  compute the nibble from `X` *before* `scr_save`, carry it on the stack
+  (`pha`/`pla`; PLA preserves carry) and commit `w_console` only after the save
+  succeeds.
+- **(b) Un-paced keyboard scan.** `cs_modal` called `SCNKEY` in a tight loop at
+  ~100 kHz — far faster than the keyboard matrix settles — so keypresses were
+  read unreliably. A misread of `2..7` still lands on *some* console (looks
+  fine); a missed `1` just leaves you stuck (very visible). **Fix:** pace the
+  loop to one scan per frame with `cs_vsync` (wait raster line 250).
+- To fit the fixes in the bank2 free run (it overflowed `$9E80` by 21 bytes on
+  the first attempt), the `RPTFLG=$40` auto-repeat-disable was **dropped**. With
+  60 Hz pacing SCNKEY's repeat is no longer erratic, so keys now auto-repeat at
+  the normal rate (each repeat is one KEYPRESS round trip). Tuning repeat feel is
+  folded into the later key-repeat step. (7 bytes free remain before `$9E80`.)
+
+Rebuilt + verified: bank1 identical to the 10d archive (FROZEN); banks 0/3-7 =
+stock; fixes hand-decoded (`… ASLx4 / PHA / JSR scr_save / PLA / BCS / STA $03EF`;
+`cs_modal` now opens `JSR cs_vsync / JSR $FF9F`; `cs_vsync` = `LDA $D012 / CMP
+#$FA / BNE`). Same test checklist above, plus: **first switch lands on the digit
+you pressed** (2=File Editor, 5=Telegram, …), and **`C=+CTRL+1` returns every
+time**.
+
+**Result: ✅ hardware tested OK (Honza, 2026-07-09).** First switch lands on the
+pressed digit, `C=+CTRL+1` returns reliably, typing into consoles works.
+**Console switching (steps 10a-10d) is functionally complete** for the minimal
+spec. Archives: `build/archive-10a.bin` … `build/archive-10d.bin`; bank1 has been
+FROZEN since 9a and is byte-identical across all of 10a-10d.
+
+## Step 10e — fix cursor "choke" (type-ahead flush) (2026-07-09)
+
+**Symptom** (Honza): in the File Editor, moving the cursor is fast for ~20 moves
+then chokes, then eventually recovers — the reference tree was perfectly smooth.
+
+**Root cause:** each `key_send` is a slow network round trip, and `cs_modal`
+drained the KEYD keyboard buffer only one key per iteration. Move/type faster
+than we can send and the keystrokes **back up in the 10-byte buffer** (and behind
+it, the KERNAL type-ahead), so they keep playing out *after* you stop (choke) and
+then drain (recover). The reference stayed smooth because it **flushes the
+type-ahead buffer (`NDX`=`$C6`=0) after every send** — we had omitted that.
+
+**Fix (bank2 only; bank1 FROZEN):** `cm_keys` now writes `$C6`=0 right after
+`key_send`, dropping any backlog so only the *current* key is ever forwarded.
+Excess-fast input is dropped rather than queued, keeping the cursor responsive.
+Normal typing is unaffected (the buffer held only the one key we just sent). +5
+bytes (3 free left before `$9E80`). Build clean; bank1 identical to the 10d
+archive; banks 0/3-7 = stock; `cm_keys` decodes `… JSR key_send / A9 00 85 C6 /
+JMP cs_modal`.
+
+Test: in a server console, hold/spam the cursor — it should track your input
+without choking or a lagging backlog after you stop. If a *held* key still feels
+off, the fuller fix is to port the reference's self-paced repeat
+(INITIAL/FAST-frame pacing off the raw matrix), which needs a bank2 space
+refactor — deferred to the key-repeat follow-up.
+
+**Result: ✅ hardware tested OK (Honza, 2026-07-09).** Choking resolved.
+
+## Step 10f — fix the intermittent return-to-local hang (2026-07-09)
+
+**Symptom** (Honza; present since 10d, reported now): switch to a server console,
+**type/fiddle**, then `C=+CTRL+1` to return → intermittently the machine hangs with
+BASIC spewing `?OVERFLOW ERROR IN` in a loop at misaligned columns, plus a leftover
+green console-text fragment. Sometimes it returns cleanly; the more you do in the
+editor, the more likely it hangs. **View-only (10c) never hung.**
+
+**Root cause (consulted Fable 5):** the console session is meant to run with
+interrupts masked (I=1) for its whole life inside one CINV IRQ. But **`GETIN`
+($FFE4) silently re-enables interrupts** — its KERNAL keyboard buffer-shift path
+($E5B4) ends in `CLI`. So the first key you type in a console leaks I=0 for the
+rest of the session. With interrupts back on, a jiffy IRQ re-enters the CINV stub
+(which still owns `$0314`) *while bank2 code is executing*; during the `C=+CTRL+1`
+return the re-entrant stub runs `lda #$08 / sta $de00` and **maps bank1 back in
+under the still-running bank2 code** → wild execution → the `?OVERFLOW ERROR` spew
+(and a nested `scr_save` snapshots the console screen over the local one → the
+green residue). Matches exactly: only after you type, intermittent (per-frame
+race), and more activity → more likely.
+
+**Fix (bank2 only; bank1 FROZEN):** re-assert `sei` to restore the paused-BASIC
+invariant — one at the top of `cs_modal` (covers the return path every iteration)
+and one right after `GETIN` in `cm_keys` (before `key_send`; `SEI` preserves Z so
+the `beq` still tests GETIN's result). 2 bytes; **1 byte of the bank2 free run
+left** before `$9E80` — further bank2 code now needs the bank3 reserve or a
+refactor.
+
+Build clean; bank1 identical to the 10e archive (FROZEN); banks 0/3-7 = stock.
+`cs_modal` = `78 (sei) / 20 40 9D (jsr cs_vsync) / …`; `cm_keys` = `20 E4 FF
+(getin) / 78 (sei) / F0 AF (beq) / 20 .. (jsr key_send)`.
+
+Test: type in the File Editor, move the cursor around a lot, then `C=+CTRL+1` →
+must return to BASIC cleanly **every time**, screen restored, no `?OVERFLOW` spew.
+Repeat the switch-in/out cycle many times, typing between. Server-down + stock
+sweep sanity as before.
+
 **Result: _pending_**
+
+## Console switching — done, and the optional follow-ups
+
+Delivered (bank2 only, bank1 untouched): `HONDANI` arms a CINV (`$0314`) RAM stub
+that detects `C=+CTRL+1..7`; 2..7 save the local screen server-side, DMA-paint the
+target console, and run a 60Hz modal loop forwarding keystrokes; 1 restores the
+local screen and returns to BASIC. All screen transfer is server-side DMA.
+
+Remaining polish (none required for the core feature; do when useful):
+
+1. **Bank1 per-line self-heal / launch-disarm** — the most user-visible gap. The
+   hook is armed only by typing `HONDANI` and is lost after `RUN`/`LOAD`/`TASS`
+   (must re-type `HONDANI`). The manual's intent is that *any* typed line re-arms
+   it and launch lines disarm it. This needs a small, carefully-bounded **bank1**
+   change (bank1 is currently FROZEN + its main pocket is FULL — see the step-9
+   space notes; the second zero run `$9E3A+` or a bank2 trampoline are the
+   options). Highest risk of the remaining items.
+2. **Two-stage key-repeat** — keys currently auto-repeat at the plain 60Hz rate;
+   port the reference's initial+fast pacing (`INITIAL/FAST_REPEAT_DELAY_FRAMES`,
+   `last_matrix`, `w_key_stage`) for a nicer feel and fewer redundant KEYPRESS
+   round trips on a held key.
+3. **Correct modifier mapping** — `key_send` sends modifiers `0`; build the
+   server `ModifierFlags` byte from `SHFLAG` (note SHIFT stays bit0, but C= and
+   CTRL are **swapped**: SHFLAG C=`$02`/CTRL`$04` → server CTRL`$02`/C=`$04`).
+   Needed only for console apps that use explicit modifier chords.
+4. **Bank2 space** — the free run is nearly full (7 bytes before `$9E80`). Any of
+   the above will need the bank3 reserve (`$998B-$9E9C`, 1298 bytes) or a
+   refactor (e.g. factor the shared connect/socket-write preamble the `scr_*` /
+   `key_send` / `hondani_*` routines all repeat).
 
 ## State snapshot & continuation guide (for the next session)
 

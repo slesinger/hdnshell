@@ -3988,16 +3988,18 @@ cinv_tmpl_end:
 console_switch:
     cpx #$00
     beq csw_ret            // C=+CTRL+1 at local: nothing to do
+    txa                    // target console nibble = (digit index + 1) << 4.
+    clc                    //   Compute it NOW, while X still holds the digit
+    adc #$01               //   index: scr_save below clobbers X (via the hn_*
+    asl                    //   helpers -- hn_fin leaves X=4), so reading X after
+    asl                    //   it always yielded console 5 (the "always
+    asl                    //   Telegram" bug).
+    asl
+    pha                    // stash the nibble across scr_save (clobbers A/X/Y)
     jsr scr_save           // snapshot the local screen (blocks on the ack)
+    pla                    // pull (PLA leaves carry from scr_save intact)
     bcs csw_ret            //   server unreachable: stay local, ignore the key
-    txa                    // target console nibble = (digit index + 1) << 4
-    clc
-    adc #$01
-    asl
-    asl
-    asl
-    asl
-    sta $03ef              // w_console
+    sta $03ef              // commit w_console now that the save succeeded
     jsr cs_wait_release    // drop the C=+CTRL+digit combo + its stray char
     jsr scr_get            // server DMA-paints the target console
     jsr cs_modal           // block until the user returns to local
@@ -4007,11 +4009,22 @@ csw_ret:
 // cs_modal -- blocking console loop (IRQ context, I=1). Scans the keyboard and
 // acts only on C=+CTRL+digit; every other key is ignored (10c is view-only).
 cs_modal:
+    sei                    // CRITICAL: GETIN (cm_keys) leaks I=0 -- its KERNAL
+                           //   buffer-shift path ($E5B4) ends in CLI. Re-assert
+                           //   I=1 every iteration so a timer IRQ can't re-enter
+                           //   the CINV stub ($0314) mid-session and flip banks
+                           //   ($DE00) out from under this bank2 code -- that
+                           //   re-entrancy during the C=+CTRL+1 return was the
+                           //   intermittent "?OVERFLOW ERROR" hang (only after
+                           //   you typed a key; view-only never called GETIN).
+    jsr cs_vsync           // pace to ~60Hz: a tight SCNKEY loop reads the
+                           //   keyboard matrix faster than it settles and
+                           //   misses keypresses (the flaky C=+CTRL+1 return)
     jsr $ff9f              // SCNKEY (we scan ourselves; IRQs are off)
     lda $028d              // SHFLAG
     and #$06
     cmp #$06               // C=+CTRL held?
-    bne cs_modal
+    bne cm_keys            // no -> forward whatever the user typed
     lda $cb                // SFDX
     ldx #$06
 cm_chk:
@@ -4019,7 +4032,9 @@ cm_chk:
     beq cm_match
     dex
     bpl cm_chk
-    bmi cs_modal
+    lda #$00               // combo held but not a digit: drop the chord char
+    sta $c6                //   SCNKEY queued, so it isn't forwarded on release
+    beq cs_modal           // (always)
 cm_match:
     cpx #$00
     bne cm_server
@@ -4042,6 +4057,20 @@ cm_server:
     jsr cs_wait_release
     jsr scr_get
     jmp cs_modal
+cm_keys:
+    jsr $ffe4              // GETIN -> A = PETSCII (0 = nothing typed this scan)
+    sei                    // GETIN cleared I on its way out (see cs_modal) --
+                           //   restore it before key_send. SEI preserves Z, so
+                           //   the beq below still tests GETIN's result.
+    beq cs_modal
+    jsr key_send           // forward the keystroke to w_console
+    lda #$00
+    sta $c6                // flush the type-ahead buffer (NDX): each key_send is
+                           //   a slow network round trip, so without this a fast
+                           //   cursor/typing backs up in the KEYD buffer and
+                           //   keeps playing out after you stop -- the "choke".
+                           //   Drop the backlog; send only what's current.
+    jmp cs_modal
 
 // wait until no key is physically down, then flush the type-ahead buffer (drops
 // the colour/graphic code the C=+digit combo itself produced)
@@ -4052,6 +4081,17 @@ cs_wait_release:
     bne cs_wait_release
     lda #$00
     sta $c6                // NDX = keyboard buffer count = 0 (flush)
+    rts
+
+// pace the modal loop to ~60Hz (the cadence SCNKEY is designed for): wait for
+// raster line 250 (occurs once per frame on PAL and NTSC). The loop body
+// (SCNKEY + maybe a network round trip) always outlasts line 250, so the next
+// call lands past it and waits a full frame -- no need to also skip a lingering
+// 250.
+cs_vsync:
+    lda $d012
+    cmp #$fa
+    bne cs_vsync
     rts
 
 cs_digits:
@@ -4196,6 +4236,36 @@ cra_got:
 cra_fail:
     jsr hn_fin
     sec
+    rts
+
+// key_send -- forward one typed key (A = PETSCII) to w_console as a KEYPRESS;
+// the server updates that console and DMA-repaints (no ack). Modifiers = 0:
+// GETIN already folded shift/C= into the PETSCII code, so basic typing needs no
+// modifier byte. A real SHFLAG->ModifierFlags map is a later refinement (note:
+// the C= and CTRL bits are swapped between SHFLAG and the server's flags).
+key_send:
+    sta $cf29              // stash the key
+    jsr cs_connect
+    bcs ks_done
+    lda #$11               // SOCKET_WRITE
+    jsr hn_hdr
+    lda $cf21              // socket id
+    sta $df1d
+    lda #$fe               // wire magic
+    sta $df1d
+    lda $03ef              // console nibble ...
+    ora #$01               //   | KEYPRESS
+    sta $df1d
+    lda $cf29              // PETSCII key
+    sta $df1d
+    lda #$00               // modifiers = 0 (see header)
+    sta $df1d
+    jsr hn_push
+    bcs ks_close
+    jsr hn_fin
+ks_close:
+    jsr hn_close
+ks_done:
     rts
 
     .fill $9E80 - *, $00   // remaining bank2 free zeros up to real data $9E80
