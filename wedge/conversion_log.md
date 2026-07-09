@@ -24,7 +24,9 @@ Stock functionality must remain fully intact.
 | 7 | Print CR before the reply; read-loop until EOF **or a quiet gap after data** so replies longer than one `$E8` chunk print fully (server holds the connection open — EOF alone never comes) | `HONDANI HELP` prints the *full* multi-line help; `HONDANI I: <question>` prints a long AI answer | ✅ HW tested OK 2026-07-09 |
 | 8 | **Inert** line tap: shadow-copy each raw typed line to `$02A7`, install pass-through IERROR stub at `$0340` (only `jmp` to saved vector). Zero behavior change | Everything 100% stock incl. error messages (`FOO` → `?SYNTAX ERROR`), **first line after cold boot**, RUN/STOP+RESTORE then typing, freeze → resume, TASS | ✅ HW tested OK 2026-07-09 |
 | 9a | **Arm the stub, no network** (split from 9). Final RAM-stub form: on a direct-mode syntax error (X=$0B, `$3A`=$FF) bank in bank2, call `hondani_err`, bank back; C=0 → print `HDN` marker + re-enter BASIC (IMAIN); any other error → C=1 → fall through to stock. Bank1 frozen after this test. | `FOO` → prints `HDN` then `READY.` (no `?SYNTAX ERROR`); `PRINT 1/0` → `?DIVISION BY ZERO`; `10 FOO`+`RUN` → `?SYNTAX ERROR IN 10`; **first line after cold boot** ok; freeze→resume; `HONDANI HELP` still round-trips; full stock sweep | 🔶 built, awaiting hardware test |
-| 9b | Replace the 9a marker in `hondani_err` (bank2 only) with the real dispatch: send the `$02A7` shadow line to the server, print the reply, C=0; server unreachable → C=1 (stock `?SYNTAX ERROR`). No border change (per decision). | `HELLO WORLD` → AI reply then `READY.`; `PRINT 1/0` → stock error; `10 FOO`+`RUN` → stock error; server down → stock `?SYNTAX ERROR` after ≤ ~5 s | 🔶 built, awaiting hardware test |
+| 9b | Replace the 9a marker in `hondani_err` (bank2 only) with the real dispatch: send the `$02A7` shadow line to the server, print the reply, C=0; server unreachable → C=1 (stock `?SYNTAX ERROR`). No border change (per decision). | `HELLO WORLD` → AI reply then `READY.`; `PRINT 1/0` → stock error; `10 FOO`+`RUN` → stock error; server down → stock `?SYNTAX ERROR` after ≤ ~5 s | ✅ HW tested OK (Honza) |
+| 10a | **Console-switch key hook — detect only, no network** (bank2 only, bank1 FROZEN). Typing `HONDANI` installs a CINV (`$0314`) RAM stub at `$03A0`; on each IRQ it checks `SHFLAG` for C=+CTRL and `SFDX` for keys 1..7 and, one-shot per press, writes the digit (1..7) to the border `$D020`, then chains to the original IRQ. No console switch, no packets, no bank switch. | After `HONDANI`: `C=+CTRL+1..7` sets the border to that digit's colour (1=white … 7=yellow); release/other keys leave it; **all stock behaviour + HONDANI/auto-dispatch/freeze/`TASS` still 100% as before** (the persistent IRQ hook must not disturb anything) | ✅ HW tested OK (Honza, 2026-07-09) |
+| 10b | **Cross-bank call from the IRQ stub** (bank2 only, bank1 FROZEN). The CINV stub's match path now saves the RR bank bits (`$DE00 & $98`), pages in bank2 (`$10`), `jsr`s a new bank2 `console_switch`, restores the bank, and chains. `console_switch` does the *same* visible thing as 10a (border = digit) but from **bank2 code reached across the IRQ bank switch** — isolating that mechanism before 10c hangs the real switch on it. | Identical to 10a from the user's seat — `C=+CTRL+1..7` sets the border to that digit's colour, machine stays alive, all stock behaviour intact. A hang/crash/wrong colour = the IRQ bank switch is unsound (stop, report). Press at the `READY.` prompt. | 🔶 built, awaiting hardware test |
 
 ## Step 0 — clean baseline (2026-07-08)
 
@@ -896,7 +898,178 @@ Server running at 192.168.1.2:6464 for the "up" cases.
    empty RETURN, freeze → resume, `TASS` launch/exit.
 8. First line after cold boot: `PRINT 10` → `10`.
 
-**Result: _pending_**
+**Result: ✅ hardware tested OK (Honza, 2026-07-09).** Step 9 (any unrecognized
+direct-mode line → HDN server) is DONE.
+
+## Milestone decisions for step 10 — console switching (Honza, 2026-07-09)
+
+Target: `C=+CTRL+1..7` switches consoles (manual `docs/user_manual/cloud-apps.md`).
+`1` = local shell, `2..7` = server consoles. The **server DMA-paints** the C64
+screen (`$0400/$D800`) itself — the wedge never buffers a screen; it detects the
+combo, forwards keystrokes, and blocks on acks. Wire format (`$FE`, then
+`(console<<4)|cmd`): SAVE_SCREEN `$FE $00 $02`, RESTORE_SCREEN `$FE $00 $03`,
+GET_SCREEN `$FE (N<<4)|0 $01`, keypress `$FE (N<<4)|1 <petscii> <mods>`.
+
+Decisions taken (grilled 2026-07-09):
+
+1. **10a = detect + border marker only** (no network) — validate the persistent
+   IRQ hook safely before wiring anything.
+2. **Modal loop starts minimal** (switch + forward fresh keys, no auto-repeat);
+   port the reference's two-stage key-repeat only after the basic path is proven.
+3. **A live server console is available** to hardware-test real switches later.
+4. **Architecture constraint discovered:** the reference tree installs/heals its
+   CINV hook *per typed line from bank1* — but our **bank1 is FROZEN and its
+   pocket is FULL**. So 10a arms the hook from the existing bank2 `HONDANI` path
+   instead (zero bank1 change). Per-line self-heal + RUN/LOAD-disarm (which
+   genuinely need bank1 work) are a deliberately deferred later sub-step; until
+   then the hook persists from the moment `HONDANI` is typed until reset.
+
+## Step 10a — CINV key hook: detect C=+CTRL+1..7 → border (2026-07-09)
+
+### Change (bank2 only; bank1 byte-identical to the 9b archive)
+
+- **`cs_install`** (new, in the bank2 free run after `hondani_err`): copies the
+  53-byte CINV stub template to RAM `$03A0`, saves the current `$0314` vector to
+  `$03EC/$03ED` (with a never-save-ourselves guard), points `$0314` at `$03A0`,
+  clears the one-shot latch `$03EE`.
+- **`jsr cs_install`** added at the very top of `hondani_net` (right after its
+  `sei`, before the UCI ident read). 3 bytes; absorbed by the pad before
+  `$9B2E`, so **`hondani_err` stays pinned at `$9B2E`** and the bank1 gate target
+  `$991E` is unchanged. The rest of `hondani_net` is byte-identical (just shifted
+  3 bytes down within its pocket).
+- **`cinv_tmpl`** (CINV IRQ stub, `.pseudopc $03A0`): on each IRQ reads `SHFLAG`
+  (`$028D`, bit1=C=, bit2=CTRL), `AND #$06 / CMP #$06`; if both held, scans
+  `SFDX` (`$CB`) against the matrix codes `56,59,8,11,16,19,24` (keys 1..7);
+  on a fresh match (latch `$03EE` clear) it latches, does `INX` (digit index
+  0..6 → 1..7) and `STX $D020` (border = digit), then `JMP ($03EC)`. No match →
+  clear latch → chain. Position-independent (all operands fixed RAM/IO; the only
+  intra-stub ref `cvr_digits` resolves inside the pseudopc block). Clobbers A/X
+  only — the KERNAL dispatcher stacked them and the chained `$EA31` restores
+  them; stack stays balanced.
+
+RAM homes (datassette buffer, unused by Honza; clear of the `$0340` IERROR stub
+and `$03E7/8` orig vector): stub `$03A0-$03D4`, saved CINV vec `$03EC/ED`, latch
+`$03EE`.
+
+### Verification
+
+- `./build.sh` clean; all `.errorif` guards pass (incl. the pins `$991E`,
+  `$9B2E`, `$9E80`, and a new guard that the stub ends `≤ $03E7`). Deployed to
+  both `wedge/*.crt`.
+- Diff vs `build/archive-9b.bin`: **bank1 identical** (FROZEN intact); banks 0/3-7
+  identical; the only changes are in bank2 (`$991F-$9CAA` = the 3-byte shift of
+  the `hn_*` helpers plus the new `cs_install`+`cinv_tmpl` block). Diff vs stock:
+  banks 0/3/4/5/6/7 byte-identical; bank1 = the frozen 8/9a changes only.
+- Both new blocks hand-decoded opcode-for-opcode from the rebuilt binary:
+  `hondani_net` top (`78 / 20 41 9C / AD 1D DF …`), `cs_install` copy loop +
+  hook + guard, and the `$03A0` stub (all branch displacements, `JMP ($03EC)`,
+  `STX $D020`, digit table `38 3B 08 0B 10 13 18`).
+
+### Hardware test checklist (Honza) — the persistent IRQ hook must be invisible
+
+Arming: type `HONDANI` once (server up or down — the hook installs regardless;
+if the server is down HONDANI just red-borders, that's fine).
+
+1. **Detection**: `C=+CTRL+1` → border **white**; `C=+CTRL+2` → **red**; `3` →
+   **cyan**; `4` → **purple**; `5` → **green**; `6` → **blue**; `7` → **yellow**.
+   Each is one-shot per press; holding it just keeps that colour.
+2. **No false triggers**: plain `C=+1..8` (colour keys) and `C=+SHIFT` (charset
+   flip) must behave stock and **not** hit our marker; typing normal text, other
+   keys → nothing to the border.
+3. **Stock behaviour with the hook live** (the whole point): `$`, `FIND`, `OLD`,
+   `MONITOR`+exit, `OFF`/`ON`, `TASM`→TASS+exit, numbered lines + `LIST` + `RUN`,
+   empty RETURN — all normal. `FOO` → `HDN`/server dispatch as in step 9; `PRINT
+   1/0` → `?DIVISION BY ZERO`. `HONDANI HELP` still round-trips.
+4. **Freeze → menu → resume**, then press `C=+CTRL+3` → still cyan (page 3 came
+   back with the hook). RUN/STOP+RESTORE, then a combo → still works.
+5. First line after cold boot: `PRINT 10` → `10` (unchanged; the hook only arms
+   after `HONDANI`).
+6. Anything odd — a hang, a wrong colour, a crash after the combo — stop and
+   report; a persistent IRQ hook is the riskiest change so far.
+
+**Result: ✅ hardware tested OK (Honza, 2026-07-09).** Border colours change per
+digit as expected; all stock behaviour intact. (Bare `HONDANI` logs a harmless
+`Packet too short` on the server — the empty `$FE $02` payload — no wedge issue.)
+
+## Step 10b — cross-bank call from the IRQ stub (2026-07-09)
+
+### Why isolate this
+
+10a proved the persistent CINV hook + combo detection are safe. The next new
+risk is the **bank switch from inside the IRQ RAM stub**: page in bank2, `jsr`
+bank2 code, page back, and chain to the original IRQ — all while the CPU is mid-
+interrupt. 10b validates *only* that path, keeping the observable identical to
+10a (border = digit) so any regression is obviously the bank-switch mechanism.
+
+### Change (bank2 only; bank1 byte-identical to the 10a/9b archives)
+
+- `cinv_tmpl` match path (RAM stub `$03A0`): replaced the inline `inx / stx
+  $d020` with — `lda $de00 / and #$98 / sta $03ef` (save the RR bank-feedback
+  bits so we return to whatever was mapped when the IRQ hit) → `lda #$10 / sta
+  $de00` (page in bank2, the value the HONDANI gate uses) → `jsr console_switch`
+  (X = digit index 0..6, IRQ still masked) → `lda $03ef / sta $de00` (restore)
+  → `jmp ($03ec)` (chain). Stub grows 53→71 bytes, `$03A0-$03E6`; `cvr_digits`
+  relocates to `$03E0`; still ends exactly below the `$03E7` IERROR vector
+  (guarded). New scratch `$03EF` (saved bank bits).
+- New bank2 `console_switch` (in the free run after `cinv_tmpl`): `inx / stx
+  $d020 / rts` — the 10a marker, now executed from bank2. Legal from RAM: the
+  stub runs in RAM so the `sta $de00` page-flip doesn't pull the ground out from
+  under the executing code; the `jsr` then fetches from bank2 ROM.
+
+Banking note: the stub saves/restores only the `$98` bank-feedback bits, forcing
+cart-on during the excursion (same as the reference). Safe when the combo is
+pressed at the `READY.` prompt (cart already banked in, stable); a combo pressed
+during a rare cart-off/RAM window is the one edge the modal design will fence off
+later. Not a concern for this test.
+
+### Verification
+
+- `./build.sh` clean; all `.errorif` guards pass (pins `$991E`/`$9B2E`/`$9E80`,
+  stub `≤ $03E7`). Deployed to both `wedge/*.crt`; archived `build/archive-10b.bin`.
+- Diff vs `build/archive-10a.bin`: **bank1 identical** (FROZEN); banks 0/3-7
+  identical; only bank2 `$9C42-$9CC1` changed (the grown match path + new
+  `console_switch`). vs stock: banks 0/3/4/5/6/7 byte-identical.
+- Hand-decoded from the rebuilt binary: match path `AD 00 DE / 29 98 / 8D EF 03
+  / A9 10 / 8D 00 DE / 20 BD 9C (jsr console_switch) / AD EF 03 / 8D 00 DE / 6C
+  EC 03`; `console_switch` = `E8 8E 20 D0 60`; `cvr_chk` now `DD E0 03`
+  (`cmp $03E0,x`); digit table `38 3B 08 0B 10 13 18`.
+
+### Hardware test checklist (Honza)
+
+Arm with `HONDANI` as before, then:
+
+1. `C=+CTRL+1..7` → border shows the digit's colour (**same as 10a**), machine
+   stays alive. This time the colour is written by bank2 code reached over the
+   IRQ bank switch — so "works exactly like 10a" = the mechanism is sound.
+2. Do it many times, mix in other keys / typing — no hang, no stray crash.
+3. Stock sweep with the hook live: `$`, `FIND`, `MONITOR`+exit, numbered lines
+   + `RUN`, `HONDANI HELP`, `FOO`→dispatch, freeze → resume then a combo.
+4. Any hang or crash right after a combo press = the IRQ bank switch is the
+   culprit — stop and report (this is the step that de-risks it).
+
+**Result (first build): ❌ bug — first press OK, second press hangs into RR
+freezer ROM** (Honza, 2026-07-09: "3 then 1 → LOADING; 1 then 3 → backup menu;
+mostly garbled; border changes only the first time, 2nd press hangs before
+setting it").
+
+**Root cause:** the match path *saved* the bank with `lda $de00 / and #$98` and
+*restored* by writing that back. But the RR **`$DE00` READ returns Action-Replay-
+style status, not the control-register value** — stock RR code never reads it for
+banking, it always writes known constants (e.g. `lda #$08` at bank01 `$4249`
+region). So the restore wrote a bogus control value; the first press limped, and
+the second press's `sta $de00 #$10` no longer selected bank2, so `jsr $9CB4` ran
+into RR freezer/fastload ROM (→ LOADING / backup menu / garble). The reference
+tree had this same read-restore bug.
+
+**Fix:** restore with the **constant `#$08`** (bank1 = the wedge's resident
+mapping), exactly what the stock `$DEE3` trampoline writes; dropped the `$03EF`
+save entirely. Legal as a plain `sta $de00` because the stub executes from RAM
+(`$03A0`), so the bank flip never moves the running code. Rebuilt + re-verified
+(bank1 identical to 10a/frozen; banks 0/3-7 = stock; match path decoded
+`A9 10 / 8D 00 DE / 20 B4 9C / A9 08 / 8D 00 DE / 6C EC 03`). Same test checklist
+above.
+
+**Result: _pending re-test_**
 
 ## State snapshot & continuation guide (for the next session)
 

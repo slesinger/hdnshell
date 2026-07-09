@@ -3435,6 +3435,10 @@ bank02_data_991E:
 // exists then).
 hondani_net:
     sei                    // no IRQ while UCI is mid-transaction
+    jsr cs_install         // step 10a: (re)arm the CINV console-switch key
+                           //   hook (RAM stub @ $03A0). Safe under this sei;
+                           //   see cs_install below. Absorbs 3 bytes of the
+                           //   pad before $9B2E -- hondani_err stays pinned.
     lda $df1d              // UCI ident register ($C9 = present)
     sta $cf20
     cmp #$c9
@@ -3866,6 +3870,111 @@ he_okcl:
     jsr hn_close
     clc                    // handled: reply printed
     rts
+
+// ===========================================================================
+// Step 10a -- console-switch keyboard hook (detect C=+CTRL+1..7 -> border)
+// ===========================================================================
+// cs_install copies the CINV IRQ stub (cinv_tmpl, below) into RAM at $03A0
+// and points the KERNAL IRQ vector $0314 at it. It is called from the top of
+// hondani_net (under that routine's sei), so typing HONDANI arms the hook.
+// NO bank1 change -- bank1 stays FROZEN. This step does NOT switch consoles
+// or touch the network: the stub only writes the pressed digit (1..7) to the
+// border ($D020) as a visible detection marker, one action per press via the
+// $03EE latch, then chains to the original IRQ handler. Per-line self-heal
+// and RUN/LOAD-disarm (which need bank1 work) are a later step.
+//
+// RAM map (datassette buffer $033C-$03FB, unused by Honza -- same homes the
+// reference tree used; clear of our $0340 IERROR stub and $03E7/8 vector):
+//   $03A0-$03Dx  CINV stub (<= $03E6)
+//   $03EC/$03ED  saved original $0314 vector (never our own -- see guard)
+//   $03EE        one-shot press latch
+// ---------------------------------------------------------------------------
+cs_install:
+    ldx #cinv_tmpl_end - cinv_tmpl - 1
+csi_copy:
+    lda cinv_tmpl,x
+    sta $03a0,x
+    dex
+    bpl csi_copy
+    lda $0314              // hook $0314, but never save ourselves as "original"
+    cmp #$a0
+    bne csi_hook
+    lda $0315
+    cmp #$03
+    beq csi_arm            // already pointing at our stub
+csi_hook:
+    lda $0314
+    sta $03ec
+    lda $0315
+    sta $03ed
+    lda #$a0
+    sta $0314
+    lda #$03
+    sta $0315
+csi_arm:
+    lda #$00
+    sta $03ee              // clear the one-shot press latch
+    rts
+
+// CINV IRQ stub -- assembled to RUN at $03A0. Position-independent: every
+// absolute operand is a fixed RAM/IO address, and the only intra-stub
+// reference (cvr_digits) resolves inside the pseudopc block. Runs on every
+// IRQ (registers are already stacked by the KERNAL dispatcher and restored
+// by the chained-to $EA31, so A/X may be freely clobbered; the stack stays
+// balanced). SHFLAG/SFDX reflect the previous frame's SCNKEY -- fine for a
+// held combo.
+cinv_tmpl:
+.pseudopc $03a0 {
+    lda $028d              // SHFLAG: bit1=C=, bit2=CTRL
+    and #$06
+    cmp #$06               // both C= and CTRL held?
+    bne cvr_clear
+    lda $cb                // SFDX: matrix code of the key currently down
+    ldx #$06
+cvr_chk:
+    cmp cvr_digits,x       // one of the 1..7 keys?
+    beq cvr_match
+    dex
+    bpl cvr_chk
+cvr_clear:
+    lda #$00
+    sta $03ee              // combo not held: release the one-shot latch
+cvr_chain:
+    jmp ($03ec)            // chain to the original IRQ handler ($EA31)
+cvr_match:
+    lda $03ee              // already acted on this press?
+    bne cvr_chain
+    lda #$01
+    sta $03ee              // latch (one action per press)
+    lda #$10               // page in bank2 (same value the HONDANI gate uses)
+    sta $de00              //   -- safe as a plain write: this stub runs from
+    jsr console_switch     //   RAM, so the bank flip doesn't move our own code
+    lda #$08               // restore bank1 with a CONSTANT (the wedge's resident
+    sta $de00              //   mapping) -- exactly what the stock $DEE3 restore
+    jmp ($03ec)            //   writes. NEVER read $de00 to "save" the bank: the
+                           //   RR $de00 READ returns AR-style status, not the
+                           //   control value, so writing it back corrupts the
+                           //   control register (the 10b first build's 2nd-press
+                           //   hang into RR freezer ROM).
+cvr_digits:
+    .byte 56, 59, 8, 11, 16, 19, 24    // SFDX matrix codes for keys 1..7
+}
+cinv_tmpl_end:
+.errorif ($03a0 + (cinv_tmpl_end - cinv_tmpl)) > $03e7, "CINV stub overruns $03E7"
+
+// ---------------------------------------------------------------------------
+// console_switch -- step 10b: reached from the CINV RAM stub across the bank
+// switch (stub saved $de00 bits, paged in bank2, jsr'd here), X = digit index
+// 0..6, IRQ already masked. For 10b it does the SAME visible thing as the 10a
+// marker (border = digit 1..7) but now executed from BANK2 code reached over
+// the IRQ bank switch -- proving that path returns cleanly before 10c hangs
+// the real network switch + modal loop on it. rts -> stub restores the bank.
+// ---------------------------------------------------------------------------
+console_switch:
+    inx                    // digit index 0..6 -> 1..7
+    stx $d020              // border = pressed digit (written from bank2 now)
+    rts
+
     .fill $9E80 - *, $00   // remaining bank2 free zeros up to real data $9E80
 .errorif (* != $9E80), "bank02 free run overflow"
     dec $01                // C6 01   CPU port: mem banking
