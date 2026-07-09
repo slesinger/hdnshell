@@ -23,10 +23,11 @@ Stock functionality must remain fully intact.
 | 6 | `HONDANI <text>`: send the typed rest-of-line (raw, pre-crunch, via TXTPTR) as the TEXT_INPUT payload instead of hardcoded "PING" | `HONDANI HELP` prints the server help text; `HONDANI STATUS`, `HONDANI : 2+2` work; bare `HONDANI` still round-trips; stock sweep | ✅ HW tested OK 2026-07-08 |
 | 7 | Print CR before the reply; read-loop until EOF **or a quiet gap after data** so replies longer than one `$E8` chunk print fully (server holds the connection open — EOF alone never comes) | `HONDANI HELP` prints the *full* multi-line help; `HONDANI I: <question>` prints a long AI answer | ✅ HW tested OK 2026-07-09 |
 | 8 | **Inert** line tap: shadow-copy each raw typed line to `$02A7`, install pass-through IERROR stub at `$0340` (only `jmp` to saved vector). Zero behavior change | Everything 100% stock incl. error messages (`FOO` → `?SYNTAX ERROR`), **first line after cold boot**, RUN/STOP+RESTORE then typing, freeze → resume, TASS | ✅ HW tested OK 2026-07-09 |
-| 9a | **Arm the stub, no network** (split from 9). Final RAM-stub form: on a direct-mode syntax error (X=$0B, `$3A`=$FF) bank in bank2, call `hondani_err`, bank back; C=0 → print `HDN` marker + re-enter BASIC (IMAIN); any other error → C=1 → fall through to stock. Bank1 frozen after this test. | `FOO` → prints `HDN` then `READY.` (no `?SYNTAX ERROR`); `PRINT 1/0` → `?DIVISION BY ZERO`; `10 FOO`+`RUN` → `?SYNTAX ERROR IN 10`; **first line after cold boot** ok; freeze→resume; `HONDANI HELP` still round-trips; full stock sweep | 🔶 built, awaiting hardware test |
+| 9a | **Arm the stub, no network** (split from 9). Final RAM-stub form: on a direct-mode syntax error (X=$0B, `$3A`=$FF) bank in bank2, call `hondani_err`, bank back; C=0 → print `HDN` marker + re-enter BASIC (IMAIN); any other error → C=1 → fall through to stock. Bank1 frozen after this test. | `FOO` → prints `HDN` then `READY.` (no `?SYNTAX ERROR`); `PRINT 1/0` → `?DIVISION BY ZERO`; `10 FOO`+`RUN` → `?SYNTAX ERROR IN 10`; **first line after cold boot** ok; freeze→resume; `HONDANI HELP` still round-trips; full stock sweep | ✅ HW tested OK 2026-07-09 |
 | 9b | Replace the 9a marker in `hondani_err` (bank2 only) with the real dispatch: send the `$02A7` shadow line to the server, print the reply, C=0; server unreachable → C=1 (stock `?SYNTAX ERROR`). No border change (per decision). | `HELLO WORLD` → AI reply then `READY.`; `PRINT 1/0` → stock error; `10 FOO`+`RUN` → stock error; server down → stock `?SYNTAX ERROR` after ≤ ~5 s | ✅ HW tested OK (Honza) |
 | 10a | **Console-switch key hook — detect only, no network** (bank2 only, bank1 FROZEN). Typing `HONDANI` installs a CINV (`$0314`) RAM stub at `$03A0`; on each IRQ it checks `SHFLAG` for C=+CTRL and `SFDX` for keys 1..7 and, one-shot per press, writes the digit (1..7) to the border `$D020`, then chains to the original IRQ. No console switch, no packets, no bank switch. | After `HONDANI`: `C=+CTRL+1..7` sets the border to that digit's colour (1=white … 7=yellow); release/other keys leave it; **all stock behaviour + HONDANI/auto-dispatch/freeze/`TASS` still 100% as before** (the persistent IRQ hook must not disturb anything) | ✅ HW tested OK (Honza, 2026-07-09) |
-| 10b | **Cross-bank call from the IRQ stub** (bank2 only, bank1 FROZEN). The CINV stub's match path now saves the RR bank bits (`$DE00 & $98`), pages in bank2 (`$10`), `jsr`s a new bank2 `console_switch`, restores the bank, and chains. `console_switch` does the *same* visible thing as 10a (border = digit) but from **bank2 code reached across the IRQ bank switch** — isolating that mechanism before 10c hangs the real switch on it. | Identical to 10a from the user's seat — `C=+CTRL+1..7` sets the border to that digit's colour, machine stays alive, all stock behaviour intact. A hang/crash/wrong colour = the IRQ bank switch is unsound (stop, report). Press at the `READY.` prompt. | 🔶 built, awaiting hardware test |
+| 10b | **Cross-bank call from the IRQ stub** (bank2 only, bank1 FROZEN). The CINV stub's match path pages in bank2 (`$10`), `jsr`s a new bank2 `console_switch`, restores bank1 with the **constant `$08`**, and chains. `console_switch` does the *same* visible thing as 10a (border = digit) but from **bank2 code reached across the IRQ bank switch** — isolating that mechanism before 10c hangs the real switch on it. | Identical to 10a from the user's seat — `C=+CTRL+1..7` sets the border to that digit's colour, machine stays alive, all stock behaviour intact. Press at the `READY.` prompt. | ✅ HW tested OK (Honza, 2026-07-09) after the read-restore fix; re-arm with `HONDANI` after `TASS`/launch |
+| 10c | **Real console switch — view/navigate (no key forwarding)** (bank2 only, bank1 FROZEN). `console_switch` now: on `C=+CTRL+2..7`, `scr_save` (snapshot local screen server-side, block on ack), select console = digit, `scr_get` (server DMA-paints it), then enter `cs_modal` — a blocking loop (BASIC paused) that scans the keyboard itself and on another `C=+CTRL+digit` hops consoles or (digit 1) `scr_restore`s the local screen and returns. Server-side DMA does all screen transfer. No other keys forwarded yet. | With server + a console up: `HONDANI` to arm, then `C=+CTRL+2` → File Editor screen appears; `C=+CTRL+3..7` hop between server consoles; `C=+CTRL+1` → your BASIC screen restored exactly. Machine paused while in a console (don't type yet — that's 10d). Server down → switch is refused, stay local. | 🔶 built, awaiting hardware test |
 
 ## Step 0 — clean baseline (2026-07-08)
 
@@ -1069,7 +1070,98 @@ save entirely. Legal as a plain `sta $de00` because the stub executes from RAM
 `A9 10 / 8D 00 DE / 20 B4 9C / A9 08 / 8D 00 DE / 6C EC 03`). Same test checklist
 above.
 
-**Result: _pending re-test_**
+**Result: ✅ hardware tested OK (Honza, 2026-07-09).** Repeated mixed-digit
+presses switch cleanly, no hang. Note: after `TASS` (or any launch that takes
+over the machine) the hook is lost until `HONDANI` is typed again — expected;
+the per-line self-heal / launch-disarm that fixes this is the deferred bank1
+sub-step.
+
+## Step 10c — real console switch: view/navigate, no key forwarding (2026-07-09)
+
+### Scope & why staged this way
+
+The manual's console switching. Split off the riskiest coherent unit: the
+network-from-IRQ switch + server DMA screen paint + the blocking modal hold +
+the local-screen save/restore — but **not** key forwarding (that's 10d). This
+gives a testable milestone ("I can switch to a server console, SEE it, navigate,
+and return with my screen intact") whose failure is bisectable before per-key
+network traffic is added.
+
+### Protocol facts pinned from the server
+
+- Wire byte after `$FE` = `(console_id<<4) | cmd_id` (cmd COMMAND=0, KEYPRESS=1,
+  TEXT_INPUT=2). Console id = digit: `2`=File Editor, `3`=Coding Agent,
+  `4`=Web, `5`=Telegram, `6`=RSS, `7`=Wiki (`cloud/cloud_server.py` factories);
+  local = console 0.
+- SAVE_SCREEN `$FE $00 $02`, RESTORE_SCREEN `$FE $00 $03` (console 0) — server
+  DMA-reads/-writes `$0400/$D800` and returns a `"00"` ack. GET_SCREEN
+  `$FE (N<<4) $01` — server DMA-paints console N, **no** socket reply.
+- `cloud_server.handle_client` = one packet per `recv`, **thread per
+  connection** → SAVE and GET on separate connections race unless SAVE blocks on
+  its ack first (the ack is sent only after the DMA-read completes). So
+  `scr_save`/`scr_restore` read the ack; `scr_get` does not (async paint).
+
+### Change (bank2 only; bank1 byte-identical to the 10b/9b archives)
+
+- `console_switch` (was the 10b border stub) rewritten as the top-level switch:
+  digit 1 → nothing; digit 2..7 → `scr_save` (bcs → stay local) → set
+  `w_console`=(digit)<<4 → `cs_wait_release` → `scr_get` → `jsr cs_modal`. At top
+  level we are always local (while in a console we sit inside `cs_modal`, still
+  inside this IRQ, so no fresh IRQ dispatches the stub).
+- `cs_modal`: blocking loop (I=1, BASIC/TI$ paused). `SCNKEY`; on `C=+CTRL+digit`
+  only — digit 1 → `cs_wait_release`+`scr_restore`+`w_console`=0+`rts` (unwinds
+  to BASIC); digit 2..7 → hop (`scr_get`) unless already there. All other keys
+  ignored (view-only).
+- `cs_wait_release`: `SCNKEY` until `SFDX`=`$40` (no key), then `NDX`($C6)=0 to
+  flush the stray colour/graphic char the `C=+digit` combo queues.
+- `scr_save`/`scr_restore` (share `scr_cmd0` via the `$2C` BIT-skip trick),
+  `scr_get`, `cs_connect` (connect → socket id `$CF21`, reuses `hn_hdr/hn_push/
+  hn_wdav/hn_fin/hn_ip`), `cs_readack` (one SOCKET_READ, bounded retry past the
+  `$FFFF` placeholder, drain+accept). `cs_digits` table (matrix codes 1..7).
+- New scratch: `w_console` = `$03EF` (init 0 in `cs_install`); `cs_sub` = `$CF27`.
+- The CINV RAM stub is unchanged except its `jsr console_switch` operand
+  (`$9CB4`→`$9CB7`, from `cs_install` gaining the `sta $03ef` init).
+
+### Verification
+
+- `./build.sh` clean; all `.errorif` guards pass (pins `$991E`/`$9B2E`/`$9E80`,
+  stub `≤ $03E7`). Deployed to both `wedge/*.crt`; archived `build/archive-10c.bin`.
+- Diff vs `build/archive-10b.bin`: **bank1 identical** (FROZEN); banks 0/3-7
+  identical; only bank2 `$9C44-$9E25` changed. vs stock: banks 0/3/4/5/6/7
+  byte-identical.
+- Hand-decoded from the rebuilt binary: stub `jsr $9CB7`; `console_switch`
+  (`CPX #0 / BEQ / JSR scr_save / BCS / TXA/CLC/ADC #1/ASLx4 / STA $03EF`);
+  `scr_save` = `A9 02 / 2C / A9 03` skip trick into `scr_cmd0`; `cs_modal`
+  (`JSR $FF9F / LDA $028D / AND #6 / CMP #6 / … CMP $9D26,X`); `cs_wait_release`
+  (`… CMP #$40 … STA $C6`); `scr_get` (`… LDA $03EF / STA $DF1D / LDA #$01`);
+  `cs_connect` (`A9 07 …`); `cs_readack` (`… STA $CF24 / A9 10 …`). All network
+  routines share `hn_hdr` (`$9A42`).
+
+### Hardware test checklist (Honza)
+
+Server up at 192.168.1.2:6464 with at least console 2 (File Editor) available.
+Arm with `HONDANI` (server up so it round-trips green; the hook installs
+regardless).
+
+1. **Switch in**: `C=+CTRL+2` → the File Editor's 40×25 screen appears (painted
+   by server DMA); the machine is paused (cursor stops blinking). **Don't type**
+   — key forwarding is 10d.
+2. **Navigate**: `C=+CTRL+3`, `4`, `5`, `6`, `7` → each hops to that server
+   console's screen. Re-pressing the current one does nothing.
+3. **Return**: `C=+CTRL+1` → your original BASIC screen is restored *exactly* as
+   you left it, cursor blinks again, `READY.` works. Type a line — normal.
+4. Repeat the whole cycle a few times (UCI/screen state must stay clean).
+5. **Server down** (or console unreachable): `C=+CTRL+2` → nothing happens, you
+   stay at the local BASIC prompt (switch refused at save time), machine alive.
+6. Stock sanity with the hook live: `$`, `FIND`, `MONITOR`+exit, `FOO`→dispatch,
+   `HONDANI HELP`, numbered line + `RUN`, freeze → resume.
+7. If a switch hangs or the screen is garbage: note which console digit, and
+   after any reset `PRINT PEEK(1007)` (`$03EF` w_console), `PEEK(53040)`/`(53041)`
+   (`$CF30/31` status chars). A blank/black console screen but a working
+   `C=+CTRL+1` return = the switch logic is fine but the **server DMA paint** did
+   not land (server/DMA config, not the wedge).
+
+**Result: _pending_**
 
 ## State snapshot & continuation guide (for the next session)
 

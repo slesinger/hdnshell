@@ -3914,6 +3914,8 @@ csi_hook:
 csi_arm:
     lda #$00
     sta $03ee              // clear the one-shot press latch
+    sta $03ef              // w_console = 0 (local); HONDANI only runs at the
+                           //   BASIC prompt, so we are always local here
     rts
 
 // CINV IRQ stub -- assembled to RUN at $03A0. Position-independent: every
@@ -3962,17 +3964,238 @@ cvr_digits:
 cinv_tmpl_end:
 .errorif ($03a0 + (cinv_tmpl_end - cinv_tmpl)) > $03e7, "CINV stub overruns $03E7"
 
-// ---------------------------------------------------------------------------
-// console_switch -- step 10b: reached from the CINV RAM stub across the bank
-// switch (stub saved $de00 bits, paged in bank2, jsr'd here), X = digit index
-// 0..6, IRQ already masked. For 10b it does the SAME visible thing as the 10a
-// marker (border = digit 1..7) but now executed from BANK2 code reached over
-// the IRQ bank switch -- proving that path returns cleanly before 10c hangs
-// the real network switch + modal loop on it. rts -> stub restores the bank.
+// ===========================================================================
+// Step 10c -- real console switch (view/navigate; NO key forwarding yet)
+// ===========================================================================
+// console_switch is reached from the CINV RAM stub across the IRQ bank switch,
+// X = digit index 0..6, IRQ masked, bank2 mapped. It only runs at "top level"
+// (from local) because while a server console is active we sit inside cs_modal
+// (still inside this same IRQ), so no fresh IRQ dispatches the stub.
+//
+// C=+CTRL+1 (X=0) at local: nothing. C=+CTRL+2..7 (X=1..6): snapshot the local
+// screen server-side (scr_save), select the target console, ask the server to
+// DMA-paint it (scr_get), then enter cs_modal -- a blocking loop (BASIC paused,
+// TI$ frozen) that scans the keyboard itself and, on another C=+CTRL+digit,
+// hops consoles or (digit 1) restores the local screen and returns. Server
+// unreachable at save time => stay local, ignore the key. All screen transfer
+// is server-side DMA (no C64 RAM buffer). NO other keys are forwarded yet --
+// that is 10d.
+//
+// Console id = digit (2..7 => File Editor, Coding Agent, Web, Telegram, RSS,
+// Wiki); local = console 0. w_console ($03EF) holds the wire high-nibble
+// (digit<<4 = $20..$70) or $00 for local. Wire byte = console_nibble | cmd_id.
 // ---------------------------------------------------------------------------
 console_switch:
-    inx                    // digit index 0..6 -> 1..7
-    stx $d020              // border = pressed digit (written from bank2 now)
+    cpx #$00
+    beq csw_ret            // C=+CTRL+1 at local: nothing to do
+    jsr scr_save           // snapshot the local screen (blocks on the ack)
+    bcs csw_ret            //   server unreachable: stay local, ignore the key
+    txa                    // target console nibble = (digit index + 1) << 4
+    clc
+    adc #$01
+    asl
+    asl
+    asl
+    asl
+    sta $03ef              // w_console
+    jsr cs_wait_release    // drop the C=+CTRL+digit combo + its stray char
+    jsr scr_get            // server DMA-paints the target console
+    jsr cs_modal           // block until the user returns to local
+csw_ret:
+    rts
+
+// cs_modal -- blocking console loop (IRQ context, I=1). Scans the keyboard and
+// acts only on C=+CTRL+digit; every other key is ignored (10c is view-only).
+cs_modal:
+    jsr $ff9f              // SCNKEY (we scan ourselves; IRQs are off)
+    lda $028d              // SHFLAG
+    and #$06
+    cmp #$06               // C=+CTRL held?
+    bne cs_modal
+    lda $cb                // SFDX
+    ldx #$06
+cm_chk:
+    cmp cs_digits,x
+    beq cm_match
+    dex
+    bpl cm_chk
+    bmi cs_modal
+cm_match:
+    cpx #$00
+    bne cm_server
+    jsr cs_wait_release    // C=+CTRL+1: back to local
+    jsr scr_restore
+    lda #$00
+    sta $03ef              // w_console = local
+    rts                    // -> console_switch -> stub restores bank -> BASIC
+cm_server:
+    txa
+    clc
+    adc #$01
+    asl
+    asl
+    asl
+    asl
+    cmp $03ef
+    beq cs_modal           // same console: ignore
+    sta $03ef
+    jsr cs_wait_release
+    jsr scr_get
+    jmp cs_modal
+
+// wait until no key is physically down, then flush the type-ahead buffer (drops
+// the colour/graphic code the C=+digit combo itself produced)
+cs_wait_release:
+    jsr $ff9f              // SCNKEY
+    lda $cb                // SFDX
+    cmp #$40               // 64 = no key down
+    bne cs_wait_release
+    lda #$00
+    sta $c6                // NDX = keyboard buffer count = 0 (flush)
+    rts
+
+cs_digits:
+    .byte 56, 59, 8, 11, 16, 19, 24    // SFDX matrix codes for keys 1..7
+
+// --- server screen commands -------------------------------------------------
+// Each command opens its own TCP connection (the server threads per connection,
+// so SAVE must block on its ack before GET or the two DMA transfers race --
+// server comment in command_handler.handle_local_command). Payload over the
+// UCI socket = $FE, <console_nibble | cmd_id>, <server-sub-command>.
+//
+// scr_save / scr_restore: console 0, cmd COMMAND(0); sub $02 SAVE / $03 RESTORE;
+// read the "00" ack. scr_get: console w_console, cmd COMMAND(0), sub $01
+// GET_SCREEN; no ack (server DMA-paints asynchronously).
+
+scr_save:
+    lda #$02               // SERVER_CMD_SAVE_SCREEN
+    .byte $2c              // bit abs: skip the next lda
+scr_restore:
+    lda #$03               // SERVER_CMD_RESTORE_SCREEN
+scr_cmd0:                  // A = server sub-command; console 0; reads the ack
+    sta $cf27              // stash the sub-command
+    jsr cs_connect
+    bcs sc0_fail
+    lda #$11               // SOCKET_WRITE
+    jsr hn_hdr
+    lda $cf21              // socket id
+    sta $df1d
+    lda #$fe               // wire magic
+    sta $df1d
+    lda #$00               // (console 0 << 4) | COMMAND
+    sta $df1d
+    lda $cf27              // the sub-command
+    sta $df1d
+    jsr hn_push
+    bcs sc0_closefail
+    jsr hn_fin
+    bcs sc0_closefail
+    jsr cs_readack         // block until the "00" ack (DMA finished)
+    jsr hn_close
+    clc
+    rts
+sc0_closefail:
+    jsr hn_close
+sc0_fail:
+    sec
+    rts
+
+scr_get:                   // ask the server to DMA-paint w_console; no ack
+    jsr cs_connect
+    bcs sg_fail
+    lda #$11               // SOCKET_WRITE
+    jsr hn_hdr
+    lda $cf21
+    sta $df1d
+    lda #$fe
+    sta $df1d
+    lda $03ef              // console nibble | COMMAND(0) = the wire byte
+    sta $df1d
+    lda #$01               // SERVER_CMD_GET_SCREEN
+    sta $df1d
+    jsr hn_push
+    bcs sg_closefail
+    jsr hn_fin
+    jsr hn_close
+    clc
+    rts
+sg_closefail:
+    jsr hn_close
+sg_fail:
+    sec
+    rts
+
+// cs_connect -- TCP-connect to 192.168.1.2:6464; socket id -> $CF21; C=0 ok.
+// Mirrors hondani_net's connect phase, reusing the shared hn_* helpers.
+cs_connect:
+    lda #$07               // NET_CMD_TCP_SOCKET_CONNECT
+    jsr hn_hdr
+    lda #$40               // port 6464 = $1940, lo first
+    sta $df1d
+    lda #$19
+    sta $df1d
+    ldx #$00
+cc_ip:
+    lda hn_ip,x
+    sta $df1d
+    inx
+    cmp #$00
+    bne cc_ip
+    jsr hn_push
+    bcs cc_fail
+    jsr hn_wdav
+    bcs cc_fail
+    lda $df1e
+    sta $cf21              // socket id
+    jsr hn_fin
+    bcc cc_ok
+cc_fail:
+    jsr hn_fin             // drain/accept so the UCI returns to idle
+    sec
+    rts
+cc_ok:
+    clc
+    rts
+
+// cs_readack -- one SOCKET_READ, wait for a non-empty chunk (the "00" ack),
+// drain + accept it. Bounded retry for the FFFF "nothing yet" placeholder.
+cs_readack:
+    lda #$00
+    sta $cf24              // retry counter (0 -> 256 via dec/bne)
+cra_rd:
+    lda #$10               // NET_CMD_SOCKET_READ
+    jsr hn_hdr
+    lda $cf21
+    sta $df1d
+    lda #$e8               // chunk len lo
+    sta $df1d
+    lda #$00               // chunk len hi
+    sta $df1d
+    jsr hn_push
+    bcs cra_fail
+    jsr hn_wdav
+    bcs cra_fail
+    lda $df1e              // length prefix lo
+    sta $cf22
+    jsr hn_wdav
+    bcs cra_fail
+    lda $df1e              // length prefix hi
+    sta $cf23
+    and $cf22
+    cmp #$ff               // $FFFF = nothing yet
+    bne cra_got
+    jsr hn_fin             // accept the empty read, then retry
+    dec $cf24
+    bne cra_rd
+    sec                    // window exhausted: no ack
+    rts
+cra_got:
+    jsr hn_fin             // drain the ack bytes + accept the transaction
+    clc
+    rts
+cra_fail:
+    jsr hn_fin
+    sec
     rts
 
     .fill $9E80 - *, $00   // remaining bank2 free zeros up to real data $9E80
