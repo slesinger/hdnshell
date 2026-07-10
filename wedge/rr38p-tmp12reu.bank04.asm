@@ -578,49 +578,355 @@ bank04_data_80B4:
     .byte $0F, $D2, $52, $76, $58, $88, $46, $80, $4B, $20, $22, $E4, $F9, $6A, $9A, $78    // data $9BC4
     .byte $C0, $38, $42, $FB, $CB, $49, $AD, $1C, $F6, $11, $BD, $3B, $48, $34, $0A, $57    // data $9BD4
     .byte $3B, $A9, $30, $4F, $BD, $68, $99, $BD, $F6, $9F, $0B, $EE, $BB, $01, $35, $E6    // data $9BE4
-    .byte $C5, $E3, $39, $4D, $2E, $AB, $37, $D4, $EE, $68, $AD, $6A, $00, $00, $00, $00    // data $9BF4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C04
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C14
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C24
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C34
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C44
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C54
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C64
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C74
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C84
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C94
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CA4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CB4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CC4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CD4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CE4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CF4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D04
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D14
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D24
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D34
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D44
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D54
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D64
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D74
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D84
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D94
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DA4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DB4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DC4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DD4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DE4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DF4
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E04
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E14
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E24
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E34
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E44
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E54
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E64
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E74
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E84
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $20, $BA, $DE, $00, $00, $00, $00    // data $9E94
+    .byte $C5, $E3, $39, $4D, $2E, $AB, $37, $D4, $EE, $68, $AD, $6A    // data $9BF4 (real; truncated to $9BFF)
+// =============================================================================
+// Step 15: bank4 overflow reserve = the shell's command dispatcher for steps 15+.
+// The bank3 reserve ($998B-$9E9C) is full after step 14, so the remaining
+// commands live in bank4's 669-byte reserve ($9C00-$9E9C, stock zeros,
+// unreferenced). bank4 is $de00=$80 (RR encoding b7*4+b4*2+b3; banks 4-7 =
+// $80/$88/$90/$98, confirmed by the stock bank table at $9EF4 and the boot
+// TMP/REU installer). bank4 is stock-used ONLY as that boot-time installer, never
+// at the BASIC prompt, so a transient map-in under the existing sei window is safe
+// -- same guarantee as bank3 (proved end-to-end by step 15-pre's border flash).
+//
+// b4_disp (pinned $9C00, the call_bank4 trampoline hardcodes jsr $9c00) is the
+// self-contained bank4 command dispatcher: while bank4 is mapped, bank3's helpers
+// are unreachable, but $02a7 (shadow line), $cf2a (current device), $dfxx (UCI
+// regs) and $ffd2 (CHROUT, via ($0326)=$F1CA in KERNAL) are all bank-independent,
+// so bank4 carries its OWN copies of the leaf helpers it needs. It returns
+// C=0 = handled (bank3 prints no stock error), C=1 = not a bank4 command (bank3
+// falls through to hsh_body = chat/AI, which also gives c/n its server-forward).
+//
+// 15b/15c: 'pwd' and 'cd', dispatched by current device ($cf2a). Both share the
+// device policy:
+//   h/t/f -> UCI DOS: pwd = GET_PATH ($12) prints the path; cd = CHANGE_DIR ($11)
+//            sends the path arg, silent on success, "NOT FOUND" on non-"00" status
+//            (bank4 copies of dos1_read_print + the bounded UCI helpers; $dfxx/$ffd2
+//            bank-independent, scratch $cf26/$cf30/$cf31/$cf47/$cf48 shared with
+//            bank3 -- safe, transient, never both banks active).
+//   c/n   -> return C=1 (not handled) so bank3 falls through to hsh_body, which
+//            forwards the raw "pwd"/"cd ..." line to the server (tracks cwd/module).
+//   8/9/s -> print "NOT SUPPORTED ON IEC" (cd/pwd are non-IEC only).
+// Any other line -> C=1 -> bank3 chat/AI (unchanged). The Ultimate CHANGE_DIR
+// handles "..", "/", relative and absolute natively, so cd needs no path parsing.
+// =============================================================================
+b4_disp:
+.errorif (* != $9C00), "b4_disp not at $9C00"
+    lda $02a7              // first char selects the command family (case-folded)
+    jsr b4_fold
+    cmp #$50               // 'P' -> maybe "pwd"
+    beq b4_ck_pwd
+    cmp #$43               // 'C' -> maybe "cd"
+    beq b4_ck_cd
+b4_nomatch:
+    sec                    // not mine -> bank3 chat/AI (or c/n server-forward)
+    rts
+// ---- pwd : exact "pwd", no args -------------------------------------------
+b4_ck_pwd:
+    lda $02a7+1
+    jsr b4_fold
+    cmp #$57               // 'W'
+    bne b4_nomatch
+    lda $02a7+2
+    jsr b4_fold
+    cmp #$44               // 'D'
+    bne b4_nomatch
+    lda $02a7+3
+    bne b4_nomatch         // exact: EOL right after "pwd"
+    jsr b4_curdev          // dispatch by device
+    cmp #$43               // 'C'/'N' -> bank3 forwards raw line to server
+    beq b4_nomatch
+    cmp #$4e
+    beq b4_nomatch
+    jsr b4_is_htf          // Z=1 iff H/T/F
+    bne b4_prnsup          // else 8/9/s -> not supported
+    lda #$12               // DOS_CMD_GET_PATH
+    jsr b4_dos1_read_print // print the current path (+ framing CRs)
+    clc
+    rts
+// ---- cd : "cd <path>" (space-separated arg); CHANGE_DIR ($11) --------------
+b4_cd_nomatch:
+    sec                    // (local nomatch: keeps cd's branches in range)
+    rts
+b4_ck_cd:
+    lda $02a7+1
+    jsr b4_fold
+    cmp #$44               // 'D'
+    bne b4_cd_nomatch
+    lda $02a7+2
+    cmp #$20               // "cd" must be followed by a space (else not our token)
+    bne b4_cd_nomatch
+    ldx #$03               // skip further spaces -> first arg char
+b4_cd_skip:
+    lda $02a7,x
+    cmp #$20
+    bne b4_cd_arg
+    inx
+    bne b4_cd_skip
+b4_cd_arg:
+    cmp #$00               // "cd   " with no path -> let it chat
+    beq b4_cd_nomatch
+    stx $cf48              // stash arg start index
+    jsr b4_curdev
+    cmp #$43               // c/n -> forward raw line to server
+    beq b4_cd_nomatch
+    cmp #$4e
+    beq b4_cd_nomatch
+    jsr b4_is_htf
+    bne b4_prnsup          // 8/9/s -> not supported
+    jsr b4_idle_kick
+    lda #$01               // TARGET_DOS1
+    sta $df1d
+    lda #$11               // DOS_CMD_CHANGE_DIR
+    sta $df1d
+    ldx $cf48
+b4_cd_wr:
+    lda $02a7,x            // write the path arg bytes (up to EOL, terminator omitted)
+    beq b4_cd_wrd
+    sta $df1d
+    inx
+    bne b4_cd_wr
+b4_cd_wrd:
+    jsr b4_push
+    bcs b4_cd_err
+    jsr b4_fin             // C=0 iff status "00"
+    bcc b4_cd_ok           // success -> silent (unix-style)
+b4_cd_err:
+    ldx #$00
+b4_cd_el:
+    lda b4_cderr,x
+    beq b4_cd_ok
+    jsr $ffd2
+    inx
+    bne b4_cd_el
+b4_cd_ok:
+    clc
+    rts
+// b4_prnsup: print "NOT SUPPORTED ON IEC" + CR; handled (clc). Shared pwd+cd.
+b4_prnsup:
+    ldx #$00
+b4_psl:
+    lda b4_nsupmsg,x
+    beq b4_psd
+    jsr $ffd2
+    inx
+    bne b4_psl
+b4_psd:
+    clc
+    rts
+// b4_is_htf: Z=1 iff A is 'H','T' or 'F' (A clobbered to $00/$01).
+b4_is_htf:
+    cmp #$48
+    beq b4_htf_y
+    cmp #$54
+    beq b4_htf_y
+    cmp #$46
+    beq b4_htf_y
+    lda #$01               // Z=0 -> not h/t/f
+    rts
+b4_htf_y:
+    lda #$00               // Z=1 -> h/t/f
+    rts
+// b4_fold: copy of bank3 hd_fold -- normalize letter in A to uppercase.
+b4_fold:
+    cmp #$c1
+    bcc b4_f1
+    and #$7f               // shifted $C1-$DA -> $41-$5A
+b4_f1:
+    cmp #$61
+    bcc b4_f2
+    cmp #$7b
+    bcs b4_f2
+    and #$df               // lowercase $61-$7A -> $41-$5A
+b4_f2:
+    rts
+// b4_curdev: copy of bank3 hd_norm_cur -- A = current device letter from $cf2a,
+// lazy-defaulting to '8' (and rewriting $cf2a) if it holds a non-device byte.
+b4_curdev:
+    lda $cf2a
+    cmp #$38               // '8'
+    beq b4_ncok
+    cmp #$39               // '9'
+    beq b4_ncok
+    cmp #$53               // 'S'
+    beq b4_ncok
+    cmp #$48               // 'H'
+    beq b4_ncok
+    cmp #$54               // 'T'
+    beq b4_ncok
+    cmp #$46               // 'F'
+    beq b4_ncok
+    cmp #$43               // 'C'
+    beq b4_ncok
+    cmp #$4e               // 'N'
+    beq b4_ncok
+    lda #$38               // uninitialized/unknown -> default '8'
+    sta $cf2a
+b4_ncok:
+    rts
+// -- bank4 UCI leaf helpers: byte-faithful copies of the bank3 originals. All
+// touch only $dfxx (UCI regs) + $cf26/$cf30/$cf31/$cf47 scratch (bank-independent).
+// Every wait loop is bounded (~64K polls) with $0E recovery -- never hangs.
+// b4_dos1_read_print: A = DOS1 command byte. Sends target $01 + command (no
+// payload), prints the reply string framed by leading + trailing CR.
+b4_dos1_read_print:
+    sta $cf47              // stash command byte
+    jsr b4_idle_kick
+    lda #$01               // TARGET_DOS1
+    sta $df1d
+    lda $cf47
+    sta $df1d              // command byte
+    jsr b4_push
+    bcs b4_drp_done        // push failed -> give up quietly
+    lda #$0d
+    jsr $ffd2              // CR before the reply
+    jsr b4_wdav            // bounded wait for first reply byte
+    bcs b4_drp_fin
+b4_drp_rd:
+    lda $df1c
+    and #$80               // DATA_AV
+    beq b4_drp_fin
+    lda $df1e
+    jsr $ffd2              // CHROUT (bank-independent)
+    jmp b4_drp_rd
+b4_drp_fin:
+    jsr b4_fin             // drain/status/accept -> UCI back to idle
+b4_drp_done:
+    lda #$0d
+    jmp $ffd2              // trailing CR, tail-return
+// b4_idle_kick: bounded wait for UCI idle; kick with $0E if still stuck.
+b4_idle_kick:
+    jsr b4_widl
+    bcc b4_ik_done
+    lda #$0e               // ACC|ABORT|CLR_ERR
+    sta $df1c
+    jsr b4_widl
+b4_ik_done:
+    rts
+// b4_widl: bounded wait for idle; C=1 on timeout; preserves X.
+b4_widl:
+    ldy #$00
+    sty $cf26
+b4_wi:
+    lda $df1c
+    and #$30               // state bits: 00 = idle
+    beq b4_wiok
+    iny
+    bne b4_wi
+    inc $cf26
+    bne b4_wi
+    sec
+    rts
+b4_wiok:
+    clc
+    rts
+// b4_push: push the assembled command; C=1 on state error or busy-timeout.
+b4_push:
+    lda $df1c
+    ora #$01               // PUSH_CMD
+    sta $df1c
+    lda $df1c
+    and #$08               // state error?
+    bne b4_perr
+    ldy #$00
+    sty $cf26
+b4_pw:
+    lda $df1c
+    and #$30
+    cmp #$10               // 01 = command busy
+    bne b4_pok
+    iny
+    bne b4_pw
+    inc $cf26
+    bne b4_pw
+    lda #$0e               // stuck: abort so UCI returns to idle
+    sta $df1c
+    sec
+    rts
+b4_pok:
+    clc
+    rts
+b4_perr:
+    lda #$08               // CLR_ERR
+    sta $df1c
+    sec
+    rts
+// b4_wdav: wait for DATA_AV; C=1 on timeout (~64K polls).
+b4_wdav:
+    ldx #$00
+    ldy #$00
+b4_wd:
+    lda $df1c
+    and #$80
+    bne b4_wdok
+    inx
+    bne b4_wd
+    iny
+    bne b4_wd
+    sec
+    rts
+b4_wdok:
+    clc
+    rts
+// b4_fin: drain data queue, capture first 4 status bytes to $cf30+, accept;
+// C=0 iff status "00".
+b4_fin:
+    lda #$00
+    sta $cf30
+    sta $cf31
+b4_fd:
+    lda $df1c
+    and #$80               // leftover response data?
+    beq b4_fs0
+    lda $df1e
+    jmp b4_fd
+b4_fs0:
+    ldx #$00
+b4_fsl:
+    lda $df1c
+    and #$40               // STAT_AV
+    beq b4_facc
+    lda $df1f
+    cpx #$04
+    bcs b4_fsl             // drain but keep only the first 4 bytes
+    sta $cf30,x
+    inx
+    bne b4_fsl             // always
+b4_facc:
+    lda $df1c
+    ora #$02               // DATA_ACC
+    sta $df1c
+    ldy #$00
+    sty $cf26
+b4_fak:
+    lda $df1c
+    and #$02               // wait for the ack handshake to clear (bounded)
+    beq b4_fchk
+    iny
+    bne b4_fak
+    inc $cf26
+    bne b4_fak
+b4_fchk:
+    lda $cf30
+    cmp #$30               // '0'
+    bne b4_fbad
+    lda $cf31
+    cmp #$30               // '0'
+    bne b4_fbad
+    clc
+    rts
+b4_fbad:
+    sec
+    rts
+b4_nsupmsg:
+    .byte $4E, $4F, $54, $20, $53, $55, $50, $50, $4F, $52, $54, $45, $44   // "NOT SUPPORTED"
+    .byte $20, $4F, $4E, $20, $49, $45, $43, $0D, $00                        // " ON IEC",CR,0
+b4_cderr:
+    .byte $4E, $4F, $54, $20, $46, $4F, $55, $4E, $44, $0D, $00              // "NOT FOUND",CR,0
+.errorif (* > $9E9D), "bank4 module overran the reserve ($9E9C)"
+    .fill $9E9D - *, $00   // pad the reserve; real bank4 data resumes at $9E9D
+.errorif (* != $9E9D), "bank4 reserve fill did not land on $9E9D"
+    .byte $20, $BA, $DE, $00, $00, $00, $00    // data $9E9D (real stock data)
     .byte $00, $00, $00, $00, $00, $20, $BA, $DE, $00, $00, $00, $00, $00, $00, $00, $00    // data $9EA4
     .byte $00, $8D, $00, $DE, $68, $60, $48, $78, $A9, $80, $48, $A9, $20, $8D, $00, $DE    // data $9EB4
     .byte $00, $00, $00, $00, $00, $2C, $80, $80, $2C, $80, $80, $48, $AD, $F2, $9E, $8D    // data $9EC4

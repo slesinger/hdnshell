@@ -10,15 +10,28 @@ This document plans the remaining shell commands as small, byte-diff-verified,
 hardware-tested steps, in the SAME discipline that has kept the cartridge stock
 so far. Every step will have to be verified by Honza on real hardware before the next step is attempted to avoid bugs accumulation which will not be possible to fix later.
 
+> **Pre-step-11 readiness audit COMPLETE (2026-07-10).** All groundwork step 11
+> depends on is confirmed present in the working cartridge; no deferred item blocks
+> step 11; bank3 reserve `$998B–$9E9C` verified all-zero; 5a hardware baseline
+> passes (the lone `LOAD"$",8`-after-TASS anomaly is a **pre-existing stock-RR bug**,
+> reproduced on genuine RR — not ours, not fixed by decision). Details +
+> step-11 build gap + HW test plan in **`conversion_log3.md`**. Ready to start
+> step 11 (recommended split: **11a** trampoline round-trip proof, **11b** UCI-core
+> port + bank2 shim).
+
 ## Progress Tracking
 
 | Step ID | Change | HW Test Expectation | Status |
 |---|---|---|---|
-| 11 | Lift error dispatcher into bank3 (behavior-preserving) | Full step-9b regression suite unchanged: `HELLO WORLD` → reply + `READY.`; `PRINT 1/0` → `?DIVISION BY ZERO`; console switching intact; stock sweep | ⬜ pending |
-| 12 | `#` and `#<letter>` current-device state | `#` → `8`; `#h` → `H`; `#c`/`#n` forwarded eagerly; garbage → AI; stock sweep | ⬜ pending |
-| 13 | `status` (UCI IDENTIFY + NET GET_IP + reachability) | `status` prints firmware ident, correct local IP, server up/down state; stock sweep | ⬜ pending |
-| 14 | `time`, `reset`, `menu` tiny control/DOS commands | `time` prints RTC; `reset` reboots; `menu` enters Ultimate menu; each returns cleanly; stock sweep | ⬜ pending |
-| 15 | `pwd`, `cd` for h/t/f/c/n (with minimal support on 8/9/s) | On `#t`: `cd sub` / `pwd` / `cd ..` / `cd /` track correctly; on `#c`: server state; IEC shows "not supported" message; stock sweep | ⬜ pending |
+| 11a | Bank2→bank3 RAM trampoline round-trip PROOF (shim + trivial bank3 stub) | Type any bad line → **border colour advances one step** (bank3 ran) then `?SYNTAX ERROR`; `PRINT 1/0`→`?DIVISION BY ZERO`; console switch + stock sweep + TASS unchanged; auto-dispatch INTENTIONALLY off (bad line → stock error, no AI reply) | ✅ HW tested 2026-07-10 |
+| 11b | Port full UCI dispatcher into bank3 hsh_dispatch (restore auto-dispatch) | Full step-9b regression restored: `i:hello`→AI reply+`READY.`; `PRINT 1/0`→`?DIVISION BY ZERO`; server-down→stock error≤5s; console switch intact; stock sweep; **NO border step now** (dispatch replaces the 11a proof) | ✅ HW tested 2026-07-10 |
+| 12 | `#` and `#<letter>` current-device state | `#` → `8`; `#h` → `H`; `#c`/`#n` forwarded eagerly; garbage → AI; stock sweep | ✅ HW tested 2026-07-10 |
+| 13 | `status` (UCI IDENTIFY + NET GET_IP + reachability) | `status` prints firmware ident, correct local IP, server up/down state; stock sweep | ✅ HW tested 2026-07-10 (13a+13b) |
+| 14 | `time`, `reset`, `menu` tiny control/DOS commands | `time` prints RTC; `reset` reboots; `menu` enters Ultimate menu; each returns cleanly; stock sweep | ✅ 14a + 14b HW tested 2026-07-10 |
+| 15-pre | Bank3→bank4 RAM trampoline round-trip PROOF (`B4` test cmd + trivial bank4 stub) | Type `B4` ↵ → **border advances one step** (bank4 ran through the trampoline) then `READY.`; repeat steps each time; every other command unchanged; stock sweep; TASS | ✅ HW tested 2026-07-10 |
+| 15a | Bank4 command dispatcher gateway + `pwd` PROOF-print (reads `$02a7`/`$cf2a`, CHROUT from bank4; carry-routed handled/not-mine) | `pwd` ↵ → prints `PWD: <dev>` (e.g. `PWD: 8`, or `PWD: T` after `#t`); repeatable; `PRINT 1/0`→`?DIVISION BY ZERO`; `i:hello`→AI; every other command unchanged; stock sweep; TASS | ✅ HW tested 2026-07-10 |
+| 15b | `pwd` real: h/t/f → UCI DOS GET_PATH (`$12`); c/n → server-forward; 8/9/s → "not supported" | On `#t` `pwd` prints the Ultimate path; `#c` `pwd` → server cwd; `#8` `pwd` → "NOT SUPPORTED ON IEC"; stock sweep | ✅ HW tested 2026-07-10 |
+| 15c | `cd` (CHANGE_DIR `$11`) incl. `cd ..`, `cd /`, relative/absolute | On `#t`: `cd sub` / `pwd` / `cd ..` / `cd /` track correctly; on `#c`: server state; IEC → "not supported"; bad path → "NOT FOUND"; stock sweep | 🟨 built, awaiting HW test |
 | 16 | `ll` / `dir` with optional pattern filter | `ll` on `#t` lists Ultimate dir; `ll outrun*` filters; on `#8` → minimal (point to `$`); on `#c` → server results; stock sweep | ⬜ pending |
 | 17 | `mnt` / `umnt` (mount/unmount disk images) | `mnt foo.d64` then `#8` `dir` shows image contents; `LOAD"*",8,1` runs; `umnt` restores; stock sweep | ⬜ pending |
 | 18 | `mkdir` (create directory on h/t/f only) | `#t` `mkdir test` then `ll` shows it; IEC/network show "not supported"; stock sweep | ⬜ pending |
@@ -69,6 +82,30 @@ documented clean reserve), reached from bank2 by a **RAM bank-switch trampoline*
 — identical in spirit to the hardware-proven 10b mechanism (a RAM stub pages a
 ROM bank in, `jsr`s it, pages back). Bank1 is frozen; after step 11 bank2 is
 frozen too (only a thin shim + the trampoline install remain there).
+
+### UPDATE (2026-07-10, after step 14): bank3 reserve EXHAUSTED → bank4 opened
+
+Steps 11–14 consumed the whole bank3 reserve (`kw_tab` ends `$9E9B`; ~2 B left to
+the `$9E9D` wall; the only clean annex is `$97A2-$97FF` = 94 B). Steps 15–20 do
+not fit. **Decision (Honza, 2026-07-10): open bank4 as a second overflow reserve**
+(`$9C00-$9E9C` = 669 B, stock-zero, unreferenced), reached by a SECOND RAM
+trampoline `call_bank4` (`$0378`): map bank4 `$de00=$80` → `jsr $9c00` → restore
+bank3 `$18` → `rts`. bank4 (`$80`) is stock-used only by the boot-time TMP/REU
+installer, never at the prompt, so the transient map-in under the existing `sei`
+window is safe — same guarantee as bank2→bank3. **Bank encoding: `b7·4+b4·2+b3`,
+banks 4-7 = `$80/$88/$90/$98`** (confirmed by the stock bank table at bank4 `$9EF4`
+and the installer at `$8039`). bank4 handlers carry their OWN copies of the leaf
+helpers (bank3's are unreachable while bank4 is mapped); 669 B has room. Proven
+first with step **15-pre** (border-flash round-trip, mirroring 11a) before any
+real code is ported. Full detail in `conversion_log3.md` §12.
+
+**⚠ Bank4 reserve after 15c (2026-07-10): 550 B of 669 used, only 119 B free.** The
+shared UCI helper copies (~250 B, one-time) are now in; each new command is cheaper,
+but `ll`/`dir` (OPEN_DIR+READ_DIR + filter) and `memcpy` (hex parse + block r/w) are
+large and **won't all fit in 119 B**. A THIRD overflow region is needed before step
+16 or 20. Banks 5/6/7 are the frozen TMP payload, so the next reserve is not obvious
+— its own decision (reclaim more of the bank3 shadow gap, or a RAM-resident helper
+page). Resolve at the top of step 16.
 
 ### Banking / IRQ model for bank3 calls
 

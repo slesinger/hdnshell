@@ -3738,138 +3738,51 @@ hn_ip:
 // (the bank1 stub hardcodes `jsr $9b2e`).
 hondani_err:
 .errorif (* != $9B2E), "hondani_err moved (bank1 stub hardcodes $9B2E)"
+// --- step 11a/11b: thin bank2 shim -> bank3 hsh_dispatch via RAM trampoline --
+// The step-9b auto-dispatch logic now lives in bank3 hsh_dispatch (11b ported
+// the full UCI core there; the hn_* leaves are re-implemented bank3-local since
+// they are unreachable while bank3 is mapped). This shim is unchanged from 11a:
+// gate -> install the trampoline -> jsr it -> restore X=$0B -> propagate carry.
+// hsh_dispatch returns C=0 (reply printed) or C=1 (not handled -> stock error).
+//
+// The gate is preserved byte-for-byte: only a direct-mode SYNTAX ERROR ($0B)
+// reaches bank3; every other error passes straight through to stock IERROR.
+// Entered with IRQ masked + bank2 mapped (bank1 RAM IERROR stub); the whole
+// bank2->bank3 excursion runs inside that masked window. Restore uses the
+// CONSTANT $10 (bank2) -- never a $de00 read-back (10b post-mortem).
     cpx #$0b               // SYNTAX ERROR index?
     bne he_pass
     lda $3a                // CURLIN hi = $FF only in direct mode
     cmp #$ff
     bne he_pass
-    lda $df1d              // UCI ident ($C9 = present)
-    cmp #$c9
-    bne he_unreach         // no UCI -> can't dispatch -> stock error
-// ---- connect: target $03 cmd $07, port 6464 LE, "192.168.1.2",0 ------------
-    lda #$07
-    jsr hn_hdr
-    lda #$40
-    sta $df1d
-    lda #$19
-    sta $df1d
-    ldx #$00
-he_iplp:
-    lda hn_ip,x            // shared "192.168.1.2",0
-    sta $df1d
-    inx
-    cmp #$00
-    bne he_iplp
-    jsr hn_push
-    bcs he_unreach
-    jsr hn_wdav            // socket id must appear
-    bcs he_unreach
-    lda $df1e
-    sta $cf21              // socket id
-    jsr hn_fin
-    bcc he_conok
-he_unreach:
-    jsr hn_fin             // 5c: drain/accept so UCI returns to idle
+    // self-heal the call_bank3 RAM trampoline into $0360 (14 B), then call it.
+    // Reinstalled per line so a TASS/other page-3 scribble can't leave a stale
+    // stub. Runs from RAM so the bank flips never move the executing code.
+    ldx #tramp_end - tramp - 1
+he_tcopy:
+    lda tramp,x
+    sta $0360,x
+    dex
+    bpl he_tcopy
+    jsr $0360              // -> map bank3, jsr hsh_dispatch, restore bank2
     ldx #$0b               // restore error index for the stock handler
-    sec
-    rts
+    rts                    // carry from bank3 propagates (C=1 -> stock ?SYNTAX ERROR)
 he_pass:
     sec                    // not our error class -> stock IERROR (X untouched)
     rts
-he_conok:
-// ---- write: cmd $11, socket id, $FE $02, then the $02A7 shadow line ---------
-    lda #$11
-    jsr hn_hdr
-    lda $cf21
-    sta $df1d
-    lda #$fe               // wire magic
-    sta $df1d
-    lda #$02               // TEXT_INPUT (console 0)
-    sta $df1d
-    ldy #$00
-he_wlp:
-    lda $02a7,y            // raw pre-crunch line (step-8 shadow tap)
-    beq he_wdone           // $00 terminator
-    sta $df1d
-    iny
-    cpy #$59               // safety bound (matches the tap's copy limit)
-    bne he_wlp
-he_wdone:
-    jsr hn_push
-    bcc he_w1
-    jmp he_cfail
-he_w1:
-    jsr hn_fin
-    bcc he_w2
-    jmp he_cfail
-he_w2:
-// ---- read with retry (multi-chunk, CR before reply) -- mirrors step 7 -------
-    lda #$00
-    sta $cf24              // retry counter (0 = 256, first-chunk window)
-    sta $cf25              // got-data flag / CR-once latch
-he_rd:
-    lda #$10               // NET_CMD_SOCKET_READ
-    jsr hn_hdr
-    lda $cf21
-    sta $df1d
-    lda #$e8               // chunk len lo
-    sta $df1d
-    lda #$00               // chunk len hi
-    sta $df1d
-    jsr hn_push
-    bcs he_cfail
-    jsr hn_wdav
-    bcs he_cfail
-    lda $df1e              // length prefix lo
-    sta $cf22
-    jsr hn_wdav
-    bcs he_cfail
-    lda $df1e              // length prefix hi
-    sta $cf23
-    and $cf22
-    cmp #$ff               // $FFFF = no data yet
-    beq he_nodat
-    lda $cf22
-    ora $cf23
-    beq he_eof             // $0000 = peer closed
-    lda $cf25              // first chunk of the reply?
-    bne he_prlp
-    lda #$0d
-    jsr $ffd2              // CR before the reply
-    lda #$01
-    sta $cf25
-he_prlp:
-    lda $df1c
-    and #$80               // DATA_AV
-    beq he_prdn
-    lda $df1e
-    jsr $ffd2              // CHROUT
-    jmp he_prlp
-he_prdn:
-    jsr hn_fin             // status/accept; chunk is out
-    lda #$20               // short gap window now that data has flowed
-    sta $cf24
-    jmp he_rd              // next chunk
-he_nodat:
-    jsr hn_fin
-    dec $cf24
-    bne he_rd              // retry
-    lda $cf25              // window exhausted:
-    bne he_okcl            //   after data = quiet gap, reply complete
-    beq he_cfail           //   no data at all = server never answered
-he_eof:
-    jsr hn_fin
-    lda $cf25
-    bne he_okcl            // EOF after data = fine
-he_cfail:
-    jsr hn_close           // failure with an open socket: close it
-    ldx #$0b               // restore error index for the stock handler
-    sec
+// call_bank3 RAM trampoline template -- copied to $0360, RUNS from RAM so the
+// ROM bank flips can't pull it out from under itself. No PC-relative operand
+// (all absolute/immediate), so the ROM-resident copy is position-independent.
+tramp:
+    lda #$18               // map bank3 (RR $de00 control: bank3 = $18)
+    sta $de00
+    jsr $998b              // hsh_dispatch @ bank3 reserve start (PINNED $998B)
+    lda #$10               // restore bank2 with a CONSTANT (never read $de00)
+    sta $de00
     rts
-he_okcl:
-    jsr hn_close
-    clc                    // handled: reply printed
-    rts
+tramp_end:
+    .fill $9C41 - *, $00   // reclaim hondani_err's freed bytes up to cs_install
+.errorif (* != $9C41), "step-11a shim overran cs_install (pinned $9C41)"
 
 // ===========================================================================
 // Step 10a -- console-switch keyboard hook (detect C=+CTRL+1..7 -> border)

@@ -2773,12 +2773,48 @@ bank03_sub_97A1:
     brk                    // 00
 bank03_data_97A2:
 .errorif (* != $97A2), "bank03_data_97A2 shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97A2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97B2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97C2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97D2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97E2
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $97F2
+// =============================================================================
+// Step 15: bank4 command gateway (annex $97A2-$97FF). The bank3 reserve
+// ($998B-$9E9C) is full after step 14, so the shell's remaining commands (15+)
+// live in bank4's 669-byte reserve, reached by a SECOND RAM trampoline: map bank4
+// ($de00=$80), jsr $9c00 (the bank4 dispatcher), restore bank3 ($18) -- identical
+// in spirit to the proven bank2->bank3 call_bank3 mechanism (proved end-to-end by
+// step 15-pre's border flash). bank4 owns all matching/execution for its command
+// set; it returns C=0 = handled (no stock error), C=1 = not mine -> we fall
+// through to hsh_body exactly as ckm_none did before (chat/AI, and the c/n
+// server-forward for free). Runs inside the same sei window; RAM trampoline +
+// restore-with-constant ($18) -- no ROM pulled from under executing code. Carry
+// survives the trampoline's lda/sta restore (neither touches C).
+// 15a: bank4 dispatcher matches 'pwd' and prints "PWD: <dev>" (proof it can read
+// $02a7/$cf2a and CHROUT from bank4, and that non-command lines still reach chat).
+hsh_ck_b4:
+    // Self-heal the call_bank4 trampoline into $0378-$0385 right before use. This
+    // is the time-shared datassette buffer (RR's own tape/turbo code stages into
+    // $0348-$03E8, but only during tape ops, never at the prompt) -- same model
+    // call_bank3 ($0360) and the reset rstub ($0370) already rely on: copied fresh
+    // per use, run under sei, so no live collision. $0378-$0385 is clear of every
+    // OUR persistent stub (IERROR $0340, call_bank3 $0360, rstub $0370, CINV $03A0).
+    ldx #$0d               // copy the 14-byte trampoline -> $0378
+hcb_cp:
+    lda b4tramp,x
+    sta $0378,x
+    dex
+    bpl hcb_cp
+    jsr $0378              // map bank4 ($80), jsr $9c00 (dispatcher), restore ($18)
+    bcs hcb_no             // C=1 = bank4 didn't handle -> chat/AI / c/n forward
+    rts                    // C=0 = handled -> no stock ?SYNTAX ERROR
+hcb_no:
+    jmp hsh_body           // not a bank4 command -> normal chat/AI forward
+b4tramp:
+    .byte $A9, $80         // lda #$80      map bank4
+    .byte $8D, $00, $DE    // sta $de00
+    .byte $20, $00, $9C    // jsr $9c00     bank4 proof stub
+    .byte $A9, $18         // lda #$18      restore bank3
+    .byte $8D, $00, $DE    // sta $de00
+    .byte $60              // rts
+.errorif (* > $9800), "b4_annex overran the $97A2-$97FF annex into stock $9800"
+    .fill $9800 - *, $00   // pad the rest of the annex; stock code resumes at $9800
+.errorif (* != $9800), "b4_annex fill did not land on $9800"
     .byte $FF    // FF  undocumented/illegal at $9800
     beq b03_9808           // F0 05
     ldx #$10               // A2 10
@@ -2953,88 +2989,759 @@ b03_98E7:
     rts                    // 60
 bank03_data_998B:
 .errorif (* != $998B), "bank03_data_998B shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $998B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $999B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99AB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99BB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99CB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99DB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99EB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $99FB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A0B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A1B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A2B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A3B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A4B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A5B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A6B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A7B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A8B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9A9B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9AAB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ABB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ACB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9ADB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9AEB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9AFB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B0B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B1B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B2B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B3B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B4B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B5B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B6B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B7B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B8B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9B9B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BAB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BBB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BCB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BDB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BEB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9BFB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C0B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C1B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C2B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C3B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C4B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C5B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C6B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C7B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C8B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9C9B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CAB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CBB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CCB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CDB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CEB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9CFB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D0B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D1B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D2B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D3B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D4B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D5B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D6B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D7B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D8B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9D9B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DAB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DBB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DCB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DDB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DEB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9DFB
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E0B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E1B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E2B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E3B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E4B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E5B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E6B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E7B
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E8B
-    .byte $00, $00    // data $9E9B
+// --- step 11b: hsh_dispatch -- bank3 shell dispatcher (PINNED $998B) ---------
+// Reached from the bank2 shim via the call_bank3 RAM trampoline ($0360): the
+// trampoline maps bank3 ($de00=$18), jsr's here, then restores bank2 ($10).
+// Entered with IRQ MASKED and X=$0B (the bank2 shim rebuilds X=$0B after the
+// call, so X is free here). The gate (direct-mode SYNTAX ERROR) already passed
+// in the bank2 shim; this is the ported step-9b auto-dispatcher.
+//
+// Bank-independence (why this works with bank3 mapped): everything it touches is
+// outside the $8000-$9FFF ROM window -- UCI regs $DF1C-$DF1F (I/O2), the shadow
+// line $02A7 + scratch $CFxx (RAM), and CHROUT $FFD2 -> ($0326)=$F1CA at the
+// prompt (KERNAL; RR only redirects $0326 transiently during its $-dir display,
+// verified bank01 $839A restore). No leaf helper lives in bank2 -- they are all
+// re-implemented below (hn_* are bank2-resident and unreachable when bank3 is
+// mapped). All wait loops bounded + $0E recovery (steps 5c/7): never hang.
+//
+// Return: C=0 = handled (reply printed), C=1 = not handled (stock ?SYNTAX ERROR).
+//
+// --- step 12: '#' / '#<letter>' current-device command (PURE LOCAL, pre-forward)
+// The current device is a PRIVATE byte $CF2A (an ASCII letter, NOT KERNAL FA) --
+// switching it never changes BASIC's LOAD/SAVE default device. Runs before the
+// chat-forward so bare '#' and the local devices (8/9/S/H/T/F) never hit the net.
+//   '#'            -> print current device letter (+ CR); lazy-default '8'.
+//   '#8 #9 #S #H #T #F' -> store letter in $CF2A, handled locally (no server).
+//   '#C #N'        -> store letter, then FALL THROUGH to the server forward so the
+//                     server flips active_module (csdb/netdrive handlers match the
+//                     literal '#c'/'#n'). Eager sync is REQUIRED, not optional.
+//   '#<anything else>' -> not a device command -> fall through to the AI (as today).
+// Case-folded (lowercase $61-$7A and shifted $C1-$DA both map to uppercase) so the
+// same command works once the display font is switched to lower/upper. Exact match:
+// only '#'+EOL or '#'+one letter+EOL are local; '#help', '#c foo' etc. go to the AI.
+hsh_dispatch:
+    lda $02a7              // first char of the shadow line
+    cmp #$23               // '#'
+    beq hsh_ishash         // '#' command -> handle below
+    jmp hsh_ck_status      // else try 'status', then normal dispatcher (far)
+hsh_ishash:
+    lda $02a7+1            // second char
+    bne hd_setdev          // '#x...' -> set/validate device
+    // ---- bare '#': print current device letter ----
+    jsr hd_norm_cur        // A = normalized current device (lazy-default '8')
+    jsr $ffd2              // CHROUT the letter
+    lda #$0d
+    jsr $ffd2              // CR
+    clc                    // handled locally (no server)
+    rts
+hd_setdev:
+    ldx $02a7+2            // must be EOL right after the one letter
+    bne hsh_body           // '#' + 2+ chars -> not a device command -> AI
+    jsr hd_fold            // fold A to uppercase (accept both cases)
+    cmp #$38               // '8'
+    beq hd_local
+    cmp #$39               // '9'
+    beq hd_local
+    cmp #$53               // 'S' SoftIEC
+    beq hd_local
+    cmp #$48               // 'H' Ultimate Home
+    beq hd_local
+    cmp #$54               // 'T' Ultimate Temp
+    beq hd_local
+    cmp #$46               // 'F' Ultimate Flash
+    beq hd_local
+    cmp #$43               // 'C' CSDB   -> set + eager forward
+    beq hd_fwd
+    cmp #$4e               // 'N' Network -> set + eager forward
+    beq hd_fwd
+    jmp hsh_body           // unknown '#x' -> fall through to the AI
+hd_local:
+    sta $cf2a              // store device letter; done, no server
+    clc
+    rts
+hd_fwd:
+    sta $cf2a              // store 'C'/'N', then eager-forward the '#c'/'#n' line
+    jmp hsh_body
+hsh_body:
+    lda $df1d              // UCI ident register ($C9 = present)
+    cmp #$c9
+    bne hsh_unreach        // no UCI -> can't dispatch -> stock error
+// ---- connect: target $03 cmd $07, port 6464 LE, "192.168.1.2",0 ------------
+    lda #$07               // NET_CMD_TCP_SOCKET_CONNECT
+    jsr hsh_hdr
+    lda #$40               // port 6464 = $1940, lo first
+    sta $df1d
+    lda #$19
+    sta $df1d
+    ldx #$00
+hsh_iplp:
+    lda hsh_ip,x           // host string incl. $00 terminator
+    sta $df1d
+    inx
+    cmp #$00
+    bne hsh_iplp
+    jsr hsh_push
+    bcs hsh_unreach
+    jsr hsh_wdav           // socket id must appear
+    bcs hsh_unreach
+    lda $df1e
+    sta $cf21              // socket id
+    jsr hsh_fin
+    bcc hsh_conok
+hsh_unreach:
+    jsr hsh_fin            // 5c: drain/accept so UCI returns to idle
+    sec                    // not handled -> stock error (shim restores X=$0B)
+    rts
+hsh_conok:
+// ---- write: cmd $11, socket id, $FE $02, then the $02A7 shadow line ---------
+    lda #$11               // NET_CMD_SOCKET_WRITE
+    jsr hsh_hdr
+    lda $cf21
+    sta $df1d
+    lda #$fe               // wire magic
+    sta $df1d
+    lda #$02               // TEXT_INPUT (console 0)
+    sta $df1d
+    ldy #$00
+hsh_wlp:
+    lda $02a7,y            // raw pre-crunch line (step-8 shadow tap)
+    beq hsh_wdone          // $00 terminator
+    sta $df1d
+    iny
+    cpy #$59               // safety bound (matches the tap's copy limit)
+    bne hsh_wlp
+hsh_wdone:
+    jsr hsh_push
+    bcc hsh_w1
+    jmp hsh_cfail
+hsh_w1:
+    jsr hsh_fin
+    bcc hsh_w2
+    jmp hsh_cfail
+hsh_w2:
+// ---- read with retry (multi-chunk, CR before reply) -- mirrors step 7 -------
+    lda #$00
+    sta $cf24              // retry counter (0 = 256, first-chunk window)
+    sta $cf25              // got-data flag / CR-once latch
+hsh_rd:
+    lda #$10               // NET_CMD_SOCKET_READ
+    jsr hsh_hdr
+    lda $cf21
+    sta $df1d
+    lda #$e8               // chunk len lo
+    sta $df1d
+    lda #$00               // chunk len hi
+    sta $df1d
+    jsr hsh_push
+    bcs hsh_cfail
+    jsr hsh_wdav
+    bcs hsh_cfail
+    lda $df1e              // length prefix lo
+    sta $cf22
+    jsr hsh_wdav
+    bcs hsh_cfail
+    lda $df1e              // length prefix hi
+    sta $cf23
+    and $cf22
+    cmp #$ff               // $FFFF = no data yet
+    beq hsh_nodat
+    lda $cf22
+    ora $cf23
+    beq hsh_eof            // $0000 = peer closed
+    lda $cf25              // first chunk of the reply?
+    bne hsh_prlp
+    lda #$0d
+    jsr $ffd2              // CR before the reply
+    lda #$01
+    sta $cf25
+hsh_prlp:
+    lda $df1c
+    and #$80               // DATA_AV
+    beq hsh_prdn
+    lda $df1e
+    jsr $ffd2              // CHROUT (KERNAL -> ($0326)=$F1CA, bank-independent)
+    jmp hsh_prlp
+hsh_prdn:
+    jsr hsh_fin            // status/accept; chunk is out
+    lda #$20               // short gap window now that data has flowed
+    sta $cf24
+    jmp hsh_rd             // next chunk
+hsh_nodat:
+    jsr hsh_fin
+    dec $cf24
+    bne hsh_rd             // retry
+    lda $cf25              // window exhausted:
+    bne hsh_okcl           //   after data = quiet gap, reply complete
+    beq hsh_cfail          //   no data at all = server never answered
+hsh_eof:
+    jsr hsh_fin
+    lda $cf25
+    bne hsh_okcl           // EOF after data = fine
+hsh_cfail:
+    jsr hsh_close          // failure with an open socket: close it
+    sec                    // not handled -> stock error
+    rts
+hsh_okcl:
+    jsr hsh_close
+    clc                    // handled: reply printed
+    rts
+// ---- close: cmd $09, socket id ----------------------------------------------
+hsh_close:
+    lda #$09               // NET_CMD_SOCKET_CLOSE
+    jsr hsh_hdr
+    lda $cf21
+    sta $df1d
+    jsr hsh_push
+    jmp hsh_fin
+// ---- helpers (bank3-local copies of the bank2 hn_* leaves) ------------------
+// 5c: every wait loop bounded (~64K polls, ~1s); stuck states kicked with $0E.
+// A = command id: wait until UCI idle (recover if stuck), send target $03 + cmd
+hsh_hdr:
+    tax
+    jsr hsh_widl
+    bcc hsh_hsend
+    lda #$0e               // ACC|ABORT|CLR_ERR: kick a wedged UCI back to idle
+    sta $df1c
+    jsr hsh_widl           // second chance; send regardless (push checks error)
+hsh_hsend:
+    lda #$03               // TARGET_NETWORK
+    sta $df1d
+    stx $df1d
+    rts
+// bounded wait for idle state; C=1 on timeout; preserves X
+hsh_widl:
+    ldy #$00
+    sty $cf26
+hsh_wi:
+    lda $df1c
+    and #$30               // state bits: 00 = idle
+    beq hsh_wiok
+    iny
+    bne hsh_wi
+    inc $cf26
+    bne hsh_wi
+    sec
+    rts
+hsh_wiok:
+    clc
+    rts
+// push the assembled command; C=1 on state error or busy-timeout
+hsh_push:
+    lda $df1c
+    ora #$01               // PUSH_CMD
+    sta $df1c
+    lda $df1c
+    and #$08               // state error?
+    bne hsh_perr
+    ldy #$00
+    sty $cf26
+hsh_pw:
+    lda $df1c
+    and #$30
+    cmp #$10               // 01 = command busy
+    bne hsh_pok
+    iny
+    bne hsh_pw
+    inc $cf26
+    bne hsh_pw
+    lda #$0e               // command stuck: abort so UCI returns to idle
+    sta $df1c
+    sec
+    rts
+hsh_pok:
+    clc
+    rts
+hsh_perr:
+    lda #$08               // CLR_ERR
+    sta $df1c
+    sec
+    rts
+// wait for DATA_AV; C=1 on timeout (~64K polls)
+hsh_wdav:
+    ldx #$00
+    ldy #$00
+hsh_wd:
+    lda $df1c
+    and #$80
+    bne hsh_wdok
+    inx
+    bne hsh_wd
+    iny
+    bne hsh_wd
+    sec
+    rts
+hsh_wdok:
+    clc
+    rts
+// drain data queue, capture first 4 status bytes to $CF30+, accept; C=0 iff "00"
+hsh_fin:
+    lda #$00
+    sta $cf30
+    sta $cf31
+hsh_fd:
+    lda $df1c
+    and #$80               // leftover response data?
+    beq hsh_fs0
+    lda $df1e
+    jmp hsh_fd
+hsh_fs0:
+    ldx #$00
+hsh_fsl:
+    lda $df1c
+    and #$40               // STAT_AV
+    beq hsh_facc
+    lda $df1f
+    cpx #$04
+    bcs hsh_fsl            // drain but keep only the first 4 bytes
+    sta $cf30,x
+    inx
+    bne hsh_fsl            // always
+hsh_facc:
+    lda $df1c
+    ora #$02               // DATA_ACC
+    sta $df1c
+    ldy #$00
+    sty $cf26
+hsh_fak:
+    lda $df1c
+    and #$02               // wait for the ack handshake to clear (bounded)
+    beq hsh_fchk
+    iny
+    bne hsh_fak
+    inc $cf26
+    bne hsh_fak
+hsh_fchk:
+    lda $cf30
+    cmp #$30               // '0'
+    bne hsh_fbad
+    lda $cf31
+    cmp #$30               // '0'
+    bne hsh_fbad
+    clc
+    rts
+hsh_fbad:
+    sec
+    rts
+// ---- data -------------------------------------------------------------------
+hsh_ip:
+    .byte $31, $39, $32, $2E, $31, $36, $38, $2E, $31, $2E, $32, $00    // "192.168.1.2",0
+// ---- step 12 helpers --------------------------------------------------------
+// hd_fold: normalize the device letter in A to uppercase ($41-$5A). Accepts
+// lowercase ($61-$7A -> AND $DF) and shifted PETSCII ($C1-$DA -> AND $7F); digits
+// and anything else pass through untouched (later validation rejects non-letters).
+hd_fold:
+    cmp #$c1
+    bcc hd_f1
+    and #$7f               // shifted $C1-$DA -> $41-$5A
+hd_f1:
+    cmp #$61
+    bcc hd_f2
+    cmp #$7b
+    bcs hd_f2
+    and #$df               // lowercase $61-$7A -> $41-$5A
+hd_f2:
+    rts
+// hd_norm_cur: return A = current device letter from $CF2A, lazy-defaulting to
+// '8' (and rewriting $CF2A) if it holds anything outside the valid device set.
+hd_norm_cur:
+    lda $cf2a
+    cmp #$38               // '8'
+    beq hd_ncok
+    cmp #$39               // '9'
+    beq hd_ncok
+    cmp #$53               // 'S'
+    beq hd_ncok
+    cmp #$48               // 'H'
+    beq hd_ncok
+    cmp #$54               // 'T'
+    beq hd_ncok
+    cmp #$46               // 'F'
+    beq hd_ncok
+    cmp #$43               // 'C'
+    beq hd_ncok
+    cmp #$4e               // 'N'
+    beq hd_ncok
+    lda #$38               // uninitialized/unknown -> default '8'
+    sta $cf2a
+hd_ncok:
+    rts
+// ---- step 13a: 'status' command -- UCI IDENTIFY (DOS1 $01) -------------------
+// Matched at the dispatcher top (before hsh_body), case-folded, exact ('status'
+// + EOL). Prints UCI IDENTIFY + local IP/NM/GW + SERVER UP/DOWN. All wait loops
+// reuse the proven bounded helpers (hsh_widl/push/wdav/fin) + $0E recovery --
+// never hangs. Returns handled (C=0) so no stock error prints.
+// Step 14b: the old inline compare loop was folded into the shared cmd_match
+// (the same matcher 'time'/'menu'/'reset' use); 'STATUS' moved into kw_tab.
+hsh_ck_status:
+    lda #$08               // kw_status offset in kw_tab
+    ldy #$06
+    jsr cmd_match
+    bne st_no
+    jsr do_status
+    clc                    // handled (reply printed) -> no stock ?SYNTAX ERROR
+    rts
+st_no:
+    jmp hsh_ck_more        // not 'status' -> try 'time'/'menu'/'reset', then chat/AI
+do_status:
+    lda $df1d              // UCI ident register ($C9 = present)
+    cmp #$c9
+    bne st_nouci
+    jsr st_identify        // firmware ident string (+ trailing CR)
+    jsr st_getip           // IP:/NM:/GW: lines (NET GET_IP $05, 12 bytes)
+    jsr st_reach           // SERVER <host>: UP/DOWN (bounded connect probe)
+    rts
+st_nouci:
+    ldx #$00
+st_nul:
+    lda st_noult,x
+    beq st_nuldone
+    jsr $ffd2
+    inx
+    bne st_nul
+st_nuldone:
+    lda #$0d
+    jmp $ffd2              // CR, tail-return
+// UCI IDENTIFY: target $01 (DOS1), cmd $01, no payload. Print the reply string.
+// Step 14a: the read+print body was factored out into the shared dos1_read_print
+// (also used by 'time' = GET_TIME $26); st_identify now just names the command.
+st_identify:
+    lda #$01               // DOS_CMD_IDENTIFY
+    jmp dos1_read_print    // shared DOS1 read+print (tail); rts to do_status
+st_noult:
+    .byte $4E, $4F, $20, $55, $4C, $54, $49, $4D, $41, $54, $45, $00   // "NO ULTIMATE",0
+// ---- step 13b: local IP/NM/GW (NET GET_IP $05) + SERVER reachability ---------
+// UCI GET_IP returns 12 bytes: ip[0..3] netmask[4..7] gateway[8..11]. Read them
+// into $CF50-$CF5B, then print three labeled dotted-decimal lines. Reachability
+// is a bounded TCP connect probe to the same host:6464 the chat path uses (hsh_ip)
+// -- status "00" = UP, else DOWN. All loops bounded + $0E recovery (never hangs).
+// Scratch: $CF40-$CF42 (prbyte), $CF45-$CF46 (octet loop), $CF50-$CF5B (12-byte
+// buffer), $CF21 (probe socket id, reused from the chat path -- sequential, safe).
+st_getip:
+    lda #$05               // NET_CMD_GET_IP_ADDRESS
+    jsr hsh_hdr            // target $03 + cmd $05
+    lda #$00
+    sta $df1d              // interface index 0 (payload byte)
+    jsr hsh_push
+    bcs st_gip_fail
+    ldx #$00               // zero the 12-byte buffer (defensive)
+    txa
+st_gip_clr:
+    sta $cf50,x
+    inx
+    cpx #$0c
+    bne st_gip_clr
+    jsr hsh_wdav           // bounded wait for first reply byte
+    bcs st_gip_rddone
+    ldx #$00
+st_gip_rd:
+    lda $df1c
+    and #$80               // DATA_AV
+    beq st_gip_rddone
+    lda $df1e
+    cpx #$0c
+    bcs st_gip_skip        // already have 12 -> just drain the rest
+    sta $cf50,x
+st_gip_skip:
+    inx
+    jmp st_gip_rd
+st_gip_rddone:
+    jsr hsh_fin            // status/accept -> UCI back to idle
+    ldx #$00               // "IP: " + octets 0..3
+    jsr st_prlabel
+    lda #$00
+    jsr st_proctets
+    ldx #$04               // "NM: " + octets 4..7
+    jsr st_prlabel
+    lda #$04
+    jsr st_proctets
+    ldx #$08               // "GW: " + octets 8..11
+    jsr st_prlabel
+    lda #$08
+    jmp st_proctets        // tail (prints last line + CR)
+st_gip_fail:
+    jsr hsh_fin
+    rts
+// st_prlabel: print 4 chars of st_labels starting at offset X (0/4/8).
+st_prlabel:
+    ldy #$00
+st_prl1:
+    lda st_labels,x
+    jsr $ffd2
+    inx
+    iny
+    cpy #$04
+    bne st_prl1
+    rts
+// st_proctets: A = start offset into the $CF50 buffer (0/4/8). Prints 4 octets as
+// dotted decimal, then CR. Register-free across prbyte via $CF45/$CF46 scratch.
+st_proctets:
+    sta $cf45              // buffer index
+    lda #$00
+    sta $cf46              // octet counter
+st_po1:
+    ldx $cf45
+    lda $cf50,x
+    jsr prbyte             // clobbers A,X
+    inc $cf45
+    inc $cf46
+    lda $cf46
+    cmp #$04
+    beq st_podone
+    lda #$2e               // '.'
+    jsr $ffd2
+    jmp st_po1
+st_podone:
+    lda #$0d
+    jmp $ffd2              // CR, tail-return
+// prbyte: print A (0..255) as decimal, no leading zeros. Uses $CF40-$CF42.
+prbyte:
+    sta $cf40              // value
+    lda #$00
+    sta $cf41              // 0 = still suppressing leading zeros
+    lda #100
+    sta $cf42
+    jsr prdig
+    lda #10
+    sta $cf42
+    jsr prdig
+    lda $cf40              // ones (0..9) -- always printed
+    ora #$30
+    jmp $ffd2
+prdig:
+    ldx #$00
+prd1:
+    lda $cf40
+    cmp $cf42
+    bcc prd_done
+    sec
+    sbc $cf42
+    sta $cf40
+    inx
+    jmp prd1
+prd_done:
+    txa
+    bne prd_emit           // nonzero digit -> print + stop suppressing
+    lda $cf41
+    bne prd_emit           // not suppressing -> print the zero
+    rts                    // leading zero -> skip
+prd_emit:
+    lda #$01
+    sta $cf41
+    txa
+    ora #$30
+    jmp $ffd2              // print digit, tail-return
+// st_reach: print "SERVER <host>" then probe-connect to host:6464; UP/DOWN + CR.
+st_reach:
+    ldx #$00
+st_srl:
+    lda st_srvlbl,x
+    beq st_srld
+    jsr $ffd2
+    inx
+    bne st_srl
+st_srld:
+    ldx #$00               // echo the host ip string
+st_srip:
+    lda hsh_ip,x
+    beq st_sripd
+    jsr $ffd2
+    inx
+    bne st_srip
+st_sripd:
+    lda #$07               // TCP connect
+    jsr hsh_hdr
+    lda #$40               // port 6464 = $1940, lo first
+    sta $df1d
+    lda #$19
+    sta $df1d
+    ldx #$00
+st_rcip:
+    lda hsh_ip,x
+    sta $df1d
+    inx
+    cmp #$00
+    bne st_rcip
+    jsr hsh_push
+    bcs st_down
+    jsr hsh_wdav           // socket id must appear
+    bcs st_down
+    lda $df1e
+    sta $cf21              // probe socket id
+    jsr hsh_fin
+    bcs st_down            // status != "00" -> not reachable
+    jsr hsh_close          // reachable: close the probe socket
+    ldx #$00
+st_upl:
+    lda st_uptxt,x
+    beq st_updone
+    jsr $ffd2
+    inx
+    bne st_upl
+st_updone:
+    rts
+st_down:
+    jsr hsh_fin            // drain/accept anything pending
+    ldx #$00
+st_dnl:
+    lda st_dntxt,x
+    beq st_dndone
+    jsr $ffd2
+    inx
+    bne st_dnl
+st_dndone:
+    rts
+st_labels:
+    .byte $49, $50, $3A, $20    // "IP: "
+    .byte $4E, $4D, $3A, $20    // "NM: "
+    .byte $47, $57, $3A, $20    // "GW: "
+st_srvlbl:
+    .byte $53, $45, $52, $56, $45, $52, $20, $00                       // "SERVER ",0
+st_uptxt:
+    .byte $3A, $20, $55, $50, $0D, $00                                 // ": UP",CR,0
+st_dntxt:
+    .byte $3A, $20, $44, $4F, $57, $4E, $0D, $00                       // ": DOWN",CR,0
+// =============================================================================
+// Step 14a: 'time' and 'menu' -- device-independent local control/DOS commands.
+// Matched (exact, case-folded, no args) via cmd_match from hsh_ck_more, reached
+// when the line is neither '#...' nor 'status'. Both use only $DFxx UCI regs
+// (bank-independent) + the proven bounded helpers (never hang). Return C=0.
+// =============================================================================
+// uci_idle_kick: bounded wait for UCI idle; if still stuck, kick with $0E
+// (ACC|ABORT|CLR_ERR) and wait once more. Same 5c/7 recovery the helpers use.
+uci_idle_kick:
+    jsr hsh_widl
+    bcc uik_done
+    lda #$0e               // ACC|ABORT|CLR_ERR: unwedge a stuck UCI
+    sta $df1c
+    jsr hsh_widl
+uik_done:
+    rts
+// dos1_read_print: A = DOS1 command byte. Sends target $01 + that command (no
+// payload), then prints the reply string framed by a leading + trailing CR.
+// Bounded (hsh_widl/push/wdav/fin). Shared by st_identify ($01) and 'time' ($26).
+dos1_read_print:
+    sta $cf47              // stash the command byte
+    jsr uci_idle_kick
+    lda #$01               // TARGET_DOS1
+    sta $df1d
+    lda $cf47
+    sta $df1d              // command byte
+    jsr hsh_push
+    bcs drp_done           // push failed -> give up quietly
+    lda #$0d
+    jsr $ffd2              // CR before the reply
+    jsr hsh_wdav           // bounded wait for the first reply byte
+    bcs drp_fin
+drp_rd:
+    lda $df1c
+    and #$80               // DATA_AV
+    beq drp_fin
+    lda $df1e
+    jsr $ffd2              // CHROUT (KERNAL -> ($0326)=$F1CA, bank-independent)
+    jmp drp_rd
+drp_fin:
+    jsr hsh_fin            // drain/status/accept -> UCI back to idle
+drp_done:
+    lda #$0d
+    jmp $ffd2              // trailing CR, tail-return
+// 'time' -- UCI DOS1 GET_TIME ($26). Prints the RTC string (e.g. " 2024/12/31
+// 23:59:59"). NTP-backed fetch may pause briefly, but the read loop is bounded.
+do_time:
+    lda #$26               // DOS_CMD_GET_TIME
+    jmp dos1_read_print    // tail: prints reply, rts to caller (bounded helpers
+                           // no-op safely if UCI absent -- never on Ultimate hw)
+// 'menu' -- UCI CONTROL FREEZE ($04/$05): the Ultimate freezes to its own menu.
+// Push the command and drain/accept; the freeze then takes over asynchronously.
+do_menu:
+    lda $df1d              // UCI present?
+    cmp #$c9
+    bne dm_none
+    jsr uci_idle_kick
+    lda #$04               // TARGET_CONTROL
+    sta $df1d
+    lda #$05               // CTRL_CMD_FREEZE
+    sta $df1d
+    jsr hsh_push           // push -> Ultimate freezes to its menu
+    jsr hsh_fin            // drain/accept -> clean
+dm_none:
+    rts
+// cmd_match: case-fold-compare the typed line ($02a7..) against a keyword in
+// kw_tab. Entry: A = keyword's byte offset in kw_tab, Y = keyword length.
+// Returns Z=1 iff the line equals the keyword AND the next char is EOL ($00)
+// (exact match, no args). Clobbers A,X,Y; uses $CF45/$CF46 scratch.
+cmd_match:
+    sta $cf45              // running keyword index
+    sty $cf46              // keyword length
+    ldy #$00               // line index
+cm_l:
+    lda $02a7,y
+    jsr hd_fold            // case-insensitive (preserves X,Y)
+    ldx $cf45
+    cmp kw_tab,x
+    bne cm_no
+    inc $cf45
+    iny
+    cpy $cf46
+    bne cm_l
+    lda $02a7,y            // char after the keyword must be EOL
+    rts                    // Z reflects the EOL test
+cm_no:
+    lda #$ff               // force Z=0 (no match)
+    rts
+// hsh_ck_more: dispatch 'time' / 'menu'. Reached from hsh_ck_status (st_no) when
+// the line is not 'status'. On match run the handler and return handled (C=0);
+// no match falls through to hsh_body (the chat/AI forward), exactly as before.
+hsh_ck_more:
+    lda #$00               // kw_time offset
+    ldy #$04
+    jsr cmd_match
+    bne ckm_menu
+    jsr do_time
+    clc
+    rts
+ckm_menu:
+    lda #$04               // kw_menu offset
+    ldy #$04
+    jsr cmd_match
+    bne ckm_reset
+    jsr do_menu
+    clc
+    rts
+ckm_reset:
+    lda #$0e               // kw_reset offset
+    ldy #$05
+    jsr cmd_match
+    bne ckm_none
+    jmp do_reset           // reboots -- never returns
+ckm_none:
+    jmp hsh_ck_b4          // step 15-pre: try 'B4' bank4 proof, else chat/AI
+// 'reset' -- RR clean cold-boot. Bank0 holds the RR boot code (CBM80 autostart at
+// $8004). We map bank0 then jmp $FCE2 (KERNAL reset), which finds that CBM80 and
+// cold-starts RR properly. The $de00 write + the jmp MUST run from RAM: repaging
+// the $8000-$9FFF window from code living in it would pull that code out from
+// under itself (the trampoline lesson). Copy an 8-byte stub to $0370 (free page-3
+// gap, clear of the $0360 call_bank3 trampoline) and jump to it. RAM preserved
+// (not zeroed); BASIC program lost -- identical to pressing RESET.
+do_reset:
+    ldx #$07
+dr_cp:
+    lda rstub,x
+    sta $0370,x
+    dex
+    bpl dr_cp
+    jmp $0370
+rstub:
+    .byte $A9, $00         // lda #$00      bank0 = RR boot
+    .byte $8D, $00, $DE    // sta $de00     map bank0 (from RAM)
+    .byte $4C, $E2, $FC    // jmp $fce2     KERNAL reset -> finds CBM80 in bank0
+kw_tab:
+    .byte $54, $49, $4D, $45              // "TIME"   (offset 0)
+    .byte $4D, $45, $4E, $55              // "MENU"   (offset 4)
+    .byte $53, $54, $41, $54, $55, $53    // "STATUS" (offset 8)
+    .byte $52, $45, $53, $45, $54         // "RESET"  (offset 14 = $0E)
+.errorif (* > $9E9D), "step-11b hsh module overran the bank3 reserve ($9E9D)"
+    .fill $9E9D - *, $00   // pad the rest of the reserve; real bank3 data at $9E9D
+.errorif (* != $9E9D), "bank3 reserve fill did not land on $9E9D"
     jsr $deba              // 20 BA DE
     dec $01                // C6 01   CPU port: mem banking
     jsr $f3d5              // 20 D5 F3
