@@ -10,11 +10,28 @@ This document plans the remaining shell commands as small, byte-diff-verified,
 hardware-tested steps, in the SAME discipline that has kept the cartridge stock
 so far. Every step will have to be verified by Honza on real hardware before the next step is attempted to avoid bugs accumulation which will not be possible to fix later.
 
+## Progress Tracking
+
+| Step ID | Change | HW Test Expectation | Status |
+|---|---|---|---|
+| 11 | Lift error dispatcher into bank3 (behavior-preserving) | Full step-9b regression suite unchanged: `HELLO WORLD` → reply + `READY.`; `PRINT 1/0` → `?DIVISION BY ZERO`; console switching intact; stock sweep | ⬜ pending |
+| 12 | `#` and `#<letter>` current-device state | `#` → `8`; `#h` → `H`; `#c`/`#n` forwarded eagerly; garbage → AI; stock sweep | ⬜ pending |
+| 13 | `status` (UCI IDENTIFY + NET GET_IP + reachability) | `status` prints firmware ident, correct local IP, server up/down state; stock sweep | ⬜ pending |
+| 14 | `time`, `reset`, `menu` tiny control/DOS commands | `time` prints RTC; `reset` reboots; `menu` enters Ultimate menu; each returns cleanly; stock sweep | ⬜ pending |
+| 15 | `pwd`, `cd` for h/t/f/c/n (with minimal support on 8/9/s) | On `#t`: `cd sub` / `pwd` / `cd ..` / `cd /` track correctly; on `#c`: server state; IEC shows "not supported" message; stock sweep | ⬜ pending |
+| 16 | `ll` / `dir` with optional pattern filter | `ll` on `#t` lists Ultimate dir; `ll outrun*` filters; on `#8` → minimal (point to `$`); on `#c` → server results; stock sweep | ⬜ pending |
+| 17 | `mnt` / `umnt` (mount/unmount disk images) | `mnt foo.d64` then `#8` `dir` shows image contents; `LOAD"*",8,1` runs; `umnt` restores; stock sweep | ⬜ pending |
+| 18 | `mkdir` (create directory on h/t/f only) | `#t` `mkdir test` then `ll` shows it; IEC/network show "not supported"; stock sweep | ⬜ pending |
+| 19 | `cp` file download + `csdb` alias | Manual's CSDB session: `#c` / `find hondani` / `cd rel/<id>` / `cp *.zip` / `#t` / `dir` shows file; `csdb` alias works; stock sweep | ⬜ pending |
+| 20 | `memcpy` hex-range save/load (hardest; optional split) | `memcpy $c000-$cfff dump.bin` then `memcpy dump.bin $4000` and compare; relocation works; stock sweep | ⬜ pending |
+| 21 | Verify pass-throughs + final sweep | `i:`, `m:`, `:` still work; all new commands once more; manual wording vs actual; update docs | ⬜ pending |
+
 ---
 
 Left over debt from last implementation of step 10:
 
 1. Bank1 per-line self-heal / launch-disarm — the one real gap you already hit: the hook is armed by typing HONDANI and is lost after RUN/LOAD/TASS (re-type HONDANI to re-arm). The manual's intent is that any typed line re-arms it. This needs a small bank1 change — and bank1 is frozen with a full pocket, so it's the highest-risk remaining item and deserves its own careful step.
+   - **STATUS (2026-07-10): investigated in `conversion_log2.md`, DEFERRED to the bank3 era (do it as part of / after step 11).** Hardware-characterized: **only `TASS` wipes CINV `$0314`** (RUN/LOAD do NOT); the wipe resets only the vector — both tape-buffer stubs (`$0340`, `$03A0`) survive. The heal is a guarded vector re-point `$0314→$03A0` (guard on the armed-flag `$03ED`, which survives TASS and is 0 pre-HONDANI — required, else the first pre-HONDANI line aims the IRQ at `$03A0=BRK`). It lands **exactly 1 byte over** bank1's clean free space (pocket 5 B + gap 8 B), and the only remaining shave touches the MERGE-sensitive IERROR idempotency check — not worth it in frozen bank1. **In bank3 there is room**: carry the guarded re-point (and a proper **local-only `HDN` re-arm command**, no network round-trip) in bank3, called from the existing per-line tap. Full design (exact bytes, guard, shadow-loop reclaim) is in `conversion_log2.md`. **Meanwhile the manual re-arm is `HONDANI`** (installs the hook today, server up or down).
 2. Correct modifier mapping — key_send sends modifiers 0; only matters for console apps using explicit CTRL/C= chords (and note those two bits are swapped between SHFLAG and the server's flags).
 3. Bank2's free run is nearly full (7 bytes left), so any of these will want the bank3 reserve or a small refactor.
 
