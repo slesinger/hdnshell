@@ -1487,3 +1487,85 @@ Flash, arm `HONDANI`, on a UCI device (`#t` then `#h`):
    forward to the server verbatim (C=1 fall-through — "direct"-style non-tokens still chat);
    stock sweep; TASS/TMP `\` resume; C=+CTRL console-switch at the prompt.
 If all pass, 16b-2 is done and steps 17-20 (`mnt`/`umnt`/`mkdir`/`cp`) are next in the freed area.
+
+**RESULT (Honza, hardware, 2026-07-11): STEP 16 COMPLETE — ALL PASS.** 16a-fix (multi-packet
+READ_DIR streaming), 16b-1 (one-entry-per-line output), 16b-2 (client-side prefix filter) and
+CONS (both stages of the bank4→bank3 leaf-helper trampoline) all verified on real hardware.
+`build/rr38p-tmp12reu.rebuilt.bin` at this point is the tracking table's step-16 baseline.
+
+---
+
+## 20  FIX-CS2 — CINV stub no-match fall-through trapped the local console
+
+**Symptom (Honza, real HW, long-standing, ~80% reproducible):** arm `HONDANI`, switch to a
+server console with `C=+CTRL+2..7`, then press `C=+CTRL+1` to return to the local console.
+The local screen is restored, **but the cursor stops blinking and no key can be typed.**
+Switching to the *other* consoles (`C=+CTRL+2..7`) still works. Server log for the failure:
+```
+RESTORE_SCREEN for session …      <- the legit C=+CTRL+1 return-to-local
+SAVE_SCREEN    for session …      <- a spurious second console_switch fires
+WARNING - Unknown local command 0x01   <- its scr_get, on console 0 (GET_SCREEN invalid there)
+```
+
+**Root cause — asymmetric guard between the two keyboard scanners.** The CINV RAM stub
+(`cinv_tmpl` → `$03A0`) scans the 1..7 digit table like this (pre-fix):
+```
+    ldx #$06
+cvr_chk:
+    cmp $03f0,x
+    beq cvr_match
+    dex
+    bpl cvr_chk
+cvr_match:            ; <-- NO-MATCH FALLS THROUGH HERE with X=$FF
+    …
+    jsr console_switch ; called with a bogus index
+```
+When `C=+CTRL` is held while the key down is **not** 1..7 (e.g. as the return chord releases,
+`$CB` (SFDX) reads `$40` = "no key"), the loop exhausts and drops into `cvr_match` with
+**X=$FF**. `console_switch` then computes console nibble `($FF+1)<<4 = $00`, does `scr_save`
+(the log's SAVE_SCREEN), stores `w_console=$00`, does `scr_get` with wire byte `$00`+sub `$01`
+(the "Unknown local command 0x01" — GET_SCREEN is invalid for the local console 0), and enters
+`cs_modal` **for a bogus console 0**. The machine is now trapped in the modal loop with
+`w_console=0`: BASIC is frozen (dead cursor, keystrokes shipped off as console-0 keypresses),
+yet `C=+CTRL+2..7` still hops consoles (that's `cm_server` *inside* the modal). Every reported
+detail — including the exact three log lines — matches. `cs_modal`'s own scanner (`cm_chk`) was
+already immune: it explicitly routes "combo held but not a digit" to a drop-and-ignore; only the
+CINV stub lacked the guard.
+
+**The fix — self-guarding scan loop, ZERO byte growth.** The stub is byte-exact full (71 B,
+`$03A0-$03E6`; `$03E7` is the saved IERROR vector — it cannot grow). Restructured the loop to
+the *same* 10 bytes so a no-match routes to `cvr_clear` (drop the chord + chain), never to
+`console_switch`:
+```
+    ldx #$07
+cvr_chk:
+    dex
+    bmi cvr_clear    ; ran past index 0 => no digit matched: drop & chain
+    cmp $03f0,x
+    bne cvr_chk
+cvr_match:           ; reached ONLY on a real match, X in 0..6 (unchanged contract)
+```
+`ldx #$06`+`[cmp/beq/dex/bpl]` → `ldx #$07`+`[dex/bmi/cmp/bne]`, identical size. Mirrors the
+`wedge-latest-not-working` tree's independent fix (no code copied — logic only).
+
+**Build + byte-verify (2026-07-11):** `./build.sh` clean (no `.errorif` trips). Byte-diff vs the
+step-16 build: **exactly 8 bytes changed, all in `$9B7D-$9B84` (inside `cinv_tmpl`)**; every
+other byte of the whole cartridge — including `cinv_tmpl_end $9BA0`, `cs_install $9C41`,
+`console_switch $9CB7` and all downstream bank2, and the frozen banks 0/1/3/4/5/6/7 — is
+byte-identical. `cvr_chk` stays at `$9B7E`; RAM `cvr_match` stays at `$03CD`. Archived
+`build/archive-csfix2-cvr-nomatch.bin`. **Awaiting HW test.**
+
+### 20.1  HW test plan for FIX-CS2 (Honza)
+Arm first: `HONDANI`.
+1. **THE FIX (repeat ~10× to beat the old 80%):** `C=+CTRL+2` (or any 2..7) to a server
+   console, then `C=+CTRL+1` back to local → the local cursor **blinks** and you can type
+   `READY.`-line BASIC immediately. No dead console. Server log shows a lone `RESTORE_SCREEN`
+   (no trailing spurious `SAVE_SCREEN` / `Unknown local command 0x01`).
+2. **Feature intact:** `C=+CTRL+2..7` still switches between all server consoles; re-entering a
+   console still paints it; typing inside a server console still forwards keys.
+3. **Non-digit chord is now a clean no-op:** hold `C=+CTRL` and tap a non-1..7 key (e.g. `Q`) →
+   nothing happens (no screen save, no trap), the prompt keeps working.
+4. **Regression:** `ll`/`dir`, `pwd`/`cd`, `status`/`time`, `#`/`#c`; the FIX-CS game test
+   (`HONDANI`→F1 Sprite Studio 64 / Outrun still run); stock sweep; TASS launch/exit + TMP `\`.
+
+If all pass, the long-standing "local console dead after return" bug is closed.

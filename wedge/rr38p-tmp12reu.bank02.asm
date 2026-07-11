@@ -3809,12 +3809,20 @@ cvr_live:
     cmp #$06               // both C= and CTRL held?
     bne cvr_clear
     lda $cb                // SFDX: matrix code of the key currently down
-    ldx #$06
+    ldx #$07               // scan the 1..7 digit table ($03F0) from the top down
 cvr_chk:
-    cmp $03f0,x            // one of the 1..7 keys? (digit table now @ $03F0)
-    beq cvr_match
-    dex
-    bpl cvr_chk
+    dex                    // ran past index 0 => no digit matched: drop the chord
+    bmi cvr_clear          //   (C=+CTRL held on a non-1..7 key, e.g. $CB=$40 as the
+                           //   return combo releases) and chain, WITHOUT calling
+                           //   console_switch. The old "beq/dex/bpl -> fall into
+                           //   cvr_match with X=$FF" path called console_switch with
+                           //   a bogus index: nibble ($FF+1)<<4 = $00 -> scr_save +
+                           //   scr_get on console 0 (server "Unknown local command
+                           //   0x01") -> trapped in cs_modal = the intermittent
+                           //   "local console won't type / cursor dead" bug. Same
+                           //   size as the old loop, so the stub stays 71 bytes.
+    cmp $03f0,x            // one of the 1..7 keys?
+    bne cvr_chk
 cvr_match:
     lda $03ee              // already acted on this press?
     bne cvr_chain
