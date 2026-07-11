@@ -1359,3 +1359,131 @@ fallback needed.
    until you re-type `HONDANI` (expected new behaviour, not a bug).
 4. **Regression:** `ll`/`dir` one-per-line unchanged; pwd/cd; `#8 dir`→IEC notice; stock
    sweep; TASS launch/exit + TMP `\` resume.
+
+## 18  CONS — bank4→bank3 leaf-helper trampoline (space reclaim), staged
+
+**Why:** bank4 keeps byte-identical local copies of 8 bank3 UCI leaf helpers (315 B).
+16b-2's correct filter overflowed the third region by 59 B, so we reclaim space by
+calling bank3's FROZEN originals through a small RAM trampoline and deleting the bank4
+dupes. Chosen over cutting 16b-2 scope; also unblocks steps 17-20.
+
+**Mechanism:** bank4 dispatch already runs under `sei` (bank3 `hsh_ck_b4` heals `b4tramp`
+→ `$0378`, jsr `$9c00`, all masked). New `b4c3_install` (at the top of `b4_disp`) self-heals
+a 25-byte stub into the free datassette pocket **`$0386-$039E`** (clear of IERROR `$0340` /
+call_bank3 `$0360` / call_bank4 `$0378` / CINV `$03A0`). The stub:
+`stx vec / sty vec+1 / lda #$18 / sta $de00 / jsr (->jmp (vec)) / lda #$80 / sta $de00 / rts`.
+Target bank3 address passed in **X(lo)/Y(hi)**; A is clobbered by the flips, **X/Y/C survive**
+(`lda`/`sta` touch neither) — exactly what the C-returning leaf helpers need. `dos1_read_print`
+(needs A) will use pre-stash `$cf47` + target `dos1+2` in stage 2.
+
+**Stage 1 (mechanism proof, built+verified 2026-07-11):** trampoline installed; ONLY `cd`'s
+`b4_fin` rerouted to bank3 `hsh_fin` (`$9B6A`) via the `$0386` stub — proves C-flag +
+`$cf30/$cf31` status pass across the bank switch. All other helper sites stay LOCAL (A/B
+safety: if the stub were broken, only `cd` misbehaves; pwd/dir unaffected). No helper bodies
+deleted yet (no reclaim yet — that's stage 2).
+- Build clean, bank04.bin = 8194. `b4_disp` still pinned `$9C00`. Inserting `jsr b4c3_install`
+  (+3 B) shifted the main area +3 (all our code, label-relative; `b4_read_dir_stream` stayed
+  pinned at `$9F58`, only its jsr operands updated). Trampoline template assembled byte-exact
+  to design (`8E 9D 03 8C 9E 03 A9 18 8D 00 DE 20 9A 03 A9 80 8D 00 DE 60 6C 9D 03 00 00`) at
+  `$9FC4`; install loop at `$9FBD`. Third region: **37 B free** after stage-1 code.
+
+### 18.1  Stage-1 HW test plan
+Flash, arm HONDANI, select a UCI device (`#t` or `#h`):
+1. `cd <valid-subdir>` → silent success (prompt returns, no error) = **C=0 passed through the
+   trampoline** (bank3 hsh_fin ran, status "00").
+2. `pwd` → shows the new path (confirms cd actually changed dir; pwd uses LOCAL helper, so this
+   also cross-checks the trampoline didn't corrupt UCI state).
+3. `cd <nonexistent>` → prints **"NOT FOUND"** = C=1 passed through the trampoline (b4_cd_err).
+4. `cd ..`, navigate back → works.
+5. Regression: `pwd`, `dir`/`ll` on h/t/f still list correctly (local helpers); `#8 dir`→IEC
+   notice; c/n forward; stock sweep; TASS/TMP `\` resume; C=+CTRL console-switch still works.
+
+If cd's success AND failure paths both work → trampoline proven → stage 2 (reroute
+idle_kick/push/wdav/dos1, delete the 6 bodies, reclaim ~150 B). If cd breaks but pwd/dir are
+fine → the trampoline/register-passing is the suspect, isolated cleanly.
+
+### 18.2  CONS stage 2 — reroute the rest + delete the dupes (built+verified 2026-07-11)
+With the trampoline proven, rerouted the remaining 10 leaf-helper call sites through
+`B4C3_RUN` and DELETED the 6 duplicate bodies (`b4_dos1_read_print`, `b4_idle_kick`,
+`b4_widl`, `b4_push`, `b4_wdav`, `b4_fin` — a contiguous block at the end of the leaf area).
+`b4_fold`/`b4_curdev` stay local (many callers, tiny).
+- Reroutes: idle_kick→`B3_IDLE $9DBB` (cd, open_dir, read_dir_stream), push→`B3_PUSH $9B20`
+  (same 3), wdav→`B3_WDAV $9B55` (read_dir_stream), fin→`B3_FIN $9B6A` (open_dir,
+  read_dir_stream; cd's was stage 1). **pwd's dos1** needs an A-arg: pre-stash `$cf47` then
+  enter bank3 `dos1_read_print+3 = $9DCC` (past its own `sta $cf47`), target via X/Y →
+  `B3_DOS1`. The 4 helper calls INSIDE the old dos1 body vanished with the deletion.
+- One mechanical fix: rerouting pushed `bne b4_prnsup` (pwd) out of ±127 range → changed to
+  `beq b4_pwd_ok / jmp b4_prnsup` (no logic change).
+- **Reclaim: main-area free 10 B → 237 B (+227 B).** Third region 37 → 21 B (the 4 in-region
+  reroutes cost +16 B). Build clean, bank04.bin = 8194, `b4_disp`@`$9C00` +
+  `bank04_data_9F58`@`$9F58` pins hold, ZERO dangling refs, trampoline template byte-exact.
+  16b-2's ~130 B filter now fits easily in the reclaimed main area.
+
+### 18.3  CONS stage-2 HW test plan (FULL UCI regression — everything now routes via bank3)
+Flash, arm HONDANI, on a UCI device (`#t` then `#h`):
+1. **`pwd`** → prints the current path. (Riskiest new path: dos1 reroute + A-arg via `$cf47`
+   pre-stash + bank3 entry at +3. If the path prints correctly, arg-passing is proven.)
+2. **`cd <subdir>` → silent OK; `pwd` confirms; `cd <bad>` → "NOT FOUND".** (idle_kick+push+fin
+   all via bank3.)
+3. **`dir` / `ll`** → whole directory, one entry per line. (read_dir_stream's idle_kick/push/
+   wdav/fin + open_dir's idle_kick/push/fin, all via bank3.)
+4. Repeat 1-3 on the other device.
+5. Regression: `#8 dir`→IEC notice; c/n forward; stock sweep; TASS/TMP `\` resume; C=+CTRL
+   console-switch still works.
+If all pass, CONS is done (~227 B reclaimed) and 16b-2 is unblocked (simplest case-insensitive
+prefix filter, in the freed main area).
+
+## 19  16b-2 — h/t/f client-side prefix filter for `dir`/`ll` (built+verified 2026-07-11)
+
+CONS reclaimed the main area, so 16b-2 landed as the **SIMPLEST case-INSENSITIVE prefix
+match** (Honza: exact-case display not required). `dir <pat>` / `ll <pat>` on h/t/f now list
+only entries whose name starts with `<pat>`; bare `dir`/`ll` unchanged; c/n still filter
+server-side (bank3 forward).
+
+**Design (all bank4, one edited source file):**
+- **Token parse** (`b4_ck_dir`/`b4_ck_ll`): the old exact-EOL check became: EOL → bare (no
+  filter); a space → `jmp b4_setpat` with X = arg index (`#$04` for "dir ", `#$03` for "ll ");
+  anything else (e.g. "direct") → not-our-token (C=1 → chat/AI). Bare paths set `B4_PATLEN=0`.
+- **`b4_setpat`** (main area): skip extra spaces, then copy chars into `B4_PAT` **folded to
+  uppercase** (`b4_fold`), stopping at EOL or a trailing `*` (prefix wildcard); `Y`→`B4_PATLEN`
+  (cap `B4_PATMAX=40`; 0 = e.g. "dir  " → no filter). `jmp b4_do_dir`.
+- **Streaming**: `b4_do_dir` zeroes `B4_BUFLEN` before `b4_read_dir_stream`. The `$9F58` drain
+  loop's per-char CHROUT was **replaced by `jsr b4_emit`** (loop got *smaller*), and a
+  `jsr b4_flush` was added at `b4_rds_fin` to emit the final entry (no trailing marker).
+- **`b4_emit`** (per data byte, main area): byte ≥`$21` → append to `B4_BUF` (`B4_BUFMAX=80`,
+  extra chars dropped); byte ≤`$20` (entry separator) → `jmp b4_flush`.
+- **`b4_flush`**: empty buffer → nothing; `B4_PATLEN==0` → print; else fold-compare `B4_BUF`
+  prefix vs `B4_PAT` (name shorter than pattern → skip; all pattern chars matched → print).
+  Print = name bytes + CR; always reset `B4_BUFLEN`.
+
+**RAM scratch** (all above the TMP image `$A000-$CEFF`, clear of bank3 ≤`$cf62` / bank4
+≤`$cf48` UCI scratch, and clear of bank0's transient `$cfff`): `B4_PATLEN=$cf49`,
+`B4_BUFLEN=$cf4a`, `B4_BUF=$cf80-$cfcf` (80 B), `B4_PAT=$cfd0-$cff7` (40 B). The bank3 leaf
+helpers called via the trampoline during streaming never touch these (grep-verified), so the
+buffer/pattern survive each `B4C3_RUN` excursion.
+
+**Register safety:** `b4_emit` clobbers A/X (not Y — the accept-handshake at `b4_rds_acc` owns
+Y); on a marker `b4_flush` clobbers A/Y then `rts`, and the loop reloads via `jmp b4_rds_rd`.
+KERNAL CHROUT (`$ffd2`) preserves X/Y (same guarantee the `b4_cderr`/`b4_nsupmsg` message
+loops already rely on); `b4_fold` preserves X/Y. So the Y-indexed compare/print loops are safe.
+
+**Build + byte-verify (2026-07-11):** `./build.sh` clean (no `.errorif`); bank04.bin = 8194.
+Only `bank04.asm` edited (git). bank4 diffs vs stock confined to `$9C00-$9E9C` (main reserve,
+filter helpers) + `$9F58-$9FFF` (stream loop) — **stock-data band `$9E9D-$9F57` = 0 diffs**
+(TMP bank table + RTI trampoline intact); banks 0/5/6/7 identical to stock; banks 1/2/3
+unchanged by this edit. `b4_disp`@`$9C00` + `bank04_data_9F58`@`$9F58` pins hold; trampoline
+template byte-exact (`8E 9D 03 ... 6C 9D 03 00 00`); `b4c3_end`=`$9FEA` (third region grew to
+22 B free — the drain loop shrank 3 B). Archived `build/archive-16b2.bin`.
+
+### 19.1  HW test plan
+Flash, arm `HONDANI`, on a UCI device (`#t` then `#h`):
+1. **`dir`** (bare) → whole directory, one entry per line (16b-1 behaviour, unchanged).
+2. **`dir <prefix>`** (a prefix that matches some entries, mixed case, e.g. `dir OuT`) →
+   lists only entries whose name starts with `<prefix>`, case-insensitively. Repeat with `ll`.
+3. **`dir <prefix>*`** (trailing `*`) → same result as without the `*` (wildcard dropped).
+4. **`dir zznope`** (matches nothing) → empty listing (just blank line(s)), returns cleanly.
+5. **`dir`/`ll` with lowercase vs uppercase** patterns give the same matches (case-insensitive).
+6. Regression: `pwd`/`cd` still fine; `#8 dir` → IEC notice; `#c dir`/`ll <pat>` still
+   forward to the server verbatim (C=1 fall-through — "direct"-style non-tokens still chat);
+   stock sweep; TASS/TMP `\` resume; C=+CTRL console-switch at the prompt.
+If all pass, 16b-2 is done and steps 17-20 (`mnt`/`umnt`/`mkdir`/`cp`) are next in the freed area.

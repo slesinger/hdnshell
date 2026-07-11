@@ -610,8 +610,23 @@ bank04_data_80B4:
 // Any other line -> C=1 -> bank3 chat/AI (unchanged). The Ultimate CHANGE_DIR
 // handles "..", "/", relative and absolute natively, so cd needs no path parsing.
 // =============================================================================
+.const B4C3_RUN = $0386     // CONS: RAM entry of the healed bank4->bank3 trampoline
+// 16b-2 dir/ll client-side prefix filter (RAM scratch, all above the TMP image at
+// $A000-$CEFF and clear of bank3 (<=$cf62) / bank4 (<=$cf48) UCI scratch):
+.const B4_PATLEN = $cf49    // filter pattern length (0 = bare dir/ll, no filter)
+.const B4_BUFLEN = $cf4a    // current READ_DIR entry name length in B4_BUF
+.const B4_BUF    = $cf80    // buffered entry name (B4_BUFMAX bytes)
+.const B4_BUFMAX = 80
+.const B4_PAT    = $cfd0    // folded filter pattern (B4_PATMAX bytes)
+.const B4_PATMAX = 40
+.const B3_FIN   = $9b6a     // CONS: bank3 hsh_fin (byte-identical to the former local fin helper)
+.const B3_IDLE  = $9dbb     // CONS: bank3 uci_idle_kick
+.const B3_PUSH  = $9b20     // CONS: bank3 hsh_push
+.const B3_WDAV  = $9b55     // CONS: bank3 hsh_wdav
+.const B3_DOS1  = $9dcc     // CONS: bank3 dos1_read_print + 3 (past its own 'sta $cf47')
 b4_disp:
 .errorif (* != $9C00), "b4_disp not at $9C00"
+    jsr b4c3_install       // CONS: heal the bank4->bank3 RAM trampoline @ $0386
     lda $02a7              // first char selects the command family (case-folded)
     jsr b4_fold
     cmp #$50               // 'P' -> maybe "pwd"
@@ -647,9 +662,14 @@ b4_ck_pwd:
     cmp #$4e
     beq b4_nomatch
     jsr b4_is_htf          // Z=1 iff H/T/F
-    bne b4_prnsup          // else 8/9/s -> not supported
+    beq b4_pwd_ok          // else 8/9/s -> not supported
+    jmp b4_prnsup
+b4_pwd_ok:
     lda #$12               // DOS_CMD_GET_PATH
-    jsr b4_dos1_read_print // print the current path (+ framing CRs)
+    sta $cf47               // pre-stash cmd; B3_DOS1 enters past bank3's own 'sta $cf47'
+    ldx #<B3_DOS1
+    ldy #>B3_DOS1
+    jsr B4C3_RUN            // print the current path via bank3 dos1_read_print
     clc
     rts
 // ---- cd : "cd <path>" (space-separated arg); CHANGE_DIR ($11) --------------
@@ -682,7 +702,9 @@ b4_cd_arg:
     beq b4_cd_nomatch
     jsr b4_is_htf
     bne b4_prnsup          // 8/9/s -> not supported
-    jsr b4_idle_kick
+    ldx #<B3_IDLE
+    ldy #>B3_IDLE
+    jsr B4C3_RUN
     lda #$01               // TARGET_DOS1
     sta $df1d
     lda #$11               // DOS_CMD_CHANGE_DIR
@@ -695,10 +717,14 @@ b4_cd_wr:
     inx
     bne b4_cd_wr
 b4_cd_wrd:
-    jsr b4_push
+    ldx #<B3_PUSH
+    ldy #>B3_PUSH
+    jsr B4C3_RUN
     bcs b4_cd_err
-    jsr b4_fin             // C=0 iff status "00"
-    bcc b4_cd_ok           // success -> silent (unix-style)
+    ldx #<B3_FIN           // CONS stage 1: cd's fin now runs in bank3 via the
+    ldy #>B3_FIN           //   $0386 trampoline (proves C + $cf30/1 pass across
+    jsr B4C3_RUN           //   the bank switch). Other fin sites stay local for now.
+    bcc b4_cd_ok           // C=0 iff status "00" -> success (silent)
 b4_cd_err:
     ldx #$00
 b4_cd_el:
@@ -742,19 +768,33 @@ b4_ck_dir:
     cmp #$52               // 'R'
     bne b4_dir_nm
     lda $02a7+3
-    bne b4_dir_nm          // exact: EOL right after "dir"
-    beq b4_do_dir
+    beq b4_dir_bare        // EOL right after "dir" -> bare listing (no filter)
+    cmp #$20               // "dir <pat>" -> parse a client-side prefix filter (16b-2)
+    bne b4_dir_nm          // e.g. "direct" -> not our token
+    ldx #$04               // first pattern candidate (after "dir ")
+    jmp b4_setpat
 b4_dir_nm:
     sec                    // not our token -> bank3 chat/AI (or c/n forward)
     rts
+b4_dir_bare:
+    lda #$00
+    sta B4_PATLEN          // no filter
+    jmp b4_do_dir
 b4_ck_ll:
     lda $02a7+1
     jsr b4_fold
     cmp #$4c               // 'L'
     bne b4_dir_nm
     lda $02a7+2
-    bne b4_dir_nm          // exact: EOL right after "ll"
-    // fall through to b4_do_dir
+    beq b4_ll_bare         // EOL right after "ll" -> bare listing (no filter)
+    cmp #$20               // "ll <pat>" -> parse a client-side prefix filter (16b-2)
+    bne b4_dir_nm
+    ldx #$03               // first pattern candidate (after "ll ")
+    jmp b4_setpat
+b4_ll_bare:
+    lda #$00
+    sta B4_PATLEN          // no filter
+    jmp b4_do_dir
 b4_do_dir:
     jsr b4_curdev          // dispatch by current device
     cmp #$43               // 'C'/'N' -> bank3 forwards the raw line to the server
@@ -764,18 +804,26 @@ b4_do_dir:
     jsr b4_is_htf          // Z=1 iff H/T/F
     bne b4_prnsup          // 8/9/s -> "NOT SUPPORTED ON IEC"
     jsr b4_open_dir        // DOS OPEN_DIR ($13) on the current dir (silent)
+    lda #$00
+    sta B4_BUFLEN          // 16b-2: start with an empty entry-name buffer
     jsr b4_read_dir_stream // DOS READ_DIR ($14): stream ALL packets (16a-fix, $9F58)
     clc
     rts
 // b4_open_dir: DOS OPEN_DIR ($13), no payload; drain/accept, no print.
 b4_open_dir:
-    jsr b4_idle_kick
+    ldx #<B3_IDLE
+    ldy #>B3_IDLE
+    jsr B4C3_RUN
     lda #$01               // TARGET_DOS1
     sta $df1d
     lda #$13               // DOS_CMD_OPEN_DIR
     sta $df1d
-    jsr b4_push
-    jsr b4_fin
+    ldx #<B3_PUSH
+    ldy #>B3_PUSH
+    jsr B4C3_RUN
+    ldx #<B3_FIN
+    ldy #>B3_FIN
+    jsr B4C3_RUN
     rts
 // b4_is_htf: Z=1 iff A is 'H','T' or 'F' (A clobbered to $00/$01).
 b4_is_htf:
@@ -827,165 +875,97 @@ b4_curdev:
     sta $cf2a
 b4_ncok:
     rts
-// -- bank4 UCI leaf helpers: byte-faithful copies of the bank3 originals. All
-// touch only $dfxx (UCI regs) + $cf26/$cf30/$cf31/$cf47 scratch (bank-independent).
-// Every wait loop is bounded (~64K polls) with $0E recovery -- never hangs.
-// b4_dos1_read_print: A = DOS1 command byte. Sends target $01 + command (no
-// payload), prints the reply string framed by leading + trailing CR.
-b4_dos1_read_print:
-    sta $cf47              // stash command byte
-    jsr b4_idle_kick
-    lda #$01               // TARGET_DOS1
-    sta $df1d
-    lda $cf47
-    sta $df1d              // command byte
-    jsr b4_push
-    bcs b4_drp_done        // push failed -> give up quietly
-    lda #$0d
-    jsr $ffd2              // CR before the reply
-    jsr b4_wdav            // bounded wait for first reply byte
-    bcs b4_drp_fin
-b4_drp_rd:
-    lda $df1c
-    and #$80               // DATA_AV
-    beq b4_drp_fin
-    lda $df1e
-    jsr $ffd2              // CHROUT (bank-independent)
-    jmp b4_drp_rd
-b4_drp_fin:
-    jsr b4_fin             // drain/status/accept -> UCI back to idle
-b4_drp_done:
-    lda #$0d
-    jmp $ffd2              // trailing CR, tail-return
-// b4_idle_kick: bounded wait for UCI idle; kick with $0E if still stuck.
-b4_idle_kick:
-    jsr b4_widl
-    bcc b4_ik_done
-    lda #$0e               // ACC|ABORT|CLR_ERR
-    sta $df1c
-    jsr b4_widl
-b4_ik_done:
-    rts
-// b4_widl: bounded wait for idle; C=1 on timeout; preserves X.
-b4_widl:
-    ldy #$00
-    sty $cf26
-b4_wi:
-    lda $df1c
-    and #$30               // state bits: 00 = idle
-    beq b4_wiok
-    iny
-    bne b4_wi
-    inc $cf26
-    bne b4_wi
-    sec
-    rts
-b4_wiok:
-    clc
-    rts
-// b4_push: push the assembled command; C=1 on state error or busy-timeout.
-b4_push:
-    lda $df1c
-    ora #$01               // PUSH_CMD
-    sta $df1c
-    lda $df1c
-    and #$08               // state error?
-    bne b4_perr
-    ldy #$00
-    sty $cf26
-b4_pw:
-    lda $df1c
-    and #$30
-    cmp #$10               // 01 = command busy
-    bne b4_pok
-    iny
-    bne b4_pw
-    inc $cf26
-    bne b4_pw
-    lda #$0e               // stuck: abort so UCI returns to idle
-    sta $df1c
-    sec
-    rts
-b4_pok:
-    clc
-    rts
-b4_perr:
-    lda #$08               // CLR_ERR
-    sta $df1c
-    sec
-    rts
-// b4_wdav: wait for DATA_AV; C=1 on timeout (~64K polls).
-b4_wdav:
-    ldx #$00
-    ldy #$00
-b4_wd:
-    lda $df1c
-    and #$80
-    bne b4_wdok
-    inx
-    bne b4_wd
-    iny
-    bne b4_wd
-    sec
-    rts
-b4_wdok:
-    clc
-    rts
-// b4_fin: drain data queue, capture first 4 status bytes to $cf30+, accept;
-// C=0 iff status "00".
-b4_fin:
-    lda #$00
-    sta $cf30
-    sta $cf31
-b4_fd:
-    lda $df1c
-    and #$80               // leftover response data?
-    beq b4_fs0
-    lda $df1e
-    jmp b4_fd
-b4_fs0:
-    ldx #$00
-b4_fsl:
-    lda $df1c
-    and #$40               // STAT_AV
-    beq b4_facc
-    lda $df1f
-    cpx #$04
-    bcs b4_fsl             // drain but keep only the first 4 bytes
-    sta $cf30,x
-    inx
-    bne b4_fsl             // always
-b4_facc:
-    lda $df1c
-    ora #$02               // DATA_ACC
-    sta $df1c
-    ldy #$00
-    sty $cf26
-b4_fak:
-    lda $df1c
-    and #$02               // wait for the ack handshake to clear (bounded)
-    beq b4_fchk
-    iny
-    bne b4_fak
-    inc $cf26
-    bne b4_fak
-b4_fchk:
-    lda $cf30
-    cmp #$30               // '0'
-    bne b4_fbad
-    lda $cf31
-    cmp #$30               // '0'
-    bne b4_fbad
-    clc
-    rts
-b4_fbad:
-    sec
-    rts
+// CONS stage 2: the local dos1_read_print, idle_kick, widl, push, wdav and fin
+// helper bodies moved to bank3 (called via the $0386 trampoline, B3_DOS1/B3_IDLE/
+// B3_PUSH/B3_WDAV/B3_FIN) -- reclaims the bank4 main-area space they used to hold.
 b4_nsupmsg:
     .byte $4E, $4F, $54, $20, $53, $55, $50, $50, $4F, $52, $54, $45, $44   // "NOT SUPPORTED"
     .byte $20, $4F, $4E, $20, $49, $45, $43, $0D, $00                        // " ON IEC",CR,0
 b4_cderr:
     .byte $4E, $4F, $54, $20, $46, $4F, $55, $4E, $44, $0D, $00              // "NOT FOUND",CR,0
+// =============================================================================
+// 16b-2: h/t/f client-side prefix filter for "dir <pat>" / "ll <pat>".
+// SIMPLEST case-INSENSITIVE prefix match (Honza 2026-07-11: exact-case display not
+// required). At parse time b4_setpat folds the pattern to uppercase into B4_PAT,
+// dropping leading spaces and a trailing '*' (prefix wildcard). During READ_DIR
+// streaming b4_emit buffers each entry's name (bytes >=$21) into B4_BUF; on the
+// next marker (byte <=$20 = entry separator) b4_flush prints the name + CR only if
+// its folded prefix matches B4_PAT -- or unconditionally when B4_PATLEN==0 (bare
+// "dir"/"ll", no filter). c/n still filter server-side (handled in bank3).
+// -----------------------------------------------------------------------------
+// b4_setpat: X = index in $02a7 of the first pattern candidate (after token+space).
+b4_setpat:
+    lda $02a7,x            // skip any further spaces
+    cmp #$20
+    bne b4_sp_cp
+    inx
+    bne b4_setpat
+b4_sp_cp:
+    ldy #$00
+b4_sp_lp:
+    lda $02a7,x
+    beq b4_sp_end          // EOL -> pattern complete
+    cmp #$2a               // '*' -> prefix wildcard, stop here
+    beq b4_sp_end
+    jsr b4_fold            // fold pattern char to uppercase (case-insensitive)
+    sta B4_PAT,y
+    inx
+    iny
+    cpy #B4_PATMAX
+    bcc b4_sp_lp
+b4_sp_end:
+    sty B4_PATLEN          // Y = pattern length (0 => e.g. "dir  " -> no filter)
+    jmp b4_do_dir
+// b4_emit: called per READ_DIR data byte (A=byte). name char (>=$21) -> buffer;
+// marker (<=$20 = entry separator) -> flush the buffered entry. Clobbers A,X.
+b4_emit:
+    cmp #$21
+    bcc b4_emit_mark       // <=$20 -> end of this entry
+    ldx B4_BUFLEN
+    cpx #B4_BUFMAX
+    bcs b4_emit_rts        // buffer full -> drop extra chars (still consumed)
+    sta B4_BUF,x
+    inc B4_BUFLEN
+b4_emit_rts:
+    rts
+b4_emit_mark:
+    jmp b4_flush           // print entry if it matches, reset buffer (tail-return)
+// b4_flush: print the buffered name + CR iff (no filter) or (folded prefix match),
+// then always reset B4_BUFLEN. Empty buffer -> nothing. Clobbers A,Y.
+b4_flush:
+    lda B4_BUFLEN
+    beq b4_fl_rts          // empty (e.g. leading separator) -> nothing to do
+    lda B4_PATLEN
+    beq b4_fl_print        // no filter -> print
+    ldy #$00
+b4_fl_cmp:
+    cpy B4_PATLEN
+    beq b4_fl_print        // all pattern chars matched -> prefix match
+    cpy B4_BUFLEN
+    beq b4_fl_reset        // name shorter than pattern -> no match, skip
+    lda B4_BUF,y
+    jsr b4_fold            // fold name char (B4_PAT already folded at parse)
+    cmp B4_PAT,y
+    bne b4_fl_reset        // mismatch -> skip this entry
+    iny
+    bne b4_fl_cmp          // (always: B4_PATLEN < 256)
+b4_fl_print:
+    ldy #$00
+b4_fl_pl:
+    cpy B4_BUFLEN
+    beq b4_fl_pcr
+    lda B4_BUF,y
+    jsr $ffd2              // CHROUT the name byte (bank-independent)
+    iny
+    bne b4_fl_pl
+b4_fl_pcr:
+    lda #$0d
+    jsr $ffd2              // entry gets its own line -> trailing CR
+b4_fl_reset:
+    lda #$00
+    sta B4_BUFLEN          // ready for the next entry
+b4_fl_rts:
+    rts
 .errorif (* > $9E9D), "bank4 module overran the reserve ($9E9C)"
     .fill $9E9D - *, $00   // pad the reserve; real bank4 data resumes at $9E9D
 .errorif (* != $9E9D), "bank4 reserve fill did not land on $9E9D"
@@ -1072,30 +1052,32 @@ bank04_data_9F58:
 // sync point, so an immediate DATA_AV re-check after it reliably sees the next
 // packet (no poll delay, no premature truncation). Every wait is bounded (~64K
 // polls, $cf26 hi-count) -> never hangs. Frames the listing with leading/trailing
-// CR like b4_dos1_read_print. (b4_open_dir already issued OPEN_DIR before this.)
+// CR like the pwd path's dos1_read_print call. (b4_open_dir already issued OPEN_DIR before this.)
 b4_read_dir_stream:
-    jsr b4_idle_kick       // ensure UCI idle (aborts any leftover)
+    ldx #<B3_IDLE
+    ldy #>B3_IDLE
+    jsr B4C3_RUN            // ensure UCI idle (aborts any leftover)
     lda #$01               // TARGET_DOS1
     sta $df1d
     lda #$14               // DOS_CMD_READ_DIR
     sta $df1d
-    jsr b4_push            // PUSH_CMD (+ bounded busy-wait)
+    ldx #<B3_PUSH
+    ldy #>B3_PUSH
+    jsr B4C3_RUN            // PUSH_CMD (+ bounded busy-wait)
     bcs b4_rds_done        // push failed -> quit quietly (still emit trailing CR)
     lda #$0d
     jsr $ffd2              // leading CR
-    jsr b4_wdav            // bounded wait for the FIRST packet's DATA_AV
+    ldx #<B3_WDAV
+    ldy #>B3_WDAV
+    jsr B4C3_RUN            // bounded wait for the FIRST packet's DATA_AV
     bcs b4_rds_fin         // none at all (e.g. empty dir) -> finish
 b4_rds_rd:                 // inner: drain the current packet
     lda $df1c
     and #$80               // DATA_AV?
     beq b4_rds_acc         // packet fully drained -> accept it
     lda $df1e              // read one data byte
-    cmp #$21               // 16b-1: $10 (dir marker) or $20 (file sep) -> newline
-    bcs b4_rds_pc          // >= $21 -> printable name char, print as-is
-    lda #$0d               // <= $20 -> emit CR (one entry per line)
-b4_rds_pc:
-    jsr $ffd2              // CHROUT (bank-independent)
-    jmp b4_rds_rd
+    jsr b4_emit            // 16b-2: buffer name char, or flush the entry on a
+    jmp b4_rds_rd          //   marker (<=$20). Prints per-entry, prefix-filtered.
 b4_rds_acc:                // accept this packet, then handshake, then check next
     lda $df1c
     ora #$02               // DATA_ACC -> release the next packet
@@ -1116,8 +1098,44 @@ b4_rds_chk:
     and #$80               // another packet ready now? (reliable post-handshake)
     bne b4_rds_rd          // yes -> drain it
 b4_rds_fin:
-    jsr b4_fin             // drain any trailing status + accept -> UCI back to idle
+    jsr b4_flush           // 16b-2: flush the LAST buffered entry (no trailing marker)
+    ldx #<B3_FIN
+    ldy #>B3_FIN
+    jsr B4C3_RUN            // drain any trailing status + accept -> UCI back to idle
 b4_rds_done:
     lda #$0d
     jmp $ffd2              // trailing CR, tail-return
+// --- CONS: bank4->bank3 leaf-helper trampoline (staged) ----------------------
+// Reclaims bank4 space by calling bank3's FROZEN byte-identical leaf helpers
+// (hsh_fin/hsh_push/uci_idle_kick/hsh_wdav/dos1_read_print) instead of keeping
+// local copies. b4c3_install self-heals the 25-byte RAM stub into $0386-$039E
+// (free datassette-buffer pocket, clear of IERROR $0340 / call_bank3 $0360 /
+// call_bank4 $0378 / CINV $03A0) at the top of every b4_disp, under the existing
+// dispatch sei -- same discipline as call_bank3/call_bank4. Target bank3 address
+// is passed in X(lo)/Y(hi); A is clobbered by the bank flips, X/Y/C survive.
+b4c3_install:
+    ldx #b4c3_end - b4c3_tmpl - 1
+b4c3_icpy:
+    lda b4c3_tmpl,x
+    sta B4C3_RUN,x
+    dex
+    bpl b4c3_icpy
+    rts
+b4c3_tmpl:
+.pseudopc B4C3_RUN {
+    stx b4c3_vec           // target lo (X) -> RAM vector
+    sty b4c3_vec+1         // target hi (Y)
+    lda #$18               // map bank3
+    sta $de00
+    jsr b4c3_ind           // jsr -> jmp (vec) -> bank3 helper; its rts returns here
+    lda #$80               // restore bank4
+    sta $de00
+    rts
+b4c3_ind:
+    jmp (b4c3_vec)
+b4c3_vec:
+    .word $0000
+}
+b4c3_end:
+.errorif (b4c3_end - b4c3_tmpl) > ($03A0 - B4C3_RUN), "b4c3 trampoline overruns CINV $03A0"
     .fill $A000 - *, $00  // remainder of the stock-zero end-of-bank padding
