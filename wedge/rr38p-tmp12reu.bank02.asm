@@ -3781,8 +3781,58 @@ tramp:
     sta $de00
     rts
 tramp_end:
-    .fill $9C41 - *, $00   // reclaim hondani_err's freed bytes up to cs_install
-.errorif (* != $9C41), "step-11a shim overran cs_install (pinned $9C41)"
+// --- CINV stub template + digit table, relocated into the reclaimed pocket -----
+// 16-fix: the stub grew a program-mode SELF-DISARM so an armed HONDANI console-
+// switch hook no longer survives into a fastloaded program and crashes it (the
+// program reuses the tape buffer where our $03A0 stub lives). Moved up here from
+// its old slot after cs_install so console_switch and all downstream bank2 code
+// stay byte-identical; the vacated slot below is now zero padding. See cs_install.
+cinv_tmpl:
+.pseudopc $03a0 {
+    lda $9d                // MSGFLG: $80 at the BASIC prompt, $00 once RUN starts
+    bne cvr_live           // direct mode: keep the console-switch hook live
+    // program mode -- a LOADed program is running and will clobber the tape
+    // buffer under us. Self-disarm: restore the saved original CINV vector so
+    // our RAM stub leaves the IRQ path before $03A0 gets overwritten.
+    lda $03ec
+    sta $0314
+    lda $03ed
+    sta $0315
+cvr_clear:
+    lda #$00
+    sta $03ee              // combo not held / disarmed: release the latch
+cvr_chain:
+    jmp ($03ec)            // chain to the (restored) original IRQ handler
+cvr_live:
+    lda $028d              // SHFLAG: bit1=C=, bit2=CTRL
+    and #$06
+    cmp #$06               // both C= and CTRL held?
+    bne cvr_clear
+    lda $cb                // SFDX: matrix code of the key currently down
+    ldx #$06
+cvr_chk:
+    cmp $03f0,x            // one of the 1..7 keys? (digit table now @ $03F0)
+    beq cvr_match
+    dex
+    bpl cvr_chk
+cvr_match:
+    lda $03ee              // already acted on this press?
+    bne cvr_chain
+    lda #$01
+    sta $03ee              // latch (one action per press)
+    lda #$10               // page in bank2 (same value the HONDANI gate uses)
+    sta $de00
+    jsr console_switch
+    lda #$08               // restore bank1 with a CONSTANT (stock $DEE3 value)
+    sta $de00
+    jmp ($03ec)
+}
+cinv_tmpl_end:
+.errorif ($03a0 + (cinv_tmpl_end - cinv_tmpl)) > $03e7, "CINV stub overruns $03E7"
+cvr_digits:
+    .byte 56, 59, 8, 11, 16, 19, 24    // SFDX matrix codes for keys 1..7 -> $03F0
+    .fill $9C41 - *, $00   // remaining reclaimed pocket up to cs_install
+.errorif (* != $9C41), "cinv_tmpl/pocket overran cs_install (pinned $9C41)"
 
 // ===========================================================================
 // Step 10a -- console-switch keyboard hook (detect C=+CTRL+1..7 -> border)
@@ -3798,9 +3848,10 @@ tramp_end:
 //
 // RAM map (datassette buffer $033C-$03FB, unused by Honza -- same homes the
 // reference tree used; clear of our $0340 IERROR stub and $03E7/8 vector):
-//   $03A0-$03Dx  CINV stub (<= $03E6)
+//   $03A0-$03E6  CINV stub (self-disarms in program mode; cinv_tmpl above)
 //   $03EC/$03ED  saved original $0314 vector (never our own -- see guard)
 //   $03EE        one-shot press latch
+//   $03F0-$03F6  digit table (copied out of the stub so the self-disarm fits)
 // ---------------------------------------------------------------------------
 cs_install:
     ldx #cinv_tmpl_end - cinv_tmpl - 1
@@ -3809,6 +3860,12 @@ csi_copy:
     sta $03a0,x
     dex
     bpl csi_copy
+    ldx #$06               // copy the 7-byte digit table out to $03F0 (16-fix:
+csi_dcopy:                 //   it no longer fits inside the stub after the
+    lda cvr_digits,x       //   self-disarm prefix, so it lives at $03F0)
+    sta $03f0,x
+    dex
+    bpl csi_dcopy
     lda $0314              // hook $0314, but never save ourselves as "original"
     cmp #$a0
     bne csi_hook
@@ -3831,51 +3888,12 @@ csi_arm:
                            //   BASIC prompt, so we are always local here
     rts
 
-// CINV IRQ stub -- assembled to RUN at $03A0. Position-independent: every
-// absolute operand is a fixed RAM/IO address, and the only intra-stub
-// reference (cvr_digits) resolves inside the pseudopc block. Runs on every
-// IRQ (registers are already stacked by the KERNAL dispatcher and restored
-// by the chained-to $EA31, so A/X may be freely clobbered; the stack stays
-// balanced). SHFLAG/SFDX reflect the previous frame's SCNKEY -- fine for a
-// held combo.
-cinv_tmpl:
-.pseudopc $03a0 {
-    lda $028d              // SHFLAG: bit1=C=, bit2=CTRL
-    and #$06
-    cmp #$06               // both C= and CTRL held?
-    bne cvr_clear
-    lda $cb                // SFDX: matrix code of the key currently down
-    ldx #$06
-cvr_chk:
-    cmp cvr_digits,x       // one of the 1..7 keys?
-    beq cvr_match
-    dex
-    bpl cvr_chk
-cvr_clear:
-    lda #$00
-    sta $03ee              // combo not held: release the one-shot latch
-cvr_chain:
-    jmp ($03ec)            // chain to the original IRQ handler ($EA31)
-cvr_match:
-    lda $03ee              // already acted on this press?
-    bne cvr_chain
-    lda #$01
-    sta $03ee              // latch (one action per press)
-    lda #$10               // page in bank2 (same value the HONDANI gate uses)
-    sta $de00              //   -- safe as a plain write: this stub runs from
-    jsr console_switch     //   RAM, so the bank flip doesn't move our own code
-    lda #$08               // restore bank1 with a CONSTANT (the wedge's resident
-    sta $de00              //   mapping) -- exactly what the stock $DEE3 restore
-    jmp ($03ec)            //   writes. NEVER read $de00 to "save" the bank: the
-                           //   RR $de00 READ returns AR-style status, not the
-                           //   control value, so writing it back corrupts the
-                           //   control register (the 10b first build's 2nd-press
-                           //   hang into RR freezer ROM).
-cvr_digits:
-    .byte 56, 59, 8, 11, 16, 19, 24    // SFDX matrix codes for keys 1..7
-}
-cinv_tmpl_end:
-.errorif ($03a0 + (cinv_tmpl_end - cinv_tmpl)) > $03e7, "CINV stub overruns $03E7"
+// The CINV stub template used to live here (right after cs_install). It moved
+// up into the reclaimed $9B59 pocket when it grew the program-mode self-disarm;
+// this vacated slot is now zero padding so console_switch stays pinned at $9CB7
+// and the whole downstream bank2 remains byte-identical to the frozen build.
+    .fill $9CB7 - *, $00
+.errorif (* != $9CB7), "console_switch shifted -- downstream bank2 moved"
 
 // ===========================================================================
 // Step 10c -- real console switch (view/navigate; NO key forwarding yet)

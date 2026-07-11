@@ -31,13 +31,20 @@ so far. Every step will have to be verified by Honza on real hardware before the
 | 15-pre | Bank3→bank4 RAM trampoline round-trip PROOF (`B4` test cmd + trivial bank4 stub) | Type `B4` ↵ → **border advances one step** (bank4 ran through the trampoline) then `READY.`; repeat steps each time; every other command unchanged; stock sweep; TASS | ✅ HW tested 2026-07-10 |
 | 15a | Bank4 command dispatcher gateway + `pwd` PROOF-print (reads `$02a7`/`$cf2a`, CHROUT from bank4; carry-routed handled/not-mine) | `pwd` ↵ → prints `PWD: <dev>` (e.g. `PWD: 8`, or `PWD: T` after `#t`); repeatable; `PRINT 1/0`→`?DIVISION BY ZERO`; `i:hello`→AI; every other command unchanged; stock sweep; TASS | ✅ HW tested 2026-07-10 |
 | 15b | `pwd` real: h/t/f → UCI DOS GET_PATH (`$12`); c/n → server-forward; 8/9/s → "not supported" | On `#t` `pwd` prints the Ultimate path; `#c` `pwd` → server cwd; `#8` `pwd` → "NOT SUPPORTED ON IEC"; stock sweep | ✅ HW tested 2026-07-10 |
-| 15c | `cd` (CHANGE_DIR `$11`) incl. `cd ..`, `cd /`, relative/absolute | On `#t`: `cd sub` / `pwd` / `cd ..` / `cd /` track correctly; on `#c`: server state; IEC → "not supported"; bad path → "NOT FOUND"; stock sweep | 🟨 built, awaiting HW test |
-| 16 | `ll` / `dir` with optional pattern filter | `ll` on `#t` lists Ultimate dir; `ll outrun*` filters; on `#8` → minimal (point to `$`); on `#c` → server results; stock sweep | ⬜ pending |
+| 15c | `cd` (CHANGE_DIR `$11`) incl. `cd ..`, `cd /`, relative/absolute | On `#t`: `cd sub` / `pwd` / `cd ..` / `cd /` track correctly; on `#c`: server state; IEC → "not supported"; bad path → "NOT FOUND"; stock sweep | ✅ HW tested 2026-07-10 |
+| 16a | `ll` / `dir` **base** (bare token; no h/t/f pattern filter yet) | c/n forward, IEC notice, tokens, regression all ✅; **h/t/f dir DEFECTIVE** (lists only first entry, then alternates empty — READ_DIR is multi-packet accept-gated, doesn't fit the 15 B left) | ⚠️ HW tested 2026-07-10: all good EXCEPT h/t/f `ll`/`dir` streaming |
+| 16-R | **Third code region** — prove bank4 `$9F58-$9FFF` (168 B) safe (border-flash probe, à la 15-pre/15) | `b5` probe → border steps, TMP/TASS/stock sweep unchanged | ✅ **HW tested 2026-07-10 — all good.** `$9F58-$9FFF` confirmed as the third code region (code runs+returns; non-zero bytes there don't corrupt the TMP/TASS REU image). Probe removed. |
+| 16a-fix | Correct multi-packet READ_DIR streaming for h/t/f `ll`/`dir` (`while(DATA_AV){drain;accept;}`) in the 3rd region | `ll`/`dir` on `#t` lists the WHOLE dir; repeatable (no alternating); pwd/cd still fine; stock sweep | 🔨 built 2026-07-10 (`b4_read_dir_stream` 90 B at `$9F58`; accept-gated, ack-handshake-synced re-check; reserve back to `$9E8B` hi-water; 3rd region 78 B free) — **awaiting HW test** |
+| 16b-1 | h/t/f `dir`/`ll` **clean output** — READ_DIR markers: **`$10`=directory, `$20`=file separator** (filename-internal spaces are `$5F` `←`, not `$20`); rule = **newline on any byte ≤ `$20`** so dirs AND files list one-per-line | `dir` on `#t` and on a dirs+files folder both list one-per-line; stock sweep | 🔨 built 2026-07-11 (`cmp #$21/bcs/lda #$0d`; third region 72 B free; probe removed) — **awaiting HW test** |
+| 16b-2 | h/t/f client-side pattern filter (`ll outrun*`) — prefix-match the name between markers (≤`$20`) | filters h/t/f listings; c/n already filters server-side | ⬜ pending (after 16b-1; fits third region) |
+| FIX-CS | **CINV hook crashed fastloaded games** — armed `HONDANI` left `$0314→$03A0` live; a game reusing the tape buffer ran the clobbered stub → crash (Sprite Studio→freeze menu, Outrun→crumble mid-init). **Reopened bank2** (Honza's call over server-DMA): stub grew a program-mode **self-disarm** (`lda $9d/bne`; `$9D=$80` prompt→live, `$00` program→restore saved `$0314`, chain), digit table moved to `$03F0`, `cs_install` +11 B. Relocated into the `$9B59` 232 B pocket; `console_switch`+downstream **byte-identical** | reboot→`HONDANI`→F1 Sprite Studio 64 & Outrun run (no freeze/crumble); C=+CTRL+2..7 still switches at prompt; regression | ✅ **HW tested 2026-07-11** — Sprite Studio 64 & Outrun run after `HONDANI`+F1; C=+CTRL console switch still works at prompt; MSGFLG `$9D` disarm confirmed reliable; see conversion_log3.md §17 |
 | 17 | `mnt` / `umnt` (mount/unmount disk images) | `mnt foo.d64` then `#8` `dir` shows image contents; `LOAD"*",8,1` runs; `umnt` restores; stock sweep | ⬜ pending |
 | 18 | `mkdir` (create directory on h/t/f only) | `#t` `mkdir test` then `ll` shows it; IEC/network show "not supported"; stock sweep | ⬜ pending |
 | 19 | `cp` file download + `csdb` alias | Manual's CSDB session: `#c` / `find hondani` / `cd rel/<id>` / `cp *.zip` / `#t` / `dir` shows file; `csdb` alias works; stock sweep | ⬜ pending |
-| 20 | `memcpy` hex-range save/load (hardest; optional split) | `memcpy $c000-$cfff dump.bin` then `memcpy dump.bin $4000` and compare; relocation works; stock sweep | ⬜ pending |
+| 20 | ~~`memcpy` hex-range save/load~~ | — | ❌ **DROPPED (2026-07-11, Honza)** — not important; cutting it removes the hardest step and the `$C000` conflict, so the lighter bank3-trampoline consolidation covers the rest |
+| CONS | **Bank3-trampoline consolidation** (space fix): bank4 calls bank3's FROZEN helper copies via a small RAM trampoline; delete bank4's ~8 duplicated leaf helpers | reclaims ~250 B in bank4; bank3 untouched; UCI path (pwd/cd/dir) unchanged on HW; staged (prove 1 helper first) | ⬜ planned — replaces the unviable RAM-helper-page (§15.2 addendum); do before step 17 |
 | 21 | Verify pass-throughs + final sweep | `i:`, `m:`, `:` still work; all new commands once more; manual wording vs actual; update docs | ⬜ pending |
+| DEV | **Device→mount-path binding**: `#t`→`/temp`, `#h`→`/sd`, `#f`→`/flash`(?), **new `#u`→`/usb0`** — device letter auto-navigates to a fixed Ultimate mount root | `#t` then `pwd`→`/temp`; `#u` then `dir`→USB listing; switching device rebases | 🅳 **DEFERRED (2026-07-11), see §16-DEV** — needs unfreezing bank3 (device switch + new `#u` letter both live there); cleanly separable, does not block 16b/17–20 |
 
 ---
 
@@ -99,13 +106,140 @@ helpers (bank3's are unreachable while bank4 is mapped); 669 B has room. Proven
 first with step **15-pre** (border-flash round-trip, mirroring 11a) before any
 real code is ported. Full detail in `conversion_log3.md` §12.
 
-**⚠ Bank4 reserve after 15c (2026-07-10): 550 B of 669 used, only 119 B free.** The
-shared UCI helper copies (~250 B, one-time) are now in; each new command is cheaper,
-but `ll`/`dir` (OPEN_DIR+READ_DIR + filter) and `memcpy` (hex parse + block r/w) are
-large and **won't all fit in 119 B**. A THIRD overflow region is needed before step
-16 or 20. Banks 5/6/7 are the frozen TMP payload, so the next reserve is not obvious
-— its own decision (reclaim more of the bank3 shadow gap, or a RAM-resident helper
-page). Resolve at the top of step 16.
+**⚠ Bank4 reserve after 16a (2026-07-10): 654 B of 669 used, only 15 B free.** 15a–16a
+fit inside the bank4 reserve; it is now **effectively full**. Steps 16a-fix/16b/17/18/19/20
+**cannot fit in 15 B** — a THIRD code region is HARD-REQUIRED. Full analysis + the two
+candidate designs are in **§15 (third code region)** below; the immediate consumer is the
+16a `ll`/`dir` streaming fix (§14a).
+
+### Step 16a HW result (2026-07-10) + the `ll`/`dir` defect (§14a)
+
+16a hardware-tested: `#`/`status`/`time`/`menu`/`reset`, pwd/cd, the c/n server-forward,
+the IEC notice, tokens and full regression are **all good**. **But h/t/f `ll`/`dir` is
+defective**: it lists only the **first** directory entry, and repeated `ll` alternates
+"one entry / empty / one entry / …".
+
+**Root cause (confirmed against the authoritative `docs/inspiration/ultimate_lib.c`).**
+UCI DOS READ_DIR (`$14`) does **not** return the listing in one shot — it streams
+**512-byte packets, and each packet must be drained AND `accept`ed (`$df1c |= $02`) to
+release the next** (ultimate_lib.c line 250: *"read this in a loop, and _accept() the data
+in order to get the next packet; each data packet is 512 bytes"*). The correct consumer is
+the u-sample.c loop:
+
+```
+uii_get_dir();                     // send $14 only (push + wait-not-busy; no read/accept)
+while (uii_isdataavailable()) {     // DATA_AV = $df1c bit7
+    uii_readdata();                 // drain ALL currently-available bytes -> CHROUT
+    uii_accept();                   // $df1c |= $02, wait bit1 clears -> loads next packet
+}
+```
+
+16a instead reused the single-packet `b4_dos1_read_print` (proven for the one-packet
+`pwd`/GET_PATH): it drains packet 1, `b4_fin`-accepts once, and stops. Packets 2+ are
+never read; the un-accepted leftover leaves the UCI mid-stream, so the **next** `ll`
+starts off-by-one → the alternating empties. (Every other command still works because
+each command's `b4_idle_kick` issues `$0E`=ACC|ABORT|CLR_ERR first, which resyncs the UCI
+— that abort is exactly why "all other tests were good".)
+
+**Fix (16a-fix):** a proper accept-gated stream loop (`while(DATA_AV){ drain→CHROUT;
+accept+bounded-ack-wait; }`, no final status needed — the loop ends when DATA_AV stays
+clear after the last accept). ~70 B. **Does not fit the 15 B left → blocked on the third
+region (§15).** Leave `b4_dos1_read_print` untouched (pwd depends on it); add a dedicated
+`b4_read_dir_stream` in the new region and point `b4_do_dir` at it. `b4_open_dir` is
+already correct (OPEN_DIR returns status only — ultimate_lib.c `uii_open_dir` does
+readstatus+accept, no readdata). The same loop is the prerequisite for 16b's h/t/f filter.
+
+---
+
+## 15. The third code region (bank4 is full) — decision
+
+Everything from 16a-fix on needs code space bank4 no longer has (15 B). Bank3 is full
+(~2 B); banks 5/6/7 are the frozen TMP payload. A raw-image zero-run scan (2026-07-10)
+of the **stock** `.bin` turned up the real candidates:
+
+| Region | Size | Reach | Notes |
+|---|---|---|---|
+| **bank4 `$9F58-$9FFF`** | **168 B** | plain `jsr` from bank4 (no new trampoline) | stock-zero & identical across banks 4/5/6/7 (end-of-bank padding); bank4 never reads its own `$9F58+`; installer copies only from `$8121`/`$80B4`; **above** bank5's `$9EB9` TMP line. **Recommended.** |
+| bank3 annex `$976A-$97A1` | ~56 B | bank3-mapped only | small; the `$97A2-$97FF` part already holds the bank4 gateway |
+| RAM helper page | ~250 B equiv. | any bank (bank-independent RAM) | see §15.2 — the design you asked for; heavier, but the general answer |
+
+### 15.1 Recommended: bank4 `$9F58-$9FFF` (168 B, in-bank) — with a safety probe
+
+`$9F58-$9FFF` sits **above** the live TMP bank-switch machinery (`$9E9D-$9F57`: the bank
+table `$9EF4` + the RTI trampoline `$9F01`) and is all-zero across banks 4–7 = end-of-bank
+padding. It's reached by a plain `jsr` from the existing `b4_disp` code (same bank, same
+`sei`/map-in window — no new RAM trampoline). 168 B comfortably holds 16a-fix (~70 B) +
+16b's filter, and likely `mnt`/`umnt`/`mkdir` (they reuse the DOS helpers, ~30–40 B each);
+`cp`/`memcpy` may still want more but this unblocks the immediate defect and several steps.
+
+**Residual risk = the TMP REU image.** The boot installer DMAs the TMP payload to the REU;
+if that DMA sourced the full bank4 `$8000-$9FFF`, writing `$9F58+` would corrupt the REU
+image and break TASS/TMP. Two facts argue it's safe: (a) steps 15–16a already write the
+`$9C00-$9E9C` reserve **in the same bank** and TASS/TMP still pass on hardware, so the
+installer does not DMA that region; (b) `$9F58+` is further from the payload, past the live
+handler. Still, per 15-pre discipline, **prove it with a throwaway border-flash probe
+(step 16-R)** — a `B5` test command that `jsr`s a stub at `$9F58` (`inc $d020/rts`), then
+run the full stock sweep + **TASS launch/exit + a TMP/`\` resume** to confirm the REU image
+is intact — BEFORE porting `b4_read_dir_stream` there.
+
+### 15.2 The RAM-resident shared-helper page (the design you requested) — general fallback
+
+Idea: install the shared UCI **leaf helpers** into a RAM region once, so bank2/bank3/bank4
+(and any future overflow bank) `jsr` a **single** copy instead of each carrying its own.
+The helpers qualify because they touch **only bank-independent surfaces** — UCI regs
+`$df1c-$df1f`, `CHROUT $ffd2` (via `($0326)=$F1CA`), scratch `$cf26/$cf30/$cf31/$cf47/$cf48`,
+shadow `$02a7`, device byte `$cf2a` — so they execute correctly no matter which ROM bank is
+mapped, with no trampoline per call.
+
+Candidate helper set (~250 B): `idle_kick`, `widl`, `push`, `wdav`, `fin`,
+`dos1_read_print`, `read_dir_stream`, `fold`, `curdev`, `is_htf`, `prnsup`.
+
+**What it buys / costs.** Its real win is **de-duplication**: today the same UCI logic
+exists twice in ROM — bank3's `hsh_*` set (chat/status) *and* bank4's `b4_*` copies. If
+both banks called one RAM copy, one ROM duplicate (~250 B) could be deleted, giving bank4
+back ~250 B. **But** RAM code needs a ROM *template* to heal from, and we're out of spare
+ROM to hold a 250 B template except the very bytes we'd reclaim — so the net gain only
+materialises if the template lives in ONE bank (e.g. keep bank3's copy as the template,
+delete bank4's). Sequatially:
+- **Template:** keep one ROM copy (bank3's `hsh_*`, extended to the full set) as the source.
+- **Install:** copy it to a RAM page. Placement is the hard part — page 1 is cart-owned;
+  `$C000-$CFFF` is trampled by programs that load there (round-6 lesson); the datassette
+  buffer `$0334-$03FB` is load-safe but only ~180 B and already fragmented by our stubs
+  (`$0340`/`$0360`/`$0370`/`$0378`/`$03A0`/`$03E7-$03EF`). So either (i) re-heal the page
+  per typed line from the ROM template (heavy: ~250 B copy per line, but the trampolines
+  already use per-use heal and it's invisible), or (ii) find a genuinely load-safe 250 B
+  RAM run (none obvious today — open question).
+- **Callers:** bank2/3/4 command code `jsr`s the RAM entry points (a small fixed jump
+  table, like the old cross-bank ABI) instead of local/`b4_*` copies.
+
+**Assessment.** Cleanest *if* we ever open a 4th overflow bank (we can't — 5/6/7 frozen),
+or if per-bank duplication keeps growing. For the immediate `ll`/`dir` fix it is heavier
+and riskier than §15.1's in-bank 168 B. **Recommendation: take §15.1 (`$9F58`) now (with
+the 16-R probe); keep this RAM-helper-page design on the shelf as the escalation if the
+168 B + annex run out before `memcpy` (step 20).**
+
+### 15.3 ADDENDUM (2026-07-11): RAM-helper-page ABANDONED → bank3-trampoline chosen
+
+Investigated properly (subagent). The RAM-helper-page is **not viable** and is bigger than
+§15.2 implied:
+- **No load-safe RAM home exists** given the two product constraints. TMP/TASS copies its
+  image into **`$9500-$CEFF`**, clobbering `$A000-$CFFF` (so `$A000` RAM is out); the
+  datassette buffer has only **65 B free (fragmented, largest run 26 B)**; `$C000` conflicted
+  with the planned `memcpy`. **memcpy is now DROPPED**, but TMP (kept) *still* owns
+  `$A000-$CEFF`, so a persistent RAM page still has nowhere to live.
+- **Size/scope**: the leaf helpers total **~458 B** (not ~250) across **~70 call sites in 3
+  banks**; a shared RAM copy would need bank2 (template) + bank3 (repoint) unfrozen. Heavy.
+
+**Chosen instead — bank3-trampoline consolidation** (table row `CONS`): bank4 deletes its 8
+duplicated leaf helpers and calls **bank3's existing (frozen) copies** through a small RAM
+trampoline (the `call_bank4` pattern in reverse: map bank3 `$de00=$18` → `jsr helper` → restore
+`$80`, all in the existing `sei` window; ~17 B, fits the datassette `$0386-$039F` gap). bank3
+is **only called, never modified** (stays frozen); no RAM-placement problem; reclaims ~250 B in
+bank4 — enough for 16b + `mnt`/`umnt`/`mkdir`/`cp` (memcpy dropped). The trampoline preserves
+`A` + carry (clobbers `X`/`Z`), so `is_htf` (returns `Z`) and tiny `b4_fold` (17 B, 7 sites)
+stay bank4-local; the big helpers (`fin` 89, `push` 53, `dos1_read_print` 56, `curdev` 41,
+`widl`+`idle_kick` 38, `wdav` 21) move. Stage it: prove the trampoline with ONE helper + HW
+test, then migrate the rest, then delete the dups.
 
 ### Banking / IRQ model for bank3 calls
 
@@ -243,6 +377,38 @@ First UCI DOS/NET read from bank3. Port `uii_identify` (DOS `$01`) +
 - **Verify:** `ll` on `#t` lists the Ultimate dir; `ll outrun*` filters; on `#8`
   lists the real disk; on `#c` lists server results; long listing + `CTRL` slows
   output (stock RR courtesy); stock sweep.
+
+### §16-DEV — Device→mount-path binding (DEFERRED, decision 2026-07-11) 🅳
+
+**Request (Honza, HW test after 16a-fix):** the device letter should auto-navigate to a
+fixed Ultimate mount root, so a bare `#t` puts you in that drive/dir without a manual `cd`:
+- `#t` → `/temp` (Ultimate temp)
+- `#h` → `/sd` (SD card)   *(note: current bank3 comment labels `H`=Home, `T`=Temp, `F`=Flash;
+  the requested `#h`→`/sd` supersedes "Home" — confirm the final `#f` and `#h` targets then)*
+- **`#u` → `/usb0` (NEW device letter)**
+- `#f` → `/flash` (?) — TBD
+
+**Decision: DEFER.** Not a bug at this stage — today the device letter is a *category label*
+(`$cf2a`), and the UCI DOS "current path" is whatever you last `cd`'d to; `#t` then `cd /temp`
+works manually. Reasons to defer rather than bolt onto 16b:
+1. **It requires unfreezing bank3.** The `#<letter>` handler (`hd_setdev`, bank3 `$998B`
+   region, FROZEN since 15a) is a *pure* `sta $cf2a` with no UCI. Both halves of this feature
+   touch frozen bank3: (a) the **new `#u` letter** must be added to the `hd_setdev` validation
+   chain **and** `hd_norm_cur`/`b4_curdev`; (b) **auto-cd on switch** means the handler must
+   now issue a UCI `CHANGE_DIR` (`$11`) to the mount root — bank3 has the UCI helpers but is
+   frozen, so this is a deliberate bank3 re-open + re-verify, not a bank4-only change.
+2. **The "device = mount root" semantics deserve their own design.** Options: (a) auto-`cd`
+   to the root at switch time (simple, but a later `cd sub` then re-`#t` must re-root); or
+   (b) track a per-device base path and prepend it (needs path state + string handling).
+   (a) is the likely choice and is clean — but it belongs in a dedicated step, not 16b.
+3. **No forward complications.** 16b (pattern filter) and 17–20 operate on *whatever* the
+   current dir lists, independent of which mount. The only forward-cost of deferring is
+   trivial and additive: when bank3 is next opened, add `'U'`/`'u'` to the two validators
+   (~4 bytes) alongside the auto-cd. Nothing in 16a/16b needs reworking.
+
+**When we do it:** one planned bank3 unfreeze — add `#u`, add auto-`CHANGE_DIR` to the mount
+root in `hd_local` (a table letter→path), re-byte-verify bank3, HW test the full device sweep
++ TASS/TMP. Until then, `#u` is unknown (falls to AI) and `#h/#t/#f` stay category-only.
 
 ### Step 17 — `mnt` / `umnt` 🆕
 

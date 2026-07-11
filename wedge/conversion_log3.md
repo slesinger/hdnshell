@@ -1066,3 +1066,296 @@ or a RAM-resident helper page). Flag for Honza; does not block 15c.
 
 If all pass, **step 15 (`pwd`/`cd`) is complete**; step 16 (`ll`/`dir`) follows —
 first resolving the reserve-headroom decision above.
+
+**RESULT (2026-07-10): step 15 (15a+15b+15c) fully HW tested — all pass.** `pwd`/`cd`
+work across h/t/f (UCI DOS), c/n (server-forward) and 8/9/s (IEC notice), regressions
+clean. Step 16 proceeds.
+
+---
+
+## 14. Step 16 — `ll` / `dir` (split: 16a base now, 16b filter deferred)
+
+### 14.1 Space decision at the top of step 16 (Honza, 2026-07-10)
+
+The reserve audit at the top of step 16 confirmed the log's warning: **bank4 is the
+only ROM overflow and it is capped at `$9E9C`** (`$9E9D`+ is the live TMP bank-switch
+code — verified byte-identical to stock, not reclaimable). After 15c only **119 B**
+were free; bank3 reserve is full (~2 B); the bank3 annex `$97A2-$97FF` (~40 B) is
+bank3-mapped and unreachable while bank4 is mapped; banks 5/6/7 are the frozen TMP
+payload. So the "third overflow region" the plan anticipated **does not exist in ROM**.
+
+Finding that softened it: the `ll`/`dir` **base** (OPEN_DIR `$13` + READ_DIR `$14` →
+CHROUT, reusing the 15b bank4 helpers) fits in ~104 B of the 119; only the **h/t/f
+client-side pattern filter** (per-entry buffer + compare) overflows, and for **c/n the
+filter is free** (`ll pat*` forwards verbatim to the server, which filters).
+
+**Honza's call: split step 16.** *16a* = `ll`/`dir` bare-token base now (fits); tokens
+`ll` and `dir` only. *16b* = the h/t/f pattern filter + multi-chunk streaming, deferred
+until a third code region exists. The RAM-resident-helper-page architecture (option a in
+next_steps §"Bank4 reserve") is the intended answer for 16b/17–20.
+
+### 14.2 What was built in 16a (bank4 only; bank3 frozen since 15a)
+
+`b4_disp` gains two more command families off the case-folded first char: `'D'`→`dir`,
+`'L'`→`ll`. Both handlers sit past `b4_prnsup`, out of the dispatcher's `beq` range, so
+they are reached via two 3-byte `jmp` thunks (`b4_j_dir`/`b4_j_ll`) placed right after
+`b4_nomatch` (in range). Placement matters: the block was first put *between* `b4_ck_cd`
+and `b4_prnsup` and pushed `b4_prnsup` 203 B away, breaking pwd/cd's existing
+`bne b4_prnsup` — moved it to *after* `b4_prnsup` so pwd/cd keep their short branch.
+
+- **Match:** bare token only — `dir`+EOL / `ll`+EOL (each char case-folded via the
+  shared `b4_fold`). `ll <arg>`/`dir <arg>` do **not** match → `sec/rts` (C=1) → bank3
+  `hsh_body` forwards the raw line. That is exactly right for **c/n** (server lists +
+  filters `ll pat*`); for **h/t/f** an arg currently falls to the AI (the deferred
+  16b filter will intercept it).
+- **Device dispatch** (`b4_do_dir`, via the shared `b4_curdev`, mirroring pwd): c/n →
+  `sec/rts` (server-forward); 8/9/s → `b4_prnsup` "NOT SUPPORTED ON IEC" (reused — no
+  KERNAL dir port in the wedge; the `$`-pointer wording is a step-21 nicety); h/t/f →
+  `b4_open_dir` (OPEN_DIR `$13`, silent) then `b4_dos1_read_print` with READ_DIR `$14`.
+- **`b4_open_dir`** (new, ~20 B): idle_kick, write target `$01` + `$13`, `b4_push`,
+  `b4_fin` (drain/status/accept), no print — opens the *current* dir (payload len 0).
+- **Listing** reuses the proven 15b `b4_dos1_read_print` (leading CR, CHROUT the reply,
+  trailing CR, `b4_fin`). **Single-chunk drain** like the pwd path: correct for typical
+  dirs; a directory that exceeds one FIFO drain would truncate (never hang — every loop
+  is bounded with `$0E` recovery). Multi-chunk accept-gated streaming is deferred to 16b
+  together with the filter (the reference `cmd_lsll.asm` uses an accept-loop for this).
+
+### 14.3 Byte-diff & verification (rebuilt vs `build/archive-15c.bin`)
+
+- **Only bank4 differs (633 B — mostly code-shift from the two dispatch thunks near the
+  top); banks 0/1/2/3/5/6/7 byte-identical.** bank3 frozen since 15a; bank5 TMP
+  untouched (cardinal rule #1). Confirmed by a per-bank `cmp -l` sweep.
+- **bank4 `$9E9D`..`$9FFF` (real TMP data / bank-switch code) byte-identical to STOCK**
+  (`cmp -l` = 0). No `.errorif` tripped (`b4_disp@$9C00`, no reserve overrun, fill lands
+  on `$9E9D`).
+- **Emitted-code audit** (rebuilt bin): dispatch `$9C00` = `AD A7 02 / 20 33 9D` (jsr
+  b4_fold) `/ C9 50 F0 14` (P→pwd) `/ C9 43 F0 42` (C→cd) `/ C9 44 F0 06` (D→b4_j_dir)
+  `/ C9 4C F0 05` (L→b4_j_ll) `/ 38 60` (nomatch) `/ 4C C7 9C` (jmp b4_ck_dir) — ✓.
+  `b4_do_dir` `$9CF3` = `20 44 9D` (curdev) `/ C9 43 F0 E8 / C9 4E F0 E4` (c/n→nomatch)
+  `/ 20 21 9D` (is_htf) `/ D0 B5` (bne b4_prnsup) `/ 20 0D 9D` (b4_open_dir) `/ A9 14`
+  `/ 20 6D 9D` (read_print, READ_DIR) `/ 18 60` — ✓. `b4_open_dir` `$9D0D` = `20 A5 9D`
+  (idle_kick) `/ A9 01 8D 1D DF / A9 13 8D 1D DF` (target $01 + OPEN_DIR $13) `/ 20 CB 9D`
+  (b4_push) … `b4_fin` `/ 60` — ✓.
+- **Reserve usage:** module now spans `$9C00–$9E8D` = **654 B of 669; only 15 B free.**
+  bank4 is effectively full — 16b/17–20 are blocked on the third region (see §14.1 /
+  next_steps). Deployed `.crt` md5 matches `build/hdn-rr38p-tmp12reu.crt`; archived
+  `build/archive-16a.bin`.
+
+### 14.4 Hardware test plan for 16a (Honza)
+
+Arm first: type `HONDANI`. Server up for c/n.
+1. **Ultimate FS:** `#t`, then `dir` → lists the current Ultimate/Temp directory; `ll`
+   → same listing. `cd <subdir>` then `dir` → reflects the new dir. Same on `#h`/`#f`.
+   (A very long dir may truncate at one screen-full-ish — that's the deferred 16b
+   streaming, note it but it's not a failure.)
+2. **IEC:** `#8` `dir` → `NOT SUPPORTED ON IEC`; `ll` same; `#9`/`#s` same.
+3. **Server-forwarded:** `#c` then `dir`/`ll` → the server's listing; `ll <pattern>` →
+   server-filtered results (the arg forwards verbatim). `#n` likewise. (Server down →
+   stock `?SYNTAX ERROR` ≤5 s — the unchanged bank3 forward path.)
+4. **Token discipline:** `dir` / `ll` alone match; `ll x` / `dir foo` on `#t` → AI/stock
+   (arg not matched locally in 16a — expected); `dirx`/`lls` → AI (not the token).
+5. **Regression:** `pwd`/`cd` still work as in 15b/15c; `i:hello`→AI; `PRINT 1/0`→
+   `?DIVISION BY ZERO`; `#`/`STATUS`/`TIME`/`MENU`/`RESET`/`HONDANI HELP`; console switch
+   `C=+CTRL+1..7`; stock sweep; freeze→resume; TASS — all unchanged.
+
+If all pass, **16a is done**; before 16b/17 we resolve the third-code-region decision
+(RAM-resident helper page is the recommended path — it reclaims the bank4 duplicate
+helpers and unblocks 16b–20).
+
+**RESULT (2026-07-10): HW tested — all good EXCEPT h/t/f `ll`/`dir`.** `#`/`status`/`time`/
+`menu`/`reset`, pwd/cd, c/n server-forward, the IEC notice, tokens and full regression all
+pass. **h/t/f `ll`/`dir` lists only the FIRST entry, and repeated `ll` alternates
+"one entry / empty / …".**
+
+**Root cause (confirmed against `docs/inspiration/ultimate_lib.c`, the authoritative UCI
+library).** READ_DIR (`$14`) streams **512-byte packets, each of which must be drained AND
+`accept`ed to release the next** (ultimate_lib.c:250 *"read this in a loop, and _accept()
+the data to get the next packet; each data packet is 512 bytes"*; the u-sample.c consumer
+is `while(uii_isdataavailable()){ uii_readdata(); uii_accept(); }`). 16a reused the
+single-packet `b4_dos1_read_print` (correct only for the one-packet `pwd`/GET_PATH): it
+drains packet 1, `b4_fin`-accepts once, stops. Packets 2+ are never read; the un-accepted
+leftover leaves the UCI mid-stream so the NEXT `ll` runs off-by-one → alternating empties.
+Everything else survives because each command's `b4_idle_kick` issues `$0E`
+(ACC|ABORT|CLR_ERR) first, resyncing the UCI (the same abort-recovery pattern documented in
+the old project's round-11 "UCI state survives a reset" post-mortem).
+
+**Fix path.** A correct accept-gated stream loop (`b4_read_dir_stream`: `while(DATA_AV){
+drain→CHROUT; accept+bounded-ack; }`, no final status) is ~70 B and **does not fit the 15 B
+left in the bank4 reserve** → it is blocked on a third code region. `b4_open_dir` is already
+correct (OPEN_DIR returns status only). Full analysis + the third-region decision (recommended:
+**bank4 `$9F58-$9FFF`, 168 B in-bank**, proven by a border-flash probe step 16-R first; the
+RAM-helper-page design kept as the escalation) is written up in **`next_steps.md` §14a + §15**.
+`b4_dos1_read_print` stays untouched (pwd depends on it).
+
+## 15. Step 16-R — third-code-region probe (BUILT 2026-07-10, awaiting HW test)
+
+Before porting the ~70 B `b4_read_dir_stream` fix into bank4 `$9F58-$9FFF`, prove that
+region is safe — both that code there **runs + returns**, and that its mere non-zero
+presence **does not corrupt the TMP/TASS REU image** (the whole worry with the end-of-bank
+padding). This mirrors the 15-pre "B4 border-flash proof" discipline.
+
+**What was built (bank4 only, throwaway — tagged `16-R PROBE (TEMPORARY)` at both sites):**
+- Dispatcher (`b4_disp`, `$9C00`): a new first-char route `cmp #$42 ('B') / beq b4_j_b5`,
+  plus a thunk `b4_j_b5: jmp b4_probe_9f58` beside the existing dir/ll thunks. **+7 B in the
+  reserve → 661/669** (still 8 B free; `.errorif (* > $9E9D)` held, reserve high-water `$9E94`).
+- Stub at `$9F58` (19 B, replacing stock zeros): validates the exact token `b5`
+  (`$02a7+1=='5'`, `$02a7+2==EOL`), then `inc $d020` (visible border bump) → `clc/rts`
+  (handled); non-`b5` `B…` words `sec/rts` → fall through to bank3 chat unchanged.
+  Reached by `jmp $9F58` from the thunk — same bank window, **no trampoline** needed.
+
+**Verification (rebuilt vs pristine `rr38p-tmp12reu.bin` + vs `build/archive-16a.bin`):**
+- `build/bank04.bin` = 8194 B (2 hdr + `$2000`); bank still ends exactly at `$A000`.
+- Stock data `$9E9D-$9EFF` (the `$20 $BA $DE` cross-bank stubs) **byte-identical** to
+  pristine — the 7-B insertion shift was fully absorbed by the reserve `.fill`, never
+  reaching the stock data.
+- `$9F58` stub bytes = `AD A8 02 C9 35 D0 0A AD A9 02 D0 05 EE 20 D0 18 60 38 60` (as intended).
+- `$9F6B-$9FFF` (149 B) **still all zero** — only the 19 stub bytes became non-zero.
+
+### 15.1 Hardware test plan for 16-R (Honza)
+
+Flash `hdn-rr38p-tmp12reu.crt`. Arm with `HONDANI`.
+1. **Probe runs + returns:** type `b5` a few times → the **border colour steps** each time
+   (proves `$9F58` executes and the `rts` unwinds cleanly back through `b4_disp`/`call_bank4`;
+   the prompt returns normally, no hang/crash). `bX` (any non-`b5` B-word) → AI/stock, unchanged.
+2. **REU image intact (the real point):** launch **TASS**, exit; then a **TMP `\` resume** —
+   both must work exactly as before, proving the boot installer did **not** DMA the now-non-zero
+   `$9F58+` bytes into the TMP image.
+3. **Regression:** full stock sweep + `#`/`status`/`time`/`menu`/`reset`, pwd/cd, c/n forward,
+   freeze→resume — all unchanged from 16a.
+
+If all pass, `$9F58-$9FFF` is confirmed as the third code region: **delete the `16-R PROBE`
+block + the `'B'`/`b4_j_b5` dispatch entry**, then port `b4_read_dir_stream` there as **16a-fix**.
+
+**RESULT (2026-07-10): HW tested — all good.** `b5` steps the border and returns cleanly;
+TASS launch/exit + TMP `\` resume + full stock/regression sweep all unchanged. **`$9F58-$9FFF`
+is confirmed as the third code region** — code there runs+returns, and its non-zero presence
+does not corrupt the TMP/TASS REU image (the installer copies only `$8121`/`$80B4`, never
+`$9F58+`). Probe deleted.
+
+## 16. Step 16a-fix — correct multi-packet READ_DIR streaming (BUILT 2026-07-10, awaiting HW test)
+
+Fixes the 16a defect (§14a: h/t/f `ll`/`dir` listed only the first 512-byte packet and
+alternated empty on repeat). The single-packet `b4_dos1_read_print` is replaced — for the
+READ_DIR path only — by a new `b4_read_dir_stream` in the third code region (`$9F58`, 90 B).
+`b4_dos1_read_print` is untouched (pwd/GET_PATH still uses it — that reply is one packet).
+
+**Protocol (authoritative: `ultimate_lib.c` + `u-shell.c` dir loop).** READ_DIR streams
+512-byte packets; each must be drained AND `accept`ed (`$df1c |= $02`) to release the next:
+`open_dir; get_dir; while(DATA_AV){ read all bytes; accept; }`. The decisive detail is in
+`uii_accept()` (ultimate_lib.c:512): it sets DATA_ACC then **waits for that bit to clear** —
+that handshake is the sync point, so an immediate `DATA_AV` (`$df1c & $80`) re-check right
+after it reliably reflects the *next* packet. So the loop needs no per-packet poll delay and
+never truncates early. `b4_read_dir_stream`:
+- `idle_kick → target $01 → cmd $14 → push`; leading CR.
+- `b4_wdav` (bounded ~64K) for the FIRST packet (covers command latency / empty dir → finish).
+- inner drain: `while ($df1c & $80) { CHROUT $df1e }`.
+- accept: `$df1c |= $02`, then bounded wait for bit `$02` to clear (`$cf26` hi-count).
+- re-check `$df1c & $80`: set → drain next packet; clear → finish.
+- `b4_fin` (drain any trailing status + accept → idle); trailing CR. Every wait bounded → no hang.
+
+**b4_do_dir** now `jsr b4_open_dir` then `jsr b4_read_dir_stream` (was `lda #$14 / jsr
+b4_dos1_read_print`) — a same-bank-window `jsr` to `$9F58`, no trampoline.
+
+**Byte-diff & verification (rebuilt vs pristine `rr38p-tmp12reu.bin` + vs `archive-16a.bin`):**
+- `build/bank04.bin` = 8194 B; bank ends exactly at `$A000`.
+- `b4_read_dir_stream` occupies **`$9F58-$9FB1` (90 B)**; `$9FB2-$9FFF` (78 B) still zero — free
+  for 16b/17–20. `$9F00-$9F57` identical to pristine (zeros). Probe fully gone (no `EE 20 D0`).
+- Reserve high-water back down to **`$9E8B`** (< `$9E9D` pin, ~17 B headroom) — removing the
+  probe route + shortening `b4_do_dir` by 2 B more than paid for the rewire.
+- Stock data `$9E9D-$9EFF` **byte-identical** to pristine.
+- `$9F58` head bytes: `20 A3 9D A9 01 8D 1D DF A9 14 8D 1D DF 20 C9 9D B0 43 …` (jsr idle_kick,
+  target $01, cmd $14, jsr push, …) — as intended.
+
+### 16.1 Hardware test plan for 16a-fix (Honza)
+
+Flash `hdn-rr38p-tmp12reu.crt`, arm with `HONDANI` (server up for c/n).
+1. **The fix:** `#t`, then `dir` → lists the **WHOLE** directory (all entries, past 512 B / >1
+   packet), not just the first; `ll` → same. Run `ll` **several times in a row** → identical full
+   listing each time (**no alternating empty**, the 16a symptom). Same on `#h`/`#f`.
+2. `cd <subdir>` then `dir` → reflects the new dir, full listing. `cd ..` / `cd /` back.
+3. **Empty dir** (if you can `cd` into one) → just the framing CRs, prompt returns promptly (the
+   first-packet `b4_wdav` times out once, bounded — no hang).
+4. **IEC / server:** `#8`/`#9`/`#s` `dir`/`ll` → `NOT SUPPORTED ON IEC`; `#c`/`#n` `dir`/`ll` →
+   server listing; `ll <pattern>` on c/n → server-filtered (arg forwards verbatim).
+5. **Regression:** `pwd`/`cd` unchanged; `#`/`status`/`time`/`menu`/`reset`; stock sweep;
+   freeze→resume; **TASS launch/exit + TMP `\` resume** (proves `$9F58` code + the REU image
+   still coexist). All unchanged.
+
+If all pass, **16a is fully done**; next is **16b** (h/t/f client-side `ll outrun*` pattern
+filter), which also lives in the third region.
+
+**RESULT (2026-07-11): HW tested — 16a-fix good (dir/ll list the whole directory, repeatable).**
+One follow-up raised: device letters should bind to Ultimate mount roots (`#t`→/temp, `#h`→/sd,
+new `#u`→/usb0). **Decided: DEFER** — it needs unfreezing bank3 (both the new `#u` letter and
+auto-`cd` live there) and deserves its own step; it's cleanly separable and doesn't block/
+complicate 16b/17–20 (only forward-cost = trivially adding `u` to two validators later). Full
+decision + future-step spec: **next_steps.md §16-DEV** (+ table row `DEV`).
+
+### 16.2 Step 16b BLOCKER — READ_DIR per-entry byte format is undocumented
+
+A correct client-side `ll <pattern>` filter must split the READ_DIR stream into per-entry
+records and match the *filename* — but the exact wire format (entry delimiter; whether a line
+starts with the filename or with attribute/size metadata) is **not documented anywhere in the
+repo** (`ultimate_lib.h`'s `struct DirectoryEntry {attributes; filename}` is declared-but-
+unused; all sample code just CHROUTs raw packets; the official UltimateDOS spec is referenced
+but absent). Our `b4_read_dir_stream` works precisely because it never parses. Resolving 16b
+needs the format confirmed from real hardware (the on-screen listing already renders as
+readable per-line entries, strongly implying CR/`$0D`-delimited lines, but the filename's
+position within a line is unconfirmed). Approach chosen with Honza before implementing.
+
+## 17  Regression fix — HONDANI-armed console-switch hook crashed fastloaded games
+
+**Symptom (Honza, real HW, 2026-07-11):** fresh reboot → `HONDANI` (arms the CINV
+console-switch hook) → RR fastload (F1) a game → the game **loads, begins init, then
+crashes** (Sprite Studio 64 jumps to the freeze menu; Outrun draws half its init screen
+then crumbles). Without `HONDANI` arming, the same fastload runs perfectly.
+
+**Bisection (HW-confirmed the exact cause):**
+- Typing a non-HONDANI junk line first (arms only the unrelated IERROR `$0300` stub, NOT
+  the CINV hook) → game works. → IERROR path innocent.
+- After `HONDANI`, `POKE 788,49:POKE 789,234` (restore `$0314/$0315` to KERNAL `$EA31`,
+  disarming ONLY the CINV hook) → game works. → **the live CINV hook at `$0314→$03A0`
+  is the cause.** The game reuses the tape buffer (`$033C-$03FB`) where our `$03A0` stub
+  lives and/or relies on `$0314`; an IRQ mid-init runs the clobbered stub → crash.
+
+**Why no cartridge-side fix could reach it (Fable5 advisor):** in the failing flow NO
+open (bank4) code runs between `HONDANI` and F1 — HONDANI is caught by frozen bank1/bank2,
+F1 is stock RR ROM. So the *stub itself* had to change. Chosen fix (Honza): **reopen
+bank2** for a permanent, server-independent self-disarm (not the server-DMA option).
+
+**The fix — program-mode self-disarm in the CINV stub:**
+- New 4-byte prefix `lda $9d / bne cvr_live`. MSGFLG `$9D` = `$80` at the BASIC prompt,
+  `$00` once `RUN` enters program mode. Direct mode → keep the hook live (console switch
+  works). Program mode → **restore the saved `$0314/$0315` from `$03EC/$03ED` and chain**,
+  so our stub leaves the IRQ path on the first IRQ after RUN, before the game clobbers
+  `$03A0`. Semantics become prompt-only console-switch (re-`HONDANI` to re-arm).
+- The 7-byte digit table no longer fits inside the stub, so it moved out to **`$03F0`**;
+  `cs_install` grew +11 B to copy it there alongside the stub.
+
+**Space / placement (bank2 was full, 1 B):** the grown stub (71 B, `$03A0-$03E6`) + digit
+table were relocated into the **232-byte reclaimed pocket at `$9B59`** (the old
+`.fill $9C41-*` step-11a shim gap). `cs_install` stays pinned at `$9C41` (grew +11); the
+stub's old slot after it became zero padding pinned so **`console_switch` stays at `$9CB7`
+and ALL downstream bank2 code is byte-identical** to the frozen build.
+
+**Build + byte-verify (2026-07-11):** `./build.sh` clean (no `.errorif` trips); bank02.bin
+= 8194 B. Byte-diff vs pristine frozen bank2: **all 178 changed bytes confined to
+`$9B59-$9CB6`**; ZERO diffs at/after `$9CB7` (console_switch + downstream) and ZERO diffs
+below `$9B59`; stock RR (`$8000-$9B58`, `$9E80-$9FFF`) untouched. Stub @ `$9B59` starts
+`A5 9D D0` (`lda $9d`/`bne`). **HW TESTED 2026-07-11 — ALL PASS:** Sprite Studio 64 and
+Outrun both fastload and run correctly after `HONDANI` arming (no freeze menu / no crumble);
+C=+CTRL+2..7 console switch still works at the READY prompt (confirms the stub stays live in
+direct mode and that `$03F0-$03F6` is free RAM); full regression clean. The MSGFLG `$9D`
+direct-vs-program heuristic proved reliable for these RR fastloaders — no CURLIN `$3A`
+fallback needed.
+
+### 17.1  HW test plan
+1. **THE FIX:** reboot → `HONDANI` → F1 fastload **Sprite Studio 64** → must run normally
+   (no freeze menu). Repeat with **Outrun** → must reach its title/game (no crumble).
+2. **Feature intact:** reboot → `HONDANI` → at the READY prompt, hold **C=+CTRL+2..7** →
+   console switch must still work (proves `$9D=$80` keeps the stub live at the prompt, and
+   proves `$03F0-$03F6` is free RAM — the digit compare relies on it).
+3. **Re-arm:** after a game disarms the hook, returning to BASIC leaves console-switch off
+   until you re-type `HONDANI` (expected new behaviour, not a bug).
+4. **Regression:** `ll`/`dir` one-per-line unchanged; pwd/cd; `#8 dir`→IEC notice; stock
+   sweep; TASS launch/exit + TMP `\` resume.

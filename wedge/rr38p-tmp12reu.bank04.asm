@@ -618,9 +618,17 @@ b4_disp:
     beq b4_ck_pwd
     cmp #$43               // 'C' -> maybe "cd"
     beq b4_ck_cd
+    cmp #$44               // 'D' -> maybe "dir"
+    beq b4_j_dir
+    cmp #$4c               // 'L' -> maybe "ll"
+    beq b4_j_ll
 b4_nomatch:
     sec                    // not mine -> bank3 chat/AI (or c/n server-forward)
     rts
+b4_j_dir:                  // thunks: ll/dir handlers are >127B away (out of beq range)
+    jmp b4_ck_dir
+b4_j_ll:
+    jmp b4_ck_ll
 // ---- pwd : exact "pwd", no args -------------------------------------------
 b4_ck_pwd:
     lda $02a7+1
@@ -713,6 +721,61 @@ b4_psl:
     bne b4_psl
 b4_psd:
     clc
+    rts
+// ---- ll / dir : bare token, list the current directory (step 16a) ----------
+// Reached via the b4_j_dir/b4_j_ll thunks (out of the dispatcher's beq range).
+// h/t/f -> UCI DOS OPEN_DIR ($13) then READ_DIR ($14) -> CHROUT the listing.
+// c/n   -> C=1 (bank3 forwards the raw line to the server, which lists+filters).
+// 8/9/s -> b4_prnsup "NOT SUPPORTED ON IEC" (no KERNAL dir port; use stock RR $).
+// Only the *bare* token is ours; "ll <arg>"/"dir <arg>" fall through (C=1) so a
+// pattern on c/n still forwards to the server verbatim. The h/t/f client-side
+// pattern filter is DEFERRED to 16b. Multi-packet READ_DIR streaming is done here
+// (16a-fix) by b4_read_dir_stream in the third code region ($9F58), so the WHOLE
+// listing is emitted, not just the first 512-byte packet (the 16a defect).
+b4_ck_dir:
+    lda $02a7+1
+    jsr b4_fold
+    cmp #$49               // 'I'
+    bne b4_dir_nm
+    lda $02a7+2
+    jsr b4_fold
+    cmp #$52               // 'R'
+    bne b4_dir_nm
+    lda $02a7+3
+    bne b4_dir_nm          // exact: EOL right after "dir"
+    beq b4_do_dir
+b4_dir_nm:
+    sec                    // not our token -> bank3 chat/AI (or c/n forward)
+    rts
+b4_ck_ll:
+    lda $02a7+1
+    jsr b4_fold
+    cmp #$4c               // 'L'
+    bne b4_dir_nm
+    lda $02a7+2
+    bne b4_dir_nm          // exact: EOL right after "ll"
+    // fall through to b4_do_dir
+b4_do_dir:
+    jsr b4_curdev          // dispatch by current device
+    cmp #$43               // 'C'/'N' -> bank3 forwards the raw line to the server
+    beq b4_dir_nm
+    cmp #$4e
+    beq b4_dir_nm
+    jsr b4_is_htf          // Z=1 iff H/T/F
+    bne b4_prnsup          // 8/9/s -> "NOT SUPPORTED ON IEC"
+    jsr b4_open_dir        // DOS OPEN_DIR ($13) on the current dir (silent)
+    jsr b4_read_dir_stream // DOS READ_DIR ($14): stream ALL packets (16a-fix, $9F58)
+    clc
+    rts
+// b4_open_dir: DOS OPEN_DIR ($13), no payload; drain/accept, no print.
+b4_open_dir:
+    jsr b4_idle_kick
+    lda #$01               // TARGET_DOS1
+    sta $df1d
+    lda #$13               // DOS_CMD_OPEN_DIR
+    sta $df1d
+    jsr b4_push
+    jsr b4_fin
     rts
 // b4_is_htf: Z=1 iff A is 'H','T' or 'F' (A clobbered to $00/$01).
 b4_is_htf:
@@ -992,16 +1055,69 @@ bank04_sub_9F2B:
     ldx $a6                // A6 A6
     ldy $a7                // A4 A7
     jmp $dede              // 4C DE DE
+// =============================================================================
+// THIRD CODE REGION -- bank4 $9F58-$9FFF (168 B of stock-zero end-of-bank pad).
+// Proven safe by step 16-R (HW tested 2026-07-10: code here runs+returns, and its
+// non-zero presence does NOT corrupt the TMP/TASS REU image). Reached by a plain
+// jsr from b4_disp (same bank window, no trampoline). Holds 16a-fix now; 16b/17-20
+// will grow here too. Never written by the boot installer (copies only $8121/$80B4).
+// =============================================================================
 bank04_data_9F58:
 .errorif (* != $9F58), "bank04_data_9F58 shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F58
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F68
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F78
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F88
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F98
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FA8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FB8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FC8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FD8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FE8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00    // data $9FF8
+// b4_read_dir_stream (16a-fix): DOS READ_DIR ($14) with correct MULTI-PACKET,
+// accept-gated streaming (ultimate_lib.c:uii_get_dir + u-shell.c dir loop:
+// open_dir; get_dir; while(DATA_AV){ drain all bytes -> CHROUT; accept; }).
+// Each 512-byte packet must be drained AND accepted ($df1c|=$02) to release the
+// next; uii_accept waits for the DATA_ACC bit to clear -- that handshake is the
+// sync point, so an immediate DATA_AV re-check after it reliably sees the next
+// packet (no poll delay, no premature truncation). Every wait is bounded (~64K
+// polls, $cf26 hi-count) -> never hangs. Frames the listing with leading/trailing
+// CR like b4_dos1_read_print. (b4_open_dir already issued OPEN_DIR before this.)
+b4_read_dir_stream:
+    jsr b4_idle_kick       // ensure UCI idle (aborts any leftover)
+    lda #$01               // TARGET_DOS1
+    sta $df1d
+    lda #$14               // DOS_CMD_READ_DIR
+    sta $df1d
+    jsr b4_push            // PUSH_CMD (+ bounded busy-wait)
+    bcs b4_rds_done        // push failed -> quit quietly (still emit trailing CR)
+    lda #$0d
+    jsr $ffd2              // leading CR
+    jsr b4_wdav            // bounded wait for the FIRST packet's DATA_AV
+    bcs b4_rds_fin         // none at all (e.g. empty dir) -> finish
+b4_rds_rd:                 // inner: drain the current packet
+    lda $df1c
+    and #$80               // DATA_AV?
+    beq b4_rds_acc         // packet fully drained -> accept it
+    lda $df1e              // read one data byte
+    cmp #$21               // 16b-1: $10 (dir marker) or $20 (file sep) -> newline
+    bcs b4_rds_pc          // >= $21 -> printable name char, print as-is
+    lda #$0d               // <= $20 -> emit CR (one entry per line)
+b4_rds_pc:
+    jsr $ffd2              // CHROUT (bank-independent)
+    jmp b4_rds_rd
+b4_rds_acc:                // accept this packet, then handshake, then check next
+    lda $df1c
+    ora #$02               // DATA_ACC -> release the next packet
+    sta $df1c
+    ldy #$00
+    sty $cf26
+b4_rds_ak:
+    lda $df1c
+    and #$02               // wait (bounded) for the ack to clear = sync point
+    beq b4_rds_chk
+    iny
+    bne b4_rds_ak
+    inc $cf26
+    bne b4_rds_ak
+    jmp b4_rds_fin         // ack stuck -> finish (bounded, no hang)
+b4_rds_chk:
+    lda $df1c
+    and #$80               // another packet ready now? (reliable post-handshake)
+    bne b4_rds_rd          // yes -> drain it
+b4_rds_fin:
+    jsr b4_fin             // drain any trailing status + accept -> UCI back to idle
+b4_rds_done:
+    lda #$0d
+    jmp $ffd2              // trailing CR, tail-return
+    .fill $A000 - *, $00  // remainder of the stock-zero end-of-bank padding
