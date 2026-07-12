@@ -480,7 +480,7 @@ space, may split (save first, then load).
 - **Verify:** `memcpy $c000-$cfff dump.bin` then `memcpy dump.bin $4000` and
   compare (`memcpy` round-trip); relocation works; stock sweep.
 
-### Step 21-pre — bank6 reserve OPEN ✅ built, HW test owed (2026-07-12)
+### Step 21-pre — bank6 reserve OPEN ✅ HW tested 2026-07-12 (all good)
 
 The deferred asm "quality win" (relative-path prepend) needs a FOURTH ROM bank —
 bank3/4/5 reserves are full. This pre-step opens **bank6** in isolation (same
@@ -497,9 +497,11 @@ bytes). `mkdir`/`memcpy` still fall through to the server unchanged. Details in
   `pwd`/`cd`/`ll`/`mnt`/`umnt` on `#h`/`#t`/`#f`, and `mkdir`/`memcpy` — all must
   behave exactly as step-17/20. Proves opening bank6 disturbs nothing.
 
-### Step 21 — get_path + relative-path prepend (the "quality win") 🆕 designed, gated on 21-pre
+### Step 21 — get_path + relative-path prepend (the "quality win") ✅ HW tested 2026-07-12 (all good)
 
-Fills in `b6_disp` (bank6) once 21-pre passes. Design (Fable5-vetted):
+Fills in `b6_disp` (bank6); 21-pre HW-passed. Server: `cloud/` decodes the `$01`
+frame + joins relative paths (12 new tests, cloud suite 161 passed). See
+`conversion_log3.md §26`. Design (Fable5-vetted):
 - **`get_path` primitive** — issues UCI `$01,$12` (GET_PATH) via the bank6→bank3
   leaf trampoline (`b6c3 @ $0386`, sibling of `b5c3`), captures the reply into a
   `$CF90-$CFCF` buffer, NUL-terminated, stops on any byte `< $20`, returns C=0/len

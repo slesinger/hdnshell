@@ -1805,3 +1805,62 @@ logic rides on it.
 `ll`/`mnt`/`umnt`, and `mkdir`/`memcpy` (server up) — all must behave exactly as step-17/20. This
 proves opening bank6 disturbs nothing. **Only after it passes** does step 21 fill in `get_path` +
 the `$01`-framed relative-path prepend inside `b6_disp`.
+
+## 26  Step 21 — get_path + relative-path prepend (2026-07-12)
+
+21-pre HW-passed (opening bank6 is clean), so this step fills `b6_disp` with the real feature:
+relative `mkdir foo` / `memcpy … foo` on a UCI-DOS drive now work by having the wedge capture the
+current dir and hand it to the server, which does the join. Fable5-vetted design; **all path
+grammar stays server-side (testable), the cartridge only captures + front-prepends a context
+field, and it FAILS OPEN to the step-18/20 absolute-path behaviour** so no cartridge bug can
+misplace a file.
+
+**Cartridge (bank6, 3 pockets, reached from the 21-pre annex hook):**
+- `b6_disp` (`$9E00`): case-folded exact match of `mkdir ` / `memcpy ` (full token + space). Not
+  ours → C=1, `$02a7` untouched (bank4 then `hsh_body` forward it as before). Device gate on the
+  already-folded `$cf2a`: only `T`/`F`/`H` (+ `U`/`V`, dormant until #u/#v are added to bank3 per
+  §16-DEV) — other devices forward unchanged. **b6_disp ALWAYS returns C=1** (it never "handles",
+  only optionally rewrites the line).
+- `b6_get_path` (`$8023` pocket): issues UCI DOS1 GET_PATH (`$01,$12`) via the new `b6c3`
+  bank6→bank3 leaf trampoline (`$0386`, sibling of `b5c3`, restore `$90`), captures the reply into
+  `B6_PATHBUF=$cf80` (shares B4_BUF — never live during ll/dir), NUL-terminated, bytes `<$20`
+  dropped **but still drained** (avoids the step-16a UCI-desync class), length → `B6_CWDLEN=$cf63`.
+  C=1 on push/wdav failure → caller fails open.
+- `b6_prepend` (`$8023`): rewrites `$02a7` `"<line>"` → `"$01 <cwd> $01 <line>"` (backward
+  in-place shift, dest>src). Bounds-checked (`L+cwd+2 ≤ 88` vs the `$0300` cliff / `hsh_wlp`'s
+  `cpy #$59`); on would-overflow it **bails before touching `$02a7`** (fail open).
+- `b6c3` (`$9F58` pocket): the trampoline (heals into `$0386`, shares b5c3's slot; b6_disp heals it
+  fresh before use). Byte-diff vs step-17 = bank3 annex (21-pre) + bank6 `$9E00-$9E95` (150 B) +
+  `$8023-$80D4` (~174 B) + `$9F58-$9F7A` (~34 B); stock bands `$8100-$9DFF`/`$9E9D-$9F57` and banks
+  0/1/2/4/5/7 untouched. All `.errorif` pocket guards hold.
+
+**Server (`cloud/`):** `request_dispatcher.dispatch` detects a leading `$01`, splits the frame,
+decodes **cwd as ASCII (latin-1)** and the command line as **PETSCII** separately (a single
+PETSCII pass would mangle the mixed-case path), and stores/clears `state['dos_cwd']` every request.
+`ultimate_handler._resolve_abspath` joins a relative `mkdir`/`memcpy` path against `dos_cwd`
+(`posixpath.normpath`, so root `/` and trailing slashes can't yield `//`); absolute paths pass
+through; relative + no cwd → the old usage message. memcpy direction detection reworked to key off
+the range's `-` (SAVE) vs a bare hex addr (LOAD) so relative filenames parse. Tests: **12 new
+(9 resolution + 3 frame-decode), full cloud suite 161 passed / 1 skipped.**
+
+**✅ HW tested 2026-07-12 (Honza, server up) — all good.** `cd /Temp/sub` + relative `mkdir foo` →
+server created `/Temp/sub/foo`; `memcpy` relative-name round-trip; absolute paths still work; a
+relative `mkdir` on `#8`/`#c` was NOT rewritten (server demanded absolute); stock sweep + TASS all
+clean. **Known limit (accepted):** cwd inside a mounted disk image → FTP error from the server
+(documented, not detected in ROM).
+
+**Fable5 asm review (2026-07-12): GO for HW test, no logic bugs** — every contract invariant held
+(C=1 on all exits, b6c3 carry preservation, the UCI drain discipline, and the `cmp #$59` guard vs
+`hsh_wlp`'s `$0300` cliff all verified against source + .sym). Two narrow context-correctness risks
+flagged; one fixed, one accepted:
+- **FIXED — cwd > 63 chars was silently truncated** and prepended (would resolve the relative name
+  against a mangled ancestor dir → misplaced file, defeating fail-open). Now `b6_get_path` on a
+  buffer-full drains the rest of the reply and returns C=1 → `b6_go` forwards the line UNCHANGED
+  (server then applies its absolute-path rule). +9 B in the `$8023` pocket (helper block ends
+  `$80E1`, ~30 B margin).
+- **ACCEPTED (nit) — device gate reads `$cf2a` raw**, which is lazily normalized (garbage→'8' only
+  on the first `#`/pwd/cd). A cold boot whose uninitialized `$cf2a` happens to be T/F/H/U/V (~2%)
+  *and* a `mkdir`/`memcpy` typed before any `#`/pwd/cd would prepend a cwd the user didn't pick.
+  Non-crashing, self-heals on first `#x`/pwd/cd, and fail-open makes it create the dir in the ACTUAL
+  current DOS dir anyway — so it's a surprise, not a corruption. Documented, no code (keeps the
+  pocket lean).

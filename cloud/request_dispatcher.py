@@ -11,7 +11,7 @@ import importlib
 from typing import List
 
 from sdk.base_handler import BaseHandler
-from sdk.shared_state import get_session_state_copy
+from sdk.shared_state import get_session_state_copy, update_session_state
 
 _CLOUD_DIR = os.path.dirname(os.path.abspath(__file__))
 _HANDLERS_DIR = os.path.join(_CLOUD_DIR, "handlers")
@@ -70,9 +70,32 @@ class RequestDispatcher:
             PETSCII encoded response
         """
         try:
+            raw = petscii_text.rstrip(b"\x00")
+
+            # Step 21: optional cwd CONTEXT frame from the cartridge, shape:
+            #   \x01 <cwd-ascii> \x01 <command line (PETSCII)>
+            # The wedge front-prepends this for mkdir/memcpy on a UCI-DOS drive so the
+            # server can resolve a relative path against the C64's current directory.
+            # The cwd comes from UCI GET_PATH as raw ASCII; the command line is PETSCII
+            # as always -> each half is decoded with its OWN codec, never one pass over
+            # both (a single PETSCII pass would mangle the mixed-case ASCII path).
+            dos_cwd = None
+            if raw[:1] == b"\x01":
+                end = raw.find(b"\x01", 1)
+                if end != -1:
+                    dos_cwd = raw[1:end].decode("latin-1", errors="replace")
+                    raw = raw[end + 1:]
+
             # Convert PETSCII to UTF-8
-            utf8_text = BaseHandler.petscii_to_utf8(petscii_text.rstrip(b"\x00"))
-            logger.info(f"Session {session_id}: Received: '{utf8_text}'")
+            utf8_text = BaseHandler.petscii_to_utf8(raw)
+
+            # Record (or clear) this session's cwd context so UltimateHandler can turn a
+            # relative mkdir/memcpy path into an absolute one. Set every request (value
+            # or None) so a stale cwd never leaks into a later un-framed command.
+            update_session_state(session_id, dos_cwd=dos_cwd)
+
+            logger.info(f"Session {session_id}: Received: '{utf8_text}'"
+                        + (f" (cwd={dos_cwd})" if dos_cwd else ""))
 
             # Find appropriate handler
             for handler in self.handlers:

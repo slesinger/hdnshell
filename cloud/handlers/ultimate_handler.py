@@ -22,6 +22,7 @@ at state["client_ip"].
 import io
 import logging
 import os
+import posixpath
 import re
 import ftplib
 
@@ -65,13 +66,39 @@ class UltimateHandler(BaseHandler):
         return "?ERROR"
 
     # ------------------------------------------------------------------
+    # relative-path resolution (Step 21 cwd context frame)
+    # ------------------------------------------------------------------
+
+    def _resolve_abspath(self, path: str, session_id: int):
+        """Return an absolute path for `path`, or None if it can't be made absolute.
+
+        Absolute paths (leading '/') pass through unchanged. A relative path is
+        joined against this session's UCI DOS current directory, which the wedge
+        sends in the ``\\x01``-framed cwd context (see request_dispatcher). If the
+        path is relative and no valid cwd context is available (un-framed request,
+        or the cartridge's get_path failed and it fell open), returns None so the
+        caller keeps the old absolute-path-required behaviour.
+        """
+        if path.startswith("/"):
+            return path
+        state = get_session_state_copy(session_id)
+        cwd = state.get("dos_cwd")
+        if not cwd or not cwd.startswith("/"):
+            return None
+        # posix-join + normalise so a root cwd ("/") or a trailing slash cannot
+        # produce "//name", and any "." / ".." in the typed name is cleaned up.
+        return posixpath.normpath(cwd.rstrip("/") + "/" + path)
+
+    # ------------------------------------------------------------------
     # mkdir
     # ------------------------------------------------------------------
 
     def _mkdir(self, args, session_id: int) -> str:
-        if not args or not args[0].startswith("/"):
-            return "Usage: mkdir /absolute/path"
-        abspath = args[0]
+        if not args:
+            return "Usage: mkdir /absolute/path (or a name relative to the current dir)"
+        abspath = self._resolve_abspath(args[0], session_id)
+        if abspath is None:
+            return "Usage: mkdir /absolute/path (or a name relative to the current dir)"
 
         state = get_session_state_copy(session_id)
         ftp_host = state.get("client_ip")
@@ -97,13 +124,18 @@ class UltimateHandler(BaseHandler):
             return _MEMCPY_USAGE
         a, b = args
 
-        range_match = _HEX_RANGE_RE.match(a)
-        if range_match and b.startswith("/"):
-            return self._memcpy_save(range_match.group(1), range_match.group(2), b, session_id)
+        a_range = _HEX_RANGE_RE.match(a)
+        b_range = _HEX_RANGE_RE.match(b)
+        b_addr = _HEX_ADDR_RE.match(b)
 
-        addr_match = _HEX_ADDR_RE.match(b)
-        if a.startswith("/") and addr_match:
-            return self._memcpy_load(a, addr_match.group(1), session_id)
+        # SAVE: memcpy $START-$END <path>  (a is a hex range; b is the destination
+        # path, absolute or relative-to-cwd). The range's '-' disambiguates vs a path.
+        if a_range and not b_range:
+            return self._memcpy_save(a_range.group(1), a_range.group(2), b, session_id)
+
+        # LOAD: memcpy <path> $ADDR  (b is a bare hex address; a is the source path).
+        if b_addr and not a_range:
+            return self._memcpy_load(a, b_addr.group(1), session_id)
 
         return _MEMCPY_USAGE
 
@@ -111,13 +143,17 @@ class UltimateHandler(BaseHandler):
         state = get_session_state_copy(session_id)
         return state.get("client_ip") or network_helper.read_last_c64_ip()
 
-    def _memcpy_save(self, start_hex: str, end_hex: str, abspath: str, session_id: int) -> str:
+    def _memcpy_save(self, start_hex: str, end_hex: str, path: str, session_id: int) -> str:
         start = int(start_hex, 16)
         end = int(end_hex, 16)
         if end < start:
             return _MEMCPY_USAGE
         length = end - start + 1
         if length <= 0:
+            return _MEMCPY_USAGE
+
+        abspath = self._resolve_abspath(path, session_id)
+        if abspath is None:
             return _MEMCPY_USAGE
 
         host = self._resolve_host(session_id)
@@ -159,8 +195,12 @@ class UltimateHandler(BaseHandler):
 
         return f"OK: saved {length} bytes {start:04X}-{end:04X} -> {abspath}"
 
-    def _memcpy_load(self, abspath: str, addr_hex: str, session_id: int) -> str:
+    def _memcpy_load(self, path: str, addr_hex: str, session_id: int) -> str:
         addr = int(addr_hex, 16)
+
+        abspath = self._resolve_abspath(path, session_id)
+        if abspath is None:
+            return _MEMCPY_USAGE
 
         host = self._resolve_host(session_id)
         if not host:

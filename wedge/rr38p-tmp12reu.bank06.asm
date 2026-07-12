@@ -51,20 +51,144 @@ bank06_data_8023:
 // bank04 installer copies it to C64 RAM $9500-$B1FF. Contains the editor
 // ("TURBO MACRO PRO+REU V1.2" banner, save/load prompts). Data at this
 // window address, not runnable here.
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8023
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8033
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8043
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8053
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8063
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8073
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8083
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8093
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80A3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80B3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80C3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80D3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80E3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $20, $89, $86    // data $80F3
+// =============================================================================
+// Step 21 bank6 HELPER BLOCK (get_path capture + relative-path prepend + fold).
+// Lives in the $8023-$80FF stock-zero pocket (221 B, BELOW the installer's
+// $8100-$9DFF copy window -> copied to neither RAM nor the REU image, proven safe
+// like bank5's pockets). Reached from b6_disp ($9E00) by plain same-bank jsr; reaches
+// bank3's frozen UCI leaf helpers via the b6c3 RAM trampoline ($0386, in the $9F58
+// pocket). Consts are defined near b6_disp ($9E00).
+// =============================================================================
+// Step 21 consts (address literals -- no bytes emitted; defined ahead of first use):
+.const B6_PATHBUF = $cf80   // captured cwd, NUL-term (SHARES B4_BUF $cf80 -- get_path and
+                            // bank4 ll/dir filtering are never live at the same time)
+.const B6_PATHMAX = 63      // max cwd bytes stored (NUL at +len; fits B4_BUF's 80 B)
+.const B6_CWDLEN  = $cf63   // captured cwd length     (free $cf63-$cf7f scratch)
+.const B6_LINLEN  = $cf64   // original $02a7 line length
+.const B6C3_RUN   = $0386   // bank6->bank3 leaf trampoline (SHARES b5c3's $0386 slot)
+.const B3_IDLE = $9dbb      // bank3 uci_idle_kick  (frozen)
+.const B3_PUSH = $9b20      // bank3 hsh_push       (frozen)
+.const B3_WDAV = $9b55      // bank3 hsh_wdav       (frozen)
+.const B3_FIN  = $9b6a      // bank3 hsh_fin        (frozen)
+b6_helpers:
+.errorif (* != $8023), "bank6 helper block not at $8023"
+// b6_fold: normalize letter in A to uppercase (copy of bank4 b4_fold / bank3 hd_fold).
+b6_fold:
+    cmp #$c1
+    bcc b6_f1
+    and #$7f               // shifted $C1-$DA -> $41-$5A
+b6_f1:
+    cmp #$61
+    bcc b6_f2
+    cmp #$7b
+    bcs b6_f2
+    and #$df               // lowercase $61-$7A -> $41-$5A
+b6_f2:
+    rts
+// b6_get_path: UCI DOS1 GET_PATH ($12) -> capture the reply into B6_PATHBUF
+// (NUL-term; bytes <$20 are dropped but STILL drained so the UCI never desyncs, cf.
+// step 16a's READ_DIR bug), length -> B6_CWDLEN. C=0 ok / C=1 = push|wdav failed.
+// The $df1x UCI regs are I/O2 (bank-independent); the bank3 leaf helpers go via b6c3.
+b6_get_path:
+    ldx #<B3_IDLE
+    ldy #>B3_IDLE
+    jsr B6C3_RUN           // uci_idle_kick (make-idle: drain/accept/abort)
+    lda #$01
+    sta $df1d              // TARGET_DOS1
+    lda #$12
+    sta $df1d              // DOS_CMD_GET_PATH
+    ldx #<B3_PUSH
+    ldy #>B3_PUSH
+    jsr B6C3_RUN           // push the command block
+    bcs b6_gp_fail
+    ldx #<B3_WDAV
+    ldy #>B3_WDAV
+    jsr B6C3_RUN           // bounded wait for the first reply byte
+    bcs b6_gp_fail
+    ldx #$00
+b6_gp_rd:
+    lda $df1c
+    and #$80               // DATA_AV
+    beq b6_gp_done
+    lda $df1e              // read+drain the byte (always, to keep the UCI in sync)
+    cmp #$20
+    bcc b6_gp_rd           // control byte -> don't store, keep draining
+    cpx #B6_PATHMAX
+    bcs b6_gp_of           // cwd too long -> FAIL-OPEN, don't prepend a truncated path
+    sta B6_PATHBUF,x
+    inx
+    bne b6_gp_rd
+b6_gp_done:
+    lda #$00
+    sta B6_PATHBUF,x       // NUL-terminate
+    stx B6_CWDLEN          // captured length
+    ldx #<B3_FIN
+    ldy #>B3_FIN
+    jsr B6C3_RUN           // drain status + accept -> UCI back to idle
+    clc
+    rts
+b6_gp_of:                  // cwd overflow: drain the rest of the reply (no store) so the
+    lda $df1c              // UCI stays in sync, then fail into b6_gp_fail -> b6_go's
+    and #$80               // `bcs` forwards the line UNCHANGED (never a truncated path).
+    beq b6_gp_fail
+    lda $df1e              // discard
+    jmp b6_gp_of
+b6_gp_fail:
+    ldx #<B3_FIN
+    ldy #>B3_FIN
+    jsr B6C3_RUN           // still drain/accept so the UCI returns to idle
+    sec
+    rts
+// b6_prepend: rewrite $02a7 "<line>" -> "$01 <cwd> $01 <line>" (front-prepend a cwd
+// CONTEXT field the server decodes separately -- keeps all path grammar server-side).
+// No-op if the result (1+cwd+1+line+NUL) would pass the 89-byte forward cap ($0300
+// cliff): the server then just sees the relative line and applies its abs-path rule.
+b6_prepend:
+    ldx #$00
+b6_pp_len:
+    lda $02a7,x
+    beq b6_pp_got
+    inx
+    bne b6_pp_len
+b6_pp_got:
+    stx B6_LINLEN          // L = line length (index of the NUL)
+    txa
+    clc
+    adc B6_CWDLEN
+    adc #$02               // total content bytes = L + cwd + 2 (NUL lands at that index)
+    cmp #$59               // >= 89 -> NUL would reach $0300; bail (fail-open)
+    bcs b6_pp_done
+    ldx B6_LINLEN          // src = L (copy incl. NUL down to 0); dest = src + cwd + 2
+b6_pp_sh:
+    txa
+    clc
+    adc B6_CWDLEN
+    adc #$02
+    tay                    // dest = src + cwd + 2
+    lda $02a7,x
+    sta $02a7,y            // high->low copy (dest>src, no overlap clobber)
+    dex
+    bpl b6_pp_sh
+    lda #$01
+    sta $02a7              // [0] = $01 frame marker
+    ldx #$00
+b6_pp_cw:
+    cpx B6_CWDLEN
+    beq b6_pp_d2
+    lda B6_PATHBUF,x
+    sta $02a8,x            // [1..cwd] = cwd bytes
+    inx
+    bne b6_pp_cw
+b6_pp_d2:
+    lda #$01
+    ldx B6_CWDLEN
+    sta $02a8,x            // [cwd+1] = $01 frame marker (line follows, already shifted)
+b6_pp_done:
+    rts
+.errorif (* > $8100), "bank6 helper block overran the $8023-$80FF pocket into $8100"
+    .fill $8100 - *, $00   // pad the pocket; TMP payload resumes at $8100
+.errorif (* != $8100), "bank6 helper fill did not land on $8100"
+    .byte $20, $89, $86    // data $8100 (TMP payload resumes)
     .byte $4C, $BA, $82, $AD, $0E, $CB, $8D, $0C, $CB, $4C, $86, $86, $AD, $00, $CB, $8D    // data $8103
     .byte $0C, $CB, $60, $AD, $0C, $CB, $F0, $16, $20, $2B, $86, $AE, $0C, $CB, $BD, $00    // data $8113
     .byte $02, $9D, $FF, $01, $E8, $E0, $28, $90, $F5, $A9, $20, $8D, $27, $02, $4C, $C7    // data $8123
@@ -539,14 +663,98 @@ bank06_data_8023:
 // page loop in bank4) -- copied to neither RAM nor the REU image, exactly like
 // bank5's pockets (17-pre). Reached from bank3 as a SEQUENTIAL SIBLING after bank5:
 // the call_bank5 RAM stub @ $0378 is reused with its bank operand ($0379) repointed
-// to $90 (bank5/bank6 never nest). 21-pre installs ONLY a no-op dispatcher
-// (sec/rts = not mine) so mkdir/memcpy still fall through to hsh_body unchanged; the
-// only bank6 bytes that change vs stock are $9E00=$38 (sec) and $9E01=$60 (rts).
-// Step 21 fills in get_path + the relative-path prepend below.
+// to $90 (bank5/bank6 never nest). 21-pre opened this bank with a no-op dispatcher
+// (sec/rts) and was HW-tested clean; STEP 21 (below) now fills b6_disp with the real
+// get_path + relative-path prepend. b6_disp still returns C=1 in every case (it only
+// optionally rewrites $02a7), so a non-mkdir/memcpy line still falls through to
+// hsh_body unchanged. bank6 code now occupies $9E00-$9E9C (dispatcher), $8023-$80FF
+// (b6_fold/b6_get_path/b6_prepend) and $9F58 (b6c3 trampoline) -- all three pockets
+// proven outside the installer's $8100-$9DFF copy window.
 // =============================================================================
+// Step 21 (get_path + relative-path prepend) fills b6_disp below; the helpers live in
+// the $8023-$80FF pocket (b6_fold/b6_get_path/b6_prepend) and $9F58 (b6c3 trampoline).
+// (Step 21 consts are defined ahead of first use, above the $8023 helper block.)
 b6_disp:
 .errorif (* != $9E00), "b6_disp not at $9E00"
-    sec                    // 21-pre: no bank6 command yet -> fall through to bank4/chat
+    // Match "mkdir " / "memcpy " (case-folded). Not ours -> C=1 with $02a7 UNCHANGED,
+    // so bank4 then hsh_body forward the line exactly as step 18/20.
+    lda $02a7
+    jsr b6_fold
+    cmp #$4d               // 'M'
+    beq b6_ck_m
+b6_nm:
+    sec
+    rts
+b6_ck_m:
+    lda $02a7+1
+    jsr b6_fold
+    cmp #$4b               // 'K' -> "mkdir"
+    beq b6_ck_mkd
+    cmp #$45               // 'E' -> "memcpy"
+    bne b6_nm
+    lda $02a7+2            // "memcpy": M E M C P Y ' '
+    jsr b6_fold
+    cmp #$4d
+    bne b6_nm
+    lda $02a7+3
+    jsr b6_fold
+    cmp #$43
+    bne b6_nm
+    lda $02a7+4
+    jsr b6_fold
+    cmp #$50
+    bne b6_nm
+    lda $02a7+5
+    jsr b6_fold
+    cmp #$59
+    bne b6_nm
+    lda $02a7+6
+    cmp #$20               // space -> memcpy takes args
+    bne b6_nm
+    beq b6_ctx
+b6_ck_mkd:
+    lda $02a7+2            // "mkdir": D I R ' '
+    jsr b6_fold
+    cmp #$44
+    bne b6_nm
+    lda $02a7+3
+    jsr b6_fold
+    cmp #$49
+    bne b6_nm
+    lda $02a7+4
+    jsr b6_fold
+    cmp #$52
+    bne b6_nm
+    lda $02a7+5
+    cmp #$20               // space -> mkdir takes an arg
+    bne b6_nm
+b6_ctx:
+    // Device gate: only UCI-DOS drives own a cwd worth prepending. $cf2a is stored
+    // already-folded (hd_setdev). T/F/H today; U/V reserved for the deferred #u/#v
+    // (dormant -- $cf2a can't hold them until bank3 adds those letters, see 16-DEV).
+    // Read RAW (no hd_norm_cur normalize): a cold-boot garbage $cf2a matching a UCI
+    // letter before any #/pwd/cd just prepends the real current dir -> harmless
+    // (fail-open still holds); self-heals on the first #x/pwd/cd. (Fable5 nit, accepted.)
+    lda $cf2a
+    cmp #$54               // 'T'
+    beq b6_go
+    cmp #$46               // 'F'
+    beq b6_go
+    cmp #$48               // 'H'
+    beq b6_go
+    cmp #$55               // 'U'
+    beq b6_go
+    cmp #$56               // 'V'
+    beq b6_go
+    sec                    // non-UCI device -> forward unchanged (server needs abs path)
+    rts
+b6_go:
+    jsr b6c3_install       // heal bank6->bank3 trampoline @ $0386
+    jsr b6_get_path        // cwd -> B6_PATHBUF / B6_CWDLEN ; C=1 = UCI fail
+    bcs b6_go_done         // fail-open: forward the relative line unchanged
+    jsr b6_prepend         // $02a7 -> $01 <cwd> $01 <line> (no-op if it would overflow)
+b6_go_done:
+    sec                    // ALWAYS not-mine -> hsh_body forwards the (maybe rewritten) line
     rts
 .errorif (* > $9E9D), "bank6 main region overran the reserve ($9E9C)"
     .fill $9E9D - *, $00   // pad the reserve; real bank6 data resumes at $9E9D
@@ -653,14 +861,35 @@ bank06_sub_9F2B:
     jmp $dede              // 4C DE DE
 bank06_data_9F58:
 .errorif (* != $9F58), "bank06_data_9F58 shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F58
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F68
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F78
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F88
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F98
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FA8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FB8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FC8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FD8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FE8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00    // data $9FF8
+// b6c3: bank6->bank3 leaf-helper trampoline (heals a 25 B stub into $0386, SHARES
+// b5c3's $0386 slot -- bank5/bank6 dispatch sequentially, never nested; b6_disp heals
+// it fresh before use). Target bank3 addr in X(lo)/Y(hi); A is clobbered by the bank
+// flips, X/Y and carry survive; restores bank6 with a CONSTANT ($90), never a $de00
+// read-back. Same-bank jsr from the $8023 helper block / b6_disp.
+b6c3_install:
+    ldx #b6c3_end - b6c3_tmpl - 1
+b6c3_icpy:
+    lda b6c3_tmpl,x
+    sta B6C3_RUN,x
+    dex
+    bpl b6c3_icpy
+    rts
+b6c3_tmpl:
+.pseudopc B6C3_RUN {
+    stx b6c3_vec           // target lo (X) -> RAM vector
+    sty b6c3_vec+1         // target hi (Y)
+    lda #$18               // map bank3
+    sta $de00
+    jsr b6c3_ind           // jsr -> jmp (vec) -> bank3 helper; its rts returns here
+    lda #$90               // restore bank6
+    sta $de00
+    rts
+b6c3_ind:
+    jmp (b6c3_vec)
+b6c3_vec:
+    .word $0000
+}
+b6c3_end:
+.errorif (b6c3_end - b6c3_tmpl) > ($03A0 - B6C3_RUN), "b6c3 trampoline overruns CINV $03A0"
+.errorif (* > $A000), "bank6 third region (b6c3) overran into $A000"
+    .fill $A000 - *, $00   // pad the rest of the end-of-bank pocket ($9F58 region)

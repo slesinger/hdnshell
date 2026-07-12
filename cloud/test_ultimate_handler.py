@@ -320,3 +320,116 @@ class TestCsdbAlias:
         assert handler.can_handle("#c")
         assert handler.can_handle("c: test")
         assert not handler.can_handle("csdbfoo")
+
+
+class TestRelativePathResolution:
+    """Step 21: mkdir/memcpy resolve a relative path against the session cwd that the
+    wedge sends in the \\x01 context frame (stored as state['dos_cwd'])."""
+
+    def _mkdir(self, monkeypatch, line, cwd, session_id):
+        monkeypatch.setattr(ftplib, "FTP", FakeFTP)
+        update_session_state(session_id, client_ip="1.2.3.4")
+        if cwd is not None:
+            update_session_state(session_id, dos_cwd=cwd)
+        return UltimateHandler().handle(line, session_id)
+
+    def test_mkdir_relative_joins_cwd(self, monkeypatch):
+        resp = self._mkdir(monkeypatch, "mkdir new", "/Temp/games", 40)
+        assert "OK" in resp
+        assert FakeFTP.instances[0].mkd_calls == ["/Temp/games/new"]
+
+    def test_mkdir_relative_without_cwd_is_usage(self, monkeypatch):
+        resp = self._mkdir(monkeypatch, "mkdir new", None, 41)
+        assert "Usage" in resp
+        assert FakeFTP.instances == []
+
+    def test_mkdir_absolute_ignores_cwd(self, monkeypatch):
+        resp = self._mkdir(monkeypatch, "mkdir /Flash/x", "/Temp/games", 42)
+        assert "OK" in resp
+        assert FakeFTP.instances[0].mkd_calls == ["/Flash/x"]
+
+    def test_mkdir_root_cwd_no_double_slash(self, monkeypatch):
+        resp = self._mkdir(monkeypatch, "mkdir new", "/", 43)
+        assert "OK" in resp
+        assert FakeFTP.instances[0].mkd_calls == ["/new"]
+
+    def test_mkdir_trailing_slash_cwd(self, monkeypatch):
+        resp = self._mkdir(monkeypatch, "mkdir new", "/Temp/", 44)
+        assert "OK" in resp
+        assert FakeFTP.instances[0].mkd_calls == ["/Temp/new"]
+
+    def test_memcpy_save_relative_joins_cwd(self, monkeypatch):
+        monkeypatch.setattr(ftplib, "FTP", FakeFTP)
+        monkeypatch.setattr(
+            network_helper, "dma_read_memory", lambda h, a, n: b"\x00" * n
+        )
+        session_id = 45
+        update_session_state(session_id, client_ip="1.2.3.4", dos_cwd="/Temp")
+
+        resp = UltimateHandler().handle("memcpy $c000-$c0ff dump.bin", session_id)
+        assert "OK" in resp
+        ftp = FakeFTP.instances[0]
+        # abspath /Temp/dump.bin -> cwd /Temp, STOR dump.bin
+        assert ftp.cwd_calls == ["/Temp"]
+        assert ftp.stor_calls[0][0] == "STOR dump.bin"
+
+    def test_memcpy_load_relative_joins_cwd(self, monkeypatch):
+        monkeypatch.setattr(ftplib, "FTP", FakeFTP)
+        monkeypatch.setattr(
+            network_helper, "dma_write_memory_rest", lambda h, a, d: None
+        )
+        session_id = 46
+        update_session_state(session_id, client_ip="1.2.3.4", dos_cwd="/Temp")
+
+        resp = UltimateHandler().handle("memcpy dump.bin $4000", session_id)
+        assert "OK" in resp
+        assert FakeFTP.instances[0].retr_calls == ["RETR /Temp/dump.bin"]
+
+    def test_memcpy_save_relative_without_cwd_is_usage(self, monkeypatch):
+        monkeypatch.setattr(ftplib, "FTP", FakeFTP)
+        session_id = 47
+        update_session_state(session_id, client_ip="1.2.3.4")
+        resp = UltimateHandler().handle("memcpy $c000-$c0ff dump.bin", session_id)
+        assert "Usage" in resp
+
+    def test_memcpy_direction_still_works_with_absolute(self, monkeypatch):
+        monkeypatch.setattr(ftplib, "FTP", FakeFTP)
+        monkeypatch.setattr(
+            network_helper, "dma_read_memory", lambda h, a, n: b"\x00" * n
+        )
+        session_id = 48
+        update_session_state(session_id, client_ip="1.2.3.4")
+        # absolute save path, no cwd needed
+        resp = UltimateHandler().handle("memcpy $c000-$c0ff /Temp/x", session_id)
+        assert "OK" in resp
+
+
+class TestCwdContextFrame:
+    """request_dispatcher decodes the \\x01 <cwd> \\x01 <line> context frame: cwd as
+    ASCII into state['dos_cwd'], line as PETSCII dispatched normally."""
+
+    def _framed(self, cwd, line):
+        return b"\x01" + cwd.encode("ascii") + b"\x01" + line.encode("ascii") + b"\x00"
+
+    def test_frame_sets_dos_cwd_and_strips(self):
+        from request_dispatcher import RequestDispatcher
+
+        session_id = 50
+        RequestDispatcher().dispatch(self._framed("/Temp/games", "help"), session_id)
+        assert get_session_state_copy(session_id).get("dos_cwd") == "/Temp/games"
+
+    def test_unframed_request_clears_stale_cwd(self):
+        from request_dispatcher import RequestDispatcher
+
+        session_id = 51
+        update_session_state(session_id, dos_cwd="/stale")
+        RequestDispatcher().dispatch(b"help\x00", session_id)
+        assert get_session_state_copy(session_id).get("dos_cwd") is None
+
+    def test_frame_mixed_case_cwd_preserved(self):
+        from request_dispatcher import RequestDispatcher
+
+        session_id = 52
+        # mixed-case path must survive (decoded as ASCII, not through petscii)
+        RequestDispatcher().dispatch(self._framed("/Usb0/MyGames", "help"), session_id)
+        assert get_session_state_copy(session_id).get("dos_cwd") == "/Usb0/MyGames"
