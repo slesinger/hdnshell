@@ -1,327 +1,113 @@
-# C64 HDN Cloud Server
+# HDN Server — developer README
 
-TCP server for C64 communication with PETSCII protocol support.
+The **HDN Server** is the companion app for [HDN Shell](../README.md). Users run
+it on their own PC or Mac; the HDN Shell cartridge on the C64 Ultimate connects
+to it over the local network. There is no hosted service and no account — the
+server, the LLM endpoint, and all data stay on the user's machine.
 
-## Overview
-
-This application receives TCP data as commands from a C64 computer and responds with data. It can run on a local PC or in a serverless cloud environment. The C64 client requires a C64 Ultimate with network target.
-
-# HDN Cloud
-
-Use Ulitimate Network target to make requests to HDN Cloud for command execution.
-Data can be received synchronously or via a REST callback which can utilize DMA to write data directly to C64 memory.
-
-Request protocol
-- authentication token
-- session id
-- application id
-- command
-- data
-
-Data saving binary protocol
-
-Have a query tool to use/test the HDN Cloud API from PC
-
-Host on GCP Cloud Run
-
-Expose Ultimate via ngrok, Cloudflare Tunnel, Localtunnel, or Tailscale
-
-Use nano LLMs
-
-Google Maps app
-
-For thin client C64 apps, use mText/SidekickMenu or similar plain text rich text format
-
-## Application Types
-
-#### Example: Database
-Type: Thin client
-Inputs: keystrokes
-Output: Full screen updates
-
-#### Example: Image search
-Type: Realtime downloadable thick client
-Input: search query, get image by id
-Output: Data DMAed to C64 memory, display image
-
-
-## Running the Cloud Server
-
-To run the C64 Cloud server with a web status API:
-
-
-1. Install all dependencies:
-
-	```sh
-	pip install -r requirements.txt
-	```
-
-2. Start the server:
-
-	```sh
-	python cloud.py
-	```
-
-This will start both the C64 TCP server and a web server on port 8064. You can check status at http://localhost:8064/status and see the number of connected C64 clients at http://localhost:8064/clients.
+> This document is for developers working on the server. End-user setup lives in
+> the [Installation Guide](../docs/user_manual/installation.md); command-level
+> documentation lives in the [User Manual](../docs/user_manual/user_manual.md).
 
 ---
 
-### CLI integrated
+## Architecture
 
-Sends commands to HDN Cloud for execution, receives text output that gets dispatched. It can handle standard output as well as cursor jumping.
+One process (`cloud.py`) starts two servers:
 
-#### Example: CSDB.dk integration
-Type: Integrated CLI app
-Input: CLI input line
-Output: Text screen data as sync response or DMAed to C64 memory
+| Server | Port | Purpose |
+|---|---|---|
+| **TCP server** (`cloud_server.py`, `C64Server`) | 6464 | The C64 cartridge connects here. Binary framing (magic bytes + command ID), payload text in PETSCII. |
+| **Flask web API + UI** (`cloud.py`) | 8064 | Serves the web UI from `static/` and a REST API: C64U discovery, machine control (run/stop cartridge, reset, reboot, power off), FTP file management, memory read, screen/video streams, settings, self-update. |
 
-## Installation
-
-# C64 HDN Cloud Server
-
-TCP server for C64 communication using PETSCII protocol, with modular command handlers and CSDB.dk integration.
-
----
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Features](#features)
-3. [Architecture](#architecture)
-4. [Installation](#installation)
-5. [Running the Server](#running-the-server)
-6. [Request Handlers](#request-handlers)
-7. [CSDB Handler Usage](#csdb-handler-usage)
-8. [PETSCII Protocol & Conversion](#petscii-protocol--conversion)
-9. [Testing](#testing)
-10. [Web UI](#web-ui)
-11. [Production Build & Deployment](#production-build--deployment)
-12. [Security Notes](#security-notes)
-13. [Troubleshooting](#troubleshooting)
-14. [Future Enhancements](#future-enhancements)
-
----
-
-## Overview
-
-This application acts as a TCP server for the Commodore 64, supporting PETSCII protocol and modular command handling. It can run locally or in a cloud environment. The C64 client communicates via network (Ultimate Network target recommended).
-
----
-
-## Features
-
-- Modular command handlers (Chat, Help, Python Eval, CSDB)
-- CSDB.dk integration: search, release/group/scener/event info, file download
-- PETSCII ↔ ASCII/UTF-8 conversion utilities
-- Session state per client
-- Test client simulator
-- Web status API (optional)
-- Optional LLM chat integration (requires API keys)
-- File download, zip extraction, and FTP upload (CSDB handler)
-- Configurable via .env and cloud_config.cfg
-
----
-
-## Installation
-
-Tested with Python 3.11+.
-
-1. Install dependencies:
-	 ```bash
-	 pip install -r cloud/requirements.txt
-	 ```
-2. (Optional) For LLM chat features:
-	 ```bash
-	 pip install langchain langchain-openai langchain-community
-	 export OPENAI_API_KEY="your-key-here"
-	 # For Azure/OpenAI, also set AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT_NAME
-	 ```
-3. (Optional) For web search in chat:
-	 ```bash
-	 export SERPAPI_API_KEY="your-key-here"
-	 ```
-4. (Optional) For documentation access:
-	 ```bash
-	 export CONTEXT7_API_KEY="your-key-here"
-	 ```
-5. (Optional) Configure .env and cloud_config.cfg for CSDB authentication and C64 client IP.
-
----
-
-## Running the Server
-
-Start the server from the `cloud/` directory:
-
-```bash
-python cloud.py          # default: host 0.0.0.0 port 6464
-python cloud.py --port 8064
-python cloud.py --debug  # enable debug logging
+```
+C64 Ultimate ──TCP 6464──▶ cloud_server.py ──▶ request_dispatcher.py ──▶ handlers/
+             ◀─UCI/DMA/FTP── cloud.py (Flask 8064) ◀──HTTP── browser (web UI)
 ```
 
-The server starts both the C64 TCP server and a web server (default port 8064). Status: http://localhost:8064/status, clients: http://localhost:8064/clients
+### Directory map
 
----
+- `cloud.py` — entry point. Flask app (REST API + static UI), starts the
+  `C64Server` TCP thread. Talks to the C64 Ultimate's own REST API
+  (`http://<c64u-ip>/v1/...`) for machine control and DMA.
+- `cloud_server.py` — TCP server; accepts C64 clients, frames commands, and
+  registers the server-console apps with the `ConsoleManager` (console number →
+  app: 2 file editor, 3 coding agent, 4 web browser, 5 Telegram, 6 RSS,
+  7 Wikipedia, 10 vibe-coding chat). The C64 switches consoles with
+  `C=+CTRL+<digit>`.
+- `request_dispatcher.py` — routes a typed line (PETSCII) to the first matching
+  handler, in priority order: help → Python eval (`?`) → chat (default) →
+  CSDB → net drive.
+- `handlers/` — line-oriented command handlers (one class per feature, all
+  subclass `sdk.base_handler.BaseHandler`).
+- `server-apps/` — full-screen console apps (own the whole C64 screen, receive
+  keystrokes, paint via DMA). `coding_agent/` contains the agent harness.
+- `sdk/` — shared building blocks: `command_handler` (wire protocol constants),
+  `console_manager`, `shared_state` (per-session state), `petscii` conversion,
+  `workspace`, `semantic_search`, network helpers. Third-party apps build on
+  this SDK.
+- `agent_tools.py` — tools exposed to the AI coding agent (screen reading, key
+  injection, C64 memory access, git, project scaffolding, shell).
+- `llm_factory.py` — LLM client creation; any OpenAI-compatible endpoint works,
+  including local Ollama.
+- `csdb_*_parser.py` — csdb.dk scraping/parsing.
+- `oscar/`, `workspace/` — Oscar64 toolchain assets and the user workspace the
+  coding agent works in.
+- `static/` — **generated**: the built web UI plus a copy of the user manual.
+  Never edit by hand; rebuild with `cd ../ui && npm run build`.
 
-## Request Handlers
+## Running from source
 
-The server uses a dispatcher system to route text input commands to specialized handlers:
+Python 3.11+.
 
-- **Chat Handler (I: prefix):**
-	- Conversational AI via LLM (optional)
-	- Usage: `I: <your question>`
-	- Requires `OPENAI_API_KEY` (see Installation)
+```bash
+pip install -r requirements.txt
+python cloud.py            # TCP on 6464, web UI on http://localhost:8064
+python cloud.py --debug    # verbose logging
+```
 
-- **Help Handler (help prefix):**
-	- Provides help on available commands
-	- Usage: `help [topic]`
-	- Topics: chat, python, csdb, commands
+Optional environment for AI features: an OpenAI-compatible endpoint/key
+(configure via the web UI Settings page or `hdnsh.cfg`); `SERPAPI_API_KEY` for
+web search.
 
-- **Python Eval Handler (? prefix):**
-	- Safe evaluation of Python expressions
-	- Usage: `? <expression>`
-	- Only safe built-in functions and math operations allowed
-
-- **CSDB Handler (c: prefix):**
-	- Queries csdb.dk for C64 scene info
-	- Usage: `c: <query>`
-	- Supports: release/group/scener/event info, search, file download, zip extraction, FTP upload
-
----
-
-## CSDB Handler Usage
-
-**Commands:**
-
-- `c: release <id>`: Get release info
-- `c: group <id>`: Get group info
-- `c: scener <id>`: Get scener info
-- `c: event <id>`: Get event info
-- `c: find <text>`: Search for releases, groups, etc.
-- `c: cd <type>`: Change directory (e.g., 'cd release')
-- `c: cd <id>`: View details of an item
-- `c: cd ..`: Go up one level
-- `c: pwd`: Show current path
-- `c: cp <file>`: Copy file from a release to local tmp (and upload via FTP if client IP is set)
-- `c: ll` or `c: dir`: List latest entries in current directory
-
-**Example: Display latest releases**
-
-1. Enter CSDB mode: `c:`
-2. Switch to release directory: `cd release`
-3. List latest releases: `ll`
-
----
-
-## PETSCII Protocol & Conversion
-
-- All client commands start with magic bytes `$FE`
-- Supported commands:
-	- `$01`: Keypress `[FE] [01] [PETSCII_CODE] [MODIFIER_FLAGS]`
-	- `$02`: Text input or command line `[FE] [02] [PETSCII_TEXT...] [00]`
-- Server responses:
-	- `$01`: PETSCII null-terminated string
-	- `$02`: Mix of commands and screen codes
-	- `$03`: mText format (see docs/mtext.md)
-- PETSCII ↔ ASCII mapping:
-	- ASCII `$41-$5A` (A-Z) ↔ PETSCII `$C1-$DA`
-	- ASCII `$61-$7A` (a-z) ↔ PETSCII `$41-$5A`
-	- Other characters map directly
-
----
+`cloud_test_client.py` simulates a C64 client against the TCP server, so most
+development needs no hardware.
 
 ## Testing
 
-Run all tests:
 ```bash
-pytest -v
-```
-Run specific test suites:
-```bash
-pytest test_cloud.py -v      # Core server tests
-pytest test_handlers.py -v   # Handler tests
-```
-Test client simulator:
-```bash
-python test_client.py
-python test_client.py --demo
-python test_client.py --host <ip> --port <port>
-```
-Example dispatcher:
-```bash
-python example_dispatcher.py
+python -m pytest -q        # from cloud/
 ```
 
----
+Notes:
+- Some tests exercise live network services (csdb.dk) and will fail offline.
+- Anything touching the Ultimate's UCI/REU/DOS cannot be verified in VICE —
+  it needs real C64 Ultimate hardware.
 
-## Web UI
+## Writing a handler or console app
 
-The UI lives in `ui/` and calls the backend API on `http://127.0.0.1:8064`.
+- **Line handler** (reacts to typed input at the `READY.` prompt): subclass
+  `sdk/base_handler.py`'s `BaseHandler`, implement `can_handle()`/`handle()`,
+  register it in `request_dispatcher.py`. Order matters — first match wins.
+- **Console app** (full-screen, switchable with `C=+CTRL+<digit>`): subclass the
+  server-console base in `sdk/server_console.py`, register a factory for a free
+  console number in `cloud_server.py`.
 
-Install dependencies:
-```bash
-cd ui
-npm install
-```
-Run in dev mode:
-```bash
-npm run dev
-```
-Build for production:
-```bash
-npm run build
-```
-Preview production build:
-```bash
-npm run preview
-```
+See `docs/user_manual/api-sdk.md` for the SDK reference.
 
----
+## Release build
 
-## Production Build & Deployment
+PyInstaller single-file binaries per OS (see `Makefile` and
+`hdnsh-server-linux.spec`); output lands in `dist/`. The release also ships the
+cartridge image `wedge/hdn-rr38p-tmp12reu.crt` — the web UI's
+"Download & update" button fetches both from the latest GitHub release and
+patches the server IP into the cartridge before uploading it to the C64U over
+FTP.
 
-To create a production release (UI + backend single-file executable):
+## Security notes
 
-Linux/Mac:
-```bash
-make release
-```
-Windows:
-```bash
-release.ps1
-```
-Artifacts are created in `cloud/dist/`, then copied to `release/`.
-UI is served from backend at GET / and all static paths.
-Requirements: Node.js, npm, Python, PyInstaller
-
-On startup, server scans local network for C64U on port 64 and saves IP in `cloud_config.cfg`. Rescan via web UI or by clearing last_c64_ip in config.
-
----
-
-## Security Notes
-
-- Python evaluator restricts `__builtins__` and exposes only a safe namespace
-- Handlers may perform network I/O (CSDB queries, LLM calls) — configure environment and credentials carefully
-- Downloaded files are written to `/tmp/hdnshell` when using `cp` or extracting zip contents
-- CSDB authentication can be set via .env (CSDB_USER, CSDB_PASSWORD)
-
----
-
-## Troubleshooting
-
-- "Chat service is unavailable": Ensure Azure/OpenAI environment variables and `langchain` packages are installed
-- "CSDB network error": Verify network access to `https://csdb.dk` and check for rate limits
-- Python eval errors: Check expression syntax and use allowed functions only
-- File download/FTP errors: Check client IP configuration and permissions
-
----
-
-## Future Enhancements
-
-- Implement actual command handlers (DIR, LOAD, etc.)
-- Add mText format support
-- Integrate with web APIs (Wikipedia, weather, etc.)
-- Add authentication/security
-- Support for multiple simultaneous C64 clients
-- Cloud deployment instructions (AWS Lambda, Google Cloud Functions, etc.)
-
----
+- The server binds to `0.0.0.0` and has no authentication — it is designed for
+  a trusted home LAN. Do not expose ports 6464/8064 to the internet.
+- The Python eval handler (`?`) restricts itself to safe builtins, but the
+  coding agent's shell/git tools execute real commands in the workspace —
+  treat the workspace directory as untrusted-code territory.

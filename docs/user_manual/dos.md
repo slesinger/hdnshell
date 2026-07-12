@@ -47,18 +47,20 @@ To show the current directory, simply type `pwd`.
 
 ## Loading Programs
 
-Loading works the classic way — BASIC stays, so `LOAD"demo*",8,1` works exactly as always. The Retro Replay cartridge also adds fast-load shortcuts (`/`, `%`, `^`, `F1`) — see [Executing Programs](executing_programs.md) for the full list.
+Loading works the classic way — BASIC stays, so `LOAD"demo*",8,1` works exactly as always. The Retro Replay cartridge also adds fast-load shortcuts (`/`, `%`, `^`, `F1`) — see [Executing Programs](executing_programs.md) for the full list, including a known `F1` limitation while console-switching is armed.
 
 To load a file to an arbitrary memory address of your choice, use [`memcpy`](memory-operations.md#saving-and-restoring-memory-blocks-memcpy).
 
 ## Mounting and Unmounting Disk Images
 
-The `mnt` command can mount disk images (D64/D71/D81) to device 8. This allows you to use the contents of the disk image as if it were a real disk drive.
+The `mnt` command can mount disk images (D64/D71/D81) to a drive. This allows you to use the contents of the disk image as if it were a real disk drive. Mounting works regardless of your current device (`#`) — the image path is resolved against the Ultimate filesystem.
 
-- `mnt myimage.d64` — Mount image in current directory
+- `mnt myimage.d64` — Mount image in current directory to drive 8 (default)
 - `mnt mydir/myimage.d64` — Mount image in subdirectory
 - `mnt /mydir/myimage.d64` — Mount image absolute from root
-- `umnt` — Unmount disk image (return to SD card directory)
+- `mnt myimage.d64 9` — Mount to drive 9 instead of 8 (automatically enables the Ultimate's second drive if it was off)
+- `umnt` — Unmount the disk image on drive 8 (return to SD card directory)
+- `umnt 9` — Unmount the disk image on drive 9
 
 ## Creating Directories, Copying Files
 

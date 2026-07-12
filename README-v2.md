@@ -1,3 +1,8 @@
+> **⚠️ OUTDATED — kept for historical reference only.** This page describes the
+> abandoned BASIC-ROM-replacement approach. The current product is described in
+> [README.md](README.md): HDN Shell runs from a Retro Replay cartridge and
+> leaves BASIC intact, with a locally-run HDN Server companion app.
+
 # HDN Shell — the most powerful Shell for the Commodore 64 EVER
 
 HDN Shell transforms your C64 by replacing the standard BASIC ROM ($A000-$BFFF) with a powerful yet lean command line interface modelled after Linux. This preserves the whole C64 memory for your programs.

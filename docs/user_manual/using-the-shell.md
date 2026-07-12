@@ -36,9 +36,11 @@ The function keys are command macros: `F1` load & run first file, `F2` load firs
 
 ## Game and Program Compatibility
 
-The shell is designed to be invisible to the software you run. The moment you load anything (`LOAD`, the cartridge's `/`, `%`, `^` commands, or the F1 key) or type `RUN`, `SYS`, `MON` or `TASS`, the shell steps completely out of the way — the machine the program sees is identical to a stock Retro Replay setup. The shell wakes up again automatically on the next line you type at the BASIC prompt.
+The shell is designed to be invisible to the software you run. The moment you load anything (`LOAD`, the cartridge's `/`, `%`, `^` commands) or type `RUN`, `SYS`, `MON` or `TASS`, the shell steps completely out of the way — the machine the program sees is identical to a stock Retro Replay setup. The shell wakes up again automatically on the next line you type at the BASIC prompt.
 
-One side effect: the [console-switching keys](cloud-apps.md) (`C=+CTRL+1..7`) are inactive right after a load or `RUN` until you type any line at the prompt.
+One side effect: if you've typed `HONDANI` to arm the [console-switching keys](cloud-apps.md) (`C=+CTRL+1..7`), they go inactive right after a load or `RUN` — type `HONDANI` again to re-arm them.
+
+> **Known limitation:** the `F1` fastload-and-autorun macro does not currently trigger this step-aside if console-switching is armed, and can garble the screen while loading. See [Executing Programs](executing_programs.md#the-shell-steps-aside) for the workaround (`LOAD"*",8,1`+`RUN` instead of `F1`).
 
 ## Special Keys
 
