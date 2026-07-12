@@ -32,7 +32,9 @@ Because the shell lives inside a Retro Replay cartridge, all of the cartridge's 
 - `MON` — enter the machine code monitor, `TASS` — start Turbo Macro Pro
 - `DELETE`, `COPY`, `RENUM`, `AUTO`, `FIND`, `OLD` and more BASIC toolkit commands
 
-The function keys are command macros: `F1` load & run first file, `F2` load first file, `F3` directory, `F5` LIST, `F7` RUN, `F8` monitor.
+The function keys are command macros: `F1` load & run first file(*1), `F2` load first file, `F3` directory, `F5` LIST, `F7` RUN, `F8` monitor.
+
+> *1 — Known limitation: `F1` does not currently trigger the shell to step aside if console-switching is armed, and can garble the screen while loading. See [Executing Programs](executing_programs.md#the-shell-steps-aside) for the workaround (`LOAD"*",8,1`+`RUN` instead of `F1`).
 
 ## Game and Program Compatibility
 

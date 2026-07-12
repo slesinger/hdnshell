@@ -53,12 +53,12 @@ To load a file to an arbitrary memory address of your choice, use [`memcpy`](mem
 
 ## Mounting and Unmounting Disk Images
 
-The `mnt` command can mount disk images (D64/D71/D81) to a drive. This allows you to use the contents of the disk image as if it were a real disk drive. Mounting works regardless of your current device (`#`) — the image path is resolved against the Ultimate filesystem.
+The `mnt` command can mount disk images (D64/D71/D81) to a drive 8 or 9. This allows you to use the contents of the disk image as if it were a real disk drive. Mounting works regardless of your current device (`#`) — the image path is resolved against the Ultimate filesystem.
 
 - `mnt myimage.d64` — Mount image in current directory to drive 8 (default)
+- `mnt myimage.d64 9` — Mount to drive 9 instead of 8 (automatically enables the Ultimate's second drive if it was off)
 - `mnt mydir/myimage.d64` — Mount image in subdirectory
 - `mnt /mydir/myimage.d64` — Mount image absolute from root
-- `mnt myimage.d64 9` — Mount to drive 9 instead of 8 (automatically enables the Ultimate's second drive if it was off)
 - `umnt` — Unmount the disk image on drive 8 (return to SD card directory)
 - `umnt 9` — Unmount the disk image on drive 9
 

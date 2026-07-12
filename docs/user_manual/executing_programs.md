@@ -10,7 +10,7 @@ Any of the following works after `mnt`-ing a disk image (or with a real drive):
 
 - `LOAD"*",8,1` then `RUN` — the classic way, accelerated by the cartridge's fast loader.
 - `/name` — fast-load a program (`/*` loads the first file), then `RUN`.
-- `^name` — fast-load and run in one step.
+- `↑name` — fast-load and run in one step.
 - `F1` — function key macro: load and run the first program on the disk.
 - `F7` — function key macro: `RUN`.
 
