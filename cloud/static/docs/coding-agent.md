@@ -6,7 +6,7 @@ You chat with the agent in plain language. It is specialized for **Oscar64 C/C++
 
 The Coding Agent also has **read-only planning and exploration modes** for design work, codebase analysis, and project discovery without changing files.
 
-> **Requires:** An LLM API key configured in the server settings. See [Cloud Integration](cloud-integration.md).
+> **Requires:** An LLM API key configured in the server settings. See [Server Integration](cloud-integration.md).
 
 ---
 

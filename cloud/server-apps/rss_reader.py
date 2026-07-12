@@ -1,5 +1,5 @@
 """
-Server-side RSS reader console (console 6) for C64 HDN Cloud Server.
+Server-side RSS reader console (console 6) for HDN Server.
 
 A PETSCII RSS/Atom feed reader rendered into a 40x25 C64 screen-code
 back-buffer.  Features: feed directory management, article list, article

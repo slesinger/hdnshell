@@ -1737,3 +1737,71 @@ be cheaply HW-iterated — a dedicated, carefully-designed step if/when F1 suppo
 path. When the console-switch hook is armed (`HONDANI`), launch autostart programs with
 `LOAD"*",8,1` + `RUN` (or `MON` + `G <addr>`) instead of F1 — both are transparent. Console
 switching and everything else are unaffected. The CRUNCH-hook fix stays on the shelf.
+
+## 24  Steps 18/19/20 — SERVER-SIDE, ZERO CARTRIDGE CHANGE (2026-07-12)
+
+After step 17 passed HW test, Honza's call: **stop squeezing cartridge ROM.** The remaining
+shell commands are implemented as **HDN Server handlers**, using the C64 Ultimate REST API
+(`docs/development/rest_api_calls.md`) and its built-in FTP server. **The cartridge `.bin` is
+byte-identical to the step-17 image — no wedge rebuild, no bank touched.** Full rationale +
+the four grilled decisions are in `next_steps.md §PIVOT`. Summary of what shipped in `cloud/`:
+
+- **Zero-asm reach:** an unrecognized token on any device already falls through the wedge to
+  `hsh_body`, which forwards the raw `$02a7` line verbatim (`$FE $02` frame, no prefix —
+  `bank03.asm:3132`). A new `cloud/handlers/ultimate_handler.py` (`UltimateHandler`) claims
+  `mkdir`/`memcpy`; it is registered **before** CSDB/NetDrive in `request_dispatcher.py` so it
+  beats their active-module catch-all (comment added there to lock the invariant).
+- **Step 18 `mkdir <abspath>`** → FTP `MKD` (REST has NO mkdir endpoint; FTP is the forced
+  transport). Absolute paths only. Single-level (`MKD` is not recursive).
+- **Step 19** — `csdb` aliased to `#c` in `csdb_handler.py` (exact, no-args); `cp` already
+  worked via the existing CSDB/NetDrive FTP handlers.
+- **Step 20 `memcpy` (un-dropped)** — `memcpy $S-$E /path` (save) reads C64 memory via REST
+  `readmem` (256 B chunks, length-verified) then FTP-`STOR`s the file; `memcpy /path $A` (load)
+  FTP-`RETR`s then REST-`writemem`s (256 B chunks, address advanced per chunk — guards the
+  unproven POST size cap). Inclusive range (`$c000-$cfff` = 4096 B). Direction is decided by
+  which arg is a `$hex` range vs a `$hex` addr; both-hex / both-path → usage string.
+- **cwd model = absolute paths only.** The cartridge's current dir lives in the Ultimate UCI
+  DOS1 context (driven by `cd`=CHANGE_DIR `$11`), NOT shared with REST/FTP sessions, so there
+  is nothing to sync. **Deferred asm "quality win"** (own HW-tested step): reuse the existing
+  `pwd`/GET_PATH machinery to capture the current absolute path and prepend it to the forwarded
+  line so a relative `mkdir foo` works.
+- **Verification:** `cloud/test_ultimate_handler.py` (28 tests, all network mocked) +
+  `test_handlers.py` → `70 passed`. Live HW pass (server up) still owed by Honza.
+
+## 25  Step 21-pre — bank6 reserve OPEN (2026-07-12)
+
+The deferred **asm "quality win"** (reuse GET_PATH to auto-prepend the current dir so a relative
+`mkdir foo` / `memcpy … foo` works) does NOT fit anywhere: **bank3/4/5 shell reserves are full**
+(bank5 has ~6 B left after step 17). It needs a **FOURTH ROM bank**. This pre-step opens bank6 in
+isolation — same discipline as **17-pre** — so the bank-map risk is HW-proved *before* any feature
+logic rides on it.
+
+**Why bank6 is safe (cross-verified, read-only agents + byte diff):**
+- The boot **installer copies bank6/7 `$8100-$9DFF` ONLY** — the single `lda #$90 / sta $de00`
+  followed by `ldx #$1c` (29 pages) page-copy loop in `bank04.asm` (~`$8068`). It is the *only*
+  `$90→$de00` write in the whole 8-bank disassembly; bank6 is never mapped at the BASIC prompt.
+- So bank6 pockets **`$9E00-$9E9C`, `$8023-$80FF`, `$9F58-$9FFF`** are copied to neither RAM nor the
+  REU image — identical dead-space property to bank5's step-17 pockets (`bank04` copy-map + the
+  `.errorif` fills prove it). Code here cannot corrupt the TMP/TASS REU image.
+- Bank6's own interior stock-zero gaps (inside `$8100-$9DFF`) are **NOT** safe — they *are* in the
+  copy window. Only the three outer pockets are usable. (Same for bank7 if ever opened.)
+
+**What shipped (byte-diff-explainable, 30 bytes total vs the step-17 image):**
+- **bank3 annex** (`hsh_ck_b5`, `$97C7-$97EF`, +10 B; still `< $9800`): after bank5 misses, reuse
+  the already-healed `call_bank5` RAM stub at `$0378` and just repoint its bank operand
+  (`$0379`, b5tramp's `lda #$88` immediate) to bank6 `#$90`, then re-`jsr $0378` — bank6's
+  dispatcher also lives at `$9E00`. `bcc hc5_yes` on handle, else `jmp hsh_ck_b4`. No second
+  trampoline needed; bank5/bank6 are SEQUENTIAL SIBLINGS, never nested, and `hsh_ck_b5` re-heals
+  b5tramp (`$88`) fresh next command. `b5tramp`/`hc5_yes` shift down 10 B; fill `$97F0-$97FF` stays
+  zero (no stock leak).
+- **bank6** (`b6_disp @ $9E00`): a **no-op dispatcher** — `sec` (`$38`) / `rts` (`$60`), the ONLY
+  two changed bank6 bytes (`$9E00`, `$9E01`); the rest of `$9E00-$9E9C` stays `.fill`-zero. Returns
+  C=1 ("not mine") so `mkdir`/`memcpy` still fall through to `hsh_body` and forward exactly as in
+  step 18/20 — behaviour is unchanged, this only proves the map-in/out path works.
+- Build: all `.errorif` guards pass (`b6_disp=$9E00`, fill lands `$9E9D`, annex `b5tramp=$97E2`);
+  `cmp` of rebuilt vs step-17 image = **only** those 30 bytes (2 bank6 + 28 bank3-annex).
+
+**HW test owed (Honza):** stock sweep, freeze→resume, TASS launch/exit, `#h`/`#t`/`#f` + `pwd`/`cd`/
+`ll`/`mnt`/`umnt`, and `mkdir`/`memcpy` (server up) — all must behave exactly as step-17/20. This
+proves opening bank6 disturbs nothing. **Only after it passes** does step 21 fill in `get_path` +
+the `$01`-framed relative-path prepend inside `b6_disp`.

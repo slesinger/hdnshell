@@ -33,4 +33,4 @@ memcpy $1000-$2000 #t:backup.bin
 
 ## Reading Memory from the AI Assistant
 
-The [AI assistant](ai-assistance.md) can also read, analyze, and modify C64 memory remotely over the network (including reading your screen), and the server web UI includes a memory inspector — see [Cloud Integration](cloud-integration.md).
+The [AI assistant](ai-assistance.md) can also read, analyze, and modify C64 memory remotely over the network (including reading your screen), and the server web UI includes a memory inspector — see [Server Integration](cloud-integration.md).

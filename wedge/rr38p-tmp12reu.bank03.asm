@@ -2829,7 +2829,19 @@ hc5_cp:
     bpl hc5_cp
     jsr $0378              // map bank5 ($88), jsr $9E00 (bank5 dispatcher), restore ($18)
     bcc hc5_yes            // C=0 = bank5 handled -> no stock ?SYNTAX ERROR
-    jmp hsh_ck_b4          // C=1 = not a bank5 command -> try bank4, then chat/AI
+    // --- step 21-pre: bank6 sibling gateway (call_bank6, reuses b5tramp) --------
+    // bank5 missed. bank6 ($de00=$90) is a FOURTH ROM bank for the shell, opened
+    // like bank5 (17-pre): its dispatcher also lives at $9E00. Rather than heal a
+    // whole second trampoline (annex is tight), reuse the call_bank5 stub already in
+    // $0378 and just repoint its bank operand ($0379 = b5tramp's 'lda #$88'
+    // immediate) to bank6 ($90), then re-run. bank5/bank6 dispatch as SEQUENTIAL
+    // SIBLINGS -- never nested -- so patching the shared RAM stub in place is safe;
+    // hsh_ck_b5 re-heals b5tramp ($88) fresh on the next command.
+    lda #$90               // bank6 select
+    sta $0379              // patch b5tramp's bank operand in RAM ($88 -> $90)
+    jsr $0378              // map bank6 ($90), jsr $9E00 (bank6 dispatcher), restore ($18)
+    bcc hc5_yes            // C=0 = bank6 handled -> no stock ?SYNTAX ERROR
+    jmp hsh_ck_b4          // C=1 = not a b5/b6 command -> try bank4, then chat/AI
 hc5_yes:
     rts
 b5tramp:

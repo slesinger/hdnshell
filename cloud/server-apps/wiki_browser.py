@@ -1,5 +1,5 @@
 """
-Server-side Wikipedia browser console (console 7) for C64 HDN Cloud Server.
+Server-side Wikipedia browser console (console 7) for HDN Server.
 
 A specialised PETSCII Wikipedia reader rendered into a 40x25 C64 screen-code
 back-buffer.  Strips all non-essential content from Wikipedia pages to show

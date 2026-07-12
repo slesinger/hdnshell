@@ -42,12 +42,43 @@ so far. Every step will have to be verified by Honza on real hardware before the
 | FIX-CS2 | (see above) console-switch no-match fall-through fix | armed→console 2..7→local ×10: cursor OK; other consoles switch; regression | ✅ **HW tested 2026-07-11** (Honza confirmed console fix passed) |
 | 17-pre | **Bank5 reserve opened** — 5th RAM trampoline (`call_bank5` @ `$0378`, shares call_bank4's slot as a sequential sibling) + trivial bank5 `b5_disp` proof stub @ `$9E00`. bank4+bank3 reserves are full; step 17 needs a third ROM bank. Installer copy-map decoded: bank5 copies are `$8100-$9DFF` only, so `$9E00-$9E9C` (157 B) + `$9F58-$9FFF` (168 B) are dead (not copied to RAM/REU) → 325 B reserve. | Type `b5` ↵ → **border advances one colour** (bank5 ran through the trampoline) then `READY.`; repeat steps each time; pwd/cd/dir/ll + `#`/status/time/menu + console switch + stock sweep + TASS/TMP all unchanged (bank5 map-in must NOT corrupt the REU image) | 🔨 **built+byte-verified 2026-07-11** — diff vs step-16 baseline = **bank3 only** (annex `$97C4`: `hsh_ck_b5`+`b5tramp`, + 1 `jmp` operand) **+ bank5** (`b5_disp` 26 B @ `$9E00`); banks 0/1/2/4/6/7 byte-identical; no code shift. See conversion_log3.md §21 — **awaiting HW test** |
 | 17 | `mnt` / `umnt` (mount/unmount disk images) — `mnt <path> [8\|9]`, `umnt [8\|9]`, device-independent, drive-9 auto-enable (CONTROL `$32`); lives in bank5 reserve | `mnt foo.d64` then `LOAD"$",8`/`LOAD"*",8,1` runs the image; `mnt x.d64 9` → drive 9 enabled+mounted; `umnt` restores; stock sweep | ✅ **HW tested 2026-07-12 — completely passed, all good.** bank5 `b5_disp` (mnt @ `$9E00` main region + umnt/b5_domount/b5_enable_b/b5c3 @ `$9F58` third region); DOS MOUNT_DISK `$23`/UMOUNT `$24` via b5c3 trampoline to bank3 helpers; diff vs step-16 = **bank5 only** (300 B) + the unchanged 17-pre bank3 annex; banks 0/1/2/**4**/6/7 byte-identical. Uppercase-match (no fold), silent-on-status. See conversion_log3.md §22 |
-| 18 | `mkdir` (create directory on h/t/f only) | `#t` `mkdir test` then `ll` shows it; IEC/network show "not supported"; stock sweep | ⬜ pending |
-| 19 | `cp` file download + `csdb` alias | Manual's CSDB session: `#c` / `find hondani` / `cd rel/<id>` / `cp *.zip` / `#t` / `dir` shows file; `csdb` alias works; stock sweep | ⬜ pending |
-| 20 | ~~`memcpy` hex-range save/load~~ | — | ❌ **DROPPED (2026-07-11, Honza)** — not important; cutting it removes the hardest step and the `$C000` conflict, so the lighter bank3-trampoline consolidation covers the rest |
+| 18 | `mkdir` — **SERVER-SIDE, ZERO ASM** (see §PIVOT). FTP `MKD` (REST has no mkdir) against the C64U's own FTP server at `client_ip`; absolute path | `mkdir /Temp/test` then `ll` (on `#t`) shows it; stock sweep (cartridge unchanged) | 🔨 **server built + tests green 2026-07-12** (`UltimateHandler`, cloud/; 70 pytest pass) — awaiting live HW test |
+| 19 | `cp` file download + `csdb` alias — **SERVER-SIDE, ZERO ASM**. `cp` already works via existing CSDB/NetDrive FTP handlers; `csdb` = alias for `#c` | Manual's CSDB session: `csdb` / `find hondani` / `cd rel/<id>` / `cp *.zip` / `#t` / `dir` shows file; `csdb` alias works; stock sweep | 🔨 **server built + tests green 2026-07-12** (csdb alias in `csdb_handler`) — awaiting live HW test |
+| 20 | `memcpy` hex-range save/load — **UN-DROPPED (2026-07-12, Honza), now SERVER-SIDE, ZERO ASM**. `memcpy $S-$E /path` (save) / `memcpy /path $A` (load) via REST `readmem`/`writemem` (DMA, 256 B chunks) + FTP `STOR`/`RETR`. The `$C000` conflict + hardest-asm-step problems vanish because no cartridge code is involved | `memcpy $C000-$CFFF /Temp/x` then `memcpy /Temp/x $4000` round-trips; stock sweep | 🔨 **server built + tests green 2026-07-12** (`UltimateHandler`, cloud/) — awaiting live HW test |
 | CONS | **Bank3-trampoline consolidation** (space fix): bank4 calls bank3's FROZEN helper copies via a small RAM trampoline; delete bank4's ~8 duplicated leaf helpers | reclaims ~250 B in bank4; bank3 untouched; UCI path (pwd/cd/dir) unchanged on HW; staged (prove 1 helper first) | 🔨 **built+verified 2026-07-11, awaiting HW test** — stage 1 (trampoline + cd's fin) HW-PASSED; stage 2 (reroute rest + delete 6 dupes) built: **+227 B reclaimed** (main-area free 10→237 B), zero dangling refs, pins hold. Bank4→bank3 via RAM tramp `$0386` (target in X/Y). See conversion_log3.md §18. Unblocks 16b-2 + steps 17-20 — ✅ **HW tested 2026-07-11 (both stages, as part of the step-16 pass)** |
-| 21 | Verify pass-throughs + final sweep | `i:`, `m:`, `:` still work; all new commands once more; manual wording vs actual; update docs | ⬜ pending |
-| DEV | **Device→mount-path binding**: `#t`→`/temp`, `#h`→`/sd`, `#f`→`/flash`(?), **new `#u`→`/usb0`** — device letter auto-navigates to a fixed Ultimate mount root | `#t` then `pwd`→`/temp`; `#u` then `dir`→USB listing; switching device rebases | 🅳 **DEFERRED (2026-07-11), see §16-DEV** — needs unfreezing bank3 (device switch + new `#u` letter both live there); cleanly separable, does not block 16b/17–20 |
+| 21 | **Device→mount-path binding**: There is just one UCI drive interface on the C64 Ultimate. To make the work a bit more comfortable,  I want to have shortcuts. #t will switch to the UCI drive (like it does already) and additionally it will change directory to /temp. #f like #t but will change directory to /flash, #h will switch to the UCI drive and change directory to /sd/home, #u will switch to the UCI drive and change directory to /usb0, #v will switch to the UCI drive and change directory to /usb1 | 🅳 **DEFERRED (2026-07-11), see §16-DEV** — needs unfreezing bank3 (device switch + new `#u` letter both live there); cleanly separable, does not block 16b/17–20 |
+| 22 | Verify pass-throughs + final sweep | `i:`, `m:`, `:` still work; all new commands once more; manual wording vs actual; update docs | ⬜ pending |
+
+---
+
+## §PIVOT — steps 18/19/20 move SERVER-SIDE (Honza, 2026-07-12)
+
+After step 17 passed HW test, Honza's call: **stop squeezing cartridge ROM for the
+remaining commands.** The cartridge is out of cheap space, and every asm step costs a
+risky HW-test cycle. Instead, steps 18 (`mkdir`), 19 (`cp`/`csdb`), 20 (`memcpy`) are
+implemented as **HDN Server handlers with ZERO assembler change**, using the **C64
+Ultimate REST API** (`docs/development/rest_api_calls.md`) and, where REST has no
+endpoint, the Ultimate's **built-in FTP server**. Tradeoff accepted: the HDN Server must
+be running — but it already is, for chat/CSDB/consoles, so it's not a real limitation.
+
+**How zero-asm works:** an unrecognized token on any device (e.g. `mkdir …`) already
+falls through the wedge to `hsh_body`, which forwards the raw `$02a7` line **verbatim**
+(framed `$FE $02`, no prefix — `bank03.asm:3132`) to the server. A new `UltimateHandler`
+(registered **before** CSDB/NetDrive so it beats their active-module catch-all) claims
+`mkdir`/`memcpy`; `csdb` is aliased to `#c` in `csdb_handler`. Decisions (2026-07-12):
+- **Scope:** 20 (`memcpy`) **un-dropped** — REST `readmem`/`writemem` (DMA) make it nearly
+  free server-side; the old `$C000`/asm blockers no longer apply.
+- **Transport:** *prefer REST, FTP only where forced* → `mkdir`=FTP `MKD` (no REST mkdir),
+  `memcpy` memory=REST readmem/writemem + file=FTP `STOR`/`RETR`, `cp`=existing FTP.
+- **cwd model:** *absolute paths only* (`mkdir /Temp/foo`). The cartridge's current dir
+  lives in the Ultimate's UCI DOS1 context (`cd`=CHANGE_DIR `$11`, `pwd`=GET_PATH `$12`,
+  `bank04.asm:648`) and is **not shared** with REST/FTP sessions, so there is nothing to
+  sync — the server gets the full path. **Deferred asm "quality win"** (own step, HW-tested):
+  reuse the existing GET_PATH machinery to capture the current absolute path and *prepend*
+  it to the forwarded line, so a relative `mkdir foo` works. Not needed for the baseline.
+
+Server code lives in `cloud/` only; cartridge `.bin` is byte-identical to the step-17 image
+(no wedge rebuild). Verify with the cloud pytest suite + a live HW pass (server up).
 
 ---
 
@@ -449,7 +480,45 @@ space, may split (save first, then load).
 - **Verify:** `memcpy $c000-$cfff dump.bin` then `memcpy dump.bin $4000` and
   compare (`memcpy` round-trip); relocation works; stock sweep.
 
-### Step 21 — Verify pass-throughs + final sweep 🔎
+### Step 21-pre — bank6 reserve OPEN ✅ built, HW test owed (2026-07-12)
+
+The deferred asm "quality win" (relative-path prepend) needs a FOURTH ROM bank —
+bank3/4/5 reserves are full. This pre-step opens **bank6** in isolation (same
+discipline as 17-pre) so the bank-map risk is HW-proved before feature logic rides
+on it. **Safe** (cross-verified): the installer copies bank6 `$8100-$9DFF` ONLY
+(single `lda #$90/sta $de00` + `ldx #$1c` loop in bank4), so pockets `$9E00-$9E9C`,
+`$8023-$80FF`, `$9F58-$9FFF` are dead space — never in RAM or the REU image. Shipped
+= **30 byte-diff-explainable bytes** vs the step-17 image: bank3 annex hook (+10 B,
+reuses the `$0378` call_bank5 stub with its bank operand repointed `$88→$90`) + a
+bank6 **no-op dispatcher** `b6_disp @ $9E00` = `sec`/`rts` (the only 2 changed bank6
+bytes). `mkdir`/`memcpy` still fall through to the server unchanged. Details in
+`conversion_log3.md §25`.
+- **HW test (Honza, server up):** stock sweep, freeze→resume, TASS launch/exit,
+  `pwd`/`cd`/`ll`/`mnt`/`umnt` on `#h`/`#t`/`#f`, and `mkdir`/`memcpy` — all must
+  behave exactly as step-17/20. Proves opening bank6 disturbs nothing.
+
+### Step 21 — get_path + relative-path prepend (the "quality win") 🆕 designed, gated on 21-pre
+
+Fills in `b6_disp` (bank6) once 21-pre passes. Design (Fable5-vetted):
+- **`get_path` primitive** — issues UCI `$01,$12` (GET_PATH) via the bank6→bank3
+  leaf trampoline (`b6c3 @ $0386`, sibling of `b5c3`), captures the reply into a
+  `$CF90-$CFCF` buffer, NUL-terminated, stops on any byte `< $20`, returns C=0/len
+  or C=1 on fail/overflow. **No caching** (a stale cwd would misplace files).
+  Reusable by future `cp` etc.
+- **`$01`-framed wire protocol, not asm path-splicing** — for `mkdir`/`memcpy` on an
+  `H`/`T`/`F` device, rewrite `$02A7` to `$01<cwd>$01<original line>` then fall
+  through to the untouched `hsh_body`. Server decodes cwd as ASCII + line as PETSCII
+  separately (avoids encoding corruption) and does the relative→absolute join in
+  Python (`ultimate_handler.py`) — all path grammar stays server-side + testable.
+- **Fails open:** get_path fail / would-overflow (`linelen+cwdlen+2 > 88`) → forward
+  unchanged → server's absolute-path requirement still applies. No cartridge bug can
+  misplace a file (server only ever acts on a validated absolute path).
+- **Gating:** `H`/`T`/`F` only; `8`/`9`/`S` and `C`/`N` forward untouched. Absolute
+  args (`/…`) are a no-op on the server side.
+- **Known limit:** cwd inside a mounted disk image → FTP error from the server (don't
+  detect in ROM). Server-side: `rstrip('/')`+posix-join kills `//`/root edge cases.
+
+### Step 22 — Verify pass-throughs + final sweep 🔎
 
 - Confirm `i:<q>`, `m:<phrase>`, `:<python>`, and bare free-text still reach the
   right server handler unchanged (they ride the step-9 path; regression only).

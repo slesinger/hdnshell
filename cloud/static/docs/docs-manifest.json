@@ -1,5 +1,5 @@
 {
-  "_README": "Single source of truth for the docs UI sidebar and link resolution. To add a new doc page: drop the .md file in docs/user_manual/ and add an entry to 'pages' below. nav:false hides from sidebar but keeps the page linkable from other docs. level:2 indents the entry in the sidebar (used for sub-pages like the apps under Cloud Apps). MIRROR: this file is duplicated at cloud/static/docs/docs-manifest.json (the cloud server serves that copy). Keep both in sync.",
+  "_README": "Single source of truth for the docs UI sidebar and link resolution. To add a new doc page: drop the .md file in docs/user_manual/ and add an entry to 'pages' below. nav:false hides from sidebar but keeps the page linkable from other docs. level:2 indents the entry in the sidebar (used for sub-pages like the apps under Server Apps). MIRROR: cloud/static/docs/ (served by the HDN Server) is generated from this directory by the UI build — run `npm run build` in ui/ after editing docs; never edit the mirror by hand.",
   "pages": [
     { "slug": "user_manual",              "title": "Overview & Help" },
     { "slug": "installation",             "title": "Getting Started - Easy Install" },

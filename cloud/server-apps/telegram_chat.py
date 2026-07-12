@@ -1,5 +1,5 @@
 """
-Server-side Telegram chat console (console 5) for C64 HDN Cloud Server.
+Server-side Telegram chat console (console 5) for HDN Server.
 
 A PETSCII Telegram client rendered into a 40x25 C64 screen-code back-buffer.
 Features: login with phone/code/2FA, chat list, message view & compose,

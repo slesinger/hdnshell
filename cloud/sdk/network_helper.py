@@ -51,14 +51,13 @@ def read_last_c64_ip() -> str:
 
 def _send_tcp_cmd(host: str, cmd: int, payload: bytes = b"") -> None:
     """Send a single DMA-service command to Ultimate64 on port 64."""
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(5)
-    s.connect((host, 64))
-    s.sendall((0xFF00 | cmd).to_bytes(2, "little"))
-    s.sendall(len(payload).to_bytes(2, "little"))
-    if payload:
-        s.sendall(payload)
-    s.close()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(5)
+        s.connect((host, 64))
+        s.sendall((0xFF00 | cmd).to_bytes(2, "little"))
+        s.sendall(len(payload).to_bytes(2, "little"))
+        if payload:
+            s.sendall(payload)
 
 
 def send_dmawrite(host: str, prg_data: bytes) -> None:

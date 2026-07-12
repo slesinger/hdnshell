@@ -1,5 +1,5 @@
 """
-C64 HDN Cloud Server Application
+HDN Server Application
 
 TCP server that receives commands from C64 and responds with data.
 Can run on local PC or in serverless cloud.
@@ -255,7 +255,7 @@ def main():
     # Ensure cloud directory is in path
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-    parser = argparse.ArgumentParser(description="C64 HDN Cloud Server")
+    parser = argparse.ArgumentParser(description="HDN Server")
     parser.add_argument(
         "--host", default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
     )

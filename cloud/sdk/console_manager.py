@@ -1,5 +1,5 @@
 """
-Console manager for C64 HDN Cloud Server.
+Console manager for HDN Server.
 
 Manages 10 server-side virtual consoles (IDs 1-10) per client session.
 Each console holds its own screen/colour buffers and can optionally have

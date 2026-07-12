@@ -32,13 +32,17 @@ Because the shell lives inside a Retro Replay cartridge, all of the cartridge's 
 - `MON` — enter the machine code monitor, `TASS` — start Turbo Macro Pro
 - `DELETE`, `COPY`, `RENUM`, `AUTO`, `FIND`, `OLD` and more BASIC toolkit commands
 
-The function keys are command macros: `F1` load & run first file, `F2` load first file, `F3` directory, `F5` LIST, `F7` RUN, `F8` monitor.
+The function keys are command macros: `F1` load & run first file(*1), `F2` load first file, `F3` directory, `F5` LIST, `F7` RUN, `F8` monitor.
+
+> *1 — Known limitation: `F1` does not currently trigger the shell to step aside if console-switching is armed, and can garble the screen while loading. See [Executing Programs](executing_programs.md#the-shell-steps-aside) for the workaround (`LOAD"*",8,1`+`RUN` instead of `F1`).
 
 ## Game and Program Compatibility
 
-The shell is designed to be invisible to the software you run. The moment you load anything (`LOAD`, the cartridge's `/`, `%`, `^` commands, or the F1 key) or type `RUN`, `SYS`, `MON` or `TASS`, the shell steps completely out of the way — the machine the program sees is identical to a stock Retro Replay setup. The shell wakes up again automatically on the next line you type at the BASIC prompt.
+The shell is designed to be invisible to the software you run. The moment you load anything (`LOAD`, the cartridge's `/`, `%`, `^` commands) or type `RUN`, `SYS`, `MON` or `TASS`, the shell steps completely out of the way — the machine the program sees is identical to a stock Retro Replay setup. The shell wakes up again automatically on the next line you type at the BASIC prompt.
 
-One side effect: the [console-switching keys](cloud-apps.md) (`C=+CTRL+1..7`) are inactive right after a load or `RUN` until you type any line at the prompt.
+One side effect: if you've typed `HONDANI` to arm the [console-switching keys](cloud-apps.md) (`C=+CTRL+1..7`), they go inactive right after a load or `RUN` — type `HONDANI` again to re-arm them.
+
+> **Known limitation:** the `F1` fastload-and-autorun macro does not currently trigger this step-aside if console-switching is armed, and can garble the screen while loading. See [Executing Programs](executing_programs.md#the-shell-steps-aside) for the workaround (`LOAD"*",8,1`+`RUN` instead of `F1`).
 
 ## Special Keys
 

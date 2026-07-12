@@ -1,5 +1,5 @@
 """
-Centralized configuration manager for HDN Cloud Server.
+Centralized configuration manager for HDN Server.
 
 All configuration (including secrets) is stored in a single file:
   workspace/.config/cloud_config.cfg

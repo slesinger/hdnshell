@@ -1,5 +1,5 @@
 """
-Server-side file editor console (console 2) for C64 HDN Cloud Server.
+Server-side file editor console (console 2) for HDN Server.
 
 A full-featured text editor rendered into a 40x25 C64 screen-code back-buffer.
 Features: multi-file tabs, find/replace, block ops, split view, file browser,

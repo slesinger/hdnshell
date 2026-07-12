@@ -5,8 +5,8 @@ This guide walks you through writing, compiling, and running C programs directly
 **Prerequisites**
 
 - The HDN Shell RR cartridge attached on your C64 Ultimate (see [Installation](installation.md))
-- C64 Ultimate connected to the same network as the HDN Shell cloud server
-- The cloud server running (see [Cloud Integration](cloud-integration.md))
+- C64 Ultimate connected to the same network as the HDN Server
+- The HDN Server running (see [Server Integration](cloud-integration.md))
 
 > **Prefer to learn by doing?** The [Coding Tutorials](coding-tutorials.md) turn
 > this reference into four hands-on, agent-guided projects (first program →

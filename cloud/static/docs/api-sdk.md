@@ -1,4 +1,4 @@
-# Internal API SDK for C64 Cloud Server
+# Internal API SDK for the HDN Server
 
 ## Server Applications
 
@@ -19,7 +19,7 @@ It is intentionally an internal SDK (not a REST API).
 
 ## Development Cycle
 
-For developping a Server Application, you need to checkout Hondani Shell source code from [github](https://github.com/slesinger/hdnshell) and run the server locally. This allows you to add or change a Server Application and run the Cloud Server directly without releasing a new version. This implies that the release downloaded from [github](https://github.com/slesinger/hdnshell/releases) will not be used in this process.
+For developping a Server Application, you need to checkout Hondani Shell source code from [github](https://github.com/slesinger/hdnshell) and run the server locally. This allows you to add or change a Server Application and run the HDN Server directly without releasing a new version. This implies that the release downloaded from [github](https://github.com/slesinger/hdnshell/releases) will not be used in this process.
 
 You can find the Server Apps sources under `cloud/server-apps/`. Play with the code there and then use `make run-server` to start the server and test your changes from the C64. When you are happy with the result, you can decide to prepare a pull request should you want to publish it for all the other users.
 

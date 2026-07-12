@@ -1,75 +1,37 @@
 # TODO
 
 ```
-----
-TESTUJ v KLIDU
-
-Review the coding agent harness. Improve it to provide high performance coding capabilities focused on C development for the C64 Ultimate. Review existing prompts, skills, tools, available documentation within this project, includeing the TUIkit library. The development is strictly focused on the C64 Ultimate. Enable most useful documentation sources from public sources and locally.
-It should be able to use git cli command provided that it is installed in the server system.
-Generate coding tutorials for C64 Ultimate development. The tutorials should be interactive and provide step by step instructions. The tutorials should be able to use the coding agent to provide hints and guidance. The tutorials should be able to use the coding agent to provide code snippets and examples. The tutorials should be able to use the coding agent to provide code reviews and feedback. Make example projects in the workspace oscar directory. Also expand on the docs/user_manual coding tutorials.
-Suggest 3 coding tutorial videos with scripts and assets. I will then follow it and record it.
-Ask me any questions before you proceed to ensure you understand the task well.
-
-
-----
-FEEDBACK
-
-The wedge folder contains asm files that is the latest development, has all features but it is hanging quite significantly. It hangs when I type TASM (even after fresh poweron) while with original cartridge it works. In the wedge-previous its does not work already. The very original asm files of the Retro Replay cartridge are located in temp folder should you need it for reference. 
-Another good test case where it hangs is, after fresh poweron to type:
-#h <press enter key>
-cd /  <press enter key>
-But this is working fine:
-#h <press enter key>
-ll  <press enter key>
-cd /  <press enter key>
-Modify only files inside the "wedge" folder. Take files from "wedge-previous" as a good reference where there are only basic changes compared to the original but it was not hanging that much yet. Build on top of the original, refrain to make risky changes and reapply features based on the documente change log in wedge-analysis.md file where all was good until round 7. After that things went south. Reapply changes only up to round 7!
-Make sure that the HDN shell operation as as much hidden and transparent as possible. It should enable bank5 only when needed and then it should be disabled again. From outside it, memory-vise, it should be as if the HDN shell is not there at all. The user should not be able to see any difference compared to Retro Replay. See the Retro Replay documentation https://wiki.icomp.de/wiki/Retro_Replay .
-Ask me any questions before you proceed to ensure you understand the task well.
-
-
-HDN UI Docs - make it searchable. Suggest solutions. Prefered is browser-side search.
-Ask me any questions before you proceed to ensure you understand the task well.
-
-
-Review the HDN UI Dcocs in docs/user_manual folder and mostly look for redundant information and structure of the documentation. It seems info is repeating and the structure is a bit confusing. Some pages are too long, some information is not at the right home and better should be moved. Check for links, some might be broken.
-Ask me any questions before you proceed to ensure you understand the task well.
-
-
-----
-READY
 
 #sonnet
-In the wedge, create a new command that will work on the UCI and network drives:
-mkdisk <image name>.d64 - instead of d64 there can be d81 and other supported image types. The command will create a new disk image with the given name and type.
-Also update the user manual and the documentation to reflect this new command.
-Ask me any questions before you proceed to ensure you understand the task well.
-
-
-
-
-Integrate link to Retro Replay documentation in the HDN UI. The link should be visible and easy to find. The link should open in a new tab or window. The link should be labeled "Retro Replay Manual". The link should point to https://rr.c64.org/wiki/CyberpunX_Replay_Manual . Ask me any questions before you proceed to ensure you understand the task well.
-Specifically mention in some section about key shortcuts also the Retro Replay F-keys:
-F1 LOAD the first file on the disk to it's absolute address. (LOAD "0:*",8,1)
-F2 LOAD the first file on the disk to the Basic program area. (LOAD "0:*",8)
-F3 Display disk directory without corrupting memory
-F4 Toggle available drives.
-F5 LIST
-F6 Freeze Menu
-F7 RUN
-F8 MON See here
-Ask me any questions before you proceed to ensure you understand the task well.
-
-
-scrollback section using server as memory using C=+F5 (previous screen) and C=+F6 (next screen) - make it work. It should be possible to scrollback through the entire session history. The scrollback should be persistent across resets and power cycles. The scrollback should be stored in a file on the server. The scrollback should be searchable. The scrollback should be able to be cleared. The principle is the same like .bash_history
-Ask me any questions before you proceed to ensure you understand the task well.
-
 
 C=+RUN/STOP executes command %0:* which is in most cases unwanted, fat finger mistake. Unbind the key combination.
 Ask me any questions before you proceed to ensure you understand the task well.
 
 
-#h works for SD card only, Introduce #u and #v devices that will be mapped to USB0 respectively USB1
+
+scrollback section using server as memory using C=+F5 (previous screen) and C=+F6 (next screen) - make it work. It should be possible to scrollback through the entire session history. The scrollback should be persistent across resets and power cycles. The scrollback should be stored in a file on the server. The scrollback should be searchable. The scrollback should be able to be cleared. The principle is the same like .bash_history. Create .history file on the server in .config directory.
 Ask me any questions before you proceed to ensure you understand the task well.
+
+
+
+create a new command that will work on the UCI and network drives:
+mkdisk <image name>.d64 - instead of d64 there can be d81 and other supported image types. The command will create a new disk image with the given name and type.
+It should accept default path (like the pwd is using GET_PATH) or accept relative and absolute path.
+Use REST API of the C64 Ultimate, see reast_api_calls.md and the DMA API to create the disk image on the UCI or network drive.
+Besides of mkdisk command, create `del <pattern>` command that will delete file or files on UCI drives or network drive.
+Also update the user manual and the documentation to reflect this new command.
+Ask me any questions before you proceed to ensure you understand the task well.
+
+
+
+There is just one UCI drive interface on the C64 Ultimate. To make the work a bit more comfortable,  I want to have shortcuts.
+#t will switch to the UCI drive (like it does already) and additionally it will change directory to /temp.
+#f like #t but will change directory to /flash
+#h will switch to the UCI drive and change directory to /sd/home
+#u will switch to the UCI drive and change directory to /usb0
+#v will switch to the UCI drive and change directory to /usb1
+Ask me any questions before you proceed to ensure you understand the task well.
+Before you attempt for any changed, estimate if there is enough space in the wedge and how much space will be left free.
 
 
 
@@ -77,6 +39,9 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ------
 QUEUE
 
+'file'  is a new command that will print information about file. Use REAST API of DMA API.
+remove csdb command. Only #c is valid.
+Run prg file by typing its name.
 
 ANNOYING
 Nekdy nejde C=+RESTORE utlimate menu, musi se to vypnout, pak to nejde vypnout ani pres HDN UI

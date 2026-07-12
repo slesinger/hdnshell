@@ -1,5 +1,5 @@
 """
-Server-side virtual console for C64 HDN Cloud Server.
+Server-side virtual console for HDN Server.
 
 Each ServerConsole maintains a 40x25 screen buffer (screen codes) and a
 matching 40x25 color buffer, plus cursor state.  When the C64 client

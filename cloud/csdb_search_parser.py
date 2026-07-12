@@ -122,7 +122,7 @@ class CSDB:
         Search csdb.dk for a string and return releases and groups.
         """
         url = f"{self.BASE_URL}/search/?seinsel=all&search={query}"
-        resp = requests.get(url, headers=HEADERS)
+        resp = requests.get(url, headers=HEADERS, timeout=15)
         return self._parse_search_html(resp.text)
 
     def latest_releases(self) -> Dict[str, Any]:
@@ -130,7 +130,7 @@ class CSDB:
         Get latest releases from csdb.dk (parsing the main page or releases page).
         """
         url = f"{self.BASE_URL}/?type=release"
-        resp = requests.get(url, headers=HEADERS)
+        resp = requests.get(url, headers=HEADERS, timeout=15)
         # This is a placeholder; real parsing logic should be implemented for the actual page structure
         return self._parse_latest_releases_html(resp.text)
 
@@ -139,7 +139,7 @@ class CSDB:
         Get latest forum posts from csdb.dk (parsing the forum page).
         """
         url = f"{self.BASE_URL}/forums/"
-        resp = requests.get(url, headers=HEADERS)
+        resp = requests.get(url, headers=HEADERS, timeout=15)
         # This is a placeholder; real parsing logic should be implemented for the actual page structure
         return self._parse_latest_forum_html(resp.text)
 

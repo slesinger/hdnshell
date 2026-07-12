@@ -4,7 +4,7 @@ HDN Shell RR includes six server-side console applications that run on your PC a
 
 The server renders a full 40×25 screen-code buffer which is transferred to the C64 over the network. From the C64's point of view each app behaves like a real console — keyboard input is sent to the server and the updated screen arrives back within milliseconds.
 
-> **Requires:** HDN Server running on your PC and an Ultimate/1541 Ultimate cartridge with network access. See [Cloud Integration](cloud-integration.md) for setup details.
+> **Requires:** HDN Server running on your PC and an Ultimate/1541 Ultimate cartridge with network access. See [Server Integration](cloud-integration.md) for setup details.
 
 ---
 

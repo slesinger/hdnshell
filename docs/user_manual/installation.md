@@ -1,5 +1,14 @@
 # Getting Started - Easy Install
 
+## What you need
+
+| Requirement | Notes |
+|---|---|
+| **C64 Ultimate** (Ultimate 64, or a C64 with a 1541 Ultimate-II/II+ cartridge) | Must have the network port connected (Ethernet or WiFi). HDN Shell runs as a cartridge image on the Ultimate's cartridge emulation — you do **not** need a physical Retro Replay cartridge. |
+| **A PC or Mac on the same network** | Runs the HDN Server companion app (Linux, macOS, or Windows). No account, no hosted service — everything stays on your machine. |
+| **Ultimate firmware with network services** | `FTP file service`, `Ultimate DMA service`, and the `Command Interface` must be enabled — step 4 below walks you through it. |
+| *(Optional)* An LLM endpoint | For the AI features: any OpenAI-compatible endpoint, including a local Ollama. Everything else works without it. |
+
 ### 1. Download the latest `hdnsh-server` from the [Releases](https://github.com/slesinger/hdnshell/releases/latest) page.
 - [Linux](https://github.com/slesinger/hdnshell/releases/latest/download/hdnsh-server-linux)
 - [Mac](https://github.com/slesinger/hdnshell/releases/latest/download/hdnsh-server-mac)

@@ -1,5 +1,48 @@
 :root {
   color-scheme: light;
+  /* C64-inspired palette */
+  --hdn-blue-deep: #40318d;
+  --hdn-blue-light: #7869c4;
+  --hdn-accent: #ffdc64;
+}
+
+@font-face {
+  font-family: "C64ProMono";
+  src: url("/fonts/C64_Pro_Mono-STYLE.woff2") format("woff2"),
+       url("/fonts/C64_Pro_Mono-STYLE.woff") format("woff"),
+       url("/fonts/C64_Pro_Mono-STYLE.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Navbar */
+.navbar-c64 {
+  background-color: var(--hdn-blue-deep) !important;
+}
+
+.brand-wordmark {
+  font-family: "C64ProMono", monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  color: var(--hdn-accent) !important;
+}
+
+.brand-wordmark:hover,
+.brand-wordmark:focus {
+  color: #fff !important;
+}
+
+/* Home page dashboard cards */
+.home-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.home-card:hover,
+.home-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--hdn-blue-light) !important;
+  box-shadow: 0 0.5rem 1rem rgba(64, 49, 141, 0.15) !important;
 }
 
 .status-pill {
@@ -193,15 +236,6 @@
   background: #f8f9fa;
   border: 1px solid #dee2e6;
   border-radius: 8px;
-}
-
-@font-face {
-  font-family: "C64ProMono";
-  src: url("/fonts/C64_Pro_Mono-STYLE.woff2") format("woff2"),
-       url("/fonts/C64_Pro_Mono-STYLE.woff") format("woff"),
-       url("/fonts/C64_Pro_Mono-STYLE.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
 }
 
 .hex-dump {

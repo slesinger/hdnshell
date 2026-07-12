@@ -6,7 +6,7 @@ import MiniSearch from "minisearch";
 // Page list is loaded from /docs/docs-manifest.json at runtime.
 // To add a new doc page: add an entry there — no JSX changes needed.
 // nav:false entries are reachable via links but not shown in the sidebar.
-// level:2 entries are shown indented (sub-pages, e.g. apps under Cloud Apps).
+// level:2 entries are shown indented (sub-pages, e.g. apps under Server Apps).
 
 // Generate GitHub-compatible anchor IDs from heading children.
 // Handles plain strings and inline elements (e.g. <code>).
@@ -44,8 +44,26 @@ function buildSnippet(text, terms) {
   return prefix + text.slice(start, end).trim() + suffix;
 }
 
-export default function DocsPage({ initialSlug }) {
+export default function DocsPage({ initialSlug, onSlugChange }) {
   const [activeSlug, setActiveSlug] = useState(initialSlug || "user_manual");
+
+  // Reflect external navigation (browser back/forward, or a link elsewhere in
+  // the app) into the active doc. Internal navigation (sidebar, search, links)
+  // updates activeSlug directly and is echoed back here via onSlugChange, so
+  // this only fires for changes that didn't originate inside this component.
+  useEffect(() => {
+    if (initialSlug && initialSlug !== activeSlug) {
+      setActiveSlug(initialSlug);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSlug]);
+
+  // Let the parent know the active doc changed, so it can keep the URL hash
+  // in sync (e.g. #/docs/<slug>).
+  useEffect(() => {
+    onSlugChange?.(activeSlug);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSlug]);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

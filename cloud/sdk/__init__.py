@@ -1,8 +1,8 @@
 """
-C64 Cloud Server Internal Python SDK
+HDN Server Internal Python SDK
 
 A comprehensive software development kit for building server-side applications
-for the Hondani Shell C64 HDN Cloud Server. The SDK provides a clean, unified API
+for the Hondani Shell HDN Server. The SDK provides a clean, unified API
 for:
 
   - Server-side virtual console management (screen buffers, rendering, I/O)

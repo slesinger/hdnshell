@@ -220,11 +220,23 @@ def c64_status_extended():
     )
 
 
-def download_latest_cartridge(target_dir: str) -> tuple[str, str]:
-    api_url = "https://api.github.com/repos/slesinger/hdnshell/releases/latest"
-    response = requests.get(api_url, timeout=10)
+_GITHUB_LATEST_RELEASE_API_URL = (
+    "https://api.github.com/repos/slesinger/hdnshell/releases/latest"
+)
+
+
+def _fetch_latest_github_release(timeout: int = 10) -> dict:
+    """Fetch the latest GitHub release metadata for the hdnshell repo.
+
+    Raises requests.RequestException on network/HTTP failure.
+    """
+    response = requests.get(_GITHUB_LATEST_RELEASE_API_URL, timeout=timeout)
     response.raise_for_status()
-    release = response.json()
+    return response.json()
+
+
+def download_latest_cartridge(target_dir: str) -> tuple[str, str]:
+    release = _fetch_latest_github_release()
     assets = release.get("assets", [])
     if not assets:
         raise RuntimeError("No assets found in the latest release")
@@ -349,7 +361,7 @@ def server_ip_detect():
         return jsonify({"error": str(exc)}), 500
 
 
-@app.route("/settings/ensure_rom")
+@app.route("/settings/ensure_rom", methods=["GET", "POST"])
 def ensure_rom():
     last_c64_ip = read_last_c64_ip()
     if not last_c64_ip:
@@ -398,10 +410,7 @@ def _parse_version(tag: str) -> tuple:
 def version_check():
     local_version = __version__
     try:
-        api_url = "https://api.github.com/repos/slesinger/hdnshell/releases/latest"
-        response = requests.get(api_url, timeout=10)
-        response.raise_for_status()
-        release = response.json()
+        release = _fetch_latest_github_release()
         latest_tag = release.get("tag_name", "")
         published_at = release.get("published_at", "")
         html_url = release.get("html_url", "")
@@ -442,10 +451,7 @@ def self_update():
     asset_name = "hdnsh-server-linux" if system == "linux" else "hdnsh-server-win.exe"
 
     try:
-        api_url = "https://api.github.com/repos/slesinger/hdnshell/releases/latest"
-        response = requests.get(api_url, timeout=10)
-        response.raise_for_status()
-        release = response.json()
+        release = _fetch_latest_github_release()
         assets = release.get("assets", [])
 
         chosen_asset = next(
@@ -623,12 +629,7 @@ def c64_reset():
     if not last_c64_ip:
         return jsonify({"error": "No C64 IP found. Run scan first."}), 400
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((last_c64_ip, 64))
-        cmd = (0xFF00 | 0x04).to_bytes(2, "little")
-        s.sendall(cmd)
-        s.sendall((0).to_bytes(2, "little"))  # length = 0
-        s.close()
+        _send_tcp_cmd(last_c64_ip, 0x04)  # SOCKET_CMD_RESET
         return jsonify({"status": "ok", "message": "Reset command sent."})
     except OSError as exc:
         logger.exception("Failed to send reset command")
@@ -641,12 +642,7 @@ def c64_power_off():
     if not last_c64_ip:
         return jsonify({"error": "No C64 IP found. Run scan first."}), 400
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((last_c64_ip, 64))
-        cmd = (0xFF00 | 0x0C).to_bytes(2, "little")
-        s.sendall(cmd)
-        s.sendall((0).to_bytes(2, "little"))  # length = 0
-        s.close()
+        _send_tcp_cmd(last_c64_ip, 0x0C)  # SOCKET_CMD_POWEROFF
         return jsonify({"status": "ok", "message": "Power off command sent."})
     except OSError as exc:
         logger.exception("Failed to send power off command")
@@ -2377,14 +2373,14 @@ def get_external_ips():
 
 
 def run_web():
-    # Print only external IPs
+    # Log only external IPs
     ext_ips = get_external_ips()
     if ext_ips:
-        print("Web server available on:")
+        logger.info("Web server available on:")
         for ip in ext_ips:
-            print(f"  http://{ip}:8064")
+            logger.info(f"  http://{ip}:8064")
     else:
-        print("No external IP address found.")
+        logger.warning("No external IP address found.")
     app.run(host="0.0.0.0", port=8064, debug=False, use_reloader=False, threaded=True)
 
 
@@ -2411,15 +2407,15 @@ if __name__ == "__main__":
 
     # If last_c64_ip is empty, scan network
     if not last_c64_ip:
-        print("last_c64_ip is empty, scanning network for C64...")
+        logger.info("last_c64_ip is empty, scanning network for C64...")
         found_ip = net_utils.find_port_64_hosts()
         if found_ip:
-            print("Found C64 IP:", found_ip)
+            logger.info("Found C64 IP: %s", found_ip)
             cfg = read_config()
             cfg["last_c64_ip"] = found_ip
             write_config(cfg)
         else:
-            print("No C64 IPs found on the network.")
+            logger.warning("No C64 IPs found on the network.")
 
     # Start the C64 TCP server
     c64_server = C64Server()

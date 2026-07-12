@@ -1,5 +1,5 @@
 """
-Workspace initialisation for the HDN Cloud Server.
+Workspace initialisation for the HDN Server.
 
 On first run (or whenever the workspace directory is missing) this module
 creates the canonical directory tree and seed files:

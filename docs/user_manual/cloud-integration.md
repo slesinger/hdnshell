@@ -4,7 +4,7 @@ In many cases when C64 is being connected to other machines, it is considered us
 
 ## Communication Design
 
-![HDN Shell Cloud Integration](../assets/networking.drawio.png)
+![HDN Server networking](../assets/networking.drawio.png)
 
 For privacy and data protection, the server runs as your own private instance on your own machine — there is no hosted service and no account. This requires [installation of the HDN Server on your PC](installation.md).
 
@@ -27,5 +27,8 @@ The server also runs a web user interface on **port 8064** (open `http://localho
 - **Inspector** — a C64 memory inspector (requires the `Web Remote Control` service enabled on the C64U).
 - **Docs** — this user manual.
 - **Update** — check for and self-install server updates.
+- **Machine controls** — **Enable Shell** / **Disable Shell** buttons in the top bar start the cartridge or reset back to stock BASIC, and the **Machine** menu next to them offers Ultimate Menu, Reset, Reboot, and Power off (the destructive ones ask for confirmation first).
+
+Pages have stable addresses (e.g. `http://localhost:8064/#/docs/installation`), so you can bookmark or share a direct link to any page of the UI, including individual manual chapters.
 
 ![HDN Shell Web UI](../assets/webui-screenshot.png)

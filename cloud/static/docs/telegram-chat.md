@@ -4,7 +4,7 @@ The Telegram Chat console is a full Telegram client that runs as a server-side c
 
 The server connects to Telegram using the MTProto protocol via the Telethon library. Your account credentials are stored securely on the server — the C64 only sends and receives screen data and keystrokes.
 
-> **Requires:** A Telegram account and Telegram API credentials (`api_id` / `api_hash`) configured in the server settings. See [Cloud Integration](cloud-integration.md).
+> **Requires:** A Telegram account and Telegram API credentials (`api_id` / `api_hash`) configured in the server settings. See [Server Integration](cloud-integration.md).
 
 ---
 

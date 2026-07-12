@@ -1,5 +1,5 @@
 """
-Command handler for C64 HDN Cloud Server.
+Command handler for HDN Server.
 
 Parses and dispatches command packets received from the C64 client.
 """

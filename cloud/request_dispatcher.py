@@ -1,5 +1,5 @@
 """
-Request dispatcher for C64 HDN Cloud Server.
+Request dispatcher for HDN Server.
 
 Dispatches text input requests to the appropriate handler.
 """
@@ -21,6 +21,7 @@ if _HANDLERS_DIR not in sys.path:
 ChatHandler = importlib.import_module("chat_handler").ChatHandler
 HelpHandler = importlib.import_module("help_handler").HelpHandler
 PythonEvalHandler = importlib.import_module("python_eval_handler").PythonEvalHandler
+UltimateHandler = importlib.import_module("ultimate_handler").UltimateHandler
 CSDBHandler = importlib.import_module("csdb_handler").CSDBHandler
 NetDriveHandler = importlib.import_module("netdrive_handler").NetDriveHandler
 
@@ -38,11 +39,17 @@ class RequestDispatcher:
     def _initialize_handlers(self):
         """Initialize all request handlers in priority order"""
         try:
-            # Order matters - first matching handler will process the request
+            # Order matters - first matching handler will process the request.
+            # UltimateHandler (mkdir/memcpy) MUST stay before CSDBHandler and
+            # NetDriveHandler: those two claim *any* line once their module is
+            # active (the active_module catch-all below), so if they preceded
+            # UltimateHandler a `mkdir`/`memcpy` typed while #c/#n is active
+            # would be silently swallowed by the wrong handler.
             self.handlers = [
                 HelpHandler(),
                 PythonEvalHandler(),
                 ChatHandler(),
+                UltimateHandler(),
                 CSDBHandler(),
                 NetDriveHandler(),
             ]

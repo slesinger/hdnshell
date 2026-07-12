@@ -145,7 +145,7 @@ class CSDBHandler(BaseHandler):
         """
         t = text.strip().lower()
         state = get_session_state_copy(session_id)
-        if t.startswith("c:") or t == "#c":
+        if t.startswith("c:") or t == "#c" or t == "csdb":
             return True
         # Only assume csdb module if user explicitly switched to it
         if state.get("active_module") == "c":
@@ -164,8 +164,9 @@ class CSDBHandler(BaseHandler):
         state = get_session_state_copy(session_id)
 
         # If starts with c:, switch module and parse rest
-        if t_lower.startswith("c:") or t_lower.startswith("#c"):
-            query = t[2:].strip()
+        # ("csdb" is a bare alias for "#c" - no args, exact match only)
+        if t_lower.startswith("c:") or t_lower.startswith("#c") or t_lower == "csdb":
+            query = "" if t_lower == "csdb" else t[2:].strip()
             if not query:
                 update_session_state(
                     session_id,
@@ -394,7 +395,7 @@ class CSDBHandler(BaseHandler):
         Make a raw query to the CSDB webservice and return raw response
         """
         try:
-            response = self.session.get(f"{CSDB_API_URL}?{query}")
+            response = self.session.get(f"{CSDB_API_URL}?{query}", timeout=10)
             response.raise_for_status()
             return response.text
         except requests.exceptions.RequestException as e:

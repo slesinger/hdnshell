@@ -528,17 +528,30 @@ bank06_data_8023:
     .byte $20, $D6, $8A, $8C, $04, $DF, $84, $FB, $8E, $05, $DF, $86, $FC, $A2, $01, $8E    // data $9DC3
     .byte $08, $DF, $CA, $8E, $07, $DF, $8E, $0A, $DF, $A9, $00, $8D, $02, $DF, $A9, $CA    // data $9DD3
     .byte $8D, $03, $DF, $AD, $06, $80, $8D, $06, $DF, $A9, $4C, $8D, $42, $A4, $A2, $01    // data $9DE3
-    .byte $20, $C6, $FF, $A0, $00, $20, $CF, $FF, $99, $00, $CA, $A6, $90, $00, $00, $00    // data $9DF3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E03
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E13
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E23
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E33
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E43
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E53
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E63
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E73
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E83
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $20, $BA, $DE, $EA, $EA, $EA    // data $9E93
+    .byte $20, $C6, $FF, $A0, $00, $20, $CF, $FF, $99, $00, $CA, $A6, $90    // data $9DF3-$9DFF (TMP payload tail)
+// =============================================================================
+// Step 21-pre: bank6 reserve OPEN (FOURTH ROM bank for the shell). bank3/4/5
+// reserves are full; the get_path / relative-path feature (step 21) needs room, so
+// this pre-step proves bank6 can host shell code with ZERO effect on the TMP/TASS
+// REU image. bank6 ($de00=$90) pockets $9E00-$9E9C (157 B), $8023-$80FF (221 B),
+// $9F58-$9FFF (168 B) are stock-zero AND -- proven by the boot installer's copy map
+// (bank6/7 are copied $8100-$9DFF ONLY: the single 'lda #$90 / sta $de00' + ldx #$1c
+// page loop in bank4) -- copied to neither RAM nor the REU image, exactly like
+// bank5's pockets (17-pre). Reached from bank3 as a SEQUENTIAL SIBLING after bank5:
+// the call_bank5 RAM stub @ $0378 is reused with its bank operand ($0379) repointed
+// to $90 (bank5/bank6 never nest). 21-pre installs ONLY a no-op dispatcher
+// (sec/rts = not mine) so mkdir/memcpy still fall through to hsh_body unchanged; the
+// only bank6 bytes that change vs stock are $9E00=$38 (sec) and $9E01=$60 (rts).
+// Step 21 fills in get_path + the relative-path prepend below.
+// =============================================================================
+b6_disp:
+.errorif (* != $9E00), "b6_disp not at $9E00"
+    sec                    // 21-pre: no bank6 command yet -> fall through to bank4/chat
+    rts
+.errorif (* > $9E9D), "bank6 main region overran the reserve ($9E9C)"
+    .fill $9E9D - *, $00   // pad the reserve; real bank6 data resumes at $9E9D
+.errorif (* != $9E9D), "bank6 reserve fill did not land on $9E9D"
+    .byte $20, $BA, $DE, $EA, $EA, $EA    // data $9E9D (real bank6 data resumes)
     .byte $EA, $EA, $EA, $EA, $EA, $EA, $20, $BA, $DE, $EA, $EA, $EA, $EA, $EA, $EA, $EA    // data $9EA3
     .byte $EA, $EA, $8D, $00, $DE, $68, $60    // data $9EB3
     pha                    // 48

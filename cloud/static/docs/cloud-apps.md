@@ -4,7 +4,7 @@ HDN Shell RR includes six server-side console applications that run on your PC a
 
 The server renders a full 40×25 screen-code buffer which is transferred to the C64 over the network. From the C64's point of view each app behaves like a real console — keyboard input is sent to the server and the updated screen arrives back within milliseconds.
 
-> **Requires:** HDN Server running on your PC and an Ultimate/1541 Ultimate cartridge with network access. See [Cloud Integration](cloud-integration.md) for setup details.
+> **Requires:** HDN Server running on your PC and an Ultimate/1541 Ultimate cartridge with network access. See [Server Integration](cloud-integration.md) for setup details.
 
 ---
 
@@ -26,6 +26,8 @@ Switching is instantaneous. The server keeps each console's state alive so you c
 
 ## Good to Know
 
+- The switching keys aren't live until you type `HONDANI` at the `READY.` prompt to arm them.
 - While a server console is open, BASIC is paused (including the `TI$` clock) until you return to the shell.
-- The switching keys are inactive right after a `LOAD` or `RUN` — the shell deliberately steps out of the way of running programs. Type any line at the `READY.` prompt to re-arm them. See [Game and Program Compatibility](using-the-shell.md#game-and-program-compatibility).
+- The switching keys go inactive right after a `LOAD` or `RUN` — the shell deliberately steps out of the way of running programs. Type `HONDANI` again to re-arm them. See [Game and Program Compatibility](using-the-shell.md#game-and-program-compatibility).
+- **Known limitation:** if you launch a program with the `F1` fastload-and-autorun macro while the switching keys are armed, the screen can garble while loading. Use `LOAD"*",8,1`+`RUN` instead of `F1` when armed — see [Executing Programs](executing_programs.md#the-shell-steps-aside).
 - If the server is unreachable, entering a console is refused and you stay at the local prompt.

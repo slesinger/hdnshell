@@ -16,7 +16,7 @@ you address the agent.
 ## Before you start
 
 - HDN Shell RR cartridge on your C64 Ultimate — see [Installation](installation.md).
-- Cloud server running and on the same network — see [Cloud Integration](cloud-integration.md).
+- HDN Server running and on the same network — see [Server Integration](cloud-integration.md).
 - Read the 2-minute [Coding Agent](coding-agent.md) intro so you know the
   consoles and slash commands.
 

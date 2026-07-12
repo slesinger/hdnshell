@@ -1,5 +1,5 @@
 """
-Server-side text web browser console (console 4) for C64 HDN Cloud Server.
+Server-side text web browser console (console 4) for HDN Server.
 
 A PETSCII web browser rendered into a 40x25 C64 screen-code back-buffer.
 Features: multi-tab browsing (max 10), link navigation via Space/Return,

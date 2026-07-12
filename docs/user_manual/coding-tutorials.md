@@ -31,7 +31,7 @@ the reference only when stuck.
 ## Prerequisites (all tutorials)
 
 - HDN Shell RR cartridge on your C64 Ultimate — [Installation](installation.md).
-- Cloud server running on the same network — [Cloud Integration](cloud-integration.md).
+- HDN Server running on the same network — [Server Integration](cloud-integration.md).
 - Basic familiarity with the [Coding Agent](coding-agent.md) console.
 
 ## Reference material
