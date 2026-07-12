@@ -1696,3 +1696,44 @@ completely untouched). Archived `build/archive-17-mnt-umnt.bin`.
 
 If all pass, step 17 is done and step 18 (`mkdir`) follows — it will reuse `b5_domount`
 (DOS `CREATE_DIR $16` with a path), so it is small and fits the remaining bank5 headroom.
+
+## 23  Console-hook vs RR F1 (`%0:*`) fastload — investigated, WORKAROUND (2026-07-12)
+
+**Symptom (Honza, during step-17 HW test):** reboot → mount a game → `HONDANI` (arms the
+CINV console-switch hook) → **F1** → RR fastloads+autoruns and the init screen **garbles**.
+Without arming, F1 is fine.
+
+**This is NOT a step-17 regression.** Banks 0/1/2/4 are byte-identical to the FIX-CS/FIX-CS2
+build, and it garbles with no `mnt` involved. It is the pre-existing "armed CINV hook survives
+into a fastloaded program" fragility (deferred debt item #1).
+
+**Decisive isolation (Honza's tests):**
+- `HONDANI` → `LOAD"*",8,1` → `RUN`  → **works**
+- `HONDANI` → `LOAD"*",8,1` → `MON` → `G 080D` → **works**
+- `HONDANI` → **F1** (types `%0:*`, RR menu fastload+autorun) → **garbles**
+
+So the `$9D` (MSGFLG) self-disarm in the CINV stub fires for a BASIC `RUN` (and the KERNAL
+`LOAD` path is fine), but **`%0:*` autoruns without a `RUN`/`LOAD` transition**, so `$9D` stays
+`$80`, the hook stays live, RR's fastloader clobbers the tape-buffer stub at `$03A0`, and the
+next IRQ executes garbage. The KERNAL `LOAD` (`$0330`) disarm idea is ruled out — `LOAD"*",8,1`
+already works without it.
+
+**The fix is trivial in logic, impossible to place.** RR's stock CINV is `$EA31` (`b02_982D`
+sets it), so the disarm is just `set $0314=$EA31` (8 B, no guard). It must run per-line, before
+`%0:*`'s fastloader clobbers `$03A0` — the natural spot is the bank1 per-line tap. **But bank1
+is full**: max contiguous free = 8 B (`$9E51-$9E58`), the tape buffer max 9 B, and the only
+"reclaimable" bank1 bytes (the IERROR idempotency check) are load-bearing (they keep the saved
+original `$0300` correct across lines). The disarm + register-preservation needs ~12 contiguous
+bytes → does not fit anywhere in-place. This is exactly the wall deferred item #1 named.
+
+**A real fix exists but is deferred:** hook `CRUNCH` (`$0304`, stock/unhooked) via a small stub
+at **`$03F7-$03FF`** — free RAM that is OUTSIDE the fastloader's `$0348-$03E8` clobber zone, so
+it survives a load — that disarms `$0314=$EA31` and chains to stock CRUNCH (`$A57C`). Avoids
+bank1 entirely; catches `%0:*` (tokenized by CRUNCH before RR acts on `%`). Not built: it is a
+new global vector hook with unverified assumptions (that `%0:*` goes through CRUNCH) and can't
+be cheaply HW-iterated — a dedicated, carefully-designed step if/when F1 support is wanted.
+
+**DECISION (Honza, 2026-07-12): WORKAROUND, no code change.** F1/`%0:*` is the ONLY broken
+path. When the console-switch hook is armed (`HONDANI`), launch autostart programs with
+`LOAD"*",8,1` + `RUN` (or `MON` + `G <addr>`) instead of F1 — both are transparent. Console
+switching and everything else are unaffected. The CRUNCH-hook fix stays on the shelf.
