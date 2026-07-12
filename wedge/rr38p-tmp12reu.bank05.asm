@@ -529,17 +529,133 @@ bank05_data_8023:
     .byte $B4, $C5, $AD, $23, $B3, $20, $B4, $C5, $AD, $24, $B3, $20, $B4, $C5, $AD, $25    // data $9DC3
     .byte $B3, $20, $B4, $C5, $AD, $26, $B3, $4C, $B4, $C5, $20, $37, $C1, $A9, $00, $8D    // data $9DD3
     .byte $09, $B3, $8D, $22, $B3, $AD, $23, $B3, $8D, $20, $B3, $AD, $24, $B3, $8D, $21    // data $9DE3
-    .byte $B3, $20, $51, $C4, $AD, $1F, $B3, $D0, $1A, $AD, $22, $B3, $C9, $00, $00, $00    // data $9DF3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E03
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E13
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E23
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E33
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E43
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E53
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E63
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E73
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E83
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $20, $BA, $DE, $EA, $EA, $EA    // data $9E93
+    .byte $B3, $20, $51, $C4, $AD, $1F, $B3, $D0, $1A, $AD, $22, $B3, $C9    // data $9DF3-$9DFF (bank5 payload -> REU)
+// =============================================================================
+// Step 17: bank5 overflow reserve (THIRD ROM bank for the shell) hosts mnt/umnt.
+// The bank3 and bank4 reserves are full after step 16. bank5 ($de00=$88)
+// $9E00-$9E9C (157 B, this main region) + $9F58-$9FFF (168 B, third region) are
+// stock-zero AND -- proven by the boot installer's copy map (bank5 copies are
+// $8100-$9DFF only) -- copied to neither RAM nor the REU image, so code here cannot
+// corrupt the TMP/TASS REU image (16-R proved the identical property for bank4
+// $9F58; 17-pre HW-proved this bank5 map-in leaves TMP/TASS intact). bank5 is
+// mapped by the boot installer only, never at the BASIC prompt, so the transient
+// map-in under the dispatch sei is safe. Reached from bank3 as a SEQUENTIAL SIBLING
+// to bank4 via the call_bank5 RAM trampoline (b5tramp @ $0378), and bank5 reaches
+// bank3's frozen UCI leaf helpers (uci_idle_kick/hsh_push/hsh_fin) via its OWN RAM
+// trampoline b5c3 @ $0386 (shares b4c3's slot -- bank4/bank5 never run nested).
+//
+// Commands (device-INDEPENDENT -- mnt/umnt operate on the Ultimate DOS filesystem
+// regardless of the current #-device; the image path resolves against the Ultimate
+// current dir or is absolute):
+//   mnt <path> [8|9]  -> DOS MOUNT_DISK ($23): mount the image to IEC device 8
+//                        (default) or 9. Device 9 first enables the Ultimate's
+//                        Drive B (CONTROL ENABLE_DISK_B $32) in case it is off.
+//   umnt [8|9]        -> DOS UMOUNT_DISK ($24): unmount device 8 (default) or 9.
+// Any other line -> C=1 (fall through to bank4, then chat/AI). Silent on the UCI
+// status (the reference does no error text either); a bad path simply doesn't mount.
+//
+// NOTE (case): mnt/umnt match UPPERCASE PETSCII directly -- no case-fold helper, to
+// fit the 325 B bank5 budget. The C64 BASIC prompt is uppercase mode by default, so
+// this is the practical input. (pwd/cd/dir/ll fold defensively; add fold here too
+// when a further reserve region -- bank6/7 -- is opened, if lowercase-mode support
+// is ever wanted.)
+//
+// Scratch (private wedge bytes, not touched by the bank3 leaf helpers, which use
+// $cf26/$cf30/$cf31): $cf43 = target IEC device byte ($08/$09); $cf44 = write-path
+// flag (1 = mnt writes the path arg, 0 = umnt writes none); $cf48 = path start idx.
+// =============================================================================
+.const B3_IDLE  = $9dbb     // bank3 uci_idle_kick (frozen)
+.const B3_PUSH  = $9b20     // bank3 hsh_push (frozen)
+.const B3_FIN   = $9b6a     // bank3 hsh_fin (frozen)
+.const B5C3_RUN = $0386     // bank5->bank3 RAM trampoline (shares b4c3's $0386 slot)
+b5_disp:
+.errorif (* != $9E00), "b5_disp not at $9E00"
+    jsr b5c3_install       // heal the bank5->bank3 RAM trampoline @ $0386
+    lda $02a7              // first char of the shadow line (bank-independent RAM)
+    cmp #$4d               // 'M' -> maybe "mnt"
+    beq b5_ck_mnt
+    cmp #$55               // 'U' -> maybe "umnt"
+    beq b5_j_umnt          // thunk: b5_ck_umnt is in the third region (out of beq range)
+b5_nm:
+    sec                    // not a bank5 command -> bank3 tries bank4, then chat/AI
+    rts
+b5_j_umnt:
+    jmp b5_ck_umnt
+// ---- mnt : "mnt <path> [8|9]" -- DOS MOUNT_DISK ($23) ----------------------
+b5_ck_mnt:
+    lda $02a7+1
+    cmp #$4e               // 'N'
+    bne b5_nm
+    lda $02a7+2
+    cmp #$54               // 'T'
+    bne b5_nm
+    lda $02a7+3
+    cmp #$20               // "mnt" must be followed by a space
+    bne b5_nm
+    ldx #$04               // skip further spaces -> first path char
+b5_mnt_sk:
+    lda $02a7,x
+    cmp #$20
+    bne b5_mnt_a0
+    inx
+    bne b5_mnt_sk
+b5_mnt_a0:
+    cmp #$00               // "mnt   " with no path -> let it chat
+    beq b5_nm
+    stx $cf48              // path start index
+    lda #$08
+    sta $cf43              // default IEC device 8
+    lda #$01
+    sta $cf44              // mnt writes the path arg
+b5_mnt_eol:                // scan to EOL ($00); X ends on the terminator
+    lda $02a7,x
+    beq b5_mnt_e0
+    inx
+    bne b5_mnt_eol
+b5_mnt_e0:
+    dex
+    dex                    // X = EOL-2 = candidate space before a " 8"/" 9" token
+    cpx $cf48
+    bcc b5_mnt_go          // EOL-2 < path start -> too short, no device token
+    beq b5_mnt_go          // EOL-2 == path start -> path would be empty, skip
+    lda $02a7,x
+    cmp #$20               // char at EOL-2 must be a space
+    bne b5_mnt_go
+    inx                    // X = EOL-1 = the digit
+    lda $02a7,x
+    cmp #$38               // '8'
+    beq b5_mnt_dev
+    cmp #$39               // '9'
+    bne b5_mnt_go          // not a device token -> whole arg is the path
+b5_mnt_dev:
+    and #$0f               // '8'->$08 / '9'->$09
+    sta $cf43
+    dex                    // X = EOL-2 (the space)
+    lda #$00
+    sta $02a7,x            // truncate the path there (drop the " <digit>" token)
+b5_mnt_go:
+    lda $cf43
+    cmp #$09
+    bne b5_mnt_send
+    jsr b5_enable_b        // device 9 -> enable Ultimate Drive B first
+b5_mnt_send:
+    lda #$23               // DOS_CMD_MOUNT_DISK
+    jmp b5_domount
+// b5_pushfin: bank3 hsh_push then hsh_fin via the b5c3 trampoline (carry ignored --
+// mnt/umnt are silent on status). Lives in the main region (the third region is
+// full); b5_domount/b5_enable_b in the third region reach it by a same-bank jsr.
+b5_pushfin:
+    ldx #<B3_PUSH
+    ldy #>B3_PUSH
+    jsr B5C3_RUN
+    ldx #<B3_FIN
+    ldy #>B3_FIN
+    jsr B5C3_RUN
+    rts
+.errorif (* > $9E9D), "bank5 main region overran the reserve ($9E9C)"
+    .fill $9E9D - *, $00   // pad the reserve; real bank5 data resumes at $9E9D
+.errorif (* != $9E9D), "bank5 reserve fill did not land on $9E9D"
+    .byte $20, $BA, $DE, $EA, $EA, $EA    // data $9E9D (real bank5 data resumes)
     .byte $EA, $EA, $EA, $EA, $EA, $EA, $20, $BA, $DE, $EA, $EA, $EA, $EA, $EA, $EA, $EA    // data $9EA3
     .byte $EA, $EA, $8D, $00, $DE, $68, $60    // data $9EB3
     pha                    // 48
@@ -641,16 +757,111 @@ bank05_sub_9F2B:
     jmp $dede              // 4C DE DE
 bank05_data_9F58:
 .errorif (* != $9F58), "bank05_data_9F58 shifted"
-// Steps 1-4 hosted the HONDANI probe routine here ($9F58, the free zero run
-// after the cross-bank glue). Step 5a moved the wedge code to its permanent
-// home in bank2 ($991E, 1378-byte free run) and reverted this bank to stock.
-    .fill $9F78 - *, $00   // stock zeros $9F58-$9F77
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F78
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F88
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F98
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FA8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FB8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FC8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FD8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FE8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00    // data $9FF8
+// =============================================================================
+// Step 17 THIRD REGION -- bank5 $9F58-$9FFF (168 B stock-zero end-of-bank pad,
+// copied nowhere per the installer map; same dead space as bank4's $9F58). Holds
+// umnt, the shared UCI sender (b5_domount), the Drive-B enable, and the b5c3
+// bank5->bank3 trampoline. Reached from the main region by plain same-bank jsr/jmp.
+// =============================================================================
+// ---- umnt : "umnt [8|9]" -- DOS UMOUNT_DISK ($24), no path -----------------
+b5_ck_umnt:
+    lda $02a7+1
+    cmp #$4d               // 'M'
+    bne b5_umnt_nm
+    lda $02a7+2
+    cmp #$4e               // 'N'
+    bne b5_umnt_nm
+    lda $02a7+3
+    cmp #$54               // 'T'
+    bne b5_umnt_nm
+    ldx #$08               // default IEC device 8
+    lda $02a7+4
+    beq b5_umnt_snd        // bare "umnt" -> device 8
+    cmp #$20               // "umnt" must be followed by a space (else not our token)
+    bne b5_umnt_nm
+    lda $02a7+5            // "umnt 9" (single space) -> device 9; else device 8
+    cmp #$39
+    bne b5_umnt_snd
+    ldx #$09
+b5_umnt_snd:
+    stx $cf43
+    lda #$00
+    sta $cf44              // umnt writes no path (device byte only)
+    lda #$24               // DOS_CMD_UMOUNT_DISK
+    jmp b5_domount
+b5_umnt_nm:
+    sec                    // not "umnt" -> bank3 tries bank4, then chat/AI
+    rts
+// b5_domount: A = DOS1 command byte; $cf43 = IEC device byte; $cf44 = 1 -> also
+// write the path arg from $cf48 (NUL-terminated in $02a7), 0 -> device byte only.
+// Sends target $01 + cmd + device (+ path), PUSH, FIN via bank3; silent on status.
+b5_domount:
+    pha                    // save the command byte
+    ldx #<B3_IDLE
+    ldy #>B3_IDLE
+    jsr B5C3_RUN           // UCI idle / abort any leftover
+    lda #$01               // TARGET_DOS1
+    sta $df1d
+    pla
+    sta $df1d              // command byte
+    lda $cf43
+    sta $df1d              // IEC device number
+    lda $cf44
+    beq b5_dm_wd           // umnt -> no path
+    ldx $cf48
+b5_dm_wr:
+    lda $02a7,x            // write the path arg (up to EOL, terminator omitted)
+    beq b5_dm_wd
+    sta $df1d
+    inx
+    bne b5_dm_wr
+b5_dm_wd:
+    jsr b5_pushfin         // PUSH + FIN (status drained + accepted) in bank3
+    clc                    // handled (silent on the UCI status)
+    rts
+// b5_enable_b: enable the Ultimate's Drive B (device 9) -- CONTROL ENABLE_DISK_B.
+// Idempotent (enabling an already-enabled drive is harmless). Called by mnt only
+// when the target device is 9, before the mount.
+b5_enable_b:
+    ldx #<B3_IDLE
+    ldy #>B3_IDLE
+    jsr B5C3_RUN
+    lda #$04               // TARGET_CONTROL
+    sta $df1d
+    lda #$32               // CTRL_CMD_ENABLE_DISK_B
+    sta $df1d
+    jsr b5_pushfin
+    rts
+// --- b5c3: bank5->bank3 leaf-helper trampoline (mirror of bank4's b4c3) --------
+// Heals a 25-byte RAM stub into $0386 (SHARES b4c3's slot -- bank4/bank5 dispatch
+// as sequential siblings, never nested, and each heals its template before jsr).
+// Target bank3 address in X(lo)/Y(hi); A is clobbered by the bank flips, X/Y and
+// carry survive (the restore lda/sta touch neither). Restores bank5 ($88) with a
+// constant -- never a $de00 read-back.
+b5c3_install:
+    ldx #b5c3_end - b5c3_tmpl - 1
+b5c3_icpy:
+    lda b5c3_tmpl,x
+    sta B5C3_RUN,x
+    dex
+    bpl b5c3_icpy
+    rts
+b5c3_tmpl:
+.pseudopc B5C3_RUN {
+    stx b5c3_vec           // target lo (X) -> RAM vector
+    sty b5c3_vec+1         // target hi (Y)
+    lda #$18               // map bank3
+    sta $de00
+    jsr b5c3_ind           // jsr -> jmp (vec) -> bank3 helper; its rts returns here
+    lda #$88               // restore bank5
+    sta $de00
+    rts
+b5c3_ind:
+    jmp (b5c3_vec)
+b5c3_vec:
+    .word $0000
+}
+b5c3_end:
+.errorif (b5c3_end - b5c3_tmpl) > ($03A0 - B5C3_RUN), "b5c3 trampoline overruns CINV $03A0"
+.errorif (* > $A000), "bank5 third region overran into $A000"
+    .fill $A000 - *, $00   // remainder of the stock-zero end-of-bank padding

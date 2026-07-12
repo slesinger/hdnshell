@@ -1569,3 +1569,130 @@ Arm first: `HONDANI`.
    (`HONDANI`→F1 Sprite Studio 64 / Outrun still run); stock sweep; TASS launch/exit + TMP `\`.
 
 If all pass, the long-standing "local console dead after return" bug is closed.
+
+## 21  Step 17-pre — bank5 reserve opened (BUILT+byte-verified 2026-07-11, awaiting HW test)
+
+**Why.** Step 17 (`mnt`/`umnt`) does not fit. After step 16 the bank4 reserve has only
+~98 B free (main-area `$9E51-$9E9C` = 76 B + third region `$9FEA-$9FFF` = 22 B); the bank3
+reserve is exhausted. `mnt`+`umnt` with the device-argument + drive-9 enable Honza asked for
+is ~240 B even after maximal helper reuse (each command name costs ~27-30 B just to match).
+`$80B4-$9F00` in bank4 is the stock TMP/REU payload — not free. So a THIRD ROM bank is
+hard-required (foreseen in §14a). Decision (Honza, 2026-07-11): open **bank5** as the next
+overflow reserve, proven first with a border-flash round-trip (this step), mirroring how
+bank4 was opened (15-pre) and how the bank4 third region was proven (16-R).
+
+**Where in bank5 (the safe-region analysis).** bank5 (`$de00=$88`) is mapped by the boot
+installer only, never at the BASIC prompt — same safety basis as bank2→bank3 / bank3→bank4.
+The installer's copy map was decoded from both relocatable variants (`$80B4` → C64 RAM, and
+`$8124` → REU/`$8000+`):
+
+- bank5 → RAM/REU sources copied: `$8800-$92FF`, `$9200-$99FF` (variant 1) and `$8100-$87FF`,
+  `$9700-$9DFF` (variant 2). **Union = `$8100-$9DFF`.**
+- Therefore bank5 **`$9E00-$9E9C` (157 B)** and **`$9F58-$9FFF` (168 B)** are stock-zero AND
+  copied nowhere → genuinely dead; code there cannot corrupt the TMP/TASS REU image.
+- The 494 B zero run at `$9012-$91FF` is a trap: it is INSIDE `$8800-$92FF`, i.e. copied to
+  RAM — code there WOULD corrupt TMP. Rejected. (Mirrors bank4, where only the end-of-bank
+  `$9F58` region was dead; 16-R.)
+
+Bank5 reserve therefore = `$9E00-$9E9C` + `$9F58-$9FFF` = **325 B**, structured exactly like
+bank4 (main reserve + third region). Enough for `mnt`+`umnt`+enable now and 18-20 later.
+
+**The trampoline (call_bank5).** bank5 and bank4 are dispatched as **sequential siblings**
+from bank3 (bank5 first, then bank4, then chat) — never nested — so `call_bank5` safely
+**shares call_bank4's `$0378` RAM slot**: `hsh_ck_b5` heals its own 14-byte `b5tramp`
+(`lda #$88 / sta $de00 / jsr $9e00 / lda #$18 / sta $de00 / rts`) right before `jsr $0378`,
+and if bank5 returns C=1, `hsh_ck_b4` re-heals `b4tramp` into the same slot before its own
+jsr. The datassette buffer has no free 14 B gap (`$0340-$0356` IERROR stub, `$0360` call_bank3,
+`$0370` rstub, `$0378` call_bank4, `$0386` b4c3, `$03A0` CINV) — slot-sharing is the clean fit,
+and the sibling (non-nested) dispatch makes it correct. A bank4→bank5 *nested* design was
+rejected: call_bank4 stays live on the return path, so a nested call_bank5 would need a
+distinct slot that does not exist.
+
+**Changes (all in our own gateway code — no stock bytes, no pinned hsh_* modules touched):**
+1. `rr38p-tmp12reu.bank03.asm`: `hsh_ck_more`'s `ckm_none` now `jmp hsh_ck_b5` (was `hsh_ck_b4`).
+2. `rr38p-tmp12reu.bank03.asm` annex (`$97C4`): added `hsh_ck_b5` (heal `b5tramp`→`$0378`, jsr,
+   C=0→rts handled, C=1→`jmp hsh_ck_b4`) + `b5tramp`. Annex now `$97A2-$97E5` (68/94 B used).
+3. `rr38p-tmp12reu.bank05.asm` (`$9E00`): `b5_disp` proof stub — matches the literal line `b5`
+   → `inc $d020` (border +1) → C=0 (READY.); anything else → C=1 (fall through to bank4/chat).
+
+**Build + byte-verify (vs `build/baseline-step16.bin`).** All `.errorif` pins held. Diff = 58
+bytes, in **bank3 + bank5 only**:
+- bank3 `$97C4-$97E5` (31 B): `hsh_ck_b5`+`b5tramp` (was zeros); bank3 `$9E70` (1 B): the
+  `jmp` operand low byte `$A2`→`$C4` (retarget to `hsh_ck_b5` @ `$97C4`). No code shift — the
+  annex `.fill $9800` absorbed the addition, so all downstream bank3 addresses are unchanged.
+- bank5 `$9E00-$9E19` (26 B): `b5_disp`.
+- **banks 0/1/2/4/6/7 byte-identical.**
+
+**HW test plan (Honza):**
+1. Reboot to the RR/HONDANI prompt (no HONDANI needed — `b5` is local).
+2. Type `b5` ↵ → the **border steps one colour** then `READY.`. Repeat a few times → border
+   keeps advancing (proves bank5 code runs + returns cleanly through the trampoline each time).
+3. Regression — nothing else may change: `pwd`/`cd`/`dir`/`ll` on `#t`; `#`/`status`/`time`/
+   `menu`; `i:hello` → AI; `PRINT 1/0` → `?DIVISION BY ZERO`; a normal chat line still forwards.
+4. **REU-image integrity (the key check):** launch **TASS** and **TMP** (`\`), and a fastloaded
+   game (Sprite Studio 64 / Outrun via HONDANI+F1) — all must still work, confirming the
+   transient bank5 map-in does not disturb the TMP/TASS REU image.
+
+If all pass, bank5 is confirmed as the third reserve and the `b5` probe is replaced by the real
+`mnt`/`umnt` dispatcher (step 17).
+
+## 22  Step 17 — `mnt` / `umnt`, built in bank5 (BUILT+byte-verified 2026-07-11, awaiting HW test)
+
+Real mnt/umnt, replacing the 17-pre `b5` proof stub. bank5 (`$de00=$88`) is the third ROM
+reserve opened in 17-pre; b5_disp now dispatches `mnt`/`umnt` and returns C=1 for everything
+else (fall through to bank4, then chat). All UCI work is done by bank3's FROZEN leaf helpers
+(`uci_idle_kick $9dbb`, `hsh_push $9b20`, `hsh_fin $9b6a`) reached through a bank5->bank3 RAM
+trampoline **b5c3 @ $0386** (a byte-for-byte mirror of bank4's b4c3, restoring `$88` instead of
+`$80`). b5c3 SHARES b4c3's `$0386` slot — safe because bank4/bank5 dispatch as sequential
+siblings (bank5 first, then bank4), never nested, and each heals its template before use.
+
+**Commands (device-INDEPENDENT — mnt/umnt act on the Ultimate DOS filesystem regardless of the
+current `#`-device; the path resolves against the Ultimate current dir or is absolute):**
+- `mnt <path> [8|9]` → DOS `MOUNT_DISK ($23)`: mount the image to IEC device 8 (default) or 9.
+  For device 9 it first issues CONTROL `ENABLE_DISK_B ($32)` to power on the Ultimate's Drive B
+  (idempotent) so a disabled Drive B still works. Payload = `<target $01><cmd $23><dev><path>`.
+- `umnt [8|9]` → DOS `UMOUNT_DISK ($24)`: unmount device 8 (default) or 9. Payload =
+  `<target $01><cmd $24><dev>` (no path). "umnt 9" = single-space form.
+
+Both silent on the UCI status (the reference `cmd_mnt` has only a `TODO` error too); a bad path
+simply fails to mount. Shared sender `b5_domount` (A=cmd, `$cf43`=device, `$cf44`=write-path
+flag, `$cf48`=path-start idx) writes target+cmd+device (+path if flag), then `b5_pushfin`
+(PUSH+FIN via b5c3). Scratch `$cf43/$cf44/$cf48` are private and untouched by the bank3 helpers
+(they use `$cf26/$cf30/$cf31`), so they survive across the trampoline hops.
+
+The `mnt` device-arg parse scans the path to EOL, then checks for a trailing ` 8`/` 9` token
+(space at EOL-2 + digit at EOL-1); if present it sets the device and **pokes a `$00` over the
+space** in the `$02a7` shadow line to truncate the path (safe — the shadow line is consumed by
+then and only the always-handled path pokes it). No trailing token ⇒ device 8, full path.
+
+**Case:** mnt/umnt match UPPERCASE PETSCII directly (no `b5_fold`) to fit the 325 B bank5
+budget — the C64 BASIC prompt is uppercase mode by default. pwd/cd/dir/ll still fold; a fold for
+mnt/umnt can be added when a further region (bank6/7) opens, if lowercase input is ever wanted.
+
+**Layout (fits with margin):** main region `$9E00-$9E9C` = `b5_disp` + `b5_ck_mnt` + `b5_pushfin`
+(ends `$9E92`, 11 B free); third region `$9F58-$9FFF` = `b5_ck_umnt` + `b5_domount` +
+`b5_enable_b` + `b5c3` (ends `$9FF9`, 7 B free). `umnt` is reached from `b5_disp` via a `jmp`
+thunk (`b5_j_umnt`) since the third region is out of `beq` range.
+
+**Build + byte-verify.** All `.errorif` pins held (regions in bounds, b5c3 ≤ `$039F`). Diff vs
+`build/baseline-step16.bin`: **bank5 `$9E00-$9FF6` (300 B)** + the unchanged 17-pre bank3 annex
+(`$97C4` + the `$9E70` jmp operand); **banks 0/1/2/4/6/7 byte-identical** (bank4's pwd/cd/dir/ll
+completely untouched). Archived `build/archive-17-mnt-umnt.bin`.
+
+**HW test plan (Honza):**
+1. `#t` (or wherever a `.d64`/`.d81` lives), `cd` to its dir, `mnt foo.d64` → returns to READY.
+   Then `LOAD"$",8` + `LIST` shows the image dir, and `LOAD"*",8,1` / `LOAD"filename",8` runs a
+   program off the mounted image. (NB: our `dir` on `#8` still says "NOT SUPPORTED ON IEC" by
+   design — a mounted image is a virtual IEC drive, so its directory is read the stock way via
+   `LOAD"$",8`, not our UCI `dir`. Confirm that's the intended UX or tell me to add it.)
+2. `mnt game.d64 9` → mounts to device 9 with Drive B enabled: `LOAD"*",9,1` runs. (Test with
+   Drive B initially disabled in the Ultimate config to confirm the auto-enable.)
+3. `umnt` (and `umnt 9`) → device unmounted: a subsequent `LOAD"*",8,1` fails / returns to the
+   prior state.
+4. **Regression (must be unchanged):** `pwd`/`cd`/`dir`/`ll` on `#t`; `#`/`status`/`time`/`menu`;
+   `i:hello`→AI; `PRINT 1/0`→`?DIVISION BY ZERO`; a chat line forwards; console switch; stock
+   sweep; **TASS + TMP (`\`) + a fastloaded game (HONDANI+F1)** still run (bank5 REU-image
+   integrity, re-confirmed now that bank5 carries real code, not just the 26 B proof stub).
+
+If all pass, step 17 is done and step 18 (`mkdir`) follows — it will reuse `b5_domount`
+(DOS `CREATE_DIR $16` with a path), so it is small and fits the remaining bank5 headroom.

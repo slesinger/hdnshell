@@ -2812,6 +2812,33 @@ b4tramp:
     .byte $A9, $18         // lda #$18      restore bank3
     .byte $8D, $00, $DE    // sta $de00
     .byte $60              // rts
+// --- step 17-pre: bank5 sibling gateway (call_bank5) -------------------------
+// bank3+bank4 reserves are full; steps 17-20 (mnt/umnt/mkdir/cp) live in a THIRD
+// ROM bank. bank5 ($de00=$88) is opened exactly like bank4 was (15-pre): a RAM
+// trampoline maps it, jsr's its dispatcher ($9E00), restores bank3 ($18). bank5
+// and bank4 are dispatched as SEQUENTIAL SIBLINGS (bank5 first, then bank4, then
+// chat) -- never nested -- so call_bank5 safely SHARES call_bank4's $0378 RAM slot:
+// each heals its own 14-byte template right before jsr. bank5's dispatcher returns
+// C=0 = handled (no stock error), C=1 = not mine -> fall through to bank4.
+hsh_ck_b5:
+    ldx #$0d               // heal the 14-byte call_bank5 trampoline -> $0378
+hc5_cp:
+    lda b5tramp,x
+    sta $0378,x
+    dex
+    bpl hc5_cp
+    jsr $0378              // map bank5 ($88), jsr $9E00 (bank5 dispatcher), restore ($18)
+    bcc hc5_yes            // C=0 = bank5 handled -> no stock ?SYNTAX ERROR
+    jmp hsh_ck_b4          // C=1 = not a bank5 command -> try bank4, then chat/AI
+hc5_yes:
+    rts
+b5tramp:
+    .byte $A9, $88         // lda #$88      map bank5
+    .byte $8D, $00, $DE    // sta $de00
+    .byte $20, $00, $9E    // jsr $9e00     bank5 dispatcher (b5_disp)
+    .byte $A9, $18         // lda #$18      restore bank3
+    .byte $8D, $00, $DE    // sta $de00
+    .byte $60              // rts
 .errorif (* > $9800), "b4_annex overran the $97A2-$97FF annex into stock $9800"
     .fill $9800 - *, $00   // pad the rest of the annex; stock code resumes at $9800
 .errorif (* != $9800), "b4_annex fill did not land on $9800"
@@ -3714,7 +3741,7 @@ ckm_reset:
     bne ckm_none
     jmp do_reset           // reboots -- never returns
 ckm_none:
-    jmp hsh_ck_b4          // step 15-pre: try 'B4' bank4 proof, else chat/AI
+    jmp hsh_ck_b5          // step 17-pre: try bank5 (mnt/umnt), then bank4, then chat/AI
 // 'reset' -- RR clean cold-boot. Bank0 holds the RR boot code (CBM80 autostart at
 // $8004). We map bank0 then jmp $FCE2 (KERNAL reset), which finds that CBM80 and
 // cold-starts RR properly. The $de00 write + the jmp MUST run from RAM: repaging
