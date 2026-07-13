@@ -2851,7 +2851,20 @@ b5tramp:
     .byte $A9, $18         // lda #$18      restore bank3
     .byte $8D, $00, $DE    // sta $de00
     .byte $60              // rts
-.errorif (* > $9800), "b4_annex overran the $97A2-$97FF annex into stock $9800"
+// --- 16-DEV: hd_norm_cur U/V extension (annex tail) --------------------------
+// bare '#' display + lazy-default: accept the NEW UCI letters U (/usb0) and
+// V (/usb1) so a bare '#' after '#u'/'#v' prints the letter instead of resetting
+// $cf2a to '8'. A = folded $cf2a on entry (already != 8/9/S/H/T/F/C/N).
+hd_nc_ext:
+    cmp #$55               // 'U' -> keep as-is (fall to hd_nce_ok, return A)
+    beq hd_nce_ok
+    cmp #$56               // 'V'
+    beq hd_nce_ok
+    lda #$38               // else uninitialized/unknown -> default '8'
+    sta $cf2a
+hd_nce_ok:
+    rts
+.errorif (* > $9800), "b4_annex+hd_nc_ext overran the $97A2-$97FF annex into stock $9800"
     .fill $9800 - *, $00   // pad the rest of the annex; stock code resumes at $9800
 .errorif (* != $9800), "b4_annex fill did not land on $9800"
     .byte $FF    // FF  undocumented/illegal at $9800
@@ -3084,16 +3097,22 @@ hd_setdev:
     cmp #$53               // 'S' SoftIEC
     beq hd_local
     cmp #$48               // 'H' Ultimate Home
-    beq hd_local
+    beq hd_hook            // 16-DEV: UCI drive -> bank6 auto-cd (sets $cf2a + CHANGE_DIR)
     cmp #$54               // 'T' Ultimate Temp
-    beq hd_local
+    beq hd_hook
     cmp #$46               // 'F' Ultimate Flash
-    beq hd_local
+    beq hd_hook
     cmp #$43               // 'C' CSDB   -> set + eager forward
     beq hd_fwd
     cmp #$4e               // 'N' Network -> set + eager forward
     beq hd_fwd
-    jmp hsh_body           // unknown '#x' -> fall through to the AI
+// 16-DEV: H/T/F (branched here) + the NEW U/V + any unknown '#x' (fall-through) all
+// route into the bank5->bank6 dispatch chain. bank6 b6_disp sees the leading '#' and
+// hands off to b6_autocd: for a UCI letter (H/T/F/U/V) it sets $cf2a and issues a
+// CHANGE_DIR to that drive's mount root, returning C=0 (handled); for a non-UCI '#x'
+// it returns C=1, so the line falls through bank4 to hsh_body -> AI, exactly as before.
+hd_hook:
+    jmp hsh_ck_b5
 hd_local:
     sta $cf2a              // store device letter; done, no server
     clc
@@ -3400,8 +3419,9 @@ hd_norm_cur:
     beq hd_ncok
     cmp #$4e               // 'N'
     beq hd_ncok
-    lda #$38               // uninitialized/unknown -> default '8'
-    sta $cf2a
+    jmp hd_nc_ext          // 16-DEV: accept U/V (display as-is) else default '8'
+    nop                    // (padding: keep hd_ncok at its frozen address, no shift)
+    nop
 hd_ncok:
     rts
 // ---- step 13a: 'status' command -- UCI IDENTIFY (DOS1 $01) -------------------

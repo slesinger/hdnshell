@@ -679,6 +679,10 @@ b6_disp:
     // Match "mkdir " / "memcpy " (case-folded). Not ours -> C=1 with $02a7 UNCHANGED,
     // so bank4 then hsh_body forward the line exactly as step 18/20.
     lda $02a7
+    cmp #$23               // 16-DEV: '#<letter>' device switch -> auto-cd
+    bne b6_ac_no           //   not '#': fall through to normal mkdir/memcpy matching
+    jmp b6_autocd          //   '#': set $cf2a + CHANGE_DIR (C=0 UCI letter / C=1 -> AI)
+b6_ac_no:
     jsr b6_fold
     cmp #$4d               // 'M'
     beq b6_ck_m
@@ -891,5 +895,73 @@ b6c3_vec:
 }
 b6c3_end:
 .errorif (b6c3_end - b6c3_tmpl) > ($03A0 - B6C3_RUN), "b6c3 trampoline overruns CINV $03A0"
-.errorif (* > $A000), "bank6 third region (b6c3) overran into $A000"
+// =============================================================================
+// 16-DEV: device -> mount-path binding (b6_autocd).
+// Entered from b6_disp when the shadow line starts with '#'. The device letter is
+// $02a7+1 (raw); fold it and look it up in b6_ac_tab. On a UCI letter (T/F/H/U/V):
+// set $cf2a and issue a UCI DOS1 CHANGE_DIR ($11) to that drive's fixed mount root
+// (absolute path resolves from root), then return C=0 (handled -> no ?SYNTAX ERROR).
+// On any non-UCI '#x' return C=1 so the line falls through bank4 to hsh_body -> AI
+// (identical to the pre-16-DEV behaviour for unknown '#x').
+// Paths are PETSCII-uppercase bytes -- exactly what a user typing "cd /temp" sends,
+// which is proven to resolve on the Ultimate (step 15c). $cf65 = B6_AC_L scratch
+// (folded letter, then path index; B6C3_RUN clobbers X/Y so the index is stashed).
+// CHANGE_DIR failure (e.g. /usb0 not mounted) is silent: the device stays selected,
+// the cd just didn't move -- fail-soft, visible on the next pwd/ll.
+// =============================================================================
+.const B6_AC_L = $cf65     // auto-cd scratch: path offset (B6C3_RUN clobbers X/Y)
+b6_autocd:
+    lda $02a7+1           // the device letter after '#'
+    jsr b6_fold           // fold to uppercase (A held through the dex search below)
+    ldx #$04              // search the 5-letter table, index 4..0
+b6_ac_find:
+    cmp b6_ac_lets,x
+    beq b6_ac_hit
+    dex
+    bpl b6_ac_find
+    sec                   // not a UCI letter -> not handled ('#x' -> AI)
+    rts
+b6_ac_hit:
+    sta $cf2a             // select the device letter (A still = folded T/F/H/U/V)
+    lda b6_ac_off,x       // path start offset in b6_ac_paths
+    sta B6_AC_L           // stash it (B6C3_RUN clobbers X/Y)
+    jsr b6c3_install      // heal the bank6->bank3 leaf trampoline @ $0386
+    ldx #<B3_IDLE
+    ldy #>B3_IDLE
+    jsr B6C3_RUN          // uci_idle_kick (drain/accept/abort -> idle)
+    lda #$01
+    sta $df1d             // TARGET_DOS1
+    lda #$11
+    sta $df1d             // DOS_CMD_CHANGE_DIR
+    ldx B6_AC_L           // path offset
+b6_ac_wr:
+    lda b6_ac_paths,x
+    beq b6_ac_wrd         // NUL terminator -> path complete
+    sta $df1d             // write path byte to the UCI
+    inx
+    bne b6_ac_wr
+b6_ac_wrd:
+    ldx #<B3_PUSH
+    ldy #>B3_PUSH
+    jsr B6C3_RUN          // push the command block
+    bcs b6_ac_ok          // push failed -> device set, cd silently skipped (fail-soft)
+    ldx #<B3_FIN
+    ldy #>B3_FIN
+    jsr B6C3_RUN          // drain status + accept -> UCI back to idle
+b6_ac_ok:
+    clc                   // handled (device selected + cd attempted) -> no stock error
+    rts
+// parallel letter/offset tables + packed NUL-terminated path blob (PETSCII-uppercase;
+// '/'=$2F, '0'=$30, '1'=$31). Offsets index into b6_ac_paths.
+b6_ac_lets:
+    .byte $54,$46,$48,$55,$56                          // T  F  H  U  V
+b6_ac_off:
+    .byte 0, 6, 13, 22, 28                             // -> /TEMP /FLASH /SD/HOME /USB0 /USB1
+b6_ac_paths:
+    .byte $2F,$54,$45,$4D,$50,$00                      //  0: "/TEMP"
+    .byte $2F,$46,$4C,$41,$53,$48,$00                  //  6: "/FLASH"
+    .byte $2F,$53,$44,$2F,$48,$4F,$4D,$45,$00          // 13: "/SD/HOME"
+    .byte $2F,$55,$53,$42,$30,$00                      // 22: "/USB0"
+    .byte $2F,$55,$53,$42,$31,$00                      // 28: "/USB1"
+.errorif (* > $A000), "bank6 third region (b6c3 + b6_autocd) overran into $A000"
     .fill $A000 - *, $00   // pad the rest of the end-of-bank pocket ($9F58 region)

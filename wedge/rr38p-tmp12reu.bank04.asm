@@ -871,8 +871,9 @@ b4_curdev:
     beq b4_ncok
     cmp #$4e               // 'N'
     beq b4_ncok
-    lda #$38               // uninitialized/unknown -> default '8'
-    sta $cf2a
+    jmp b4_cd_ext          // 16-DEV: U/V -> route as UCI (remap 'T'), else default '8'
+    nop                    // (padding: keep b4_ncok at its address, no shift)
+    nop
 b4_ncok:
     rts
 // CONS stage 2: the local dos1_read_print, idle_kick, widl, push, wdav and fin
@@ -966,7 +967,24 @@ b4_fl_reset:
     sta B4_BUFLEN          // ready for the next entry
 b4_fl_rts:
     rts
-.errorif (* > $9E9D), "bank4 module overran the reserve ($9E9C)"
+// --- 16-DEV: b4_curdev U/V extension (in the reserve fill; no shift) ----------
+// pwd/cd/dir/ll routing: the NEW letters U (/usb0) and V (/usb1) select the SAME
+// single UCI drive (their auto-cd already moved its cwd to /usbN), so remap U/V to
+// 'T' here -> b4_is_htf treats them as UCI and every command routes correctly.
+// $cf2a is left as 'U'/'V' (bare '#' shows it via bank3 hd_nc_ext), only the
+// returned routing letter is 'T'. Anything else (garbage) -> default '8'.
+b4_cd_ext:
+    cmp #$55               // 'U'
+    beq b4_cd_uv
+    cmp #$56               // 'V'
+    beq b4_cd_uv
+    lda #$38               // else uninitialized/unknown -> default '8'
+    sta $cf2a
+    rts
+b4_cd_uv:
+    lda #$54               // U/V -> route as 'T' (single UCI drive)
+    rts
+.errorif (* > $9E9D), "bank4 module + b4_cd_ext overran the reserve ($9E9C)"
     .fill $9E9D - *, $00   // pad the reserve; real bank4 data resumes at $9E9D
 .errorif (* != $9E9D), "bank4 reserve fill did not land on $9E9D"
     .byte $20, $BA, $DE, $00, $00, $00, $00    // data $9E9D (real stock data)

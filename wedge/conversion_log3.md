@@ -1864,3 +1864,69 @@ flagged; one fixed, one accepted:
   Non-crashing, self-heals on first `#x`/pwd/cd, and fail-open makes it create the dir in the ACTUAL
   current DOS dir anyway — so it's a surprise, not a corruption. Documented, no code (keeps the
   pocket lean).
+
+## 27  §16-DEV — device → mount-path binding (✅ HW tested 2026-07-13, all good)
+
+The deferred device→mount-path binding. Typing `#t`/`#f`/`#h`/`#u`/`#v` now, besides selecting the
+single UCI drive, auto-issues a UCI DOS1 `CHANGE_DIR` (`$11`) to that drive's fixed mount root, so a
+bare `#t` lands you in `/temp` with no manual `cd`. `#u`/`#v` are NEW letters (`/usb0`,`/usb1`).
+
+| letter | mount root |
+|---|---|
+| `#t` | `/temp` |
+| `#f` | `/flash` |
+| `#h` | `/sd/home` |
+| `#u` | `/usb0`  (NEW) |
+| `#v` | `/usb1`  (NEW) |
+
+**Why bank3 had to be touched (bank6-only was impossible).** The frozen bank3 `#`-handler
+(`hsh_dispatch`) tests `$02a7=='#'` FIRST and consumes the whole `#`-family before the bank5/6/4
+dispatch chain: `#t/#f/#h` returned locally (`hd_local` = silent `sta $cf2a`) and `#u/#v` fell to
+`hsh_body` (AI) — neither ever reached `b6_disp`. So the `#`-family cannot be intercepted downstream
+without a bank3 edit. Confirmed by read-only research.
+
+**Design — minimal in-place bank3/bank4 edits (NO code shift) + all real logic in the bank6 pockets:**
+- **bank3 `hd_setdev` (frozen body, in-place):** `H/T/F` `beq hd_local` → `beq hd_hook`; the old
+  fall-through `jmp hsh_body` → `jmp hsh_ck_b5` (labelled `hd_hook`). `U/V` + any unknown `#x` already
+  fall to that jmp. So H/T/F/U/V/unknown all enter the bank5→bank6 chain; `8/9/S` still `hd_local`,
+  `C/N` still `hd_fwd`. **5 operand bytes changed, no size change.**
+- **bank6 `b6_disp` head:** `lda $02a7 / cmp #$23 / bne b6_ac_no / jmp b6_autocd`. A leading `#`
+  hands off to `b6_autocd`; mkdir/memcpy (non-`#`) fall through unchanged (+7 B, shifts b6_disp's own
+  body inside the `$9E00` pocket only — self-contained, pin still lands `$9E9D`).
+- **bank6 `b6_autocd` (`$9F58` pocket, after `b6c3`):** fold `$02a7+1`; search a 5-entry letter table
+  (`T F H U V`); miss → `sec/rts` (C=1 → unknown `#x` still falls through bank4 to `hsh_body`/AI,
+  identical to before). Hit → `sta $cf2a` + issue `$01,$11,<path>` to the UCI via the existing
+  `b6c3`/`B3_IDLE`/`B3_PUSH`/`B3_FIN` machinery (clone of the step-21 `b6_get_path` pattern). Paths are
+  a packed NUL-terminated blob + parallel offset table (PETSCII-uppercase — exactly what typing
+  `cd /temp` sends, proven to resolve since step 15c). C=0 handled; **CHANGE_DIR push-fail is silent
+  (fail-soft)** — device stays selected, cwd just didn't move, visible on the next `pwd`/`ll`.
+- **`#u`/`#v` as first-class letters, WITHOUT growing frozen validators (the range/remap trick):**
+  - **bank3 `hd_norm_cur` (bare `#` display):** default `lda #$38/sta $cf2a` → `jmp hd_nc_ext`+2 NOP
+    (in-place, `hd_ncok` stays put). `hd_nc_ext` (annex tail `$97F0`, +14 B in the fill) accepts
+    `U`/`V` as-is (so bare `#` shows the letter) else defaults `'8'`.
+  - **bank4 `b4_curdev` (pwd/cd/ll routing):** default → `jmp b4_cd_ext`+2 NOP (in-place, `b4_ncok`
+    stays put). `b4_cd_ext` (in the `$9E9D` reserve fill, +17 B) **remaps `U`/`V` → `'T'`** so
+    `b4_is_htf` treats them as UCI and every command routes correctly to the single UCI drive; `$cf2a`
+    is left `'U'`/`'V'` for display. `b4_is_htf` UNCHANGED. `pwd` on `#u` prints `/usb0` (the drive's
+    current path after the auto-cd) — correct and consistent (one UCI drive).
+
+**Byte-diff (vs the committed step-21 image):** bank3 24 B (`$97F0-$97FD` hd_nc_ext; `$99BE/$99C2/$99C6`
+H/T/F operands; `$99D0-$99D1` hd_hook jmp; `$9C03-$9C07` hd_norm_cur redirect), bank4 22 B
+(`$9DAF-$9DB3` b4_curdev redirect; `$9E51-$9E61` b4_cd_ext), bank6 264 B (`$9E03-$9E9C` = b6_disp head
++ its within-pocket shift; `$9F7D-$9FF6` = b6_autocd + tables). **Banks 0/1/2/5/7 byte-identical; both
+`.crt` md5 = `52c5f8ad6c683cbdd21c618aecdd39a5`.** All new paths disassembly-verified (da65).
+
+**✅ HW tested 2026-07-13 (Honza, server up) — all good.** `#t/#f/#h/#u/#v` auto-cd to their mount
+roots; the NEW `#u`/`#v` select+navigate; bare `#`, pwd/cd/ll/mkdir routing, silent `#8/#9/#s`, `#c/#n`
+forward and the unknown-`#x`→AI fall-through all behave as designed; stock sweep + TASS clean. What was
+tested:
+- `#t` → prompt lands in `/temp` (verify: `pwd` prints `/temp`, `ll` lists it); same for `#f`→`/flash`,
+  `#h`→`/sd/home`, and the NEW `#u`→`/usb0`, `#v`→`/usb1`.
+- After `#u`: bare `#` prints `U`; `pwd`/`ll`/`cd sub`/`mkdir foo`/`memcpy` all operate under `/usb0`.
+- Re-typing `#t` after a manual `cd sub` re-roots to `/temp` (every switch re-cds).
+- `#8`/`#9`/`#s` still silent-select (no cd); `#c`/`#n` still eager-forward; an unknown `#z` still → AI.
+- Stock sweep + TASS launch/exit + freeze→resume unchanged.
+- **Verify path casing on real HW:** paths are sent uppercase (`/TEMP` …). If the Ultimate rejects a
+  root by case (unlikely — `cd /temp` worked since step 15c), adjust the `b6_ac_paths` blob.
+- **Known fail-soft:** if a mount root doesn't exist (e.g. no USB stick in usb1), the auto-cd silently
+  leaves you where you were; `pwd` reveals it. No hang, no error.

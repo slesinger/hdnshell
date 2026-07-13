@@ -46,7 +46,7 @@ so far. Every step will have to be verified by Honza on real hardware before the
 | 19 | `cp` file download + `csdb` alias — **SERVER-SIDE, ZERO ASM**. `cp` already works via existing CSDB/NetDrive FTP handlers; `csdb` = alias for `#c` | Manual's CSDB session: `csdb` / `find hondani` / `cd rel/<id>` / `cp *.zip` / `#t` / `dir` shows file; `csdb` alias works; stock sweep | 🔨 **server built + tests green 2026-07-12** (csdb alias in `csdb_handler`) — awaiting live HW test |
 | 20 | `memcpy` hex-range save/load — **UN-DROPPED (2026-07-12, Honza), now SERVER-SIDE, ZERO ASM**. `memcpy $S-$E /path` (save) / `memcpy /path $A` (load) via REST `readmem`/`writemem` (DMA, 256 B chunks) + FTP `STOR`/`RETR`. The `$C000` conflict + hardest-asm-step problems vanish because no cartridge code is involved | `memcpy $C000-$CFFF /Temp/x` then `memcpy /Temp/x $4000` round-trips; stock sweep | 🔨 **server built + tests green 2026-07-12** (`UltimateHandler`, cloud/) — awaiting live HW test |
 | CONS | **Bank3-trampoline consolidation** (space fix): bank4 calls bank3's FROZEN helper copies via a small RAM trampoline; delete bank4's ~8 duplicated leaf helpers | reclaims ~250 B in bank4; bank3 untouched; UCI path (pwd/cd/dir) unchanged on HW; staged (prove 1 helper first) | 🔨 **built+verified 2026-07-11, awaiting HW test** — stage 1 (trampoline + cd's fin) HW-PASSED; stage 2 (reroute rest + delete 6 dupes) built: **+227 B reclaimed** (main-area free 10→237 B), zero dangling refs, pins hold. Bank4→bank3 via RAM tramp `$0386` (target in X/Y). See conversion_log3.md §18. Unblocks 16b-2 + steps 17-20 — ✅ **HW tested 2026-07-11 (both stages, as part of the step-16 pass)** |
-| 21 | **Device→mount-path binding**: There is just one UCI drive interface on the C64 Ultimate. To make the work a bit more comfortable,  I want to have shortcuts. #t will switch to the UCI drive (like it does already) and additionally it will change directory to /temp. #f like #t but will change directory to /flash, #h will switch to the UCI drive and change directory to /sd/home, #u will switch to the UCI drive and change directory to /usb0, #v will switch to the UCI drive and change directory to /usb1 | 🅳 **DEFERRED (2026-07-11), see §16-DEV** — needs unfreezing bank3 (device switch + new `#u` letter both live there); cleanly separable, does not block 16b/17–20 |
+| 21 | **Device→mount-path binding**: There is just one UCI drive interface on the C64 Ultimate. To make the work a bit more comfortable,  I want to have shortcuts. #t will switch to the UCI drive (like it does already) and additionally it will change directory to /temp. #f like #t but will change directory to /flash, #h will switch to the UCI drive and change directory to /sd/home, #u will switch to the UCI drive and change directory to /usb0, #v will switch to the UCI drive and change directory to /usb1 | `#t`→/temp, `#f`→/flash, `#h`→/sd/home, NEW `#u`→/usb0, `#v`→/usb1 auto-cd on switch; bare `#` shows U/V; pwd/cd/ll/mkdir route as UCI; stock sweep + TASS | ✅ **HW tested 2026-07-13 (16-DEV)** — bank3 24 B + bank4 22 B (both in-place, no shift) + bank6 264 B (`b6_autocd` @ `$9F58`); banks 0/1/2/5/7 identical; both `.crt` md5 `52c5f8ad…`; da65-verified. See conversion_log3.md §27 |
 | 22 | Verify pass-throughs + final sweep | `i:`, `m:`, `:` still work; all new commands once more; manual wording vs actual; update docs | ⬜ pending |
 
 ---
@@ -413,7 +413,16 @@ First UCI DOS/NET read from bank3. Port `uii_identify` (DOS `$01`) +
   lists the real disk; on `#c` lists server results; long listing + `CTRL` slows
   output (stock RR courtesy); stock sweep.
 
-### §16-DEV — Device→mount-path binding (DEFERRED, decision 2026-07-11) 🅳
+### §16-DEV — Device→mount-path binding 🔨 BUILT 2026-07-12 (was DEFERRED 2026-07-11)
+
+> **BUILT 2026-07-12 as step 21 (after get_path passed HW).** Final targets: `#t`→/temp,
+> `#f`→/flash, `#h`→/sd/home, NEW `#u`→/usb0, `#v`→/usb1. Done with MINIMAL in-place frozen edits
+> (no code shift): bank3 `hd_setdev` reroutes H/T/F (+U/V/unknown fall-through) into the bank5→bank6
+> chain where `b6_autocd` (bank6 `$9F58` pocket) sets `$cf2a` + issues UCI `CHANGE_DIR` to the mount
+> root; `hd_norm_cur`/`b4_curdev` learn U/V via a fill-area extension (range-accept for display /
+> remap-to-`T` for routing) so no frozen validator grows. Full write-up: conversion_log3.md §27. The
+> deferral note below is retained for history.
+
 
 **Request (Honza, HW test after 16a-fix):** the device letter should auto-navigate to a
 fixed Ultimate mount root, so a bare `#t` puts you in that drive/dir without a manual `cd`:
