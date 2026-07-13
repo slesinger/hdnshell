@@ -237,6 +237,13 @@ TMP install sequence (bank04, run from `$0400`): select bank 5 (`$DE00=$88`),
 copy window `$8100+` into RAM at `$9000`, then bank 6 (`$90`) and bank 7
 (`$98`) chunks, cart off (`$DE00=$0A`), `jmp $9000`.
 
+> **Note (HDN shell overlay):** the roles above are the STOCK image. The HDN Shell
+> wedge adds code into the *dead pockets* of banks **3, 4, 5 and 6** (the bytes the
+> installer never copies to RAM/REU: e.g. bank5/6 `$9E00-$9E9C`, `$8023-$80FF`,
+> `$9F58-$9FFF`) — it never touches the TMP payload that this map describes. The
+> shell's per-bank code map + the byte-level install/copy proof live in
+> `conversion_log3.md`; the command roadmap is in `next_steps.md`.
+
 Banks 4-7 cold-start vectors (`jmp $FCEF`) are boilerplate — reset always
 enters bank 0; these banks are only ever read through the window.
 

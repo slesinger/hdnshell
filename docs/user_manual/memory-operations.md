@@ -23,13 +23,15 @@ memcpy $c000-$cfff screendump.bin
 memcpy screendump.bin $4000
 ```
 
-The device follows the [current device](dos.md#current-device) (`#8`/`#9`/`#s`/`#h`/`#t`/`#f`), or you can target a specific device for just this one command by prefixing the filename with `#<device letter>:`, without switching your current device:
+`memcpy` reads and writes files on the **Ultimate filesystem** (the `t`/`f`/`h`/`u`/`v` devices). A relative `filename` is resolved against your **current directory**, so after `#t` (which puts you in `/temp`) `memcpy $c000-$cfff dump` writes `/temp/dump`; an absolute `/path/name` works too:
 
 ```
-memcpy $1000-$2000 #t:backup.bin
+#t
+memcpy $c000-$cfff dump          ; -> /temp/dump
+memcpy $c000-$cfff /flash/dump   ; absolute, ignores the current directory
 ```
 
-`memcpy` is not available on the `c` (CSDB) or `n` (network drive) virtual devices — there is nothing on the server side for a raw memory range to be copied to or from there. Use `cp` (see [File Operations](file-operations.md)) to move whole files between those and the Ultimate filesystem instead.
+`memcpy` is not available on the real IEC drives (`#8`/`#9`/`#s`) nor on the `c` (CSDB) / `n` (network drive) virtual devices — there is nothing there for a raw memory range to be copied to or from. Use `cp` (see [File Operations](file-operations.md)) to move whole files between those and the Ultimate filesystem instead.
 
 ## Reading Memory from the AI Assistant
 
