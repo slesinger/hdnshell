@@ -1234,7 +1234,13 @@ bank01_sub_87A9:
     bit $22                // 24 22
     bpl bank01_sub_8813              // 10 66
 bank01_sub_87AD:
-    ldx #$07               // A2 07
+    // was ldx #$07: scanned 7 entries incl. RUN/STOP ($83, table slot x=7 at
+    // $88AE). Dropped to 6 so RUN/STOP is never compared/matched here -- its
+    // macro ("%0:*") is disabled. The $83 byte stays put in bank01_data_88A8
+    // (untouched, table size/layout unchanged), just permanently unreachable.
+    // A RUN/STOP press now falls through to the same handling as any other
+    // non-macro key (cmp #$0d / #$8d below, then bank01_sub_873F).
+    ldx #$06               // A2 06
 bank01_sub_87AF:
     cmp $88a7,x            // DD A7 88
     beq bank01_sub_87EA              // F0 36
@@ -1284,7 +1290,10 @@ bank01_sub_87F8:
     dey                    // 88
     sta ($d1),y            // 91 D1
     bne bank01_sub_87F8              // D0 FB
-    lda #$25               // A9 25
+    // was lda #$25 ('%'): F1's quote-context fallback (cursor right after an
+    // unclosed quote) now types '/' too, matching the F1 -> "/0:*" change
+    // below. F2 (x==2) still falls through to the lda #$2f right after.
+    lda #$2f               // A9 2F
     cpx #$01               // E0 01
     beq bank01_sub_8805              // F0 02
     lda #$2f               // A9 2F
@@ -1383,11 +1392,14 @@ bank01_sub_88A5:
 // --- $88A8: function-key macro table --------------------------------------
 // Key codes F1,F2,F5,F7,F3,F8,RUN/STOP ($83) followed by the $00-terminated
 // strings typed into the keyboard buffer for each key:
-//   "%0:*"  "/0:*"  "L{shift-I}"  "R{shift-U}:"  "$:*"  "MON"  "%0:*"
+//   "/0:*"  "/0:*"  "L{shift-I}"  "R{shift-U}:"  "$:*"  "MON"  "%0:*"
 // (%/= fastload commands, $ = directory, MON = machine code monitor)
+// F1 changed from "%0:*" to "/0:*" (now identical to F2's string). The
+// RUN/STOP entry ($83) and its "%0:*" string are unchanged but dead: the
+// scan loop at bank01_sub_87AD no longer checks x=7 (RUN/STOP), see there.
 bank01_data_88A8:
 .errorif (* != $88A8), "bank01_data_88A8 shifted"
-    .byte $85, $89, $87, $88, $86, $8C, $83, $00, $25, $30, $3A, $2A, $00, $2F, $30, $3A    // data $88A8  "........%0:*./0:"
+    .byte $85, $89, $87, $88, $86, $8C, $83, $00, $2F, $30, $3A, $2A, $00, $2F, $30, $3A    // data $88A8  "......../0:*./0:"
     .byte $2A, $00, $4C, $C9, $0D, $00, $52, $D5, $3A, $0D, $00, $24, $3A, $2A, $0D, $00    // data $88B8  "*.L...R.:..$:*.."
     .byte $4D, $4F, $4E, $0D, $00, $25, $30, $3A, $2A, $0D, $00    // data $88C8  "MON..%0:*.."
 // --- $88D3: code resumes
@@ -4261,7 +4273,11 @@ hondani_matched:
     lda #$10               // $DE00 bank2 value (bit 4), same as stock $DEEE table
     jmp $dede              // gate: sta $de00 / pla / rti
 hondani_word:
-    .byte $48, $4F, $4E, $44, $41, $4E, $49, $00    // "HONDANI",0 (PETSCII)
+    // Renamed HONDANI -> HDN (auto-arming step 1). The match loop above is
+    // length-agnostic (it scans to this $00 terminator and derives the TXTPTR
+    // advance from Y), so only the data changes; the 4-byte shrink is absorbed
+    // by the pad below -> all downstream bank1 stays byte-identical.
+    .byte $48, $44, $4E, $00    // "HDN",0 (PETSCII)
 // Step 9a: the IERROR stub template moved out of this (full) pocket to the
 // survey-clean $9E3A run so it can grow from 3 to 23 bytes (see hd_stub there).
     .fill $9E10 - *, $00   // pad pocket back to original size

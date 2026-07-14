@@ -21,6 +21,20 @@ so far. Every step will have to be verified by Honza on real hardware before the
 
 ## Progress Tracking
 
+### Epic: Automatic arming (from TODO.md, 2026-07-14) — Alternative A (boot-arm + manual HDN)
+
+Rename `HONDANI`→`HDN` (pure local **instant** arm, no server round-trip); arm automatically
+on boot; keep the manual command + the existing self-disarm-on-program-launch (§17). Full
+design + rationale in `conversion_log3.md §28`.
+
+| Step ID | Change | HW Test Expectation | Status |
+|---|---|---|---|
+| AA1 | Rename HONDANI→HDN (bank1, 5 data bytes) + local-only instant arm (bank2, 3 bytes in-place: `cli/rts/nop`) | `HDN`↵ → **instant** `READY.` (no stall, server-down OK) then C=+CTRL+1..7 opens consoles; `HONDANI` no longer recognized; self-disarm on program launch + console switch + pwd/cd/ll + `#`-family + stock sweep + TASS all unchanged; **boot NOT yet auto-armed** (Step AA2) | 🔨 built+byte-verified 2026-07-14 (bank1 5 B, bank2 3 B; banks 0/3-7 identical; pins hold) — **awaiting HW test** |
+| AA2 | Boot-arm: call `cs_install` once at boot, after `$9D`=$80 (BASIC direct mode) so the first IRQ can't self-disarm | Cold boot → C=+CTRL+1..7 works immediately **without** typing HDN; regression unchanged | ⬜ next |
+| AA3 | Docs: rename HONDANI→HDN across `docs/user_manual/*`; add "what/why of arming" explainer; document boot-arm + re-arm-after-programs | Manual matches actual behavior | ⬜ |
+
+### Prior epic (steps 11–22 — the local shell command set)
+
 | Step ID | Change | HW Test Expectation | Status |
 |---|---|---|---|
 | 11a | Bank2→bank3 RAM trampoline round-trip PROOF (shim + trivial bank3 stub) | Type any bad line → **border colour advances one step** (bank3 ran) then `?SYNTAX ERROR`; `PRINT 1/0`→`?DIVISION BY ZERO`; console switch + stock sweep + TASS unchanged; auto-dispatch INTENTIONALLY off (bad line → stock error, no AI reply) | ✅ HW tested 2026-07-10 |

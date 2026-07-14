@@ -3434,12 +3434,21 @@ bank02_data_991E:
 // Remaining simplification: no close on a refused connect (no socket
 // exists then).
 hondani_net:
-    sei                    // no IRQ while UCI is mid-transaction
+    sei                    // no IRQ while arming
     jsr cs_install         // step 10a: (re)arm the CINV console-switch key
                            //   hook (RAM stub @ $03A0). Safe under this sei;
-                           //   see cs_install below. Absorbs 3 bytes of the
-                           //   pad before $9B2E -- hondani_err stays pinned.
-    lda $df1d              // UCI ident register ($C9 = present)
+                           //   see cs_install below.
+    // auto-arming step 1: HDN is a LOCAL-ONLY arm command. It must NOT round-trip
+    // the server (the old HONDANI fell through into the network send below, and a
+    // bare keyword sent an empty request that stalled ~seconds until it timed out).
+    // Return to READY immediately after arming -- instant, works with the server
+    // down. This is an IN-PLACE overwrite of the old `lda $df1d` (3 bytes ->
+    // cli/rts/nop) so NOTHING shifts: hn_* helpers keep their addresses and the
+    // whole network block below (dead for the keyword path, still called by
+    // hondani_err's auto-dispatch) stays byte-identical.
+    cli                    // (was: lda $df1d, byte 1)
+    rts                    // -> $DEE3 restores bank01 -> $E37B READY  (was byte 2)
+    nop                    // filler: keeps the dead code below at its old address
     sta $cf20
     cmp #$c9
     bne hn_jfail

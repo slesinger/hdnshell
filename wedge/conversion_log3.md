@@ -1930,3 +1930,104 @@ tested:
   root by case (unlikely — `cd /temp` worked since step 15c), adjust the `b6_ac_paths` blob.
 - **Known fail-soft:** if a mount root doesn't exist (e.g. no USB stick in usb1), the auto-cd silently
   leaves you where you were; `pwd` reveals it. No hang, no error.
+
+## 28  Auto-arming epic — Step 1: rename HONDANI→HDN + local-only instant arm (built+byte-verified, awaiting HW test)
+
+New epic (from `TODO.md` "automatic arming"). Goal (Honza, 2026-07-14): **arming must be
+automatic on boot** and the manual command **renamed HONDANI→HDN**, doing a **pure local
+instant arm — NO server round-trip** (bare HONDANI used to send an empty request that
+stalled ~seconds until it timed out). The auto disarm-on-program-launch (`$9D` self-disarm,
+§17) is KEPT. Chosen approach **Alternative A** (boot-arm + manual HDN re-arm), split into
+small HW-tested steps; the heavy console keyscan (`cs_modal`) is already on-demand, so the
+only always-on piece is the ~71 B detector stub at `$03A0`.
+
+**What "arming" is (for the docs):** typing the keyword runs `cs_install` (bank2), which
+copies the CINV IRQ stub to `$03A0`, copies the 1..7 digit table to `$03F0`, and points
+KERNAL's `$0314` IRQ vector at the stub. That hook is what lets **C=+CTRL+1..7** open the
+server consoles. Without it those keys do nothing. The stub **self-disarms in program mode**
+(`$9D`==0) so a fastloaded program that reuses the tape buffer can't run the clobbered stub
+and crash (§17). So after running a program you are disarmed and re-arm with `HDN`.
+
+### Step 1 changes (this step)
+- **bank1 (frozen) — 5 data bytes only.** `hondani_word` "HONDANI",0 → "HDN",0 at `$9E04`.
+  The bank1 match loop is **length-agnostic** (scans to the `$00` terminator, derives the
+  TXTPTR advance from `Y` — `bank01.asm:4229`), so no logic edit; the 4-byte shrink is
+  absorbed by the existing `.fill $9E10 - *` pad → all downstream bank1 byte-identical.
+  Byte-diff vs HEAD: `$9E05 4F→44`, `$9E07 44→00`, `$9E08 41→00`, `$9E09 4E→00`, `$9E0A 49→00`
+  (`$9E06`='N'=$4E unchanged coincidentally). `HDNx` (trailing letter) still falls through to
+  the stock scanner via the existing `cmp #$41/bcs` guard; `HDN <junk>` arms and ignores the
+  rest (no bank1 cost to reject it — documented).
+- **bank2 — 3 bytes IN PLACE (zero shift).** `hondani_net` was `sei / jsr cs_install /
+  <network round-trip>`. Overwrote the first dead instruction `lda $df1d` (`AD 1D DF` @
+  `$9922`) with `cli / rts / nop` (`58 60 EA`), so HDN arms then returns straight to
+  `$E37B READY`. The network block below is now dead for the keyword path but is kept
+  **byte-identical** — `hondani_err`'s auto-dispatch still calls the shared helpers
+  (`hn_push/hn_fin/hn_wdav/hn_close/hn_hdr/hn_ip`). Chose in-place overwrite over an insert
+  specifically so NOTHING shifts (an insert bumped every helper caller's operand = 531 B of
+  noise); this way only 3 bytes change.
+
+**Verification:** build clean; `.errorif` pins all hold. Symbols unmoved: `hondani_net=$991E`,
+`cs_install=$9C41`, `hondani_err=$9B2E`, `console_switch=$9CB7`, `hn_push=$9A71`, `hn_ip=$9B14`.
+Patched entry disassembles `78 20 41 9C 58 60 EA` = `sei / jsr $9C41 / cli / rts / nop`. Diff
+vs HEAD: **bank1 = 5 bytes, bank2 = 3 bytes; banks 0/3/4/5/6/7 byte-identical** (unchanged
+sources).
+
+**HW test expectation (Step 1):**
+- Type `HDN` ↵ → returns to `READY.` **instantly** (no multi-second stall, works with the
+  server down). Then **C=+CTRL+1..7** opens the server consoles (arming worked).
+- `HONDANI` ↵ is **no longer recognized** → stock `?SYNTAX ERROR` / AI auto-dispatch (whatever
+  an unknown line does today), NOT the arm.
+- Regression: after `HDN`, running a program still self-disarms (F1/RUN as documented);
+  console switch, pwd/cd/ll, `#`-family, status/time/menu, stock sweep + TASS all unchanged.
+- **Boot is NOT yet auto-armed** — that is Step 2. After a cold boot you must type `HDN` once.
+
+### Next
+- **Step 2 — boot-arm:** call `cs_install` once at boot, at a point where `$9D`=$80 (BASIC
+  direct mode) so the first IRQ can't self-disarm it. Then the first `READY` is already armed.
+- **Step 3 — docs:** rename HONDANI→HDN across `docs/user_manual/*`, add the "what/why of
+  arming" explainer, document boot-arm + re-arm-after-programs.
+
+## 29  F1 macro `%0:*`→`/0:*`, RUN/STOP macro disabled (built+byte-verified, awaiting HW test)
+
+**Request (Honza, 2026-07-14):** pressing F1 (RR fastload-first-file) types `%0:*` on screen;
+change it to `/0:*`. Follow-up during review: also remove the C=+RUN/STOP macro (Honza only
+ever triggers it by mistake).
+
+**Where:** `bank01_data_88A8` (`$88A8`), the function-key macro table found while investigating
+this — 7 key codes (F1,F2,F5,F7,F3,F8,RUN/STOP=`$83`) followed by parallel `$00`-terminated
+strings typed into the keyboard buffer. F1's string was `$25,$30,$3A,$2A,$00` (`%0:*`, no CR);
+F2's was already `$2F,$30,$3A,$2A,$00` (`/0:*`, no CR). There is a SECOND, independent encoding
+of the same `%`/`/` choice at `bank01_sub_87EA` (`$87F8-$8805`): a quote-context fallback (cursor
+sits right after an unclosed `"` in the input line) that hardcodes `lda #$25`/`#$2f` rather than
+reading the table — both had to change for F1 to be consistently `/` everywhere.
+
+**Changes (all in-place, zero byte-shift, zero size change):**
+- `$88B0`: F1's table string first byte `$25`→`$2F` (now byte-identical to F2's `/0:*`).
+- `$87F8` (`lda #$25`→`lda #$2f`): F1's quote-context fallback now also emits `/`.
+- `bank01_sub_87AD` (`$87AD`, `ldx #$07`→`ldx #$06`): the dispatch loop that matches a pressed
+  key's code against the 7 table slots (`cmp $88a7,x` for `x=7..1`) now only scans `x=6..1`
+  (F8,F3,F7,F5,F2,F1) — slot `x=7` (RUN/STOP, `$88AE`=`$83`) is never compared, so RUN/STOP can
+  no longer match. The `$83` key code and its `%0:*` string **stay physically in the table,
+  untouched** — disabling the mapping this way (narrowing the scan bound) avoids touching table
+  layout/size at all, so nothing downstream shifts. A RUN/STOP press now falls through to
+  whatever any other non-macro key already does at this point (`cmp #$0d`/`#$8d` then
+  `bank01_sub_873F`, i.e. normal input-line character handling — same as typing an ordinary key).
+
+**Cross-reference:** §23 investigated a DIFFERENT bug involving this same F1 `%0:*` string (armed
+console-switch hook + F1 fastload-autorun garbles the screen, because `%0:*` bypasses `RUN`/`LOAD`
+so the `$9D` self-disarm never fires). That bug is orthogonal to the `%`→`/` character itself —
+`/0:*` bypasses `RUN`/`LOAD` exactly the same way `%0:*` did, so the §23 workaround (launch
+autostart programs with `LOAD"*",8,1`+`RUN` while armed, not F1) still applies unchanged.
+
+**Verification:** build clean, all `.errorif` pins hold (bank1 unshifted downstream of the table,
+confirmed by rebuilding and reading the raw bytes at `$88A8` back out of the built image). Diff vs
+HEAD: **bank1 = 3 bytes changed** (`$87F8`, `$87AD`+1, `$88B0`); all other banks byte-identical.
+
+**HW test expectation:**
+- Press **F1** on a disk with a program on it → screen shows `/0:*` (not `%0:*`), fastload+autorun
+  still works exactly as before.
+- Press **F2** → unchanged, still types `/0:*`.
+- Press **C=+RUN/STOP** → no longer types anything special; behaves like an ordinary/no-op key
+  press in that context (confirm it does NOT still type `%0:*`, and confirm nothing looks visually
+  broken — e.g. no stray character echoed).
+- Regression: F5/F7/F3/F8 macros (directory shortcuts, monitor) unchanged; stock sweep; TASS.

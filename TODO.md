@@ -2,10 +2,25 @@
 
 ```
 
-#sonnet
+
+
+
+hdn shell boot screen
+
+Server UI has Enable and Disable buttons who need to influence if HDN shell cartridge is inserted or is empty slot. Previously these buttons worked but instead of manipulating cartridge slot, it was manipulating BASIC ROM.
+
+I cannot see files/directories in the Server UI File Manager. Even if I reload the UI page. It was working before. They appear onyl if I go to "Connected" page, scan for C64U IP address and the I click on the File manager in menu. Then I can see the files. On this spot if I reload the page the files are gone again.
+
+Ask me any questions before you proceed to ensure you understand the task well.
+
+
 
 C=+RUN/STOP executes command %0:* which is in most cases unwanted, fat finger mistake. Unbind the key combination.
 Ask me any questions before you proceed to ensure you understand the task well.
+
+
+
+Change F1 command from % to /. The issue is that % will fastload and run but this may cause issue with programs that are not compatible with HONDANI arming. RUN command always unarms and should be fine.
 
 
 
@@ -43,10 +58,7 @@ QUEUE
 remove csdb command. Only #c is valid.
 Run prg file by typing its name.
 
-ANNOYING
-Nekdy nejde C=+RESTORE utlimate menu, musi se to vypnout, pak to nejde vypnout ani pres HDN UI
-
-
+mnt vyzaduje vsechny zvaku lowercase.d64
 
 
 m:<dotaz> fungoval a bez jakekoliv zmenu crt nebo serveru to zacalo zatuhavat. ulozil jsem celou pamet do home/memory.d64
