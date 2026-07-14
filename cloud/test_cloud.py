@@ -7,7 +7,13 @@ import socket
 import threading
 import time
 from cloud_server import C64Server
-from sdk.command_handler import CommandHandler, MAGIC_BYTES, ResponseType
+from sdk.command_handler import (
+    CommandHandler,
+    MAGIC_BYTES,
+    ResponseType,
+    ModifierFlags,
+    swap_c64_modifiers,
+)
 
 
 @pytest.fixture
@@ -98,6 +104,23 @@ class TestCommandHandlers:
 
         assert response is not None
         assert len(response) > 0
+
+    def test_swap_c64_modifiers(self):
+        """Raw C64 SHFLAG {b0 SHIFT,b1 C=,b2 CTRL} -> canonical ModifierFlags
+        {b0 SHIFT,b1 CTRL,b2 COMMODORE}: swap b1<->b2, keep SHIFT."""
+        SHF_SHIFT, SHF_CBM, SHF_CTRL = 0x01, 0x02, 0x04
+        cases = {
+            0x00: 0x00,
+            SHF_SHIFT: ModifierFlags.SHIFT,
+            SHF_CBM: ModifierFlags.COMMODORE,
+            SHF_CTRL: ModifierFlags.CTRL,
+            SHF_CBM | SHF_CTRL: ModifierFlags.CTRL | ModifierFlags.COMMODORE,
+            SHF_SHIFT | SHF_CBM: ModifierFlags.SHIFT | ModifierFlags.COMMODORE,
+            SHF_SHIFT | SHF_CTRL: ModifierFlags.SHIFT | ModifierFlags.CTRL,
+            0x07: 0x07,
+        }
+        for raw, expected in cases.items():
+            assert swap_c64_modifiers(raw) == expected, f"raw={raw:#04x}"
 
     def test_handle_text_input_simple(self):
         """Test handling simple text input"""

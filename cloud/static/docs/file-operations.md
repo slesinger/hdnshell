@@ -4,7 +4,7 @@ Commands for creating directories, copying files, and moving raw memory blocks. 
 
 ## Creating Directories
 
-`mkdir <name>` — Create a directory in the current location. Only supported on the Ultimate filesystem (`h`/`t`/`f`).
+`mkdir <name>` — Create a directory in the current location. Only supported on the Ultimate filesystem (`t`/`f`/`h`/`u`/`v`). A relative `<name>` is created inside the current directory; an absolute `/path/name` works too.
 
 ## Copying Files (`cp`)
 
@@ -12,7 +12,7 @@ Commands for creating directories, copying files, and moving raw memory blocks. 
 
 - On `n` (network drive): downloads `<name>` from the current network-drive directory into `/temp`.
 - On `c` (CSDB): downloads `<name>` (e.g. a release's `.zip`) into `/temp` — see [CSDB](csdb.md) for the full workflow.
-- On `h`/`t`/`f`: uploads `<name>` from `/temp` into the current directory of whichever server-backed device (`n` or `c`) you last had active.
+- On `t`/`f`/`h`/`u`/`v` (Ultimate storage): uploads `<name>` from `/temp` into the current directory of whichever server-backed device (`n` or `c`) you last had active.
 - Not supported on `8`/`9`/`s` (no server-side session to bridge to).
 
 ## Saving and Loading Arbitrary Memory

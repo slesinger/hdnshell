@@ -18,7 +18,9 @@ HDN Shell RR is a wedge inside a Retro Replay cartridge. You type at the ordinar
 
 For directory navigation (`cd`, `pwd`, `ll`/`dir`, `#<device>`), disk images (`mnt`/`umnt`), and file transfer (`mkdir`, `cp`), see [Navigating Disk Drives and Directories](dos.md). For saving/loading raw memory blocks, see [Memory Operations](memory-operations.md).
 
-`ll` and `dir` accept a filter pattern, e.g. `ll outrun*` lists only matching entries.
+`ll` and `dir` accept a filter pattern, e.g. `ll outrun*` lists only entries whose name starts with `outrun` (case-insensitive prefix match; the trailing `*` is optional).
+
+Switching to an Ultimate drive with `#t`/`#f`/`#h`/`#u`/`#v` also jumps to that drive's mount root (`/temp`, `/flash`, `/sd/home`, `/usb0`, `/usb1`) — see [Navigating Disk Drives and Directories](dos.md#current-device).
 
 Anything typed that isn't one of the commands above (or valid BASIC) is forwarded to the AI chat automatically — there's no need to prefix it with anything. See [AI Assistance](ai-assistance.md).
 

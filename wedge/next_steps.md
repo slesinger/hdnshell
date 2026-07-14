@@ -33,6 +33,27 @@ design + rationale in `conversion_log3.md §28`.
 | AA2 | Boot-arm: call `cs_install` once at boot, after `$9D`=$80 (BASIC direct mode) so the first IRQ can't self-disarm | Cold boot → C=+CTRL+1..7 works immediately **without** typing HDN; regression unchanged | ⬜ next |
 | AA3 | Docs: rename HONDANI→HDN across `docs/user_manual/*`; add "what/why of arming" explainer; document boot-arm + re-arm-after-programs | Manual matches actual behavior | ⬜ |
 
+### Debt cleanup (from TODO.md)
+
+| Step ID | Change | HW Test Expectation | Status |
+|---|---|---|---|
+| KM1 | **Modifier-key mapping** — `key_send` forwards raw SHFLAG `$028d` (bank2, 1 byte: `lda #$00`→`lda $028d`); the SHFLAG→ModifierFlags b1↔b2 swap moves SERVER-SIDE (`swap_c64_modifiers`, applied on keypress ingest), so all console apps speak one canonical convention. file-editor C= chords → `MOD_COMMODORE`. | In file editor: **C=+<**/**C=+>** page up/down, C=+cursor = word left/right; normal typing everywhere unchanged; console switch + pwd/cd/ll + `#`-family + stock sweep + TASS | 🔨 built+byte-verified 2026-07-14 (bank2 +1 B, banks 0/1/3–7 identical; cloud suite 165 passed) — **awaiting HW test**. See conversion_log3.md §30 |
+
+### Epic: Boot banner (from TODO, 2026-07-14) — line 2 only (REU + UCI + RR)
+
+Change the cold-boot **second** line (the cartridge's `CYBERPUNX RETRO REPLAY 64KB - 3.8P`,
+`bank03_api_21` @ `$9FC8`) to show detected REU size + short UCI DOS version + keep `RR 3.8P`.
+**Line 1 (`COMMODORE 64 BASIC V2`, KERNAL `$e422`) stays stock** — changing it needs a frozen-bank1
+edit + `$e422` reimplementation (the path the broken `wedge-latest-not-working` tree took). Full
+viability analysis: `conversion_log3.md §31`.
+
+| Step ID | Change | HW Test Expectation | Status |
+|---|---|---|---|
+| BB-pre | Prove a bank5/6 reserve pocket is reachable from `api_21` **at cold boot** (border-flash stub via `call_bankX` trampoline) | Cold boot → border colour shifted after the RETRO REPLAY line; stock sweep + TASS/TMP intact | ⬜ next (awaiting go-ahead) |
+| BB1 | NON-DESTRUCTIVE `reu_detect` (read-save-restore) + decimal-MB print in the pocket; api_21 prints `<n>M REU` | Correct REU MB shown on real REU; no REU → field omitted; TASS/TMP intact (probe must not corrupt the REU image) | ⬜ |
+| BB2 | Short UCI-version parse (`st_identify` → print `Vx.y`); final line `<n>M REU  UCI Vx.y  RR 3.8P`; graceful fall-through (no UCI / no REU) | Boot line shows all three fields; Command Interface off → skips `UCI Vx.y`, no hang; stock sweep + TASS/TMP | ⬜ |
+| BB3 | Docs: reconcile `installation_alternative.md` "Verify it works" to actual RR-wedge screen (line 1 = `BASIC V2`) | Manual matches real boot screen | ⬜ |
+
 ### Prior epic (steps 11–22 — the local shell command set)
 
 | Step ID | Change | HW Test Expectation | Status |
@@ -101,7 +122,7 @@ Left over debt from last implementation of step 10:
 1. Bank1 per-line self-heal / launch-disarm — the one real gap you already hit: the hook is armed by typing HONDANI and is lost after RUN/LOAD/TASS (re-type HONDANI to re-arm). The manual's intent is that any typed line re-arms it. This needs a small bank1 change — and bank1 is frozen with a full pocket, so it's the highest-risk remaining item and deserves its own careful step.
    - **STATUS (2026-07-10): investigated in `conversion_log2.md`, DEFERRED to the bank3 era (do it as part of / after step 11).** Hardware-characterized: **only `TASS` wipes CINV `$0314`** (RUN/LOAD do NOT); the wipe resets only the vector — both tape-buffer stubs (`$0340`, `$03A0`) survive. The heal is a guarded vector re-point `$0314→$03A0` (guard on the armed-flag `$03ED`, which survives TASS and is 0 pre-HONDANI — required, else the first pre-HONDANI line aims the IRQ at `$03A0=BRK`). It lands **exactly 1 byte over** bank1's clean free space (pocket 5 B + gap 8 B), and the only remaining shave touches the MERGE-sensitive IERROR idempotency check — not worth it in frozen bank1. **In bank3 there is room**: carry the guarded re-point (and a proper **local-only `HDN` re-arm command**, no network round-trip) in bank3, called from the existing per-line tap. Full design (exact bytes, guard, shadow-loop reclaim) is in `conversion_log2.md`. **Meanwhile the manual re-arm is `HONDANI`** (installs the hook today, server up or down).
    - **UPDATE (2026-07-12): the DISARM side is the live bug (armed hook crashes RR F1 `%0:*` fastload-autorun); WORKAROUND accepted, see conversion_log3.md §23.** Root cause fully isolated: `HONDANI`→`LOAD"*",8,1`+`RUN`/`MON`+`G` all work (the `$9D` self-disarm fires on a real `RUN`), but **F1 = `%0:*`** (RR menu fastload+autorun) never does a `RUN`/`LOAD`, so the hook stays live and RR clobbers the `$03A0` stub → garble. Disarm logic is trivial (RR CINV is stock `$EA31`, so `set $0314=$EA31`, 8 B, no guard) but **does not fit** the per-line bank1 tap (max 8 B contiguous free; ~12 B needed; the IERROR idempotency bytes are load-bearing). **Deferred real fix:** hook `CRUNCH` `$0304` via a disarm stub at `$03F7-$03FF` (fastload-safe RAM, outside the `$0348-$03E8` clobber zone) chaining to `$A57C` — avoids bank1. **Meanwhile: when armed, launch autostart programs with `LOAD"*",8,1`+`RUN` (or `MON`+`G`), not F1.**
-2. Correct modifier mapping — key_send sends modifiers 0; only matters for console apps using explicit CTRL/C= chords (and note those two bits are swapped between SHFLAG and the server's flags).
+2. ~~Correct modifier mapping — key_send sends modifiers 0; only matters for console apps using explicit CTRL/C= chords (and note those two bits are swapped between SHFLAG and the server's flags).~~ **RESOLVED (KM1, 2026-07-14):** key_send now forwards the raw SHFLAG byte (1-byte bank2 edit — bank2 was full); the b1↔b2 C=/CTRL swap lives server-side (`swap_c64_modifiers`, applied on ingest). Built+byte-verified, awaiting HW test. See conversion_log3.md §30.
 3. Bank2's free run is nearly full (7 bytes left), so any of these will want the bank3 reserve or a small refactor.
 
 

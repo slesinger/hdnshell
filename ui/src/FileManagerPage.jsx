@@ -69,6 +69,15 @@ function FileManagerPage({ lastC64Ip }) {
   const [isDragOver, setIsDragOver] = useState(false);
   const dragCounterRef = useRef(0);
 
+  // Keep in sync with the parent's C64 IP, which is fetched asynchronously
+  // after mount (e.g. on page reload) and may not be known yet when this
+  // component's initial state is created.
+  useEffect(() => {
+    if (lastC64Ip && lastC64Ip !== c64Ip) {
+      setC64Ip(lastC64Ip);
+    }
+  }, [lastC64Ip]);
+
   // Load initial directory
   useEffect(() => {
     if (c64Ip && currentPath) {

@@ -158,10 +158,11 @@ KEY_SHIFT_UPARROW = 0xDE
 KEY_CBM_ASTERISK = 0xDF
 
 
-# Modifier flags (from command_handler.py)
-# MOD_SHIFT = 0x01
-# MOD_CTRL = 0x02
-# MOD_COMMODORE = 0x04
+# Modifier flags (server-canonical, from command_handler.py; the wedge's raw
+# SHFLAG is swapped to this convention on ingest -- see swap_c64_modifiers).
+MOD_SHIFT = 0x01
+MOD_CTRL = 0x02
+MOD_COMMODORE = 0x04
 
 # ── Editor modes ─────────────────────────────────────────────────────
 MODE_EDIT = 0
@@ -535,17 +536,17 @@ class FileEditorConsole(ServerConsole):
         d = self.doc
 
         # ─ Navigation ─
-        # Note: CBM+cursor_down sends KEY_CRSR_UP (0x91) with mod=0x02
-        #       CBM+cursor_right sends KEY_CRSR_LT (0x9D) with mod=0x02
+        # Note: CBM+cursor_down sends KEY_CRSR_UP (0x91) with mod=MOD_COMMODORE
+        #       CBM+cursor_right sends KEY_CRSR_LT (0x9D) with mod=MOD_COMMODORE
         if key == KEY_CRSR_UP:
-            if mod & 0x02:  # CBM+cursor_down → word left
+            if mod & MOD_COMMODORE:  # CBM+cursor_down → word left
                 self._word_left(d)
             else:
                 d.cursor_y -= 1
         elif key == KEY_CRSR_DN_CTRLQ:
             d.cursor_y += 1
         elif key == KEY_CRSR_LT:
-            if mod & 0x02:  # CBM+cursor_right → word right
+            if mod & MOD_COMMODORE:  # CBM+cursor_right → word right
                 self._word_right(d)
             else:
                 d.cursor_x -= 1
@@ -558,16 +559,16 @@ class FileEditorConsole(ServerConsole):
                 d.cursor_y += 1
                 d.cursor_x = 0
         elif key == KEY_HOME_CTRLS:
-            if mod & 0x02:  # CTRL modifier
+            if mod & MOD_COMMODORE:  # CBM+HOME → end of line
                 d.cursor_x = len(d.cur_line())
             else:
                 d.cursor_x = 0
         elif key == KEY_CLR:
             d.cursor_y = 0
             d.cursor_x = 0
-        elif key == KEY_SHIFT_COMA and mod & 0x02:  # CBM+< → page up
+        elif key == KEY_SHIFT_COMA and mod & MOD_COMMODORE:  # CBM+< → page up
             d.cursor_y -= self._edit_rows()
-        elif key == KEY_SHIFT_PERIOD and mod & 0x02:  # CBM+> → page down
+        elif key == KEY_SHIFT_PERIOD and mod & MOD_COMMODORE:  # CBM+> → page down
             d.cursor_y += self._edit_rows()
 
         # ─ Editing ─
@@ -628,12 +629,12 @@ class FileEditorConsole(ServerConsole):
         elif key == KEY_CBM_S:
             self._cmd_save()
         elif (
-            key == KEY_SHIFT_SEMICOLON and mod & 0x02
+            key == KEY_SHIFT_SEMICOLON and mod & MOD_COMMODORE
         ):  # CBM+; → indent line by 2 spaces
             d.set_cur_line("  " + d.cur_line())
             d.cursor_x += 2
         elif (
-            key == KEY_SHIFT_COLON and mod & 0x02
+            key == KEY_SHIFT_COLON and mod & MOD_COMMODORE
         ):  # CBM+: → dedent line by up to 2 spaces
             line = d.cur_line()
             removed = min(2, len(line) - len(line.lstrip(" ")))

@@ -4187,10 +4187,13 @@ cra_fail:
     rts
 
 // key_send -- forward one typed key (A = PETSCII) to w_console as a KEYPRESS;
-// the server updates that console and DMA-repaints (no ack). Modifiers = 0:
-// GETIN already folded shift/C= into the PETSCII code, so basic typing needs no
-// modifier byte. A real SHFLAG->ModifierFlags map is a later refinement (note:
-// the C= and CTRL bits are swapped between SHFLAG and the server's flags).
+// the server updates that console and DMA-repaints (no ack). We forward the RAW
+// SHFLAG byte ($028d = {b0 SHIFT, b1 C=, b2 CTRL}) as the modifier: bank2 is full
+// (one free byte) so the SHFLAG->ModifierFlags remap lives SERVER-SIDE, where the
+// C= and CTRL bits (which are swapped between SHFLAG and the server's flags) are
+// corrected once on ingest. Basic typing is unaffected -- GETIN already folded
+// shift/C= into the PETSCII code; the modifier byte only drives explicit C=/CTRL
+// chords in the console apps (e.g. file-editor C=+< / C=+> page up/down).
 key_send:
     sta $cf29              // stash the key
     jsr cs_connect
@@ -4206,8 +4209,8 @@ key_send:
     sta $df1d
     lda $cf29              // PETSCII key
     sta $df1d
-    lda #$00               // modifiers = 0 (see header)
-    sta $df1d
+    lda $028d              // raw SHFLAG {b0 SHIFT,b1 C=,b2 CTRL}; the server swaps
+    sta $df1d              //   b1<->b2 into its canonical ModifierFlags on ingest
     jsr hn_push
     bcs ks_close
     jsr hn_fin

@@ -41,11 +41,23 @@ class ResponseType:
 
 
 class ModifierFlags:
-    """Modifier flags for keypress commands"""
+    """Modifier flags for keypress commands (server-canonical convention)"""
 
     SHIFT = 0x01
     CTRL = 0x02
     COMMODORE = 0x04
+
+
+def swap_c64_modifiers(raw: int) -> int:
+    """Convert a raw C64 SHFLAG byte to the server-canonical ModifierFlags.
+
+    The wedge forwards the KERNAL SHFLAG ($028D) verbatim because bank2 has no
+    room to remap it. SHFLAG lays the bits out as {b0 SHIFT, b1 C=, b2 CTRL},
+    whereas the server's ModifierFlags is {b0 SHIFT, b1 CTRL, b2 COMMODORE} --
+    i.e. the C= and CTRL bits are swapped. Swap b1<->b2, keep SHIFT (b0); other
+    bits are always 0 on SHFLAG and are ignored.
+    """
+    return (raw & 0x01) | ((raw >> 1) & 0x02) | ((raw << 1) & 0x04)
 
 
 class CommandHandler:
@@ -112,7 +124,7 @@ class CommandHandler:
             )
 
         petscii_code = data[0]
-        modifiers = data[1]
+        modifiers = swap_c64_modifiers(data[1])
 
         # Convert PETSCII to ASCII for logging
         ascii_code = Petscii.petscii2ascii(petscii_code)
@@ -275,7 +287,7 @@ class CommandHandler:
         """
         # print(f"handle_console_keypress: console_id={console_id}, data={data.hex()}")
         petscii_code = data[0]
-        modifiers = data[1]
+        modifiers = swap_c64_modifiers(data[1])
         mgr = ConsoleManager.instance()
         mgr.handle_keypress(console_id, session_id, petscii_code, modifiers)
 

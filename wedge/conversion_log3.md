@@ -2031,3 +2031,141 @@ HEAD: **bank1 = 3 bytes changed** (`$87F8`, `$87AD`+1, `$88B0`); all other banks
   press in that context (confirm it does NOT still type `%0:*`, and confirm nothing looks visually
   broken — e.g. no stray character echoed).
 - Regression: F5/F7/F3/F8 macros (directory shortcuts, monitor) unchanged; stock sweep; TASS.
+
+## 30  Modifier-key mapping — forward raw SHFLAG, swap server-side (built+byte-verified 2026-07-14)
+
+**Request (Honza, 2026-07-14):** fix the long-standing `key_send` modifier bug — the wedge sends
+`modifiers=0` for every forwarded console keystroke, so console apps that use explicit **C=/CTRL
+chords** never see the modifier. Concretely: **C=+< / C=+>** (page up/down) and C=+cursor
+(word left/right) in the server-side file editor did nothing. A second, related defect: the C=
+and CTRL bits are **swapped** between the C64 SHFLAG and the server's `ModifierFlags`.
+
+**Analysis.** Two facts set the design:
+1. **`key_send` lives in bank2, which is FULL** — the routine ends at `$9E7E` with the data wall
+   at `$9E80` = exactly **1 free byte**. A read-mask-remap (table swap of b1↔b2) needs 8–14 bytes
+   and does not fit. So the SHFLAG→ModifierFlags remap **cannot** live in the cartridge.
+2. **The bit layouts** are: C64 SHFLAG `$028D` = `{b0 SHIFT, b1 C=, b2 CTRL}`; server-canonical
+   `ModifierFlags` = `{b0 SHIFT, b1 CTRL, b2 COMMODORE}` — i.e. **b1↔b2 swapped**, b0 shared.
+   Basic typing is unaffected either way: GETIN already folds SHIFT/C= into the PETSCII code and
+   CTRL chords arrive as control codes; the modifier byte only drives explicit chords in apps.
+
+**Design (Honza approved "efficient solution, server-side if need be"):** the cartridge forwards
+the **raw SHFLAG byte** verbatim (costs exactly the 1 free bank2 byte), and the remap lives
+**server-side**, applied **once on ingest** so every console app speaks one canonical convention.
+
+**Cartridge change — 1 byte (bank2 `key_send`, `$9E6E`):**
+- `lda #$00` (`A9 00`) → `lda $028d` (`AD 8D 02`). The following `sta $df1d` is unchanged.
+- Net +1 byte: the `bcs ks_done` operand at `$9E4F` bumps `2E→2F` (target moved down 1), the
+  routine tail shifts down 1, `rts` lands at `$9E7F` (the former fill byte), and `$9E80` (real
+  data band `dec $01/lda ($bb),y/…`) is **untouched**. Byte-diff vs the pre-edit baseline is
+  exactly these bytes; **banks 0/1/3–7 byte-identical** (only `bank02.asm` changed). Build clean,
+  `.errorif ($9E80)` wall pin holds. Archive `build/archive-KM-shflag.bin`.
+- No mask needed — SHFLAG's upper bits are always 0.
+
+**Server changes (`cloud/`, pytest-covered):**
+- `sdk/command_handler.py`: new `swap_c64_modifiers(raw)` = `(raw&1) | ((raw>>1)&2) | ((raw<<1)&4)`
+  (swap b1↔b2, keep SHIFT). Applied at both keypress ingest points — `handle_keypress` (logging)
+  and `handle_console_keypress` (the app-facing path, before `ConsoleManager.handle_keypress`).
+- `server-apps/file_editor_console.py`: its 7 C= chord tests were written against the raw-SHFLAG
+  position (`mod & 0x02`); post-swap C= is canonical `MOD_COMMODORE` (0x04), so all 7 became
+  `mod & MOD_COMMODORE`. Uncommented the `MOD_*` constants; corrected two stale comments
+  (`# CTRL modifier` → `CBM+HOME`; the `mod=0x02` wire note → `mod=MOD_COMMODORE`).
+- **Other apps already canonical:** `telegram_chat` uses `mod & MOD_COMMODORE` (0x04) ✓;
+  `wiki_browser.MOD_CTRL=0x02` is an unused constant; `rss_reader` tests no bits. No changes.
+- Tests: `test_cloud.py::test_swap_c64_modifiers` (8-way truth table) + new
+  `test_file_editor_modifiers.py` (C=+< / C=+> page, no-modifier does not page, C=+cursor word
+  motion differs from plain). Full cloud suite **165 passed, 1 skipped** (was 161).
+
+**Coherence note (Honza confirmed):** in `cs_modal` we run our own `SCNKEY` then `GETIN` with
+IRQs masked, so `$028D` reflects the modifiers held during the scan that produced the key — no
+intervening scan desyncs them.
+
+**HW test expectation (server up):**
+- In the file editor (console 2), **C=+<** pages up, **C=+>** pages down; C=+cursor jumps by word.
+- Normal typing across all consoles unchanged (SHIFT/C= folding, CTRL control codes) — no
+  stray/duplicated characters.
+- Full regression: console switch (C=+CTRL+1..7), pwd/cd/ll, `#`-family, stock sweep, TASS/TMP.
+
+> **Note on the flashed build:** this cartridge bundles §28 (HDN rename + instant arm), §29 (F1
+> macro `/0:*` + RUN/STOP off) and §30 together — all bank1/bank2 in-place, no code shift. Byte
+> deltas are independent and each verified separately vs the pre-change baseline.
+
+## 31  Boot-banner change — VIABILITY ANALYSIS (2026-07-14)
+
+**Task:** change the cold-boot screen so it shows the HDN identity + detected REU size + Ultimate
+DOS version, à la the old ROM-shell / `wedge-latest-not-working` (`**** COMMODORE 64 SHELL V1 ****`
++ `16M REU ULTIMATE-II DOS V1.2, HONDANI`). Question posed: is this viable given free cartridge
+space? **Verdict: YES for the second (cartridge) line, at low risk; the first (KERNAL) line is a
+separate, higher-risk job we chose NOT to do.**
+
+### What actually prints the boot screen today (working tree)
+
+Cold start runs in **bank01** (`bank01_api_00`, `$8081`+). Two independent prints:
+
+1. `jsr $e422` at **bank01.asm:350** → **KERNAL ROM** prints `**** COMMODORE 64 BASIC V2 ****` +
+   `38911 BASIC BYTES FREE`. **This text is in the KERNAL, not the cartridge.**
+2. `jsr bank01_sub_9F51` + inline arg `$8048` (bank01.asm:352-353) → the RR cross-bank call gadget
+   maps **bank03** and calls its API `$8048 → $9FC8` (`bank03_api_21`), which prints the cartridge's
+   own line: `   CYBERPUNX RETRO REPLAY 64KB - 3.8P` (**bank03.asm:3979-3983**).
+
+So the screen is:
+```
+    **** COMMODORE 64 BASIC V2 ****     <- KERNAL $e422   (line 1)
+ 38911 BASIC BYTES FREE                 <- KERNAL $e422
+   CYBERPUNX RETRO REPLAY 64KB - 3.8P   <- cartridge bank03 $9FC8  (line 2)
+READY.
+```
+
+### Line 2 (`CYBERPUNX RETRO REPLAY …`) → REU + UCI + RR — VIABLE, LOW RISK ✅
+
+The cartridge **already** owns and prints this line (`bank03_api_21` @ `$9FC8`). We just rewrite what
+it prints. No frozen-bank1 edit; same discipline as every step so far.
+
+- **Static text budget (in-place):** the current string is 41 B (`$9FCB-$9FF3`) + `rts`/`brk`, then
+  `$9FF5-$9FFF` = 11 B stock-zero slack. The new literal fragments (` REU  UCI `, `  RR 3.8P`,
+  leading CR/spaces) are ~20 B — **fits in-place** in bank03, well under the old 41 B.
+- **New CODE needed (does NOT fit bank03 — it is full):**
+  - **REU size probe** — **must be the NON-DESTRUCTIVE read-save-restore probe** (the
+    `wedge-latest-not-working` round-10 `reu_detect`). The TMP/TASS payload lives *in the REU*;
+    the naïve probe that writes a byte to every 64 KB bank corrupts it (documented cause of
+    "TASS-after-reset dies into the freeze menu"). Non-destructive probe ≈ 60-80 B.
+  - **Short-version parse** — `st_identify` (bank03 `status`) already fetches the full
+    `ULTIMATE-II DOS V1.2` reply; printing only `V1.2` = scan to `'V'`, print to end. ≈ 15-20 B.
+  - **Decimal MB print** for the REU size (`print_dec_byte` equivalent). ≈ 15-20 B.
+  - Total ≈ **100-120 B of new code** → lands in a **bank5/bank6 reserve pocket** (bank5 `$9E00`
+    157 B / `$9F58` 168 B; bank6 `$8023-$80FF` 221 B / `$9E00` / `$9F58`), reached from `api_21`
+    via the existing `call_bankX` RAM trampoline. api_21 runs with bank03 mapped inside the RR
+    gadget's `sei` window, so a nested bank-switch to a reserve pocket is the exact pattern steps
+    17/21 already use — **but at COLD-BOOT timing**, which the trampolines have not been exercised
+    at before (they self-heal per call from ROM into the datassette buffer, which is free at cold
+    start — expected safe, to be proved with a border-flash probe first, per 15-pre discipline).
+- **Cold-boot UCI availability:** IDENTIFY is read-only and bounded (`hsh_widl/push/wdav/fin`); the
+  not-working tree did a boot-time `dos_simple_print` successfully. If the Command Interface is off /
+  no Ultimate, the bounded loop must fall through and just skip the `UCI Vx.y` part (print REU + RR
+  only) — never hang. Same for "no REU": probe returns carry-clear → omit the ` REU` field.
+
+**Decision (Honza, 2026-07-14):** line-2 content = **REU size + SHORT UCI version + keep `RR 3.8P`**
+(e.g. `16M REU  UCI V1.2  RR 3.8P`). REU probing accepted → **non-destructive probe mandatory.**
+
+### Line 1 (`COMMODORE 64 BASIC V2` → `SHELL V1`) — VIABLE but HIGHER RISK — NOT DOING ❌
+
+That text is the KERNAL's. Changing it means replacing `jsr $e422` (bank01.asm:350) — a 3-byte
+in-place patch (no shift) in **FROZEN bank01** — and then **reimplementing** everything `$e422` does
+(screen clear, banner, `BYTES FREE`, screen pointers), the exact path `wedge-latest-not-working` took
+(its bank01.asm:342 `jsr boot_hook`; boot_banner in its bank05). bank01 is our highest-risk frozen
+bank and that tree is the broken one. **Decision (Honza, 2026-07-14): scope = LINE 2 ONLY.** The
+stock `COMMODORE 64 BASIC V2` banner stays. (Note: the `SHELL V1` first line described in
+`docs/user_manual/installation_alternative.md` is the *old ROM-replacement* product; the RR-wedge
+keeps BASIC's banner by design.)
+
+### Proposed step split (small, HW-tested — awaiting go-ahead)
+
+- **BB-pre** — prove a reserve pocket is reachable from `api_21` **at cold boot**: a throwaway
+  border-flash stub (`inc $d020`) `jsr`'d from api_21 through the `call_bankX` trampoline, printed
+  after the RETRO REPLAY line. Cold boot → border colour shifted; stock sweep + TASS/TMP intact.
+- **BB1** — non-destructive `reu_detect` ported into the reserve pocket + decimal-MB print; api_21
+  prints `<n>M REU` before the RR line (identify not yet touched). Verify size on real REU + TASS/TMP.
+- **BB2** — short UCI-version parse; final line `<n>M REU  UCI Vx.y  RR 3.8P`; graceful fall-through
+  when no UCI / no REU. Full stock sweep + TASS/TMP.
+- **BB3** — docs: reconcile `installation_alternative.md` "Verify it works" to the actual RR-wedge
+  screen (line 1 stays `BASIC V2`).

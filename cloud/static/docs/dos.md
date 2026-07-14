@@ -6,14 +6,16 @@ There are following devices available:
 
 - `8` — First disk drive (e.g. 1541)
 - `9` — Second disk drive (e.g. 1541)
-- `h` — Home directory in Ultimate storage (C64U fw 1.1.0 is having a bug, it will use current dir on your USB instead)
-- `f` — Flash partition in Ultimate storage
-- `t` — Temp folder in Ultimate storage
+- `t` — Ultimate storage, jumps to `/temp`
+- `f` — Ultimate storage, jumps to `/flash`
+- `h` — Ultimate storage, jumps to `/sd/home`
+- `u` — Ultimate storage, jumps to `/usb0` (first USB stick)
+- `v` — Ultimate storage, jumps to `/usb1` (second USB stick)
 - `s` — SoftIEC device (like SD2IEC) emulation storage in Ultimate
 - `c` — CSDB.dk API navigation
 - `n` — Network drive: browse and transfer files from the HDN Server's own workspace folder, as if it were just another local drive
 
-> `h`, `t` and `f` are the same physical Ultimate drive (device 8) — switching between them only changes its current directory.
+> `t`, `f`, `h`, `u` and `v` are all the same physical Ultimate drive (device 8). Switching to one of them selects that drive **and jumps straight to its mount root** (`#t`→`/temp`, `#f`→`/flash`, `#h`→`/sd/home`, `#u`→`/usb0`, `#v`→`/usb1`) — a convenience shortcut so a bare `#t` lands you in `/temp` with no manual `cd`. Every switch re-roots, so `#t` after you've `cd`'d elsewhere brings you back to `/temp`. `#8`/`#9`/`#s` only select the device (no directory change); `#c`/`#n` select and connect to the server.
 
 ## Current Device
 
@@ -29,7 +31,7 @@ In some commands you can use `:` notation to avoid necessity to switch devices. 
 
 `dir` — List files on the current device (same as `ll`).
 
-`ll <pattern>` — List only entries matching the pattern. A trailing `*` matches a prefix (`ll outrun*`); a pattern without `*` matches anywhere in the entry name.
+`ll <pattern>` — List only entries whose name **starts with** the pattern (case-insensitive prefix match). A trailing `*` is optional, so `ll outrun` and `ll outrun*` behave identically. On `#c`/`#n` the filter is applied by the server.
 
 ## Navigating Directories
 
