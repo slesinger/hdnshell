@@ -2305,3 +2305,199 @@ disassembly-verified end-to-end.
   when no UCI / no REU. Full stock sweep + TASS/TMP.
 - **BB3** — docs: reconcile `installation_alternative.md` "Verify it works" to the actual RR-wedge
   screen (line 1 stays `BASIC V2`).
+
+## 32  BB-L1 — line 1 banner text (`BASIC V2` → `SHELL V1`), 2026-07-15
+
+Reopens §31's "NOT DOING" call on line 1, at Honza's request. Grilled first (per task instructions):
+confirmed Honza wanted the full-reimplementation *visual* result (any text, not just a same-length
+swap) but, once the actual mechanics were disassembled, the safest way to deliver that turned out to
+require **zero bank1 changes at all** — a materially different (better) plan than either option
+originally posed, re-confirmed with Honza before building.
+
+### 32.1 What `$e422` actually does (disassembled from `data/roms/kernal`, not guessed)
+
+Earlier text ("changing it needs reimplementing screen clear, banner, BYTES FREE, screen pointers")
+was speculation, never disassembled. The real routine (KERNAL `$E422`, offset `$422` in the 8 KB
+KERNAL ROM image):
+```
+$E422: lda $2B / ldy $2C        ; A/Y = VARTAB
+       jsr $A408                 ; reset TXTPTR (stock BASIC-ROM sub)
+       lda #$73 / ldy #$E4
+       jsr $AB1E                 ; print null-terminated string at $E473 (stock BASIC-ROM sub,
+                                  ; generic "print string at A/Y" -- not $e422-specific)
+       lda $37 / sec / sbc $2B / tax   ; bytes-free = MEMSIZ - VARTAB
+       lda $38 / sbc $2C
+       jsr $BDCD                 ; print unsigned decimal in A/X (stock BASIC-ROM sub)
+       lda #$60 / ldy #$E4
+       jsr $AB1E                 ; print string at $E460
+       jmp $A644                  ; stock continuation
+```
+ROM string data (`xxd data/roms/kernal`, offset = addr - `$E000`):
+```
+$E473: 93 0D 20 20 20 20 2A2A2A2A 20 "COMMODORE" 20 "64" 20 "BASIC" 20 "V2" 20 2A2A2A2A 0D 0D 20 00
+       (CLR)(CR)(4 margin spaces)(****)( )(COMMODORE)( )(64)( )(BASIC)( )(V2)( )(****)(CR)(CR)( )NUL
+$E460: 20 "BASIC" 20 "BYTES" 20 "FREE" 0D 00
+       ( )(BASIC)( )(BYTES)( )(FREE)(CR)NUL
+```
+So: **screen clear and BASIC-pointer setup are NOT part of `$e422`** — the clear is a single `$93`
+byte baked into the banner string itself, and `$A408`/`$AB1E`/`$BDCD`/`$A644` are generic, reusable,
+untouched KERNAL/BASIC-ROM entry points at fixed `$A000-$FFFF` addresses — always mapped, unaffected
+by which of our cartridge's 8 banks (`$8000-$9FFF`) is currently switched in. The visible "**** COMMODORE
+64 BASIC V2 ****" text (31 chars: 4 margin spaces are separate, not counted) lands at a **fixed,
+deterministic screen position**: default screen base `$0400`, row 1 (second row, 0-indexed), starting
+column 4 → screen address **`$042C`**. This only holds because CINT (`jsr $ff5b`, called *before*
+`$e422` in `bank01_api_00`) has already set the default screen/VIC state and nothing in the wedge or
+RR touches screen base before this point.
+
+### 32.2 Why hooking bank1's `jsr $e422` directly doesn't work as an in-place patch
+
+`jsr $e422` lives at bank1 `$8074` (confirmed: only one `20 22 E4` occurrence in bank1, byte-diffed
+directly against `build/rr38p-tmp12reu.rebuilt.bin`). A same-size 3-byte patch (`jsr $e422` →
+`jsr <somewhere>`) is trivial *if* `<somewhere>` already contains valid code the instant this runs.
+But every RAM trampoline in this project (`call_bank3`/`4`/`5`, `bb_tramp`) is **self-healed**: the
+*calling* ROM code copies a template into RAM immediately before every use. That healing loop itself
+needs a handful of bytes in the calling bank — and **bank1 has zero free bytes** (established fact,
+`next_steps.md` "Hard constraint discovered: bank2 is FULL" era and reconfirmed since). There is
+nowhere in bank1 to put a heal-loop, so a bank1-triggered trampoline would require bank1 to *grow*,
+breaking the in-place/zero-growth safety property every step before this one has relied on — a
+materially bigger, riskier change than anything done so far in this frozen bank. (A theoretical
+alternative — reusing the existing `bank01_sub_9F51` "far call" gadget already invoked twice in this
+same boot routine — was considered and rejected: its exact addressing convention (a `$DEEE,x` bank
+lookup table keyed off byte arithmetic on the *return address*) is RR's own undocumented internal
+mechanism; reverse-engineering and repurposing it for an arbitrary new target without a stock
+precedent is exactly the kind of "clever but unverified" bank1 surgery this project's discipline
+avoids.)
+
+### 32.3 The chosen mechanism — extend the already-proven `api_21` trampoline, bank1 untouched
+
+`bank03_api_21` (`$9FC8`) already runs immediately after `$e422` in the *same* cold-boot instruction
+stream (bank01 calls it via the stock `$9F51` RR gadget right after `$e422` returns — see the boot
+sequence in `bank01.asm` `bank01_api_00`). It already has a hardware-proven self-healing RAM
+trampoline (`$0378`) into cold-boot-safe reserve pockets (BB-pre/BB1 proved bank5 `$8023`; BB2-pre/BB2/
+BB2b proved bank7's three pockets). Since `$e422`'s banner is 100% static text (unlike the BYTES FREE
+line, which needs the live calculation), all we need is a screen-RAM overwrite of the fixed `$042C`
+position — **before the frame is ever actually displayed** (both `$e422` and this extra excursion
+finish in a few thousand cycles, far under one TV frame, same "no visible intermediate state"
+guarantee BB-pre's border-flash proof already demonstrated).
+
+**Design:** reuse the *same* 14-byte `bb_tramp` template and the *same* `$0378` RAM home for **two**
+sequential excursions instead of one, live-patching a single byte (the healed copy's bank-select
+immediate, at `$0379`) between them:
+```
+bank03_api_21:
+    ldx #bb_tramp_end - bb_tramp - 1   ; heal bb_tramp -> $0378 (UNCHANGED from BB2b)
+bbp_cp:
+    lda bb_tramp,x
+    sta $0378,x
+    dex
+    bpl bbp_cp
+    lda #$88                ; NEW: retarget the healed copy -> bank5 ($88)
+    sta $0379                ; NEW: patches the live `lda #$98` at $0378/$0379 in place
+    jsr $0378                 ; NEW: bank5 excursion -> l1_poke (line-1 banner overwrite)
+    lda #$98                  ; NEW: retarget back -> bank7 ($98), stock value
+    sta $0379                  ; NEW
+    jsr $0378                   ; UNCHANGED: bank7 excursion -> bb_main (line 2, exactly as BB2b)
+    rts                          ; UNCHANGED
+bb_tramp:                        ; UNCHANGED template (still maps bank7 by default when healed)
+    .byte $A9, $98, $8D, $00, $DE, $20, $23, $80, $A9, $18, $8D, $00, $DE, $60
+bb_tramp_end:
+```
+13 new bytes (`lda#/sta/jsr/lda#/sta` = 2+3+3+2+3). `bb_tramp_end` moves from `$9FE5` to `$9FF2`,
+still `<= $9FF5` (the existing `.errorif` guard), using 13 of the 16 B slack with 3 B to spare — no
+other byte in bank3 moves. Both excursions land back in bank3 (`$18`) via the template's own
+unchanged internal restore before the next step runs, so there is no concurrent/nested bank state —
+strictly two sequential, self-contained, already-proven-shaped excursions.
+
+**`l1_poke` in bank5's `$8023` pocket** (fully reverted to stock since BB2-pre, unused since — 222 B
+free, and this exact pocket was individually HW-proven cold-boot-safe + TASS-safe by BB-pre/BB1):
+```
+l1_poke:
+    ldx #$1e                  ; 31 bytes, index 30..0
+l1_lp:
+    lda l1_text,x
+    sta $042c,x                ; screen row 1, col 4 (default screen base $0400)
+    dex
+    bpl l1_lp
+    rts
+l1_text:                        ; "**** COMMODORE 64 SHELL V1 ****" in C64 screen codes
+                                 ; (screen RAM uses screen codes, NOT PETSCII: uppercase
+                                 ; A-Z = petscii-$40; digits/space/'*' are identical to petscii)
+    .byte $2a,$2a,$2a,$2a,$20                          // "**** "
+    .byte $03,$0f,$0d,$0d,$0f,$04,$0f,$12,$05,$20      // "COMMODORE "
+    .byte $36,$34,$20                                   // "64 "
+    .byte $13,$08,$05,$0c,$0c,$20                       // "SHELL "
+    .byte $16,$31,$20                                    // "V1 "
+    .byte $2a,$2a,$2a,$2a                                 // "****"
+```
+~41 bytes total, comfortably inside the 222 B pocket. `l1_poke` writes the **whole** 31-char span
+(not just the 7 changed characters) — simpler, self-contained, and no more risky, since this screen
+region holds only boot text at the moment it runs, never user content.
+
+**What this achieves:** bank1 and the real KERNAL `$e422` are **100% untouched** — `$e422` still runs
+exactly as stock (screen clear, BYTES FREE calc, all of it, byte-for-byte identical), and only the
+*result* it already painted onto a known, fixed screen address gets overwritten immediately
+afterward. Same accepted cosmetic caveat as line 2: if `api_21` re-runs later (e.g. RUN/STOP-RESTORE),
+line 1 gets reprinted too — already an accepted, documented side effect for line 2, not a new risk
+category.
+
+### 32.4 Verification plan
+
+Byte-diff vs the BB2b baseline should show **only**: bank3 `$9FC8-$9FF3` region (13 new bytes, same
+43 B window BB-pre/BB1/BB2/BB2b already touch — `bb_tramp_end` moves within the existing `.errorif`
+budget) + bank5 `$8023-...` (previously all-zero, now `l1_poke` + `l1_text`, ~41 B). Banks 0/1/2/4/6/7
+byte-identical to BB2b (bank1 completely untouched — the KERNAL `$e422` call site is never patched).
+HW test: cold boot line 1 reads `**** COMMODORE 64 SHELL V1 ****`; line 2 (`16M REU UCI Vx.y CPX RR
+3.8P`) and the `BASIC BYTES FREE` line unchanged; full stock sweep + TASS/TMP launch+exit (proves the
+bank5 `$8023` pocket write still doesn't corrupt the REU image, same guarantee BB-pre/BB1 already
+established for that exact pocket).
+
+### 32.5 BB-L1 — BUILT + byte-verified 2026-07-15
+
+One transcription slip caught during the build: bank5's `$8023-$80FF` pocket is **not** the whole of
+bank5's dead space — bank5 also carries the unrelated `mnt`/`umnt` (step 17) code in its `$9E00`/`$9F58`
+pockets, still live. Editing the `$8023` region's source lines by hand initially dropped 3 real TMP-
+payload bytes (`4C B7 80`, the `jmp $80B7` at `$8100-$8102`, bundled in the same source row as the
+padding) — caught immediately by the `b5_disp not at $9E00` `.errorif` on the first build attempt
+(exactly the kind of guard these `.errorif` pins exist for). Fixed by restoring the 3-byte row
+explicitly between the `.fill` and the resumed TMP payload; rebuild succeeded clean.
+
+**Byte-diff vs `build/archive/BB2b.bin`:**
+- **bank3 `$9FCB-$9FF1`** (30 B): the two-call retarget sequence inserted after the heal-loop, plus
+  `bb_tramp`'s 14-byte table sliding down 13 bytes to make room (its *content* is byte-identical, just
+  relocated). `bb_tramp_end` now `$9FF2`, 3 B inside the existing `.errorif (* > $9FF5)` budget.
+- **bank5 `$8023-$804D`** (43 B): `l1_poke` (9 B: `ldx #$1e / lda l1_text,x / sta $042c,x / dex / bpl / rts`)
+  + `l1_text` (31 B, the screen-code table) — replacing what was, and beyond it remains, all-zero
+  pocket. Real TMP payload from `$8100` on is confirmed byte-identical to baseline.
+- **Banks 0/1/2/4/6/7 byte-identical** to `BB2b.bin` — bank1 explicitly diffed and confirmed
+  byte-for-byte unchanged (the KERNAL `$e422` call site was never touched, as designed).
+
+**Manual disassembly verification** (not just a byte-count match — decoded every instruction from the
+built `.bin`):
+```
+bank3 $9FC8: A2 0D           ldx #$0D
+             BD E4 9F        lda bb_tramp,x      ; operand $9FE4 = table's new (shifted) address
+             9D 78 03        sta $0378,x
+             CA              dex
+             10 F7           bpl -9               ; loops back correctly
+             A9 88           lda #$88
+             8D 79 03        sta $0379
+             20 78 03        jsr $0378             ; bank5 excursion
+             A9 98           lda #$98
+             8D 79 03        sta $0379
+             20 78 03        jsr $0378              ; bank7 excursion (unchanged path)
+             60              rts
+     $9FE4:  A9 98 8D 00 DE 20 23 80 A9 18 8D 00 DE 60   ; bb_tramp, byte-identical content
+     $9FF2:  00 00 00                                     ; 3 B fill to $9FF5 (unchanged boundary)
+
+bank5 $8023: A2 1E           ldx #$1E             ; 31, index 30..0
+             BD 2F 80        lda l1_text,x         ; operand $802F = l1_text address
+             9D 2C 04        sta $042c,x            ; screen row 1 col 4
+             CA              dex
+             10 F7           bpl -9
+             60              rts
+     $802F:  2A 2A 2A 2A 20 03 0F 0D 0D 0F 04 0F 12 05 20 36 34 20
+             13 08 05 0C 0C 20 16 31 20 2A 2A 2A 2A   ; "**** COMMODORE 64 SHELL V1 ****" screen codes
+     $804E:  (zero from here to $80FF, matches diff range end $804D)
+```
+Every operand, branch offset, and data byte matches the intended design exactly. `build/archive/BB-L1.bin`;
+deployed `.crt` md5 `a4aebe00f80d3b0f83a6cfd5b30f5791`. **Awaiting HW test.**

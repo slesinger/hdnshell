@@ -52,20 +52,35 @@ bank05_data_8023:
 // banner screen and entry code). The rest of this bank holds the
 // FLASH UTIL V3.8P module and TMP editor status-line text (see strings
 // around $92B0/$84E5). Data at this window address, not runnable here.
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8023
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8033
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8043
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8053
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8063
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8073
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8083
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8093
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80A3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80B3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80C3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80D3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80E3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $4C, $B7, $80    // data $80F3
+// ---- BB-L1: line-1 boot banner poke (conversion_log3.md 32) --------------
+// Called via bank03_api_21's existing cold-boot trampoline, retargeted to
+// bank5 for one excursion before its normal bank7 call: map bank5 ($88) ->
+// jsr $8023 (l1_poke) -> restore bank3 ($18). Runs AFTER KERNAL $e422 has
+// already printed the stock "**** COMMODORE 64 BASIC V2 ****" banner
+// (bank1/KERNAL untouched, unmodified) -- this only overwrites the resulting
+// screen bytes at their fixed cold-boot position (default screen base $0400,
+// row 1, col 4) before the frame is ever displayed. Same dead, not-installer-
+// copied $8023-$80FF pocket BB-pre/BB1 already proved TASS-safe.
+l1_poke:
+    ldx #$1e                  // 31 bytes, index 30..0
+l1_lp:
+    lda l1_text,x
+    sta $042c,x                // screen row 1, col 4 (default screen base $0400)
+    dex
+    bpl l1_lp
+    rts
+l1_text:                        // "**** COMMODORE 64 SHELL V1 ****" in C64 screen codes
+                                 // (screen RAM = screen codes, not PETSCII: A-Z = petscii-$40;
+                                 // digits/space/'*' are identical to petscii)
+    .byte $2a, $2a, $2a, $2a, $20                                     // "**** "
+    .byte $03, $0f, $0d, $0d, $0f, $04, $0f, $12, $05, $20            // "COMMODORE "
+    .byte $36, $34, $20                                               // "64 "
+    .byte $13, $08, $05, $0c, $0c, $20                                // "SHELL "
+    .byte $16, $31, $20                                               // "V1 "
+    .byte $2a, $2a, $2a, $2a                                          // "****"
+.errorif (* > $8100), "BB-L1 bank5 $8023 pocket overran into $8100 TMP payload"
+    .fill $8100 - *, $00      // rest of the dead $8023-$80FF pocket (unchanged zeros)
+    .byte $4C, $B7, $80    // data $8100 (TMP payload resumes -- jmp $80B7)
     .byte $4C, $EA, $81, $01, $00, $54, $4D, $50, $20, $31, $2E, $32, $20, $20, $20, $52    // data $8103
     .byte $45, $55, $20, $4C, $2F, $A2, $40, $01, $00, $00, $01, $0C, $0F, $07, $0B, $09    // data $8113
     .byte $09, $FF, $FF, $2D, $2D, $2D, $2D, $02, $5F, $91, $20, $20, $20, $20, $20, $20    // data $8123

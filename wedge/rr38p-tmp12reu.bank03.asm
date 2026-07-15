@@ -3989,14 +3989,19 @@ bank03_data_9F9E:
 // / BB1 first proved this pattern in bank5; BB2 moved it to bank7 (bank5 reverted
 // to stock) because the UCI-version code needed a fresh 546 B of pockets.
 bank03_api_21:
-    ldx #bb_tramp_end - bb_tramp - 1   // A2 0D   14-byte trampoline
+    ldx #bb_tramp_end - bb_tramp - 1   // 14-byte trampoline
 bbp_cp:
-    lda bb_tramp,x                     // BD D7 9F
-    sta $0378,x                        // 9D 78 03
-    dex                                // CA
-    bpl bbp_cp                         // 10 F7
-    jsr $0378                          // 20 78 03  -> bank5 excursion, prints line
-    rts                                // 60
+    lda bb_tramp,x
+    sta $0378,x
+    dex
+    bpl bbp_cp
+    lda #$88                           // BB-L1: retarget healed copy -> bank5 (line-1 poke)
+    sta $0379                          // patches the live "lda #$98" operand at $0378/$0379
+    jsr $0378                          // -> bank5 excursion: l1_poke overwrites line-1 banner text
+    lda #$98                           // BB-L1: retarget healed copy -> bank7 (line-2, unchanged)
+    sta $0379
+    jsr $0378                          // -> bank7 excursion, prints line 2 (unchanged from BB2b)
+    rts
 bb_tramp:
     .byte $A9, $98         // lda #$98      map bank7 (BB2: whole boot line lives in bank7)
     .byte $8D, $00, $DE    // sta $de00

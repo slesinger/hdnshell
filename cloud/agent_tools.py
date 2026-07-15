@@ -380,7 +380,7 @@ def _manual_query_tokens(topic: str) -> list[str]:
     return tokens
 
 
-def _try_semantic_search(topic: str, manual_content: dict, top_k: int = 8):
+def _try_semantic_search(topic: str, manual_content: dict, top_k: int = 12):
     """Best-effort semantic search; returns None on any failure/unavailability.
 
     Kept as a thin wrapper so search_manual never has to know about the
@@ -430,27 +430,45 @@ def search_manual(topic: str, manual_content: dict) -> str:
     if not tokens:
         tokens = [keyword]
 
+    # Word-boundary matches ("`ll`" for keyword "ll") outscore plain substring
+    # matches ("directly" for keyword "dir") so short exact command names
+    # like "ll" or "dir" don't get buried under unrelated words that merely
+    # contain those letters.
+    keyword_boundary = re.compile(r"\b" + re.escape(keyword) + r"\b")
+    token_boundaries = [re.compile(r"\b" + re.escape(tok) + r"\b") for tok in tokens]
+
+    try:
+        from sdk.semantic_search import chunk_manual
+
+        chunks = chunk_manual(manual_content)
+    except Exception:
+        chunks = [
+            (fname, para.strip())
+            for fname, text in manual_content.items()
+            for para in text.split("\n\n")
+            if para.strip()
+        ]
+
     ranked = []
-    for fname, text in manual_content.items():
-        for para in text.split("\n\n"):
-            para_clean = para.strip()
-            if not para_clean:
-                continue
+    for fname, para_clean in chunks:
+        haystack = para_clean.lower()
+        score = 0
 
-            haystack = para_clean.lower()
-            score = 0
+        if keyword_boundary.search(haystack):
+            score += 10
+        elif keyword in haystack:
+            score += 4
 
-            if keyword in haystack:
-                score += 10
+        for token, token_boundary in zip(tokens, token_boundaries):
+            if token_boundary.search(haystack):
+                score += 3
+            elif token in haystack:
+                score += 1
+            if token in fname.lower():
+                score += 1
 
-            for token in tokens:
-                if token in haystack:
-                    score += 2
-                if token in fname.lower():
-                    score += 1
-
-            if score > 0:
-                ranked.append((score, fname, para_clean))
+        if score > 0:
+            ranked.append((score, fname, para_clean))
 
     if ranked:
         ranked.sort(key=lambda item: item[0], reverse=True)

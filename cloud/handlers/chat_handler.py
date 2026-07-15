@@ -147,6 +147,56 @@ Be friendly.
 Be brief.
 Be ASCII-only."""
 
+# "m:<phrase>" answers are generated from raw manual excerpts, not through the
+# full chat agent, so they need their own tight formatting instructions.
+MANUAL_ANSWER_MAX_LINES = 20
+MANUAL_ANSWER_MAX_COLS = 40
+MANUAL_ANSWER_SYSTEM_PROMPT = f"""You are the m: command of the Hondani Shell
+(hdnsh) on a Commodore 64. A user typed "m:<phrase>" to search the manual,
+and you are shown the matching excerpts below as CONTEXT ONLY.
+
+Answer the user's phrase directly, in your own words, using the excerpts as
+your only source of truth. Never quote or paste excerpt text verbatim, and
+never dump the excerpts themselves - synthesize an answer.
+- If the phrase asks about one specific fact or command, give just that one
+  fact plus at most one short example line.
+- If the phrase asks broadly (e.g. "what commands do X", "how do I Y") and
+  the excerpts show several distinct commands/facts that directly answer
+  it, list every one of them - one short line per item - instead of
+  picking only one. Do not silently drop a directly relevant command just
+  to stay brief; shorten wording instead.
+- Omit background, edge cases, and alternatives that are not directly
+  relevant to the phrase.
+If the excerpts do not cover the phrase, reply in one line that the manual
+has no info on it - do not guess.
+
+The reply is displayed as-is on a 40-column, 25-row C64 text screen. There is
+no word-wrap: the screen hardware chops each printed line dead at column 40,
+so you must do the line breaking yourself, not the reader.
+- Never write a line longer than {MANUAL_ANSWER_MAX_COLS} characters. Do not
+  write one long sentence and hope it wraps - it will not. Instead break
+  each sentence into several short lines of well under 40 characters,
+  breaking only at word boundaries (a space), the way you would type it
+  into a narrow terminal.
+- Before outputting each line, silently count its characters; if it is
+  close to 40, cut it shorter and continue the thought on the next line.
+- It is physically impossible to show more than {MANUAL_ANSWER_MAX_LINES}
+  lines total - anything beyond that is invisible to the user. Treat
+  {MANUAL_ANSWER_MAX_LINES} as an absolute ceiling you must never approach;
+  a good single-fact answer is 3-8 short lines, a good list-style answer
+  covering several commands is up to about 15.
+Plain text only: no markdown, no backticks, no asterisks, no headers, no
+bullet symbols other than a plain "-", no code fences. Command names and
+examples are written as plain words, e.g. mnt myimage.d64, not `mnt`.
+ASCII only (codes 32-126) - no unicode, no emojis, no smart quotes.
+
+Example of the expected shape (for phrase "mount"), note every line is
+short and none run anywhere near 40 characters:
+Use mnt to mount a disk image on
+a drive.
+Example: mnt myimage.d64 8
+Use umnt to unmount a drive."""
+
 
 def _build_chat_system_prompt() -> str:
     """Return CHAT_SYSTEM_PROMPT with optional user-name personalization."""
@@ -444,7 +494,8 @@ class ChatHandler(BaseHandler):
             if not phrase:
                 return "Usage: m:<search phrase>, e.g. m:memcpy"
             if self.manual_content:
-                return search_manual(phrase, self.manual_content)
+                excerpts = search_manual(phrase, self.manual_content)
+                return self._answer_from_manual_excerpts(phrase, excerpts)
             return self._manual_missing_response(phrase)
 
         logger.info(f"Chat query: {query}")
@@ -549,6 +600,33 @@ class ChatHandler(BaseHandler):
             "HDN manual is not loaded on server.\n"
             "Bundle docs/user_manual in package."
         )
+
+    def _answer_from_manual_excerpts(self, phrase: str, excerpts: str) -> str:
+        """
+        Turn raw search_manual() excerpts into a short, direct answer.
+
+        search_manual() returns whole matched paragraphs (up to 12 of them, or
+        the entire manual as a last resort) which is far too long for a C64
+        screen, so this asks the LLM to answer the query directly from those
+        excerpts instead of just returning them.
+        """
+        if not self.llm:
+            return excerpts
+
+        try:
+            from langchain_core.messages import HumanMessage, SystemMessage
+
+            messages = [
+                SystemMessage(content=MANUAL_ANSWER_SYSTEM_PROMPT),
+                HumanMessage(
+                    content=f"Query: {phrase}\n\nManual excerpts:\n{excerpts}"
+                ),
+            ]
+            response = self.llm.invoke(messages)
+            return response.content
+        except Exception:
+            logger.warning("Manual answer summarization failed", exc_info=True)
+            return excerpts
 
     def _manual_tool_present(self, tools: list) -> bool:
         return any(getattr(tool, "name", "") == "hondani_shell_manual" for tool in tools)

@@ -53,16 +53,35 @@ def get_embeddings_cache_path() -> str:
 
 
 def chunk_manual(manual_content: dict) -> list[tuple[str, str]]:
-    """Split each manual page into non-empty paragraphs.
+    """Split each manual page into paragraphs, keeping each paragraph attached
+    to its nearest preceding markdown heading.
 
-    Returns a list of (filename, paragraph) tuples, using the same "\\n\\n"
-    paragraph convention as agent_tools.search_manual.
+    Plain "\\n\\n" splitting on its own separates a "## Section Title" line
+    from the paragraphs under it. That starves both keyword and semantic
+    matching of context: a command's own paragraph (e.g. "`ll` — List files
+    on the current device.") may not share any words with a query like "what
+    commands list directory", even though its section heading ("## Listing
+    Files (Directory Listing)") does. Prepending the heading to each chunk
+    keeps that context attached without merging whole sections into one
+    giant chunk.
+
+    Returns a list of (filename, chunk_text) tuples.
     """
     chunks = []
     for fname, text in (manual_content or {}).items():
+        heading = ""
         for para in (text or "").split("\n\n"):
             para_clean = para.strip()
-            if para_clean:
+            if not para_clean:
+                continue
+            first_line = para_clean.splitlines()[0].strip()
+            if first_line.startswith("#"):
+                heading = first_line.lstrip("#").strip()
+                chunks.append((fname, para_clean))
+                continue
+            if heading:
+                chunks.append((fname, f"{heading}\n{para_clean}"))
+            else:
                 chunks.append((fname, para_clean))
     return chunks
 
@@ -171,7 +190,6 @@ def _create_embedder():
         except Exception as e:
             logger.info("Could not create OpenAIEmbeddings: %s", e)
             return None
-        embedder.embedding_model_name = model_name
         return embedder
 
     if provider == "azure_openai":
@@ -199,7 +217,6 @@ def _create_embedder():
         except Exception as e:
             logger.info("Could not create AzureOpenAIEmbeddings: %s", e)
             return None
-        embedder.embedding_model_name = model_name
         return embedder
 
     logger.info(
@@ -211,13 +228,32 @@ def _create_embedder():
 # ── Embedding + cache orchestration ─────────────────────────────────────────
 
 
+def _resolve_embedding_model_name(embedder) -> str:
+    """Best-effort model/deployment name for the cache key.
+
+    Real langchain_openai embedder instances are pydantic models with
+    extra='forbid', so we can't stash a custom `embedding_model_name`
+    attribute on them (that used to raise "object has no field
+    'embedding_model_name'" for AzureOpenAIEmbeddings/OpenAIEmbeddings).
+    Instead read whichever real field is populated: `embedding_model_name`
+    for test doubles, `model` for OpenAIEmbeddings, `deployment` for
+    AzureOpenAIEmbeddings (its `azure_deployment` constructor kwarg is an
+    alias for the `deployment` field).
+    """
+    for attr in ("embedding_model_name", "model", "deployment"):
+        value = getattr(embedder, attr, None)
+        if value:
+            return value
+    return ""
+
+
 def _embed_chunks(embedder, chunks: list[tuple[str, str]], cache_path: str):
     """Return {paragraph_text: np.ndarray} for all chunks, using/updating the cache.
 
     Only chunks missing from the cache are sent to the embedder. Returns None
     if embedding fails outright (e.g. network error on the first call).
     """
-    model_name = getattr(embedder, "embedding_model_name", "")
+    model_name = _resolve_embedding_model_name(embedder)
 
     with _CACHE_LOCK:
         cache = _load_cache(cache_path)
