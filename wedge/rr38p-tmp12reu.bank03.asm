@@ -3976,13 +3976,37 @@ bank03_data_9F9E:
     .byte $20, $02, $9F, $33, $80, $8E, $39, $03, $A2, $05, $A0, $1D, $20, $76, $85, $A6    // data $9F9E
     .byte $BA, $A9, $00, $20, $CD, $BD, $A9, $20, $4C, $16, $E7, $20, $00, $9F, $57, $80    // data $9FAE
     .byte $D0, $03, $4C, $5D, $84, $A9, $0D, $4C, $16, $E7    // data $9FBE
+// ---- BB-pre (boot banner, conversion_log3.md §31) ---------------------------
+// api_21 is the shared "print RR version line" routine ($8048; the cold-start
+// line-2 that today reads "CYBERPUNX RETRO REPLAY 64KB - 3.8P"). It is entered
+// with bank3 mapped from every caller (bank01 BASIC cold-start via the $9F51 RR
+// gadget; bank00/bank02 boot paths), so restoring bank3 ($18) here is always
+// correct. The whole boot line 2 (REU size [+ UCI version in BB2] + RR) lives in
+// the bank7 reserve pocket (bb_main @ $8023, the dead, not-copied $8023-$80FF
+// space) reached by a call_bank7 RAM trampoline healed into $0378: map bank7
+// ($98) -> jsr bb_main -> restore bank3 ($18) -> rts. bank7 was opened + proven
+// at cold-boot timing by BB2-pre (border flash + REU line + TASS sweep). BB-pre
+// / BB1 first proved this pattern in bank5; BB2 moved it to bank7 (bank5 reverted
+// to stock) because the UCI-version code needed a fresh 546 B of pockets.
 bank03_api_21:
-    jsr bank03_sub_8362              // 20 62 83
-    .byte $0D, $20, $20, $20, $43, $59, $42, $45, $52, $50, $55, $4E, $58, $20, $52, $45    // data $9FCB  text: ".   CYBERPUNX RE"
-    .byte $54, $52, $4F, $20, $52, $45, $50, $4C, $41, $59, $20, $36, $34, $4B, $42, $20    // data $9FDB  text: "TRO REPLAY 64KB "
-    .byte $2D, $20, $33, $2E, $38, $50, $0D, $00    // data $9FEB  text: "- 3.8P.."
-    rts                    // 60
-    brk                    // 00
+    ldx #bb_tramp_end - bb_tramp - 1   // A2 0D   14-byte trampoline
+bbp_cp:
+    lda bb_tramp,x                     // BD D7 9F
+    sta $0378,x                        // 9D 78 03
+    dex                                // CA
+    bpl bbp_cp                         // 10 F7
+    jsr $0378                          // 20 78 03  -> bank5 excursion, prints line
+    rts                                // 60
+bb_tramp:
+    .byte $A9, $98         // lda #$98      map bank7 (BB2: whole boot line lives in bank7)
+    .byte $8D, $00, $DE    // sta $de00
+    .byte $20, $23, $80    // jsr $8023     bb_main (bank7 pocket)
+    .byte $A9, $18         // lda #$18      restore bank3
+    .byte $8D, $00, $DE    // sta $de00
+    .byte $60              // rts
+bb_tramp_end:
+.errorif (* > $9FF5), "api_21 BB-pre trampoline overran $9FF5"
+    .fill $9FF5 - *, $00   // pad to stock data at $9FF5
 bank03_data_9FF5:
 .errorif (* != $9FF5), "bank03_data_9FF5 shifted"
     .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FF5

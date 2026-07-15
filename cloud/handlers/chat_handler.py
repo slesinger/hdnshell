@@ -389,6 +389,10 @@ class ChatHandler(BaseHandler):
         state = get_session_state_copy(session_id)
         if t.startswith("i:"):
             return True
+        # "m:<phrase>" always searches the manual directly (see handle()) and
+        # must work as a standalone command, not just while chat mode is active.
+        if t.startswith("m:"):
+            return True
         if state.get("active_module") == "i":
             if any(t.startswith(p) for p in ["c:", ":", "help"]):
                 return False
@@ -415,6 +419,8 @@ class ChatHandler(BaseHandler):
             if not query:
                 update_session_state(session_id, active_module="i")
                 return "Chat mode. I'm listening."
+        elif t_lower.startswith("m:"):
+            query = t
         elif state.get("active_module") == "i":
             query = t
         else:

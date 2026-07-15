@@ -51,20 +51,148 @@ bank07_data_8023:
 // bank04 installer copies it to C64 RAM $B200-$CEFF. Contains the
 // assembler (mnemonic table "BCCBCSBEQ..." at $8A43, error messages
 // "ILLEGAL DURING INCLUDE" etc.). Data at this window address.
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8023
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8033
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8043
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8053
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8063
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8073
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8083
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $8093
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80A3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80B3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80C3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80D3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $80E3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $D0, $0D, $C8    // data $80F3
+// ---- BB2-pre: boot line-2 relocated to bank7 (conversion_log3.md §31) --------
+// bb_main: cold-boot entry from bank3 api_21 via a call_bank7 RAM trampoline
+// ($0378: map bank7 $98 -> jsr $8023 -> restore bank3). bank7 is a FRESH bank
+// (never mapped before); this step proves it maps safely at cold boot + its dead
+// $8023-$80FF pocket is TASS-safe (installer copies bank7 $8100-$9DFF -> $B200,
+// so $8023-$80FF is never in RAM/REU -- same profile as bank5/6). The REU probe
+// (byte-identical to the HW-tested BB1 code) moves here from bank5 (now reverted
+// to stock); BB2 adds the UCI-version block in bank7's $9E00/$9F58 pockets. The
+// "<n>M REU  RR 3.8P" -- the line appearing correctly from bank7 (+ TASS still
+// launching) IS the proof bank7 maps safely at cold boot. Scratch: $0200 DMA
+// staging, $0201-$0209 saves, $FB.
+.const REU_COMMAND     = $df01
+.const REU_C64_ADDR_LO = $df02
+.const REU_C64_ADDR_HI = $df03
+.const REU_REU_ADDR_LO = $df04
+.const REU_REU_ADDR_HI = $df05
+.const REU_REU_BANK    = $df06
+.const REU_LENGTH_LO   = $df07
+.const REU_LENGTH_HI   = $df08
+.const reu_save        = $0201    // 9 bytes $0201-$0209
+.const reu_probe_res   = $fb      // stock-free zero page
+bb_main:
+    lda #$0d
+    jsr $ffd2                 // CR -> start boot line 2
+    jsr reu_detect            // A = bank count (0 = 256 banks = 16 MB); Z set by its final lda
+    bne bb_mb
+    lda #$10                  // 256 banks -> 16 MB
+    bne bb_pn                 // (always: 16 != 0)
+bb_mb:
+    lsr
+    lsr
+    lsr
+    lsr                       // MB = banks / 16
+bb_pn:
+    jsr print_num             // print MB in decimal
+    ldx #$00
+bb_pr1:
+    lda msg_reu,x             // "M REU " (before the UCI field)
+    beq bb_uci
+    jsr $ffd2
+    inx
+    bne bb_pr1
+bb_uci:
+    jsr uci_ver               // append "UCI Vx.y " (or nothing if no Ultimate); bank7 $9F58 pocket
+    ldx #$00
+bb_pr2:
+    lda msg_rr,x              // "RR 3.8P" CR
+    beq bb_done
+    jsr $ffd2
+    inx
+    bne bb_pr2
+bb_done:
+    rts
+msg_reu:
+    .byte $4D, $20, $52, $45, $55, $20, $00                    // "M REU " NUL
+msg_rr:
+    .byte $43, $50, $58, $20, $52, $52, $20, $33, $2E, $38, $50, $0D, $00   // "CPX RR 3.8P" CR NUL
+
+// print_num: A = 0..99 -> decimal via CHROUT, leading zero suppressed. A/X/Y clobbered.
+print_num:
+    ldy #$30
+pn_t:
+    cmp #$0a
+    bcc pn_u
+    sbc #$0a
+    iny
+    bne pn_t
+pn_u:
+    pha
+    cpy #$31
+    bcc pn_nolead
+    tya
+    jsr $ffd2
+pn_nolead:
+    pla
+    ora #$30
+    jsr $ffd2
+    rts
+
+// reu_detect: NON-DESTRUCTIVE REU size probe (byte-identical logic to BB1). Returns
+// A = bank count (0 = 256 = 16 MB). Saves banks 0,1,2,4,...128 (offset 0), marks
+// bank0=$AA, writes $55 to each rung until bank0 aliases, restores all 9 (bank0 last).
+reu_detect:
+    ldy #$08
+rd_sv:
+    lda rd_banks,y
+    ldx #$91
+    jsr reu_xfer
+    lda $0200
+    sta reu_save,y
+    dey
+    bpl rd_sv
+    lda #$aa
+    sta $0200
+    lda #$00
+    ldx #$90
+    jsr reu_xfer
+    ldy #$01
+rd_pb:
+    lda #$55
+    sta $0200
+    lda rd_banks,y
+    ldx #$90
+    jsr reu_xfer
+    lda #$00
+    ldx #$91
+    jsr reu_xfer
+    lda $0200
+    cmp #$aa
+    bne rd_wrap
+    iny
+    cpy #$09
+    bne rd_pb
+    ldy #$09
+rd_wrap:
+    sty reu_probe_res
+    ldy #$08
+rd_rs:
+    lda reu_save,y
+    sta $0200
+    lda rd_banks,y
+    ldx #$90
+    jsr reu_xfer
+    dey
+    bpl rd_rs
+    ldy reu_probe_res
+    cpy #$09
+    bcs rd_full
+    lda rd_banks,y
+    rts
+rd_full:
+    lda #$00
+    rts
+rd_banks:
+    .byte $00, $01, $02, $04, $08, $10, $20, $40, $80
+
+// reu_xfer + uci_ver moved to the bank7 $9E00 / $9F58 pockets (below) to make room
+// here for the msg split + the uci_ver call; reu_detect / bb_main reach them by
+// same-bank jsr (bank7 is mapped throughout bb_main).
+.errorif (* > $8100), "BB2 bank7 $8023 pocket overran into $8100 TMP payload"
+    .fill $8100 - *, $00   // rest of the dead $8023-$80FF pocket (unchanged zeros)
+    .byte $D0, $0D, $C8    // data $8100 (TMP payload resumes)
     .byte $D0, $F3, $F0, $29, $A9, $2D, $8D, $72, $91, $4C, $36, $94, $18, $98, $6D, $04    // data $8103
     .byte $DF, $85, $FD, $AD, $05, $DF, $69, $00, $85, $FE, $C8, $8C, $07, $DF, $F0, $03    // data $8113
     .byte $A9, $00, $2C, $A9, $01, $8D, $08, $DF, $A9, $2C, $8D, $42, $A4, $A9, $B0, $8D    // data $8123
@@ -529,16 +657,47 @@ bank07_data_8023:
     .byte $C1, $AB, $C6, $CB, $C6, $44, $C1, $4B, $C1, $55, $C1, $B0, $C1, $81, $C8, $3C    // data $9DD3
     .byte $C8, $DC, $C7, $FB, $C0, $01, $C1, $EE, $C1, $10, $C1, $07, $C1, $19, $C1, $25    // data $9DE3
     .byte $C1, $3A, $C2, $DC, $C1, $6C, $C5, $5F, $C8, $A9, $00, $8D, $19, $00, $00, $00    // data $9DF3
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E03
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E13
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E23
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E33
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E43
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E53
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E63
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E73
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E83
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $20, $BA, $DE, $EA, $EA, $EA    // data $9E93
+// ---- BB2: bank7 $9E00 pocket -- reu_xfer + "UCI " prefix text (same-bank targets) ----
+// reu_xfer relocated here from $8023 (room); reu_detect (in $8023) reaches it by
+// same-bank jsr. uv_txt is the "UCI " prefix uci_ver ($9F58) prints before the version.
+reu_xfer:
+    sta REU_REU_BANK
+    lda #$00
+    sta REU_C64_ADDR_LO
+    sta REU_REU_ADDR_LO
+    sta REU_REU_ADDR_HI
+    sta REU_LENGTH_HI
+    lda #$02
+    sta REU_C64_ADDR_HI
+    lda #$01
+    sta REU_LENGTH_LO
+    stx REU_COMMAND
+    rts
+uv_txt:
+    .byte $55, $43, $49, $20, $00     // "UCI " NUL (version-field prefix)
+// uv_widl: bounded wait for UCI idle (state bits $df1c & $30 == 0). C=0 idle, C=1 timeout.
+// Restored for BB2b -- at BOOT the UCI is NOT already idle (unlike at the prompt where
+// `status` runs), so pushing IDENTIFY without waiting for idle got the command ignored
+// and no reply ever arrived. Called by uci_ver (idle-wait before push + busy-wait after).
+uv_widl:
+    ldx #$00
+    ldy #$00
+uw_l:
+    lda $df1c
+    and #$30
+    beq uw_ok
+    inx
+    bne uw_l
+    iny
+    bne uw_l
+    sec
+    rts
+uw_ok:
+    clc
+    rts
+.errorif (* > $9E9D), "BB2 bank7 $9E00 pocket overran into $9E9D real data"
+    .fill $9E9D - *, $00              // pad dead pocket to the real data at $9E9D
+    .byte $20, $BA, $DE, $EA, $EA, $EA    // data $9E9D (real bank7 data resumes)
     .byte $EA, $EA, $EA, $EA, $EA, $EA, $20, $BA, $DE, $EA, $EA, $EA, $EA, $EA, $EA, $EA    // data $9EA3
     .byte $EA, $EA, $8D, $00, $DE, $68, $60    // data $9EB3
     pha                    // 48
@@ -640,14 +799,95 @@ bank07_sub_9F2B:
     jmp $dede              // 4C DE DE
 bank07_data_9F58:
 .errorif (* != $9F58), "bank07_data_9F58 shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F58
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F68
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F78
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F88
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9F98
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FA8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FB8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FC8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FD8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9FE8
-    .byte $00, $00, $00, $00, $00, $00, $00, $00    // data $9FF8
+// ---- BB2: bank7 $9F58 pocket -- uci_ver (UCI DOS1 IDENTIFY -> "UCI Vx.y ") ----------
+// Self-contained: all UCI registers ($df1c-$df1f) are bank-independent; every wait is
+// bounded (never hangs). Prints "UCI " + the version substring (reply from the first
+// 'V') + a trailing space. Prints NOTHING if no Ultimate replies (line stays clean).
+// Called by bb_main ($8023) via same-bank jsr; uv_txt ("UCI ") lives in the $9E00 pocket.
+uci_ver:
+    jsr uv_widl            // wait for UCI idle (REQUIRED at boot -- see uv_widl note)
+    bcc uv_hdr
+    lda #$0e               // still not idle -> ABORT|CLR_ERR, then wait once more
+    sta $df1c
+    jsr uv_widl
+uv_hdr:
+    lda #$01
+    sta $df1d              // TARGET_DOS1
+    lda #$01
+    sta $df1d              // DOS_CMD_IDENTIFY
+    lda $df1c
+    ora #$01               // PUSH_CMD
+    sta $df1c
+    lda $df1c
+    and #$08               // state error?
+    bne uv_done            // yes -> no UCI present, print nothing
+    ldx #$00               // busy-wait: command accepted (state $30 != $10)
+    ldy #$00
+uv_bw:
+    lda $df1c
+    and #$30
+    cmp #$10               // 01 = command busy?
+    bne uv_wd0             // not busy -> command accepted, go wait for data
+    inx
+    bne uv_bw
+    iny
+    bne uv_bw
+    jmp uv_fin             // stuck busy -> cleanup, print nothing
+uv_wd0:
+    ldx #$00               // wait DATA_AV (bounded ~64K polls)
+    ldy #$00
+uv_wd:
+    lda $df1c
+    and #$80
+    bne uv_go
+    inx
+    bne uv_wd
+    iny
+    bne uv_wd
+    jmp uv_fin             // no reply -> accept/cleanup, print nothing
+uv_go:
+    ldx #$00               // print "UCI " prefix
+uv_pfx:
+    lda uv_txt,x
+    beq uv_read
+    jsr $ffd2
+    inx
+    bne uv_pfx
+uv_read:
+    ldx #$00               // X=0 until the first 'V' is seen
+uv_rd:
+    lda $df1c
+    and #$80               // DATA_AV
+    beq uv_spc             // reply drained
+    lda $df1e
+    cpx #$00
+    bne uv_emit            // already printing -> emit every byte
+    cmp #$56               // 'V' (start of version)?
+    bne uv_rd
+    inx
+uv_emit:
+    jsr $ffd2
+    jmp uv_rd
+uv_spc:
+    lda #$20
+    jsr $ffd2              // trailing space (single-spaces the RR field)
+uv_fin:
+    lda $df1c              // drain any leftover reply data
+    and #$80
+    beq uv_fs
+    lda $df1e
+    jmp uv_fin
+uv_fs:
+    lda $df1c              // drain status bytes
+    and #$40               // STAT_AV
+    beq uv_facc
+    lda $df1f
+    jmp uv_fs
+uv_facc:
+    lda $df1c
+    ora #$02               // DATA_ACC: release -> UCI back to idle
+    sta $df1c
+uv_done:
+    rts
+.errorif (* > $A000), "BB2 bank7 $9F58 pocket (uci_ver) overran into $A000"
+    .fill $A000 - *, $00   // end-of-bank padding

@@ -2158,6 +2158,142 @@ stock `COMMODORE 64 BASIC V2` banner stays. (Note: the `SHELL V1` first line des
 `docs/user_manual/installation_alternative.md` is the *old ROM-replacement* product; the RR-wedge
 keeps BASIC's banner by design.)
 
+### BB-pre — BUILT + byte-verified 2026-07-14 (awaiting HW test)
+
+Implements the trampoline + pocket, printing the SAME line text so the screen is unchanged
+except a deliberate border flash. **Diff vs pre-BB baseline (`build/archive/baseline-preBB.bin`)
+= bank3 + bank5 ONLY** (banks 0/1/2/4/6/7 byte-identical):
+
+- **bank3 `api_21` (`$9FC8`)** — was `jsr bank03_sub_8362` + the 41-byte "CYBERPUNX RETRO REPLAY"
+  string. Now: heal a 14-byte `bb_tramp` into `$0378` (`A9 88 / 8D 00 DE / 20 23 80 / A9 18 /
+  8D 00 DE / 60`), `jsr $0378`, `rts`. The trampoline maps bank5 (`$88`), `jsr $8023` (bb_entry),
+  restores bank3 (`$18`). 43 diff bytes `$9FC8-$9FF3`; rest zero-filled to the stock `$9FF5` data.
+  **Why safe in every caller:** api_21 is the shared version-line printer ($8048), entered by the
+  bank01 BASIC cold-start (via the `$9F51` RR gadget), and the bank00/bank02 boot paths. Its code
+  only *executes* when bank3 is mapped, so restoring `$18` is always correct; the nested bank5
+  excursion + restore is self-consistent. Side effect: the border flash + pocket-printed line now
+  occur wherever api_21 runs (e.g. a RUN/STOP-RESTORE that reprints the version line) — cosmetic.
+- **bank5 `bb_entry` (`$8023`)** — in the dead, not-installer-copied `$8023-$80FF` pocket (bank5
+  copies `$8100-$9DFF` only; verified stock-zero; symmetric with bank6's proven `b6_helpers`).
+  `inc $d020` (border = "pocket ran") + a `$ffd2` CHROUT loop over the same 40-byte text + `rts`.
+  55 diff bytes `$8023-$805A`; `.fill` to `$8100`; TMP payload resumes byte-exact (`$8100 = 4C B7 80`).
+
+**What a green HW test proves (all three at once):** (1) the `call_bank5` trampoline works at
+COLD-BOOT timing; (2) writing/executing bank5 `$8023-$80FF` does NOT corrupt the TMP/TASS REU image
+(→ the pocket TASS-passes); (3) `$ffd2` CHROUT works from a mapped pocket — the exact print path BB1
+needs. If the border shifts but the text is garbled → trampoline OK, CHROUT-from-pocket needs the
+bank3 route (BB1 adjusts). If TASS breaks → the bank5 pocket is unsafe (revert). **BB1 is gated on
+this pass** (its REU probe both prints via this path and must not corrupt the REU image — no point
+stacking it on an unproven foundation; also its scratch bytes want HW confirmation).
+
+### BB-pre — HW TESTED 2026-07-15 ✅ (all good)
+
+Border shifted to grey (`inc $d020` ran), the RETRO REPLAY line prints from the bank5 pocket, and
+TASS/stock sweep all passed. All three foundations proven: cold-boot `call_bank5` trampoline, the
+bank5 `$8023-$80FF` dead pocket is TASS-safe, and `$ffd2` CHROUT works from a mapped pocket.
+
+### BB1 — HW TESTED 2026-07-15 ✅ (all good)
+
+Boot line 2 read `16M REU  RR 3.8P` (REU correctly probed as 16 MB = 256 banks) and TASS/TMP
+launch+exit + the stock sweep all passed — the non-destructive probe leaves the REU/TMP image
+intact. Details of the build below.
+
+### BB1 — BUILT + byte-verified 2026-07-15
+
+Boot line 2 becomes `<n>M REU  RR 3.8P` (e.g. `16M REU  RR 3.8P`). **bank3 api_21 trampoline is
+UNCHANGED from BB-pre** (byte-identical); the whole step is bank5 pocket content. Diff vs pre-BB
+baseline = bank3 `$9FC8-$9FF3` (BB-pre trampoline) + bank5 `$8023-$80FD` (207 B); banks
+0/1/2/4/6/7 byte-identical; TMP payload `$8100` (`4C B7 80`) + everything `$8100+` byte-identical.
+
+- **`reu_detect` (non-destructive size probe)** — ladder of banks `0,1,2,4,…128` at offset 0.
+  SAVE all 9 bytes → `reu_save` ($0201-$0209); MARK bank0 = `$AA`; PROBE rungs 1..8 writing `$55`
+  until bank0 aliases (wrapped = size); RESTORE all 9 saved bytes (bank0 last). Returns A = bank
+  count (`0` = 256 banks = 16 MB). Because every touched REU byte is read+saved+written-back, the
+  net REU change is zero — the TMP/TASS image survives (**the HW test must confirm TASS still
+  launches**). `reu_xfer` (A=bank, X=cmd `$90` write/`$91` read) does a 1-byte `$0200`↔REU DMA and
+  preserves Y (the loop index). REU regs `$DF01-$DF08`; scratch `$0200` staging + `$0201-$0209` +
+  `$FB`. All bank-independent, so it runs correctly with bank5 mapped.
+- **Print** — `print_num` (0-99 decimal, leading-zero-suppressed) for the MB value, then the fixed
+  `msg_line` "M REU  RR 3.8P"+CR. MB = banks/16 (`0`→16). **UCI version comes in BB2.**
+- **Scope cut to fit the 221 B pocket:** assumes a REU is present (the C64U always emulates one);
+  graceful "no REU" (skip the field) is deferred to BB2. Three byte-trims got it to 219 B: dropped a
+  redundant `cmp #$00` (reu_detect's final `lda` sets Z), a redundant `$0200` pre-clear before the
+  read-back DMA, and a reordered `reu_xfer` reusing `A=0` for `LENGTH_HI`.
+- **Known limits (BB1):** sub-1 MB REUs would print `0M REU` (MB = banks/16 truncates); the C64U is
+  16 MB so this is moot until BB2 generalises. The probe also runs wherever api_21 runs (bank00/02
+  boot paths, possible RUN/STOP-RESTORE) — harmless (non-destructive) but repeats the DMA dance.
+
+### BB2-pre — open bank7 (BUILT + byte-verified 2026-07-15, awaiting HW test)
+
+**Why a new bank:** after BB1, every proven pocket is nearly full — bank5 `$8023-$80FF` = 2 B free,
+bank6 `$8023-$80FF` = 30 B, the `$9E00`/`$9F58` pockets ≤ 11 B each. BB2's UCI IDENTIFY + read +
+version-scan + print is ~90-110 B and fits nowhere; bank5 (where the line lived) can't even hold a
+trampoline to reach a helper. **bank7 is pristine** (`bank7 == stock`; three dead pockets
+`$8023-$80FF` + `$9E00-$9E9C` + `$9F58-$9FFF` = **546 B**, all zero, all outside the installer's
+`$8100-$9DFF` copy map — installer copies bank7 `$8100-$9DFF` → `$B200-$CEFF`; select value `$98`).
+
+**What BB2-pre does (Honza chose the "all boot-line code in bank7" clean architecture):**
+- **bank3 api_21 trampoline:** one byte — the map operand `$88` (bank5) → `$98` (bank7). Everything
+  else identical; still heals 14 B into `$0378`, `jsr`s it, `rts`. Diff region unchanged (`$9FC8-$9FF3`).
+- **bank7 `bb_main` @ `$8023`:** the BB1 boot-line (REU probe + `print_num` + "M REU  RR 3.8P"),
+  **byte-identical logic**, relocated here (207 B, `$8023-$80FD`). All bank-independent (REU/`$0200`/
+  CHROUT), so it runs correctly with bank7 mapped. No trampolines (bank7 is self-contained).
+- **bank5 reverted to stock** (`git checkout` — BB-pre/BB1 removed); identical to the pre-BB baseline.
+
+**Diff vs pre-BB baseline = bank3 `$9FC8-$9FF3` + bank7 `$8023-$80FD` ONLY**; banks 0/1/2/4/5/6
+byte-identical; bank7 TMP payload `$8100+` byte-identical. **HW test = the proof bank7 is safe:** boot
+line 2 must read `16M REU  RR 3.8P` (now from bank7) AND TASS/TMP must still launch+exit (proves
+mapping bank7 at cold boot + writing/executing its `$8023-$80FF` pocket leaves the REU image intact).
+Then BB2 fills bank7's `$9E00`/`$9F58` pockets with the UCI-version block (same-bank `jsr`).
+
+### BB2-pre — HW TESTED 2026-07-15 ✅ (all good)
+
+Boot line 2 = `16M REU  RR 3.8P` printed from bank7; TASS/stock intact. bank7 maps safely at cold
+boot and its `$8023-$80FF` pocket is TASS-safe. Bank7 opened for BB2.
+
+### BB2 — UCI version (BUILT + byte-verified 2026-07-15, awaiting HW test)
+
+Boot line 2 becomes `<n>M REU UCI Vx.y RR 3.8P` (e.g. `16M REU UCI V1.2 RR 3.8P`). All in **bank7**,
+across its three dead pockets, reached by same-bank `jsr` (bank7 is mapped for the whole excursion) —
+**no b7c3 trampoline needed** since the UCI command registers `$df1c-$df1f` are bank-independent.
+
+- **bank7 `$8023` pocket:** `bb_main` + `reu_detect` + `print_num` + `msg_reu`("M REU ") +
+  `msg_rr`("RR 3.8P"+CR). `bb_main` prints CR → REU MB → "M REU " → `jsr uci_ver` → "RR 3.8P".
+- **bank7 `$9E00` pocket:** `reu_xfer` (relocated from `$8023` for room) + `uv_txt` ("UCI ").
+- **bank7 `$9F58` pocket:** `uci_ver` (130 B) — self-contained UCI DOS1 IDENTIFY replicating the
+  bank3 `hsh_*` logic: `$0E` reset → write TARGET_DOS1 `$01` + cmd `$01` to `$df1d` → PUSH
+  (`$df1c |= $01`) → error-check → **bounded** wait DATA_AV → print "UCI " → read `$df1e`, scan for
+  the first `V`, CHROUT from there → trailing space → drain data + drain status (`$df1f`) +
+  `DATA_ACC` (`$df1c |= $02`, leaves UCI idle). Every wait is a 16-bit counter (never hangs).
+  **Fails open:** state error / no DATA_AV → nothing printed, line stays `<n>M REU RR 3.8P`.
+  Disassembly-verified byte-for-byte (all branches land correctly; accept leaves UCI idle so the
+  `status` command still works after boot).
+
+**Diff vs pre-BB baseline = bank3 `$9FC8-$9FF3` (unchanged from BB2-pre) + bank7 `$8023-$9FD9`
+(350 B, 3 pockets)**; banks 0/1/2/4/5/6 identical; bank7 TMP payloads `$8100-$9DFF` and `$9E9D+`
+byte-identical. **Trims to fit** (bank7 pockets are 221/157/168 B, not one contiguous run): dropped
+the idle-wait loop for a single `$0E` reset, and dropped the separate command-busy wait (the
+DATA_AV wait covers it) — both safe because the C64U leaves the UCI idle at boot and any later
+command re-syncs. Spacing is single-spaced both ways (uci_ver prints a trailing space; on no-UCI it
+prints nothing, so `M REU ` + `RR` reads cleanly).
+
+### BB2 — HW test 2026-07-15: REU + CPX/RR shown, **UCI field missing** → BB2b fix
+
+BB2 HW result: boot line = `16M REU RR 3.8P` — the REU size + RR are correct, but `uci_ver` printed
+nothing. Root cause: `status` (which shows `ULTIMATE-II DOS V1.2` fine at the prompt) does a full
+`uci_idle_kick` first, but my trimmed `uci_ver` pushed IDENTIFY **without waiting for UCI idle**. At
+the prompt the UCI is already idle so it would work; at **boot** it is not, so the PUSH landed on a
+non-idle UCI, the command never executed, DATA_AV never arrived → bounded timeout → nothing printed.
+
+**BB2b (built+byte-verified 2026-07-15):** restored the two waits so `uci_ver` matches the proven
+`status` path — added `uv_widl` (bounded wait-idle, in the `$9E00` pocket) and call it before the
+header (with an `$0E` abort+retry if still not idle), plus the command **busy-wait** after PUSH.
+`uci_ver` grew to 160 B (fits the 168 B `$9F58` pocket). Also, per Honza, `RR 3.8P` → **`CPX RR 3.8P`**
+(the CyberPunX branding). Line now: `16M REU UCI Vx.y CPX RR 3.8P` (UCI field omitted, still bounded,
+if the Ultimate doesn't reply). Diff vs baseline = bank3 tramp (unchanged) + bank7 `$8023-$9FF7`
+(401 B, 3 pockets); banks 0/1/2/4/5/6 identical; bank7 TMP payloads byte-identical; `uci_ver`
+disassembly-verified end-to-end.
+
 ### Proposed step split (small, HW-tested — awaiting go-ahead)
 
 - **BB-pre** — prove a reserve pocket is reachable from `api_21` **at cold boot**: a throwaway

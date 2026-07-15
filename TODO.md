@@ -5,10 +5,8 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
+m:<dotaz> fungoval normalne, ted produkuje priserne dlouhy vystup.
 
-
-
-Server UI has Enable and Disable buttons who need to influence if HDN shell cartridge is inserted or is empty slot. Previously these buttons worked but instead of manipulating cartridge slot, it was manipulating BASIC ROM.
 
 
 
@@ -28,39 +26,26 @@ Ask me any questions before you proceed to ensure you understand the task well.
 
 
 
-There is just one UCI drive interface on the C64 Ultimate. To make the work a bit more comfortable,  I want to have shortcuts.
-#t will switch to the UCI drive (like it does already) and additionally it will change directory to /temp.
-#f like #t but will change directory to /flash
-#h will switch to the UCI drive and change directory to /sd/home
-#u will switch to the UCI drive and change directory to /usb0
-#v will switch to the UCI drive and change directory to /usb1
-Ask me any questions before you proceed to ensure you understand the task well.
-Before you attempt for any changed, estimate if there is enough space in the wedge and how much space will be left free.
+mnt vyzaduje vsechny zvaku lowercase.d64
+The command mnt <disk image name> requires that the `disk image name` is in all lowercase letters. What the user typicall wants to do is to `ll` the directory and then insert `mnt` in front of a disk image of his chioce. The disk image is listed in its real case, but the command requires lowercase. The command should be case insensitive and accept any case of the disk image name.
 
 
 
-Ask me any questions before you proceed to ensure you understand the task well.
 ------
 QUEUE
 
 'file'  is a new command that will print information about file. Use REAST API of DMA API.
-remove csdb command. Only #c is valid.
 Run prg file by typing its name.
 
-mnt vyzaduje vsechny zvaku lowercase.d64
-
-
-m:<dotaz> fungoval a bez jakekoliv zmenu crt nebo serveru to zacalo zatuhavat. ulozil jsem celou pamet do home/memory.d64
-
-memcpy zatuhava
 
 
 AZ UPLOADUJI crt na GIHUB
 The UI also allows to easily enable/dasable the ROM/cartridge. The UI button Download&Update must work with the crt and cfg in the cart filder. Adjust the procedure.
+Server UI has Enable and Disable buttons who need to influence if HDN shell cartridge is inserted or is empty slot. Previously these buttons worked but instead of manipulating cartridge slot, it was manipulating BASIC ROM.
 Ask me any questions before you proceed to ensure you understand the task well.
 
 
-Je to hotove? use FAISS for in memory similarity search, pickle embeddings to disk
+Je to hotove? 
 tutorial pres input keys
 tut1 prchazt disk, mount disk, run game
 tut2 jak na help
