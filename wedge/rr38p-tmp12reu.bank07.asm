@@ -103,6 +103,7 @@ bb_pr2:
     inx
     bne bb_pr2
 bb_done:
+    jsr bb_arm                // AA2 boot-arm (bb_arm lives in the roomy $9E00 pocket)
     rts
 msg_reu:
     .byte $4D, $20, $52, $45, $55, $20, $00                    // "M REU " NUL
@@ -695,6 +696,37 @@ uw_l:
 uw_ok:
     clc
     rts
+// ---- AA2 boot-arm (auto-arming step 2, conversion_log3.md §33) ---------------
+// Called by bb_done (same-bank jsr) at cold boot, once the boot line is printed.
+// Installs the CINV console-switch hook so C=+CTRL+1..7 works at the very first
+// READY without typing HDN. cs_install lives in bank2 ($9C41); reach it with a
+// private RAM trampoline (the same proven cold-boot cross-bank pattern the banner
+// just used), healed into the IDLE call_bank3 slot $0360 -- NOT the $0378 outer
+// trampoline we are running under -- and re-healed on its next real use. Interrupts
+// are OFF here (the RR cold start's sei), so cs_install runs safely and no IRQ can
+// fire mid-arm. Force MSGFLG $9D=$80 (direct mode) first: the $03A0 stub self-disarms
+// while $9D==0, and BASIC may not have set $9D=$80 yet this early -- pinning it now
+// keeps the "armed => $9D=$80" invariant to READY, so the first post-boot IRQ keeps
+// the hook live instead of self-disarming.
+bb_arm:
+    lda #$80
+    sta $9d
+    ldx #ba_tramp_end - ba_tramp - 1
+ba_cp:
+    lda ba_tramp,x
+    sta $0360,x
+    dex
+    bpl ba_cp
+    jsr $0360                 // -> bank2 cs_install (arm), restores bank7, returns here
+    rts
+ba_tramp:
+    .byte $A9, $10            // lda #$10      map bank2
+    .byte $8D, $00, $DE       // sta $de00
+    .byte $20, $41, $9C       // jsr $9c41     cs_install (bank2)
+    .byte $A9, $98            // lda #$98      restore bank7 (bb_arm continuation valid)
+    .byte $8D, $00, $DE       // sta $de00
+    .byte $60                 // rts
+ba_tramp_end:
 .errorif (* > $9E9D), "BB2 bank7 $9E00 pocket overran into $9E9D real data"
     .fill $9E9D - *, $00              // pad dead pocket to the real data at $9E9D
     .byte $20, $BA, $DE, $EA, $EA, $EA    // data $9E9D (real bank7 data resumes)

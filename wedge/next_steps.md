@@ -30,7 +30,7 @@ design + rationale in `conversion_log3.md §28`.
 | Step ID | Change | HW Test Expectation | Status |
 |---|---|---|---|
 | AA1 | Rename HONDANI→HDN (bank1, 5 data bytes) + local-only instant arm (bank2, 3 bytes in-place: `cli/rts/nop`) | `HDN`↵ → **instant** `READY.` (no stall, server-down OK) then C=+CTRL+1..7 opens consoles; `HONDANI` no longer recognized; self-disarm on program launch + console switch + pwd/cd/ll + `#`-family + stock sweep + TASS all unchanged; **boot NOT yet auto-armed** (Step AA2) | 🔨 built+byte-verified 2026-07-14 (bank1 5 B, bank2 3 B; banks 0/3-7 identical; pins hold) — **awaiting HW test** |
-| AA2 | Boot-arm: call `cs_install` once at boot, after `$9D`=$80 (BASIC direct mode) so the first IRQ can't self-disarm | Cold boot → C=+CTRL+1..7 works immediately **without** typing HDN; regression unchanged | ⬜ next |
+| AA2 | Boot-arm: `bb_main` (bank7 boot routine) forces `$9D`=$80 + calls bank2 `cs_install` via a private RAM trampoline (`$0360`), reusing the proven cold-boot cross-bank pattern | Cold boot → C=+CTRL+1..7 works immediately **without** typing HDN; banner prints unchanged; HDN/F1/self-disarm/regression unchanged | 🔨 built+byte-verified 2026-07-15 (bank7 only, dead pockets; banks 0-6 identical; TMP payload `$8100-$9E3B` 0 diffs; `bb_main` pinned `$8023`) — **awaiting HW test**. See conversion_log3.md §33 |
 | AA3 | Docs: rename HONDANI→HDN across `docs/user_manual/*`; add "what/why of arming" explainer; document boot-arm + re-arm-after-programs | Manual matches actual behavior | ⬜ |
 
 ### Debt cleanup (from TODO.md)

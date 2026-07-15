@@ -5,9 +5,6 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
-m:<dotaz> fungoval normalne, ted produkuje priserne dlouhy vystup.
-
-
 
 
 

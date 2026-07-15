@@ -2501,3 +2501,64 @@ bank5 $8023: A2 1E           ldx #$1E             ; 31, index 30..0
 ```
 Every operand, branch offset, and data byte matches the intended design exactly. `build/archive/BB-L1.bin`;
 deployed `.crt` md5 `a4aebe00f80d3b0f83a6cfd5b30f5791`. **Awaiting HW test.**
+
+## 33  Auto-arming epic — Step 2 (AA2): boot-arm at cold boot (built+byte-verified, awaiting HW test)
+
+Second half of the auto-arming epic (§28 was AA1: rename HONDANI→HDN + local instant arm). Goal:
+**C=+CTRL+1..7 (server consoles) work at the very first READY after a cold boot without typing HDN.**
+Approach **Alternative A** (Honza): boot-arm + keep manual `HDN` re-arm + keep the §17 program-mode
+self-disarm. Chosen implementation (Honza, after re-analysis of the new boot-banner code): **extend
+`bb_main` (bank7) to arm.**
+
+**Why this spot.** After the boot-banner work (§31/§32), `bank03_api_21` ($9FC8) is the confirmed
+cold-boot hook and already heals a RAM trampoline at `$0378` to make cross-bank excursions (bank5
+line-1, bank7 `bb_main` line-2) — a pattern **proven safe at cold-boot timing**. `cs_install` (the
+arm routine: copies the CINV stub → `$03A0`, digit table → `$03F0`, points `$0314`→stub, saves the
+prior vector, clears latches) lives in bank2 ($9C41). Reaching it from bank7 needs the same kind of
+RAM trampoline. So `bb_main` — which already runs once at cold boot with bank7 mapped and the
+banner just printed — is the natural place.
+
+**Design.**
+- `bb_done` (end of `bb_main`, `$8055`) now does `jsr bb_arm / rts` (was just `rts`; the `$8023`
+  pocket had only ~13 B free so only the call lives here — the arm routine is in the roomy `$9E00`
+  pocket).
+- `bb_arm` (`$9E3C`, in bank7's `$9E00` dead pocket, ~97 B free after `uw_ok`): `lda #$80/sta $9d`
+  (force MSGFLG direct-mode — see below), heals the 14-byte `ba_tramp` into the **idle** call_bank3
+  slot `$0360` (NOT the active `$0378` outer trampoline we're running under; `$0360` is re-healed on
+  its next real use so clobbering it at boot is safe), `jsr $0360`, `rts`.
+- `ba_tramp` (RAM `$0360`): `lda #$10/sta $de00` (map bank2) / `jsr $9c41` (cs_install) /
+  `lda #$98/sta $de00` (restore bank7 so `bb_arm`'s continuation is valid) / `rts`.
+
+**Why force `$9D`=$80.** The `$03A0` stub self-disarms on any IRQ while `$9D`==0 (§17: `$9D`=$80 at
+the prompt, $00 during a program). This early in cold boot BASIC may not have set `$9D`=$80 yet, and
+the zero-page clear at boot leaves it 0 — so a jiffy IRQ firing after the RR cold start's `cli` (but
+before BASIC's first `READY`) would self-disarm the freshly installed hook. Interrupts are OFF here
+(the cold start's `sei`), so pinning `$9D`=$80 now keeps the "armed ⇒ `$9D`=$80" invariant intact
+through to READY; the first post-boot IRQ then keeps the hook live. Benign either way — a mistimed
+arm can only fail to stick (degrade to manual `HDN`), never crash (cs_install points `$0314` only
+after the stub is fully copied, and self-disarm just restores the saved stock `$EA31`).
+
+**Verification.** Build clean; both pocket `.errorif` bounds hold (`$8023`<`$8100`, `$9E00`<`$9E9D`).
+Diff vs committed HEAD: **bank7 only**; banks 0-6 **byte-identical**. Changes confined to bank7's two
+dead pockets — the `$8023` pocket (`bb_done`+3 B `jsr`, which shifts `print_num`/`reu_detect`/`rd_banks`
++3 within the pocket and updates `bb_main`'s jsr operands) and the `$9E00` pocket (`bb_arm`+`ba_tramp`,
+`$9E3C-$9E5C`). **DANGER-ZONE `$8100-$9E3B` (TMP payload + stock code): 0 diffs** — the installer copy
+window `$8100-$9DFF` is untouched, so TASS/TMP image is safe. `bb_main` pinned `$8023` (the trampoline
+`jsr $8023` still lands). `bb_arm` disassembly-verified; `ba_tramp` = `A9 10 8D 00 DE 20 41 9C A9 98
+8D 00 DE 60`.
+
+**HW test expectation (AA2):**
+- **Cold boot → immediately press C=+CTRL+1..7 (no HDN typed) → server consoles open.** That's the
+  whole point: armed at the first READY.
+- Boot banner (REU size + UCI version + "CPX RR 3.8P", SHELL V1 line) prints exactly as before — the
+  arm runs *after* the banner and must not disturb it.
+- `HDN` still arms (AA1); F1=`/0:*` load + RUN self-disarm as designed; running a program then
+  pressing a console key without re-arming should NOT switch (self-disarmed) — one `HDN` re-arms.
+- Regression: console switch, pwd/cd/ll, `#`-family, status/time/menu, stock sweep + TASS launch/exit
+  + freeze→resume all unchanged.
+- Known fail-soft: if for some reason it doesn't stick at boot (e.g. `$9D` timing on real HW differs),
+  the symptom is just "console keys dead until first HDN" — benign; report and we adjust.
+
+### Next
+- **AA3 — docs:** rename HONDANI→HDN across `docs/user_manual/*`; add the "what/why of arming"
+  explainer; document boot-arm + manual re-arm after programs.
