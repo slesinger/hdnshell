@@ -20,9 +20,11 @@ import sdk.network_helper as network_helper
 from sdk.console_manager import ConsoleManager
 from sdk.petscii import ascii_to_screencode
 from sdk.shared_state import reset_all_session_states
+from sdk.toaster import toaster_box_rect
 from tutorials.content import tut1, tut2
 from tutorials.model import Screen, Step, Tutorial, always_manual, screen_contains
 from tutorials.session import (
+    SCREEN_ADDR,
     TutorialSession,
     _SESSIONS,
     get_session,
@@ -394,10 +396,22 @@ def test_tut1_is_registered_with_seven_steps():
     assert len(TUTORIALS["tut1"].steps) == 7
 
 
-def test_tut2_step1_verify_true_on_help_header():
-    screen = Screen(_buffer_with_row(0, "HDN Shell RR - Help"))
+def test_tut2_step1_verify_true_on_help_body_text():
+    # The real HELP_TEXT body copy ("...is sent to the AI assistant...")
+    # -- placed away from row 0 the way it really renders (lower/left of
+    # the toaster box footprint).
+    screen = Screen(_buffer_with_row(14, "is sent to the AI assistant, so the"))
     assert tut2.steps[0].verify(screen) is True
     assert tut2.steps[0].verify(Screen(_blank_buffer())) is False
+
+
+def test_tut2_step1_verify_false_on_tutorials_menu_header():
+    # Regression for the real hardware bug: the tutorials menu header
+    # ("HDN Shell RR - Tutorials") is still on screen the instant tut2's
+    # step 1 becomes current (the user just typed "tut2" from that
+    # menu) -- it must NOT satisfy step 1's verify.
+    screen = Screen(_buffer_with_row(0, "HDN Shell RR - Tutorials"))
+    assert tut2.steps[0].verify(screen) is False
 
 
 def test_tut2_step4_is_always_manual():
@@ -407,8 +421,9 @@ def test_tut2_step4_is_always_manual():
 
 
 # ----------------------------------------------------------------------
-# Auto-advance (Phase 3): _tick() calls step.verify() and advances at
-# most one step per tick.
+# CONFIRM latch (Task 3): _tick() calls step.verify() and, on a genuine
+# True, moves the CURRENT step from SHOWING to CONFIRM -- it never moves
+# `_step_index` itself any more; only next()/back() do that.
 # ----------------------------------------------------------------------
 
 
@@ -430,17 +445,22 @@ class TestAutoAdvance:
         )
         return pushed
 
-    def test_tick_advances_when_verify_true(self, monkeypatch):
-        screen_bytes = _buffer_with_row(0, "HDN Shell RR - Help")
+    def test_tick_enters_confirm_when_verify_true(self, monkeypatch):
+        # Row 14 -- clear of the toaster box footprint (top-right, ~rows 0-5).
+        screen_bytes = _buffer_with_row(14, "is sent to the AI assistant")
         pushed = self._wire_network(monkeypatch, screen_bytes)
         session = TutorialSession(tut2, session_id=1)
 
         assert session._step_index == 0
+        assert session._confirmed is False
         session._tick()
 
-        assert session._step_index == 1
-        text = Screen(pushed["screen"]).text
-        assert "help topics" in text.lower()  # step 2's hint fragment
+        assert session._step_index == 0  # index never moves via tick
+        assert session._confirmed is True
+        text = Screen(pushed["screen"]).text.lower()
+        assert "done!" in text
+        assert "press n for" in text
+        assert "next." in text
 
     def test_tick_does_not_advance_when_verify_false(self, monkeypatch):
         pushed = self._wire_network(monkeypatch, _blank_buffer())
@@ -449,11 +469,13 @@ class TestAutoAdvance:
         session._tick()
 
         assert session._step_index == 0
+        assert session._confirmed is False
         text = Screen(pushed["screen"]).text
         assert "help" in text.lower()  # still step 1's hint
 
-    def test_tick_advances_at_most_one_step(self, monkeypatch):
-        """Even if verify would match every step's screen, only one hop per tick."""
+    def test_tick_never_moves_step_index_even_when_verify_stays_true(self, monkeypatch):
+        """Task 3: the coach never auto-advances the index -- only next() does,
+        even across many repeated ticks while CONFIRMed."""
         tutorial = Tutorial(
             id="tut-multi",
             title="t",
@@ -464,28 +486,34 @@ class TestAutoAdvance:
                 Step(hint="three", verify=always_manual()),
             ],
         )
-        screen_bytes = _buffer_with_row(0, "MARKER")
+        screen_bytes = _buffer_with_row(14, "MARKER")
         self._wire_network(monkeypatch, screen_bytes)
         session = TutorialSession(tutorial, session_id=1)
 
         session._tick()
+        assert session._step_index == 0
+        assert session._confirmed is True
 
-        assert session._step_index == 1  # not jumped straight to 2
+        for _ in range(5):
+            session._tick()
+        assert session._step_index == 0  # still step 0 -- never jumped to 1/2
+        assert session._confirmed is True
 
-    def test_tick_never_auto_advances_past_the_last_step(self, monkeypatch):
+    def test_tick_never_confirms_the_last_step(self, monkeypatch):
         tutorial = Tutorial(
             id="tut-last",
             title="t",
             blurb="t",
             steps=[Step(hint="only step", verify=screen_contains("MARKER"))],
         )
-        screen_bytes = _buffer_with_row(0, "MARKER")
+        screen_bytes = _buffer_with_row(14, "MARKER")
         self._wire_network(monkeypatch, screen_bytes)
         session = TutorialSession(tutorial, session_id=1)
 
         session._tick()
 
-        assert session._step_index == 0  # last step never auto-advances/completes
+        assert session._step_index == 0
+        assert session._confirmed is False  # last step never auto-confirms
 
     def test_verify_that_raises_does_not_crash_tick(self, monkeypatch):
         def _boom_verify(screen):
@@ -506,8 +534,201 @@ class TestAutoAdvance:
         session._tick()  # must not raise
 
         assert session._step_index == 0  # advance skipped
+        assert session._confirmed is False
         text = Screen(pushed["screen"]).text
         assert "Step 1 hint text" in text  # hint still painted
+
+
+# ----------------------------------------------------------------------
+# Self-read regression (the hardware bug, Task 1): the coach must never
+# match its OWN painted overlay text against verify(), including via a
+# real DMA round-trip (write the box, then read that exact buffer back).
+# ----------------------------------------------------------------------
+
+
+class TestSelfReadRegression:
+    def test_tick_does_not_match_a_dma_round_trip_of_its_own_box(self, monkeypatch):
+        """
+        Reproduces the real hardware cascade (tut2, 2026-07-16 trace):
+        step 2's own SHOWING hint text is 'Type "help topics", then "help
+        <topic>".' which CONTAINS the string "help topics" -- exactly
+        what step 2's verify checks for. Tick 1 paints that hint into the
+        (blank) screen and pushes it; tick 2 is fed that EXACT pushed
+        buffer back as the live DMA read (the real hardware round-trip),
+        simulating what the C64U would echo back. Without Task 1's
+        blanking, tick 2 would read its own hint text back and fire
+        CONFIRM on nothing the user did.
+        """
+        state = {"screen": _blank_buffer(), "color": bytes([14] * 1000)}
+
+        monkeypatch.setattr(network_helper, "read_last_c64_ip", lambda: "10.0.0.5")
+        monkeypatch.setattr(
+            network_helper,
+            "dma_read_memory",
+            lambda host, address, length: (
+                state["screen"] if address == SCREEN_ADDR else state["color"]
+            ),
+        )
+
+        def _capture_send(screen_data, color_data):
+            state["screen"] = screen_data
+            state["color"] = color_data
+
+        monkeypatch.setattr(network_helper, "send_screen_data", _capture_send)
+
+        session = TutorialSession(tut2, session_id=1)
+        session._step_index = 1  # step 2: "help topics" hint / verify collision
+        session._confirmed = False
+        session._entry_satisfied = False
+
+        session._tick()  # tick 1: paints step 2's own hint box (contains "help topics")
+        assert session._step_index == 1
+        assert session._confirmed is False
+
+        session._tick()  # tick 2: DMA-reads back tick 1's own pushed buffer verbatim
+        assert session._step_index == 1  # never moved by tick, ever
+        assert session._confirmed is False  # and must NOT have self-matched
+
+
+# ----------------------------------------------------------------------
+# Entry suppression (Task 2): a step that becomes current with its own
+# verify already true (pre-existing/leftover screen content) must not
+# fire CONFIRM until the match goes False and then True again.
+# ----------------------------------------------------------------------
+
+
+class TestEntrySuppression:
+    def _wire_network(self, monkeypatch, screen_provider):
+        pushed = {}
+        monkeypatch.setattr(network_helper, "read_last_c64_ip", lambda: "10.0.0.5")
+        monkeypatch.setattr(
+            network_helper,
+            "dma_read_memory",
+            lambda host, address, length: screen_provider(),
+        )
+        monkeypatch.setattr(
+            network_helper,
+            "send_screen_data",
+            lambda screen_data, color_data: pushed.update(
+                screen=screen_data, color=color_data
+            ),
+        )
+        return pushed
+
+    def _tutorial(self):
+        return Tutorial(
+            id="tut-entry",
+            title="t",
+            blurb="t",
+            steps=[
+                Step(hint="one", verify=screen_contains("MARKER")),
+                Step(hint="two", verify=always_manual()),
+            ],
+        )
+
+    def test_pre_existing_match_at_start_does_not_enter_confirm(self, monkeypatch):
+        screen_bytes = _buffer_with_row(14, "MARKER")
+        self._wire_network(monkeypatch, lambda: screen_bytes)
+
+        session = TutorialSession(self._tutorial(), session_id=1)
+        session._latch_entry_satisfied()  # simulate "on start" (see start()'s docstring)
+        assert session._entry_satisfied is True
+
+        session._tick()
+
+        assert session._confirmed is False  # stale pre-existing match suppressed
+        assert session._step_index == 0
+
+    def test_suppression_clears_after_false_then_fires_on_true_again(self, monkeypatch):
+        state = {"screen": _buffer_with_row(14, "MARKER")}
+        self._wire_network(monkeypatch, lambda: state["screen"])
+
+        session = TutorialSession(self._tutorial(), session_id=1)
+        session._latch_entry_satisfied()
+        assert session._entry_satisfied is True
+
+        session._tick()
+        assert session._confirmed is False  # still suppressed (match never went away)
+
+        state["screen"] = _blank_buffer()
+        session._tick()
+        assert session._confirmed is False
+        assert session._entry_satisfied is False  # cleared -- verify went False
+
+        state["screen"] = _buffer_with_row(14, "MARKER")
+        session._tick()
+        assert session._confirmed is True  # genuine transition: now allowed to fire
+
+
+# ----------------------------------------------------------------------
+# Genuine detection (no pre-existing match): _tick() enters CONFIRM the
+# moment a real match appears, the step index stays put, and only next()
+# advances it (to the next step, in SHOWING state).
+# ----------------------------------------------------------------------
+
+
+class TestGenuineDetection:
+    def test_entry_clean_then_real_match_confirms_then_next_advances(self, monkeypatch):
+        state = {"screen": _blank_buffer()}
+        pushed = {}
+        monkeypatch.setattr(network_helper, "read_last_c64_ip", lambda: "10.0.0.5")
+        monkeypatch.setattr(
+            network_helper,
+            "dma_read_memory",
+            lambda host, address, length: state["screen"],
+        )
+        monkeypatch.setattr(
+            network_helper,
+            "send_screen_data",
+            lambda screen_data, color_data: pushed.update(
+                screen=screen_data, color=color_data
+            ),
+        )
+
+        session = TutorialSession(tut2, session_id=1)
+        session._latch_entry_satisfied()  # nothing on screen yet
+        assert session._entry_satisfied is False
+
+        session._tick()
+        assert session._confirmed is False
+        assert session._step_index == 0
+
+        # A real match appears outside the box footprint (row 14).
+        state["screen"] = _buffer_with_row(14, "is sent to the AI assistant")
+        session._tick()
+        assert session._confirmed is True
+        assert session._step_index == 0  # still unchanged -- CONFIRM, not advance
+
+        ack = session.next()
+        assert session._step_index == 1
+        assert session._confirmed is False  # SHOWING on the new step
+        assert "step 2" in ack.lower()
+
+
+# ----------------------------------------------------------------------
+# toaster_box_rect-based blanking (Task 1 building block): text painted
+# inside the box area must be invisible to verify().
+# ----------------------------------------------------------------------
+
+
+class TestVerifyViewBlanking:
+    def test_box_region_text_never_satisfies_verify(self):
+        session = TutorialSession(_make_tutorial(2), session_id=1)
+        rect = toaster_box_rect(session._current_hint())
+        assert rect is not None
+        row, col, _height, _width = rect
+
+        screen = bytearray(_blank_buffer())
+        for i, ch in enumerate("ZAPPO"):
+            screen[(row + 1) * 40 + col + 1 + i] = ascii_to_screencode(ord(ch))
+        session._last_box_rect = rect
+
+        predicate = screen_contains("ZAPPO")
+        # Sanity: without blanking, the raw screen WOULD have matched.
+        assert predicate(Screen(bytes(screen))) is True
+
+        verify_screen = session._verify_view(bytes(screen))
+        assert predicate(verify_screen) is False
 
 
 # ----------------------------------------------------------------------
@@ -523,7 +744,7 @@ class TestOffShellGuard:
         monkeypatch.setattr(
             network_helper,
             "dma_read_memory",
-            lambda host, address, length: _buffer_with_row(0, "HDN Shell RR - Help"),
+            lambda host, address, length: _buffer_with_row(14, "is sent to the AI assistant"),
         )
         monkeypatch.setattr(
             network_helper,
@@ -538,7 +759,8 @@ class TestOffShellGuard:
         session._tick()
 
         assert send_calls == []  # never painted/pushed
-        assert session._step_index == 0  # never advanced, even though verify(screen) is True
+        assert session._step_index == 0  # untouched
+        assert session._confirmed is False  # never confirmed, even though verify(screen) is True
 
     def test_on_shell_true_when_never_switched(self):
         session = TutorialSession(tut2, session_id=6)

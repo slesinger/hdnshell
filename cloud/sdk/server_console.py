@@ -11,6 +11,7 @@ helpers that advance the cursor and scroll automatically.
 """
 
 import logging
+import math
 import time
 from typing import Optional
 
@@ -238,8 +239,26 @@ class ServerConsole:
     _SC_REVERSE_BIT = 0x80
     _SC_SPACE = 0x20
 
-    def show_toaster(self, text: str, duration_sec: float = 8.0, color: int = 7):
-        """Display a temporary toast notification box in the top-right corner.
+    def show_toaster(
+        self, text: str, duration_sec: Optional[float] = 8.0, color: int = 7
+    ):
+        """Display a toast notification box in the top-right corner.
+
+        There are two kinds of toasts:
+          - **timed** (default): pass a numeric `duration_sec` and the box
+            auto-disappears after that many seconds.
+          - **key-confirmed**: pass `duration_sec=None` and the box stays
+            visible indefinitely until the user presses a key (any keypress
+            dismisses it -- see `ConsoleManager.handle_keypress`, which calls
+            `clear_toaster()` on every keypress).
+
+        Note: key-confirmed toasts only make sense on server consoles that
+        actually receive individual keypress packets from the C64. The local
+        BASIC shell never routes single keypresses to the server -- it only
+        sends whole lines on Enter -- so a key-confirmed toast shown while
+        the user is in the local shell will not be dismissed by typing;
+        it will sit there until the user switches to a server console and
+        presses a key (or `clear_toaster()` is called programmatically).
 
         The box is overlaid on top of the rendered screen without touching the
         internal screen/color buffers, so the next normal render restores it.
@@ -247,11 +266,14 @@ class ServerConsole:
 
         Args:
             text:         Message to display.
-            duration_sec: How long the toaster stays visible.
+            duration_sec: How long the toaster stays visible, in seconds.
+                          `None` means key-confirmed (no expiry).
             color:        Ignored (box always uses dark gray background / white text).
         """
         self._toaster_text = text
-        self._toaster_expires = time.monotonic() + duration_sec
+        self._toaster_expires = (
+            math.inf if duration_sec is None else time.monotonic() + duration_sec
+        )
         self._toaster_color = color & 0x0F
 
     def clear_toaster(self):
@@ -259,7 +281,11 @@ class ServerConsole:
         self._toaster_text = None
 
     def _toaster_active(self) -> bool:
-        """Return True if a toaster is currently visible."""
+        """Return True if a toaster is currently visible.
+
+        A key-confirmed toaster (`_toaster_expires == math.inf`) is always
+        considered active until explicitly dismissed via `clear_toaster()`.
+        """
         return bool(self._toaster_text) and time.monotonic() < self._toaster_expires
 
     # ------------------------------------------------------------------

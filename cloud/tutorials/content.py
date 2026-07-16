@@ -107,16 +107,38 @@ tut2 = Tutorial(
     steps=[
         Step(
             hint='Type "help" for the command cheat-sheet.',
-            verify=screen_contains("HDN Shell", "Help"),
+            # NOT screen_contains("HDN Shell", "Help") -- that collides
+            # with the tutorials menu header ("HDN Shell RR - Tutorials"),
+            # which is still on screen the instant this step becomes
+            # current (the user just typed "tut2" from that menu), so it
+            # would fire before the user typed anything (real hardware
+            # trace, hdnsh 2026-07-16: this is exactly what happened).
+            # This phrase only appears in HelpHandler.HELP_TEXT's lower
+            # body copy ("...is sent to the AI assistant, so the..."),
+            # nowhere near the menu text, and (per TUTORIALS_PLAN.md's
+            # box geometry note) that line renders well below/left of the
+            # toaster box's top-right ~6x30 footprint, so Task 1's
+            # blanking can't accidentally erase it either.
+            verify=screen_contains("is sent to the AI assistant"),
             demo_keys=b"help\r",
         ),
         Step(
             hint='Type "help topics", then "help <topic>".',
+            # HELP_TEXT (step 1's own demo output) literally contains the
+            # phrase "help topics" ("help topics    List all help
+            # topics"), so this predicate can be trivially true the
+            # moment this step becomes current if the user already ran
+            # "help". Entry suppression (_latch_entry_satisfied() /
+            # Task 2) is exactly what stops that from firing immediately
+            # -- left as screen_contains("Help topics") on purpose.
             verify=screen_contains("Help topics"),
             demo_keys=b"help topics\r",
         ),
         Step(
             hint='Search the manual raw: "m:memcpy".',
+            # Same story as step 2: HELP_TEXT's "m:<phrase>" example line
+            # is "m: memcpy", so "memcpy" can already be on screen from
+            # step 1's demo. Entry suppression covers this too.
             verify=screen_contains("memory-operations", "memcpy"),
             demo_keys=b"m:memcpy\r",
         ),

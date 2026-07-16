@@ -96,7 +96,7 @@ from .server_console import (
 
 from .console_manager import ConsoleManager
 
-from .toaster import paint_toaster
+from .toaster import paint_toaster, toaster_box_rect
 
 # ─────────────────────────────────────────────────────────────────────
 # Request Handlers & Protocol
@@ -268,6 +268,7 @@ __all__ = [
     "ServerConsole",
     "ConsoleManager",
     "paint_toaster",
+    "toaster_box_rect",
     "SCREEN_COLS",
     "SCREEN_ROWS",
     "SCREEN_SIZE",

@@ -15,6 +15,7 @@ Usage from command_handler / cloud_server:
 """
 
 import logging
+import math
 from typing import Callable, Dict, Optional, Tuple
 
 from . import _session_toasts
@@ -211,30 +212,42 @@ class ConsoleManager:
         self,
         session_id: int,
         text: str,
-        duration_sec: float = 3.0,
+        duration_sec: Optional[float] = 3.0,
         color: int = 7,
         push: bool = True,
     ) -> None:
-        """Display a temporary toast notification on the currently active console.
+        """Display a toast notification on the currently active console.
 
         The notification is overlaid on TOASTER_ROW (row 22) without modifying
-        any console's internal buffers.  It auto-expires after ``duration_sec``
-        seconds and is dismissed immediately by any keypress.
+        any console's internal buffers. Two toast types are supported:
+          - **timed** (default): numeric `duration_sec` -- the toast
+            auto-expires after that many seconds.
+          - **key-confirmed**: `duration_sec=None` -- the toast has no
+            expiry and stays visible until dismissed by a keypress.
+
+        Either way, any keypress dismisses the toast immediately (see
+        `ConsoleManager.handle_keypress`, which calls `clear_session_toast`-
+        equivalent cleanup on every keypress). Key-confirmed toasts only
+        work for sessions actively driving a server console: the local
+        BASIC shell never forwards individual keypresses to the server (it
+        only sends whole lines on Enter), so a key-confirmed toast shown
+        while the user is in the local shell won't be dismissed by typing
+        until they switch to a server console and press a key.
 
         This method is safe to call from background threads.
 
         Args:
             session_id:   Target session.
             text:         Message to display (truncated to 40 chars).
-            duration_sec: Visible duration in seconds (default 5).
+            duration_sec: Visible duration in seconds (default 3). `None`
+                          means key-confirmed (no expiry).
             color:        C64 colour nybble (default 7 = yellow).
             push:         If True, immediately push the updated screen to the C64.
         """
         import time
 
-        _session_toasts.put(
-            session_id, text, time.monotonic() + duration_sec, color & 0x0F
-        )
+        expires = math.inf if duration_sec is None else time.monotonic() + duration_sec
+        _session_toasts.put(session_id, text, expires, color & 0x0F)
         if push:
             self._push_session_toast(session_id)
 

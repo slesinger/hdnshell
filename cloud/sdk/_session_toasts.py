@@ -6,9 +6,19 @@ This module holds the session-toast dict so that both ServerConsole
 ConsoleManager (which writes toast entries) can share the same state
 without any circular imports.
 
+Two toast types are supported, distinguished purely by `expires`:
+  - **timed**: `expires` is a `time.monotonic()` deadline; the toast is
+    live while `time.monotonic() < expires`.
+  - **key-confirmed**: `expires` is `math.inf`, so the `<` comparison is
+    always True and the toast never times out on its own -- it only goes
+    away via an explicit `remove()` (e.g. `ConsoleManager.handle_keypress`
+    calls `remove()` on every keypress).
+
 API
 ---
     put(session_id, text, expires, color)  -- store or replace a toast
+                                               (`expires=math.inf` for a
+                                               key-confirmed/no-timeout toast)
     get(session_id) -> dict | None         -- retrieve current toast entry
     remove(session_id)                     -- dismiss immediately
     active(session_id) -> bool             -- True if a live toast exists
