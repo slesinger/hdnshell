@@ -550,11 +550,12 @@ class TestSelfReadRegression:
     def test_tick_does_not_match_a_dma_round_trip_of_its_own_box(self, monkeypatch):
         """
         Reproduces the real hardware cascade (tut2, 2026-07-16 trace):
-        step 2's own SHOWING hint text is 'Type "help topics", then "help
-        <topic>".' which CONTAINS the string "help topics" -- exactly
-        what step 2's verify checks for. Tick 1 paints that hint into the
-        (blank) screen and pushes it; tick 2 is fed that EXACT pushed
-        buffer back as the live DMA read (the real hardware round-trip),
+        step 2's own SHOWING hint text is 'Type "help topics" - hold CTRL
+        to slow the listing. Then "help <topic>".' which CONTAINS the
+        string "help topics" -- exactly what step 2's verify checks for.
+        Tick 1 paints that hint into the (blank) screen and pushes it;
+        tick 2 is fed that EXACT pushed buffer back as the live DMA read
+        (the real hardware round-trip),
         simulating what the C64U would echo back. Without Task 1's
         blanking, tick 2 would read its own hint text back and fire
         CONFIRM on nothing the user did.

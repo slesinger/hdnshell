@@ -123,7 +123,10 @@ tut2 = Tutorial(
             demo_keys=b"help\r",
         ),
         Step(
-            hint='Type "help topics", then "help <topic>".',
+            hint=(
+                'Type "help topics" - hold CTRL to slow the listing. '
+                'Then "help <topic>".'
+            ),
             # HELP_TEXT (step 1's own demo output) literally contains the
             # phrase "help topics" ("help topics    List all help
             # topics"), so this predicate can be trivially true the
@@ -145,10 +148,10 @@ tut2 = Tutorial(
         Step(
             hint=(
                 "Just ask! Anything unrecognised goes to the AI. "
-                'Try: "how do I mount a disk?" Press q when done.'
+                'Try: "i:How do I mount a disk?" Press q when done.'
             ),
             verify=always_manual(),
-            demo_keys=b"how do i mount a disk?\r",
+            demo_keys=b"i:how do i mount a disk?\r",
         ),
     ],
 )

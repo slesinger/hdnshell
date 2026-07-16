@@ -11,6 +11,7 @@ text in it." The whole interior must now be plain spaces (screen code
 word-wrapped text glyphs written on top.
 """
 
+from sdk.c64_colors import COL_YELLOW
 from sdk.toaster import (
     SCREEN_COLS,
     SCREEN_ROWS,
@@ -129,6 +130,32 @@ class TestUniformInteriorFill:
         paint_toaster(scr, col, "   ")
         assert scr == bytearray(SCREEN_COLS * SCREEN_ROWS)
         assert col == bytearray(SCREEN_COLS * SCREEN_ROWS)
+
+    def test_text_is_yellow_border_is_dark_gray(self):
+        """Locks in the two-color scheme: text (incl. interior fill) is
+        yellow, border is dark gray -- and the two must never collapse to
+        the same value."""
+        assert _TOAST_COL_TEXT == COL_YELLOW
+        assert _TOAST_COL_BG == 11  # dark gray, unchanged by this task
+        assert _TOAST_COL_TEXT != _TOAST_COL_BG
+
+        scr, col = _blank_buffers()
+        paint_toaster(scr, col, "Hello world")
+
+        rect = toaster_box_rect("Hello world")
+        row, box_col, height, width = rect
+
+        for r in range(row, row + height):
+            for c in range(box_col, box_col + width):
+                pos = r * SCREEN_COLS + c
+                is_border = (
+                    r in (row, row + height - 1)
+                    or c in (box_col, box_col + width - 1)
+                )
+                if is_border:
+                    assert col[pos] == _TOAST_COL_BG
+                else:
+                    assert col[pos] == _TOAST_COL_TEXT
 
 
 # ----------------------------------------------------------------------

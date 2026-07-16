@@ -268,7 +268,7 @@ class ServerConsole:
             text:         Message to display.
             duration_sec: How long the toaster stays visible, in seconds.
                           `None` means key-confirmed (no expiry).
-            color:        Ignored (box always uses dark gray background / white text).
+            color:        Ignored (box always uses dark gray background / yellow text).
         """
         self._toaster_text = text
         self._toaster_expires = (

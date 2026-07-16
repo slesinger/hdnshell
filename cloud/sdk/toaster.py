@@ -1,5 +1,5 @@
 """
-Shared "toaster" overlay painter: paints a dark-gray/white notification box
+Shared "toaster" overlay painter: paints a dark-gray/yellow notification box
 into the top-right corner of a 40x25 screen-code + color buffer pair.
 
 This is the pure geometry/rendering logic factored out of
@@ -11,13 +11,15 @@ This is the pure geometry/rendering logic factored out of
     paints directly onto a freshly DMA-read live screen buffer, not a
     ServerConsole).
 
-Box geometry/colors are unchanged from the original `server_console.py`
-implementation -- callers must see byte-identical output.
+Box geometry is unchanged from the original `server_console.py`
+implementation -- callers must see byte-identical output (text color is
+yellow; see `_TOAST_COL_TEXT`).
 See TUTORIALS_PLAN.md §5.3, §9 Phase 2.
 """
 
 from typing import List, Optional, Tuple
 
+from .c64_colors import COL_YELLOW
 from .petscii import ascii_to_screencode
 
 # C64 screen dimensions (kept in sync with sdk.server_console).
@@ -39,7 +41,7 @@ _TOAST_SC_FILL = 0xA0  # reverse space (no longer used by paint_toaster's own
 # this name keeps working for anything still importing it from there).
 _TOAST_SC_SPACE = 0x20  # plain space = interior fill (renders as VIC bg)
 _TOAST_COL_BG = 11  # dark gray background
-_TOAST_COL_TEXT = 1  # white text
+_TOAST_COL_TEXT = COL_YELLOW  # yellow text -- stands out from normal C64 output
 
 
 def _toast_word_wrap(text: str, width: int) -> List[str]:
@@ -111,7 +113,7 @@ def paint_toaster(scr: bytearray, col: bytearray, text: str) -> None:
          `_TOAST_SC_SPACE`) in the text color. Plain spaces render as the
          global VIC background, so the whole interior reads as one uniform
          panel -- no reverse-video fill blocks.
-      3. Write the word-wrapped text glyphs (normal video, white) on top.
+      3. Write the word-wrapped text glyphs (normal video, yellow) on top.
 
     Max outer width is 30 columns; height scales to the word-wrapped content.
 
