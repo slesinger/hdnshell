@@ -1,8 +1,14 @@
 """
-Unit tests for TutorialHandler (Phase 1: menu + tutN stub + nav gating).
+Unit tests for TutorialHandler (Phase 2: menu + tutN start wired to a real
+TutorialSession coach runner, manual advance only -- see
+TUTORIALS_PLAN.md §9 Phase 2).
 
-No coach thread exists yet in Phase 1, so these tests only cover
-can_handle/handle contracts and session-state bookkeeping.
+No hardware: `sdk.network_helper.read_last_c64_ip` is monkeypatched to ""
+for every test in this file (autouse fixture) so a started TutorialSession's
+background thread never performs a real DMA/REST call -- its `_tick()`
+returns immediately (see tutorials.session.TutorialSession._tick). Any
+session started during a test is stopped in the fixture teardown so no
+daemon thread outlives the test.
 """
 
 import os
@@ -20,13 +26,23 @@ from sdk.shared_state import (  # noqa: E402
     get_session_state_copy,
     reset_all_session_states,
 )
+import sdk.network_helper as network_helper  # noqa: E402
+from tutorials.session import _SESSIONS, stop_session  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
-def _isolate_session_state():
-    """Session state is module-global; reset it so tests don't leak into each other."""
+def _isolate_session_state(monkeypatch):
+    """
+    Session state is module-global; reset it so tests don't leak into each
+    other. Also stub out the C64 host so any TutorialSession started
+    during a test never makes a real network call, and stop any session
+    left running afterwards so no daemon thread outlives the test.
+    """
     reset_all_session_states()
+    monkeypatch.setattr(network_helper, "read_last_c64_ip", lambda: "")
     yield
+    for sid in list(_SESSIONS.keys()):
+        stop_session(sid)
     reset_all_session_states()
 
 
@@ -100,6 +116,12 @@ class TestNavGating:
         assert handler.can_handle("n", SESSION_ID)
         assert not handler.can_handle("n", other_session)
 
+    def test_nav_false_for_unavailable_tutorial(self):
+        """tut1 has no content yet -- starting it must NOT arm nav gating."""
+        handler = TutorialHandler()
+        handler.handle("tut1", SESSION_ID)
+        assert not handler.can_handle("n", SESSION_ID)
+
 
 class TestHandleMenu:
     def test_menu_contains_all_tutorial_lines(self):
@@ -131,17 +153,45 @@ class TestHandleStartTutorial:
         assert state["tutorial_active"] is True
         assert state["tutorial_id"] == "tut2"
 
-    def test_start_returns_stub_mentioning_tutorial(self):
+    def test_start_returns_ack_mentioning_tutorial(self):
         handler = TutorialHandler()
         response = handler.handle("tut2", SESSION_ID)
         assert "tut2" in response
         assert "q" in response.lower()
 
+    def test_start_registers_a_live_session(self):
+        from tutorials.session import get_session
+
+        handler = TutorialHandler()
+        handler.handle("tut2", SESSION_ID)
+        assert get_session(SESSION_ID) is not None
+
+    def test_unavailable_tutorial_does_not_activate(self):
+        handler = TutorialHandler()
+        for tut_id in ("tut1", "tut3", "tut4", "tut5"):
+            response = handler.handle(tut_id, SESSION_ID)
+            assert "not available yet" in response
+            state = get_session_state_copy(SESSION_ID)
+            assert state["tutorial_active"] is False
+            assert state["tutorial_id"] is None
+
+    def test_starting_a_new_tutorial_stops_the_previous_session(self):
+        from tutorials.session import get_session
+
+        handler = TutorialHandler()
+        handler.handle("tut2", SESSION_ID)
+        first_session = get_session(SESSION_ID)
+
+        handler.handle("tut2", SESSION_ID)
+        second_session = get_session(SESSION_ID)
+
+        assert second_session is not first_session
+
 
 class TestHandleQuit:
     def test_quit_clears_session_state(self):
         handler = TutorialHandler()
-        handler.handle("tut3", SESSION_ID)
+        handler.handle("tut2", SESSION_ID)
         assert get_session_state_copy(SESSION_ID)["tutorial_active"] is True
 
         response = handler.handle("q", SESSION_ID)
@@ -151,13 +201,58 @@ class TestHandleQuit:
         assert state["tutorial_id"] is None
         assert "ended" in response.lower()
 
-    def test_other_nav_returns_stub_ack(self):
+    def test_quit_stops_the_live_session(self):
+        from tutorials.session import get_session
+
         handler = TutorialHandler()
-        handler.handle("tut1", SESSION_ID)
+        handler.handle("tut2", SESSION_ID)
+        handler.handle("q", SESSION_ID)
+        assert get_session(SESSION_ID) is None
+
+
+class TestHandleNav:
+    def test_next_advances_and_returns_ack(self):
+        handler = TutorialHandler()
+        handler.handle("tut2", SESSION_ID)
         response = handler.handle("n", SESSION_ID)
-        assert response  # non-empty stub ack
-        # Tutorial should still be active - only q/quit clears it.
+        assert response
         assert get_session_state_copy(SESSION_ID)["tutorial_active"] is True
+
+    def test_back_and_repeat_return_acks_without_deactivating(self):
+        handler = TutorialHandler()
+        handler.handle("tut2", SESSION_ID)
+        handler.handle("n", SESSION_ID)
+        assert handler.handle("b", SESSION_ID)
+        assert handler.handle("r", SESSION_ID)
+        assert get_session_state_copy(SESSION_ID)["tutorial_active"] is True
+
+    def test_show_is_a_phase2_stub_ack(self):
+        handler = TutorialHandler()
+        handler.handle("tut2", SESSION_ID)
+        response = handler.handle("s", SESSION_ID)
+        assert "Phase 3" in response
+
+    def test_next_past_last_step_completes_and_clears_state(self):
+        handler = TutorialHandler()
+        handler.handle("tut2", SESSION_ID)
+        for _ in range(4):  # tut2 has 4 steps
+            handler.handle("n", SESSION_ID)
+
+        state = get_session_state_copy(SESSION_ID)
+        assert state["tutorial_active"] is False
+        assert state["tutorial_id"] is None
+
+    def test_nav_with_no_live_session_clears_stale_flag_gently(self):
+        handler = TutorialHandler()
+        # Force the state flag on without a live session (simulates a
+        # stale flag left over from e.g. a server restart).
+        from sdk.shared_state import update_session_state
+
+        update_session_state(SESSION_ID, tutorial_active=True, tutorial_id="tut2")
+        response = handler.handle("n", SESSION_ID)
+
+        assert "no tutorial" in response.lower()
+        assert get_session_state_copy(SESSION_ID)["tutorial_active"] is False
 
 
 class TestDispatcherRouting:

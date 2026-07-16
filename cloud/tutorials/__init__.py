@@ -6,11 +6,17 @@ Data model (`Screen`, `Step`, `Tutorial`, verify predicate helpers) lives in
 registered here in `TUTORIALS`. The coach runner (`session.py`,
 `tutorial_handler.py`) that drives these against a live C64U lands in later
 phases -- see TUTORIALS_PLAN.md.
+
+Import order matters here: `TUTORIALS` must exist as an attribute of this
+package *before* `content` is imported, because `content.py` reaches back
+into this (still-initializing) package with `from . import TUTORIALS` to
+register each tutorial as a side effect of being imported. That's why
+`from . import content` is the last line in this file -- see
+TUTORIALS_PLAN.md §9 Phase 2 / Task 2c.
 """
 
 from typing import Dict
 
-from .content import *  # noqa: F401,F403 - re-export content symbols, if any
 from .model import (
     Screen,
     Step,
@@ -22,8 +28,11 @@ from .model import (
     screen_matches,
 )
 
-# Populated in Phase 2+ as tutorial content is authored (content.py).
+# Populated as a side effect of importing `content` below (each tutorial's
+# content module assigns `TUTORIALS["tutN"] = ...`).
 TUTORIALS: Dict[str, Tutorial] = {}
+
+from . import content  # noqa: E402,F401 - populates TUTORIALS as a side effect
 
 __all__ = [
     "TUTORIALS",

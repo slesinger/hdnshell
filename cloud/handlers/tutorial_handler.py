@@ -1,23 +1,28 @@
 """
 TutorialHandler - Handles the interactive tutorials menu and nav commands
 
-Phase 1: menu + `tutN` start/stop bookkeeping only. No coach runner yet
-(no background thread, no screen overlay) -- that lands in Phase 2+.
-See TUTORIALS_PLAN.md sections 6, 7, 9.
+Phase 2: menu + `tutN` start wired to a real `TutorialSession` coach
+runner (background poll thread, screen overlay) -- manual advance only,
+no `verify`/auto-advance/demo-typing yet (that's Phase 3). See
+TUTORIALS_PLAN.md sections 6, 7, 9.
 
 Processes:
   - "tutorials" / "tutorial" / "tut"   -> the tutorials menu
-  - "tut1".."tut5"                     -> start a tutorial (stub for now)
+  - "tut1".."tut5"                     -> start the tutorial's TutorialSession
+                                           (only tut2 has content so far;
+                                           the rest reply "not available yet")
   - nav commands (n/b/s/r/q and the
     spelled-out forms), but ONLY while
     a tutorial is active for this
-    session                           -> nav ack (stub for now)
+    session                           -> routed to the live TutorialSession
 """
 
 import logging
 
 from sdk import BaseHandler
 from sdk.shared_state import get_session_state_copy, update_session_state
+from tutorials import TUTORIALS
+from tutorials.session import get_session, start_session, stop_session
 
 logger = logging.getLogger(__name__)
 
@@ -117,19 +122,43 @@ class TutorialHandler(BaseHandler):
 
         tut_id = _tut_id_if_valid(word)
         if tut_id is not None:
-            # Phase 1 stub: record the tutorial as active but don't start any
-            # coach thread yet. Real session lifecycle lands in Phase 2.
+            tutorial = TUTORIALS.get(tut_id)
+            if tutorial is None:
+                # tut1/tut3/tut4/tut5 content isn't authored yet (Phase 4+);
+                # don't mark a tutorial active if there's nothing to run.
+                return f"{tut_id} is not available yet."
             update_session_state(session_id, tutorial_active=True, tutorial_id=tut_id)
-            return f"{tut_id} not yet implemented (coach coming in Phase 2). Type q to quit."
+            start_session(tutorial, session_id)
+            return f"Started {tut_id}. Follow the hint box; n next, b back, q quit."
 
         if word in NAV_QUIT:
+            stop_session(session_id)
             update_session_state(session_id, tutorial_active=False, tutorial_id=None)
             return "Tutorial ended."
 
         if word in NAV_WORDS:
-            # n/b/s/r and their spelled-out forms: real routing to a live
-            # TutorialSession lands in Phase 2.
-            return "(coach not running yet)"
+            session = get_session(session_id)
+            if session is None:
+                # Stale state (e.g. the session was cleared by a power
+                # cycle/reset elsewhere) -- clear the flag and bail out
+                # gently rather than routing nav commands nowhere.
+                update_session_state(session_id, tutorial_active=False, tutorial_id=None)
+                return "No tutorial running."
+
+            if word in NAV_NEXT:
+                ack = session.next()
+            elif word in NAV_BACK:
+                ack = session.back()
+            elif word in NAV_REPEAT:
+                ack = session.repeat()
+            else:
+                assert word in NAV_SHOW
+                ack = session.show()
+
+            if session.is_completed():
+                update_session_state(session_id, tutorial_active=False, tutorial_id=None)
+
+            return ack
 
         # Should not be reached given can_handle's contract, but stay safe.
         logger.warning(f"TutorialHandler.handle called with unrecognised text: {text!r}")
