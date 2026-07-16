@@ -175,6 +175,18 @@ class CommandHandler:
         -> restore correctly (each packet arrives on its own connection, so
         without the ack the transfers could race).
 
+        RESTORE_SCREEN is also the only reliable "the user is back at the
+        local BASIC shell" signal the server sees: the wedge's console
+        switcher (wedge/rr38p-tmp12reu.bank02.asm, `cs_modal`/`cm_match`,
+        digit "1" case) calls `scr_restore` -> this command -- when
+        returning from a server console (C=+CTRL+1), never a server-console
+        packet. Left alone, `ConsoleManager._active[session_id]` (set by
+        `_notify_switch()` only on *server*-console traffic) would go stale
+        forever after the first console switch. Clearing it here lets
+        `TutorialSession._on_shell()` (cloud/tutorials/session.py,
+        TUTORIALS_PLAN.md §10.1) tell "at BASIC" apart from "still on a
+        server console" -- see that method's docstring for the full trace.
+
         Args:
             data:       Command payload (first byte is the command code).
             session_id: Client session ID (stable per client IP).
@@ -197,6 +209,17 @@ class CommandHandler:
 
         if data[0] == SERVER_CMD_RESTORE_SCREEN:
             logger.info(f"RESTORE_SCREEN for session {session_id} (host {host})")
+            # The user is back at the local BASIC shell. Deactivate the
+            # previously-active server console: this runs its
+            # on_deactivate hook (e.g. File Editor auto-saves modified
+            # documents there) AND clears the manager's "active console"
+            # record, so signals like TutorialSession._on_shell() see
+            # None (== on the shell) rather than the last-visited console
+            # id forever. Normally on_deactivate fires lazily on the next
+            # server-console switch, but returning to local sends no
+            # server-console packet, so we must trigger it here. See this
+            # method's docstring.
+            ConsoleManager.instance().deactivate_session(session_id)
             screen = state.get("saved_screen")
             color = state.get("saved_color")
             if screen and color:

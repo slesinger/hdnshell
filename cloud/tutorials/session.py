@@ -1,12 +1,20 @@
 """
 TutorialSession: the coach's per-session background runner.
 
-Phase 2 (MVP overlay, manual advance only -- TUTORIALS_PLAN.md §9 Phase 2):
-polls the live C64 screen, re-paints the current step's hint into the
-top-right toaster box every tick, and lets the handler drive step
-navigation (`n`/`b`/`r`/`s`/`q`). Auto-advance via `Step.verify` and the
-real `s` demo-typing land in Phase 3 -- `_tick()` intentionally never
-calls `step.verify` yet.
+Phase 3 (screen-read auto-advance + demo -- TUTORIALS_PLAN.md §9 Phase 3):
+polls the live C64 screen, calls the current step's `verify(screen)` and
+auto-advances at most one step per tick when it returns True, re-paints
+the (possibly new) current step's hint into the top-right toaster box,
+and lets the handler drive manual nav (`n`/`b`/`r`/`s`/`q`). `s` types
+the step's `demo_keys` onto the C64 via
+`network_helper.send_c64_keyboard_input`.
+
+Off-shell guard (plan §5.2/§10.1): before painting/verifying, `_tick()`
+checks `_on_shell(session_id)` and returns without touching the screen
+if the user has switched to a server console (File Editor, Browser,
+...) so the coach never stomps on a console it doesn't own. See
+`_on_shell()`'s docstring for how that's detected and its confirmed
+(non-VICE-testable) hardware trace.
 
 Design goal: `_tick()` is a single, synchronous, side-effect-only poll
 iteration with no thread/hardware dependency baked in, so tests can call
@@ -175,17 +183,24 @@ class TutorialSession:
             logger.debug("TutorialSession._tick failed (host unreachable?)", exc_info=True)
 
     # ------------------------------------------------------------------
-    # The poll iteration (Phase 2: render only, no verify/auto-advance)
+    # The poll iteration (Phase 3: verify + auto-advance + overlay)
     # ------------------------------------------------------------------
 
     def _tick(self) -> None:
         """
-        One poll iteration: read the live screen, paint the current step's
-        hint into the top-right toaster box, and push it back.
-
-        Phase 2 intentionally does NOT call `step.verify` / auto-advance --
-        every step behaves as manual-advance regardless of what its
-        `verify` predicate actually is. Real verify wiring is Phase 3.
+        One poll iteration:
+          1. read the live screen+color, build a `Screen`.
+          2. if the user isn't at the shell (`_on_shell()` is False),
+             return without painting/verifying -- a server console owns
+             the display right now (plan §5.2).
+          3. call the current step's `verify(screen)` (best-effort -- a
+             predicate that raises is logged and treated as False so a
+             buggy verify can never crash the poll thread); advance one
+             step on True, unless already on the last step (last steps
+             are manual/"press q" -- they never auto-advance since
+             `always_manual()` always returns False).
+          4. paint the (possibly new) current step's hint and push the
+             frame back.
         """
         host = network_helper.read_last_c64_ip()
         if not host:
@@ -193,15 +208,89 @@ class TutorialSession:
 
         screen_bytes = network_helper.dma_read_memory(host, SCREEN_ADDR, SCREEN_LEN)
         color_bytes = network_helper.dma_read_memory(host, COLOR_ADDR, SCREEN_LEN)
+        screen = Screen(screen_bytes, color_bytes)
 
-        # Screen() is built for parity with future (Phase 3) verify calls
-        # even though _tick doesn't consult it yet.
-        Screen(screen_bytes, color_bytes)
+        if not self._on_shell(self.session_id):
+            return  # a server console owns the screen right now -- don't stomp on it
+
+        with self._lock:
+            last_index = len(self.tutorial.steps) - 1
+            if self._step_index < last_index:
+                step = self.tutorial.steps[self._step_index]
+                try:
+                    done = bool(step.verify(screen))
+                except Exception:
+                    logger.debug("TutorialSession: step.verify raised", exc_info=True)
+                    done = False
+                if done:
+                    self._step_index += 1  # advance at most one step per tick
 
         scr = bytearray(screen_bytes)
         col = bytearray(color_bytes)
         paint_toaster(scr, col, self._current_hint())
         network_helper.send_screen_data(bytes(scr), bytes(col))
+
+    def _on_shell(self, session_id: int) -> bool:
+        """
+        True when it's safe to paint the overlay / run verify this tick:
+        the user is at the native BASIC shell (console 0 on the wire),
+        not inside a server console (File Editor=2 .. Wikipedia=7).
+
+        Confirmed by tracing the wedge asm + server packet handling
+        (TUTORIALS_PLAN.md §10.1 investigation, Phase 3):
+          - `ConsoleManager._active[session_id]` (cloud/sdk/console_manager.py)
+            is set only by `_notify_switch()`, called from
+            `handle_keypress`/`handle_text_input`/`handle_command`/
+            `get_screen_data` -- i.e. only when a packet routes to a
+            *server* console (wire console_id 1-10). It starts unset
+            (`.get()` -> None) until the first switch.
+          - Returning to local (C=+CTRL+1, wedge/rr38p-tmp12reu.bank02.asm
+            `cs_modal`/`cm_match`) does NOT send a server-console packet:
+            it calls `scr_restore`, which sends a console_id==0 COMMAND
+            (SERVER_CMD_RESTORE_SCREEN) handled by
+            `CommandHandler.handle_local_command()` -- a code path that
+            never touched `ConsoleManager` before this Phase 3 change.
+            Left alone, `_active` would go stale: once the user visits
+            any server console, `_active[session_id]` stays pinned at
+            that id forever, even long after they've returned to BASIC,
+            which would permanently disable the overlay/auto-advance for
+            the rest of the session. Fixed by calling
+            `ConsoleManager.deactivate_session(session_id)` (which clears
+            `_active` AND runs the previous console's on_deactivate hook,
+            e.g. File Editor auto-save) in `handle_local_command()`'s
+            `SERVER_CMD_RESTORE_SCREEN` branch
+            (cloud/sdk/command_handler.py) -- see that function's
+            docstring. With that fix, `_active.get(session_id)` reads
+            None whenever the user is at BASIC (never switched, or
+            switched-away-and-back), and 2..10 only while a server
+            console is actually on screen.
+          - No physical key maps to wire console_id 1 in the current
+            build (digit "1" always means "back to local", handled the
+            way above -- see `console_switch`/`cs_modal` in the same
+            asm file), but MIN_CONSOLE_ID=1 and the plan's key table
+            (§0) calls slot "1" the local shell conceptually, so treat
+            active==1 as on-shell too, defensively.
+
+        Any other active id (2..10) means a server console owns the
+        screen right now -> skip. Any lookup failure (e.g. ConsoleManager
+        not importable) fails closed (treated as "not on shell") so a
+        broken signal can't cause the overlay to stomp on a console it
+        doesn't own.
+
+        # TODO(hw): confirm on real hardware that RESTORE_SCREEN always
+        # fires when the user presses C=+CTRL+1 to return to local
+        # (including power-cycle/reset edge cases) so `_active` reliably
+        # clears; if some path skips it, add a heartbeat/timeout fallback
+        # here instead of relying solely on the RESTORE_SCREEN hook.
+        """
+        try:
+            from sdk.console_manager import ConsoleManager
+
+            active = ConsoleManager.instance()._active.get(session_id)
+        except Exception:
+            logger.debug("TutorialSession._on_shell: ConsoleManager lookup failed", exc_info=True)
+            return False
+        return active is None or active == 1
 
     def _current_hint(self) -> str:
         """The current step's hint text, prefixed with a short step counter."""
@@ -249,10 +338,25 @@ class TutorialSession:
 
     def show(self) -> str:
         """
-        Phase 2 stub: real `demo_keys` typing lands in Phase 3. Does not
-        type anything onto the C64.
+        Demo the current step: type its `demo_keys` onto the C64 via
+        `network_helper.send_c64_keyboard_input`. If the step has no
+        `demo_keys`, do nothing and say so. Network errors (dead host)
+        are swallowed -- `s` is a nav command, it must never raise back
+        into the handler.
         """
-        return "(demo comes in Phase 3)"
+        with self._lock:
+            demo_keys = self.tutorial.steps[self._step_index].demo_keys
+
+        if not demo_keys:
+            return "No demo for this step."
+
+        try:
+            network_helper.send_c64_keyboard_input(demo_keys)
+        except Exception:
+            logger.debug("TutorialSession.show: send_c64_keyboard_input failed (host unreachable?)", exc_info=True)
+            return "Couldn't reach the C64."
+
+        return "Typing demo..."
 
     def is_completed(self) -> bool:
         with self._lock:

@@ -1,7 +1,7 @@
 """
-Unit tests for TutorialHandler (Phase 2: menu + tutN start wired to a real
-TutorialSession coach runner, manual advance only -- see
-TUTORIALS_PLAN.md §9 Phase 2).
+Unit tests for TutorialHandler (Phase 3: menu + tutN start wired to a real
+TutorialSession coach runner, including verify/auto-advance + `s` demo
+typing -- see TUTORIALS_PLAN.md §9 Phase 3).
 
 No hardware: `sdk.network_helper.read_last_c64_ip` is monkeypatched to ""
 for every test in this file (autouse fixture) so a started TutorialSession's
@@ -117,9 +117,9 @@ class TestNavGating:
         assert not handler.can_handle("n", other_session)
 
     def test_nav_false_for_unavailable_tutorial(self):
-        """tut1 has no content yet -- starting it must NOT arm nav gating."""
+        """tut3 has no content yet -- starting it must NOT arm nav gating."""
         handler = TutorialHandler()
-        handler.handle("tut1", SESSION_ID)
+        handler.handle("tut3", SESSION_ID)
         assert not handler.can_handle("n", SESSION_ID)
 
 
@@ -168,7 +168,7 @@ class TestHandleStartTutorial:
 
     def test_unavailable_tutorial_does_not_activate(self):
         handler = TutorialHandler()
-        for tut_id in ("tut1", "tut3", "tut4", "tut5"):
+        for tut_id in ("tut3", "tut4", "tut5"):
             response = handler.handle(tut_id, SESSION_ID)
             assert "not available yet" in response
             state = get_session_state_copy(SESSION_ID)
@@ -226,11 +226,12 @@ class TestHandleNav:
         assert handler.handle("r", SESSION_ID)
         assert get_session_state_copy(SESSION_ID)["tutorial_active"] is True
 
-    def test_show_is_a_phase2_stub_ack(self):
+    def test_show_with_no_host_reports_unreachable(self):
+        """No C64 host configured (autouse fixture) -> show() must not raise."""
         handler = TutorialHandler()
-        handler.handle("tut2", SESSION_ID)
+        handler.handle("tut2", SESSION_ID)  # step 1 has demo_keys
         response = handler.handle("s", SESSION_ID)
-        assert "Phase 3" in response
+        assert "couldn't reach" in response.lower()
 
     def test_next_past_last_step_completes_and_clears_state(self):
         handler = TutorialHandler()

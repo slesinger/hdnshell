@@ -1,16 +1,15 @@
 """
 TutorialHandler - Handles the interactive tutorials menu and nav commands
 
-Phase 2: menu + `tutN` start wired to a real `TutorialSession` coach
-runner (background poll thread, screen overlay) -- manual advance only,
-no `verify`/auto-advance/demo-typing yet (that's Phase 3). See
-TUTORIALS_PLAN.md sections 6, 7, 9.
+Phase 3: menu + `tutN` start wired to a real `TutorialSession` coach
+runner (background poll thread, screen overlay, verify/auto-advance, and
+`s`-triggered demo-typing). See TUTORIALS_PLAN.md sections 6, 7, 9.
 
 Processes:
   - "tutorials" / "tutorial" / "tut"   -> the tutorials menu
   - "tut1".."tut5"                     -> start the tutorial's TutorialSession
-                                           (only tut2 has content so far;
-                                           the rest reply "not available yet")
+                                           (tut1/tut2 have content so far;
+                                           tut3/tut4/tut5 reply "not available yet")
   - nav commands (n/b/s/r/q and the
     spelled-out forms), but ONLY while
     a tutorial is active for this

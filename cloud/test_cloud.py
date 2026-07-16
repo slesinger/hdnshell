@@ -357,5 +357,68 @@ class TestServerIntegration:
         pass
 
 
+class TestRestoreScreenDeactivatesConsole:
+    """
+    handle_local_command's RESTORE_SCREEN branch is the server's only
+    "user returned to the local BASIC shell" signal (the wedge sends no
+    server-console packet on C=+CTRL+1). It must deactivate the
+    previously-active server console so its on_deactivate hook (e.g. File
+    Editor auto-save) still runs and ConsoleManager._active is cleared.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _reset_console_manager(self, monkeypatch):
+        from sdk.console_manager import ConsoleManager
+
+        ConsoleManager.reset()
+        # No hardware: RESTORE_SCREEN's DMA push must not hit the network.
+        # It only pushes if there's a saved screen in session state; there
+        # isn't in these tests, but stub send_screen_data defensively.
+        import sdk.command_handler as ch
+
+        monkeypatch.setattr(ch, "send_screen_data", lambda *a, **kw: None)
+        yield
+        ConsoleManager.reset()
+
+    def _restore_packet(self):
+        from sdk.command_handler import SERVER_CMD_RESTORE_SCREEN
+
+        return bytes([SERVER_CMD_RESTORE_SCREEN])
+
+    def test_restore_runs_on_deactivate_and_clears_active(self):
+        from sdk.console_manager import ConsoleManager
+        from sdk.server_console import ServerConsole
+
+        sid = 3
+        deactivated = []
+
+        class _SpyConsole(ServerConsole):
+            def on_deactivate(self):
+                deactivated.append(self.console_id)
+
+        mgr = ConsoleManager.instance()
+        mgr.register_factory(2, _SpyConsole)
+        # Make console 2 (File Editor slot) the active console for the session.
+        mgr.get_console(2, sid)
+        mgr._active[sid] = 2
+
+        CommandHandler.handle_local_command(self._restore_packet(), sid)
+
+        assert deactivated == [2]  # on_deactivate ran exactly once
+        assert mgr._active.get(sid) is None  # active record cleared
+
+    def test_second_restore_with_no_active_console_is_noop(self):
+        from sdk.console_manager import ConsoleManager
+
+        sid = 4
+        mgr = ConsoleManager.instance()
+
+        # No active console at all -- must not raise, must stay clear.
+        CommandHandler.handle_local_command(self._restore_packet(), sid)
+        CommandHandler.handle_local_command(self._restore_packet(), sid)
+
+        assert mgr._active.get(sid) is None
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

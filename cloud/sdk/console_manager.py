@@ -150,6 +150,21 @@ class ConsoleManager:
             except Exception:
                 logger.exception(f"on_activate failed for console {console_id}")
 
+    def deactivate_session(self, session_id: int) -> None:
+        """Deactivate the session's current server console (running its
+        on_deactivate hook, e.g. File Editor auto-save) and clear the
+        active-console record. Called when the user returns to the local
+        BASIC shell (RESTORE_SCREEN), which sends no server-console packet."""
+        prev_id = self._active.pop(session_id, None)
+        if prev_id is None:
+            return
+        console = self._consoles.get((session_id, prev_id))
+        if console is not None:
+            try:
+                console.on_deactivate()
+            except Exception:
+                logger.exception(f"on_deactivate failed for console {prev_id}")
+
     def handle_keypress(
         self, console_id: int, session_id: int, petscii_code: int, modifiers: int
     ) -> Optional[bytes]:
