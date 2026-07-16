@@ -65,6 +65,7 @@ bank06_data_8023:
 .const B6_PATHMAX = 63      // max cwd bytes stored (NUL at +len; fits B4_BUF's 80 B)
 .const B6_CWDLEN  = $cf63   // captured cwd length     (free $cf63-$cf7f scratch)
 .const B6_LINLEN  = $cf64   // original $02a7 line length
+.const B6_MTMP    = $cf66   // b6_match: holds the table letter across fold+compare
 .const B6C3_RUN   = $0386   // bank6->bank3 leaf trampoline (SHARES b5c3's $0386 slot)
 .const B3_IDLE = $9dbb      // bank3 uci_idle_kick  (frozen)
 .const B3_PUSH = $9b20      // bank3 hsh_push       (frozen)
@@ -676,62 +677,62 @@ b6_pp_done:
 // (Step 21 consts are defined ahead of first use, above the $8023 helper block.)
 b6_disp:
 .errorif (* != $9E00), "b6_disp not at $9E00"
-    // Match "mkdir " / "memcpy " (case-folded). Not ours -> C=1 with $02a7 UNCHANGED,
+    // Match a cwd-frame command word (case-folded) from b6_cmdtab: today
+    // "mkdir "/"memcpy "/"mkdisk "/"del ". Not ours -> C=1 with $02a7 UNCHANGED,
     // so bank4 then hsh_body forward the line exactly as step 18/20.
     lda $02a7
     cmp #$23               // 16-DEV: '#<letter>' device switch -> auto-cd
-    bne b6_ac_no           //   not '#': fall through to normal mkdir/memcpy matching
+    bne b6_ac_no           //   not '#': fall through to the command-table match
     jmp b6_autocd          //   '#': set $cf2a + CHANGE_DIR (C=0 UCI letter / C=1 -> AI)
 b6_ac_no:
+    jsr b6_match           // C=0 => a b6_cmdtab word + arg-space -> prepend cwd frame
+    bcc b6_ctx
+    sec                    // not a cwd-frame command -> forward the line UNCHANGED
+    rts
+// b6_match: does the shadow line at $02a7 begin with one of the b6_cmdtab command
+// words immediately followed by a space? Case-folded (b6_fold, which preserves X/Y).
+// Returns C=0 on a match, C=1 on none. X = table index, Y = line index (both local);
+// B6_MTMP holds the table letter across the fold+compare.
+b6_match:
+    ldx #$00               // X -> b6_cmdtab
+b6_m_entry:
+    ldy #$00               // Y -> $02a7 line
+b6_m_char:
+    lda b6_cmdtab,x
+    bmi b6_m_no            // $ff = end of table -> no match
+    beq b6_m_space         // $00 = end of this word -> the next line byte must be ' '
+    sta B6_MTMP            // stash the table letter
+    lda $02a7,y
     jsr b6_fold
-    cmp #$4d               // 'M'
-    beq b6_ck_m
-b6_nm:
+    cmp B6_MTMP
+    bne b6_m_skip          // mismatch -> jump to the next table entry
+    inx
+    iny
+    bne b6_m_char          // (always: Y stays < 256 for any real line)
+b6_m_space:
+    lda $02a7,y            // word matched; the arg separator must be a space
+    cmp #$20
+    bne b6_m_skip
+    clc                    // MATCH
+    rts
+b6_m_skip:
+    lda b6_cmdtab,x        // walk X past this entry's remaining bytes + its $00
+    inx
+    cmp #$00
+    bne b6_m_skip
+    beq b6_m_entry         // next entry ($ff is caught back at b6_m_char)
+b6_m_no:
     sec
     rts
-b6_ck_m:
-    lda $02a7+1
-    jsr b6_fold
-    cmp #$4b               // 'K' -> "mkdir"
-    beq b6_ck_mkd
-    cmp #$45               // 'E' -> "memcpy"
-    bne b6_nm
-    lda $02a7+2            // "memcpy": M E M C P Y ' '
-    jsr b6_fold
-    cmp #$4d
-    bne b6_nm
-    lda $02a7+3
-    jsr b6_fold
-    cmp #$43
-    bne b6_nm
-    lda $02a7+4
-    jsr b6_fold
-    cmp #$50
-    bne b6_nm
-    lda $02a7+5
-    jsr b6_fold
-    cmp #$59
-    bne b6_nm
-    lda $02a7+6
-    cmp #$20               // space -> memcpy takes args
-    bne b6_nm
-    beq b6_ctx
-b6_ck_mkd:
-    lda $02a7+2            // "mkdir": D I R ' '
-    jsr b6_fold
-    cmp #$44
-    bne b6_nm
-    lda $02a7+3
-    jsr b6_fold
-    cmp #$49
-    bne b6_nm
-    lda $02a7+4
-    jsr b6_fold
-    cmp #$52
-    bne b6_nm
-    lda $02a7+5
-    cmp #$20               // space -> mkdir takes an arg
-    bne b6_nm
+// Command words that earn a cwd CONTEXT frame (see b6_prepend). PETSCII-uppercase,
+// each $00-terminated; $ff ends the table. Add a word here to give a new server
+// command relative-path resolution -- no other code change needed.
+b6_cmdtab:
+    .byte $4D,$4B,$44,$49,$52,$00                  // "MKDIR"
+    .byte $4D,$45,$4D,$43,$50,$59,$00              // "MEMCPY"
+    .byte $4D,$4B,$44,$49,$53,$4B,$00              // "MKDISK"
+    .byte $44,$45,$4C,$00                          // "DEL"
+    .byte $ff
 b6_ctx:
     // Device gate: only UCI-DOS drives own a cwd worth prepending. $cf2a is stored
     // already-folded (hd_setdev). T/F/H today; U/V reserved for the deferred #u/#v

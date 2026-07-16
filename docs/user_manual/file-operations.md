@@ -19,6 +19,18 @@ Commands for creating directories, copying files, and moving raw memory blocks. 
 
 To save or restore a block of memory (not a whole file that's already on a device), use `memcpy` — see [Memory Operations](memory-operations.md#saving-and-restoring-memory-blocks-memcpy).
 
-## Deleting Files
+## Deleting Files (`del`)
 
-Deleting files on IEC drives is handled by the Retro Replay cartridge's own BASIC toolkit `DELETE` command, or classically via the drive command channel (`@s:name`). On the Ultimate storage, use the web UI's [File Manager](file-manager.md) to delete files and folders.
+`del <pattern>` — Delete one or more files matching `<pattern>`. The pattern's directory part resolves against the current directory (like `mkdir`), and the filename part may contain the usual glob wildcards `*` and `?`. Only files are deleted — directories are always left untouched.
+
+- `del old.prg` — delete a single named file in the current directory
+- `del *.prg` — delete every `.prg` file in the current directory
+- `del temp?.d64` — delete `temp0.d64`, `temp1.d64`, … (single-character wildcard)
+- `del /usb0/games/*.tmp` — delete matching files at an absolute path
+
+`del` operates on whichever drive you are currently on:
+
+- On `t`/`f`/`h`/`u`/`v` (Ultimate storage): deletes on the Ultimate filesystem.
+- On `n` (network drive): deletes within the current network-drive directory (sandboxed to the server workspace).
+
+**There is no confirmation prompt** — a matching file is deleted immediately, so double-check your pattern. `del` reports how many files it removed (`OK: deleted 3 file(s)`), or `?NOTHING MATCHED` when the pattern matches nothing. Deleting files requires the HDN Server to be running. On IEC-only drives (`8`/`9`/`s`, no server session), use the Retro Replay cartridge's own BASIC `DELETE` command or the drive command channel (`@s:name`) instead. You can also delete via the web UI's [File Manager](file-manager.md).

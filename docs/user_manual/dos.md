@@ -53,6 +53,21 @@ Loading works the classic way — BASIC stays, so `LOAD"demo*",8,1` works exactl
 
 To load a file to an arbitrary memory address of your choice, use [`memcpy`](memory-operations.md#saving-and-restoring-memory-blocks-memcpy).
 
+## Creating Disk Images (`mkdisk`)
+
+The `mkdisk` command creates a new, empty disk image on the Ultimate filesystem. The image type is taken from the file extension: **d64**, **d71**, **d81**, or **dnp**. Like `mkdir`, a bare name is created in the current directory, and relative or absolute paths work too. Creating disk images requires the HDN Server to be running.
+
+Syntax: `mkdisk <name>.<type>[,<tracks>][,<diskname>]`
+
+- `mkdisk games.d64` — create a standard 35-track D64 in the current directory
+- `mkdisk games.d64,40` — create a 40-track D64
+- `mkdisk demos.d81` — create a D81 (800 KB, 3.5″)
+- `mkdisk demos.d81,,MY DEMOS` — D81 with the disk header label `MY DEMOS` (leave the middle field empty)
+- `mkdisk archive.dnp,128,BACKUP` — create a 128-track DNP (a DNP **requires** a track count, 1–255)
+- `mkdisk /usb0/tools/util.d64` — create at an absolute path
+
+Track counts apply only where the format allows them: D64 accepts 35 (default) or 40; D71 (70) and D81 (160) are fixed, so any track value is ignored; DNP requires one. When no disk label is given, the Ultimate uses the file's name. Once created, mount the image with `mnt` (below).
+
 ## Mounting and Unmounting Disk Images
 
 The `mnt` command can mount disk images (D64/D71/D81) to a drive 8 or 9. This allows you to use the contents of the disk image as if it were a real disk drive. Mounting works regardless of your current device (`#`) — the image path is resolved against the Ultimate filesystem.

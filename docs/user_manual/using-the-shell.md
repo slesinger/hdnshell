@@ -16,7 +16,7 @@ HDN Shell RR is a wedge inside a Retro Replay cartridge. You type at the ordinar
 
 `help` — Ask the server a question, or (if unreachable) print a short local pointer.
 
-For directory navigation (`cd`, `pwd`, `ll`/`dir`, `#<device>`), disk images (`mnt`/`umnt`), and file transfer (`mkdir`, `cp`), see [Navigating Disk Drives and Directories](dos.md). For saving/loading raw memory blocks, see [Memory Operations](memory-operations.md).
+For directory navigation (`cd`, `pwd`, `ll`/`dir`, `#<device>`), disk images (`mkdisk`, `mnt`/`umnt`), and file management (`mkdir`, `cp`, `del`), see [Navigating Disk Drives and Directories](dos.md). For saving/loading raw memory blocks, see [Memory Operations](memory-operations.md).
 
 `ll` and `dir` accept a filter pattern, e.g. `ll outrun*` lists only entries whose name starts with `outrun` (case-insensitive prefix match; the trailing `*` is optional).
 

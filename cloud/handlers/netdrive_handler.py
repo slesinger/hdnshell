@@ -24,13 +24,14 @@ new binary-safe framing was needed on the C64 side at all.
 
 import logging
 import os
+import fnmatch
 import ftplib
 
 from sdk import BaseHandler, get_session_state_copy, update_session_state, WORKSPACE_DIR
 
 logger = logging.getLogger(__name__)
 
-_NAV_COMMANDS = {"cd", "pwd", "ll", "dir", "cp", "put"}
+_NAV_COMMANDS = {"cd", "pwd", "ll", "dir", "cp", "put", "del"}
 
 
 class NetDriveHandler(BaseHandler):
@@ -91,6 +92,9 @@ class NetDriveHandler(BaseHandler):
         if cmd == "put":
             return self._put_file(net_cwd, arg, state)
 
+        if cmd == "del":
+            return self._del_files(net_cwd, arg)
+
         return "Unknown command."
 
     def _resolve(self, net_cwd: str, rel_path: str):
@@ -123,6 +127,33 @@ class NetDriveHandler(BaseHandler):
                     size = 0
                 lines.append(f"{name} ({size})")
         return "\n".join(lines)
+
+    def _del_files(self, net_cwd: str, arg: str) -> str:
+        """Delete workspace file(s) matching a glob pattern (sandboxed, files only)."""
+        if not arg:
+            return "Usage: del <pattern>"
+        target_dir = self._resolve(net_cwd, os.path.dirname(arg))
+        if target_dir is None:
+            return "?ACCESS DENIED - outside workspace"
+        glob = os.path.basename(arg)
+        if not glob:
+            return "Usage: del <pattern>"
+        try:
+            entries = os.listdir(target_dir)
+        except OSError as e:
+            return f"?ERROR: {e}"
+        deleted = 0
+        for name in entries:
+            full = os.path.join(target_dir, name)
+            if os.path.isfile(full) and fnmatch.fnmatch(name, glob):
+                try:
+                    os.remove(full)
+                    deleted += 1
+                except OSError as e:
+                    logger.error(f"NetDrive del failed for {name}: {e}")
+        if deleted == 0:
+            return f"?NOTHING MATCHED: {arg}"
+        return f"OK: deleted {deleted} file(s)"
 
     def _get_file(self, net_cwd: str, arg: str, state: dict) -> str:
         """GET: push a workspace file onto the C64U's own FTP server (/temp)."""

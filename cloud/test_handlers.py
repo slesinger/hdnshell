@@ -588,3 +588,43 @@ class TestManualSearch:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestNetDriveDel:
+    """`del <pattern>` on the #n network drive deletes sandboxed workspace files."""
+
+    def _setup(self, tmp_path, monkeypatch, session_id):
+        import netdrive_handler
+        monkeypatch.setattr(netdrive_handler, "WORKSPACE_DIR", str(tmp_path))
+        update_session_state(session_id, active_module="n", net_cwd="")
+        return netdrive_handler.NetDriveHandler()
+
+    def test_del_wildcard_skips_dirs(self, tmp_path, monkeypatch):
+        (tmp_path / "a.prg").write_text("x")
+        (tmp_path / "b.prg").write_text("y")
+        (tmp_path / "keep.d64").write_text("z")
+        (tmp_path / "sub").mkdir()
+        handler = self._setup(tmp_path, monkeypatch, 300)
+        resp = handler.handle("del *.prg", 300)
+        assert resp == "OK: deleted 2 file(s)"
+        assert not (tmp_path / "a.prg").exists()
+        assert not (tmp_path / "b.prg").exists()
+        assert (tmp_path / "keep.d64").exists()
+        assert (tmp_path / "sub").is_dir()
+
+    def test_del_nothing_matched(self, tmp_path, monkeypatch):
+        (tmp_path / "a.d64").write_text("x")
+        handler = self._setup(tmp_path, monkeypatch, 301)
+        resp = handler.handle("del *.prg", 301)
+        assert resp == "?NOTHING MATCHED: *.prg"
+        assert (tmp_path / "a.d64").exists()
+
+    def test_del_outside_workspace_denied(self, tmp_path, monkeypatch):
+        handler = self._setup(tmp_path, monkeypatch, 302)
+        resp = handler.handle("del ../*.prg", 302)
+        assert resp == "?ACCESS DENIED - outside workspace"
+
+    def test_del_no_arg_usage(self, tmp_path, monkeypatch):
+        handler = self._setup(tmp_path, monkeypatch, 303)
+        resp = handler.handle("del", 303)
+        assert resp == "Usage: del <pattern>"

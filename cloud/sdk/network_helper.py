@@ -180,3 +180,28 @@ def rest_reboot(host: str) -> None:
 
     url = f"http://{host}/v1/machine:reboot"
     _requests.post(url, timeout=5)
+
+
+def rest_create_disk(host: str, abspath: str, image_type: str, tracks=None, diskname=None) -> list:
+    """
+    Create a disk image on the Ultimate via REST. Returns the 'errors' list
+    from the JSON response (empty = success). Raises on transport failure.
+    image_type is one of 'd64','d71','d81','dnp'.
+    """
+    import requests as _requests
+    from urllib.parse import quote as _quote
+
+    url = f"http://{host}/v1/files{_quote(abspath)}:create_{image_type}"
+    params = {}
+    if tracks is not None:
+        params["tracks"] = tracks
+    if diskname is not None:
+        params["diskname"] = diskname
+
+    resp = _requests.put(url, params=params, timeout=15)
+    if resp.status_code != 200:
+        return [f"HTTP {resp.status_code}: {resp.text}"]
+    try:
+        return resp.json().get("errors", [])
+    except ValueError as e:
+        return [f"bad JSON response: {e}"]

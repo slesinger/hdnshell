@@ -2,7 +2,7 @@
 UltimateHandler - server-side commands that talk directly to the Ultimate64/
 C64U cartridge's own REST DMA API and its built-in FTP server.
 
-Two commands live here:
+Three commands live here:
 
   - mkdir <abspath>            Create a directory on the C64U's FTP server.
   - memcpy $START-$END <path>  SAVE: read an inclusive C64 memory range via
@@ -11,6 +11,15 @@ Two commands live here:
   - memcpy <path> $ADDR        LOAD: FTP-RETR <abspath> from the C64U and
                                 DMA-write its bytes into C64 memory at $ADDR
                                 via the Ultimate REST writemem API.
+  - mkdisk <path>[,<tracks>][,<diskname>]
+                                Create a .d64/.d71/.d81/.dnp disk image on the
+                                C64U via the Ultimate REST create_d64/d71/d81/dnp
+                                API (sdk/network_helper.py's rest_create_disk).
+  - del <pattern>              Delete file(s) matching a glob pattern on the
+                                C64U's FTP filesystem (fnmatch over the resolved
+                                directory; directories are never deleted). When
+                                the #n network drive is active this command is
+                                yielded to NetDriveHandler instead.
 
 Policy: memory access always goes over the Ultimate REST API
 (sdk/network_helper.py's dma_read_memory / dma_write_memory_rest), never
@@ -24,6 +33,7 @@ import logging
 import os
 import posixpath
 import re
+import fnmatch
 import ftplib
 
 from sdk import BaseHandler, get_session_state_copy, network_helper
@@ -31,6 +41,11 @@ from sdk import BaseHandler, get_session_state_copy, network_helper
 logger = logging.getLogger(__name__)
 
 _MEMCPY_USAGE = "Usage: memcpy $START-$END /path/file  OR  memcpy /path/file $ADDR"
+_MKDISK_USAGE = "Usage: mkdisk <name>.d64[,tracks][,diskname]  (d64/d71/d81/dnp)"
+_DEL_USAGE = "Usage: del <pattern>  (e.g. del *.prg)"
+
+# extension (lowercase, no dot) -> REST create_<type> suffix
+_MKDISK_TYPES = ("d64", "d71", "d81", "dnp")
 
 # $START-$END or START-END (hex, optional $/0x prefix on either side)
 _HEX_RANGE_RE = re.compile(
@@ -52,7 +67,15 @@ class UltimateHandler(BaseHandler):
         parts = text.strip().split()
         if not parts:
             return False
-        return parts[0].lower() in ("mkdir", "memcpy")
+        cmd = parts[0].lower()
+        # `del` is context-sensitive: on the #n network drive it targets the
+        # server-local workspace (NetDriveHandler), so yield it there. mkdir/
+        # mkdisk/memcpy stay unconditional (always the C64U), per the dispatcher
+        # ordering note in request_dispatcher.py.
+        if cmd == "del":
+            state = get_session_state_copy(session_id)
+            return state.get("active_module") != "n"
+        return cmd in ("mkdir", "memcpy", "mkdisk")
 
     def handle(self, text: str, session_id: int = 0) -> str:
         parts = text.strip().split()
@@ -63,6 +86,10 @@ class UltimateHandler(BaseHandler):
             return self._mkdir(args, session_id)
         if cmd == "memcpy":
             return self._memcpy(args, session_id)
+        if cmd == "mkdisk":
+            return self._mkdisk(text, session_id)
+        if cmd == "del":
+            return self._del(args, session_id)
         return "?ERROR"
 
     # ------------------------------------------------------------------
@@ -227,3 +254,131 @@ class UltimateHandler(BaseHandler):
             return f"?WRITEMEM FAILED: {e}"
 
         return f"OK: loaded {len(data)} bytes {abspath} -> {addr:04X}"
+
+    # ------------------------------------------------------------------
+    # mkdisk
+    # ------------------------------------------------------------------
+
+    def _mkdisk(self, text: str, session_id: int) -> str:
+        parts = text.strip().split(None, 1)
+        if len(parts) < 2 or not parts[1].strip():
+            return _MKDISK_USAGE
+
+        fields = [f.strip() for f in parts[1].split(",")]
+        if len(fields) > 3:
+            return _MKDISK_USAGE
+        path = fields[0]
+        tracks_str = fields[1] if len(fields) > 1 else ""
+        diskname = fields[2] if len(fields) > 2 else ""
+        if not path:
+            return _MKDISK_USAGE
+
+        ext = os.path.splitext(path)[1].lstrip(".").lower()
+        if ext not in _MKDISK_TYPES:
+            return _MKDISK_USAGE
+
+        tracks = None
+        if tracks_str:
+            try:
+                tracks = int(tracks_str)
+            except ValueError:
+                return _MKDISK_USAGE
+
+        if ext == "d64":
+            if tracks is not None and tracks not in (35, 40):
+                return "?BAD TRACKS - d64 supports 35 or 40"
+        elif ext in ("d71", "d81"):
+            # fixed track count on the firmware side; ignore a supplied value
+            tracks = None
+        elif ext == "dnp":
+            if tracks is None or not (1 <= tracks <= 255):
+                return "?BAD TRACKS - dnp requires tracks 1-255"
+
+        abspath = self._resolve_abspath(path, session_id)
+        if abspath is None:
+            return _MKDISK_USAGE
+
+        host = self._resolve_host(session_id)
+        if not host:
+            return "?NO CLIENT IP - cannot reach C64U"
+
+        try:
+            errors = network_helper.rest_create_disk(
+                host, abspath, ext, tracks=tracks, diskname=diskname or None
+            )
+        except Exception as e:
+            logger.error(f"mkdisk failed for {abspath}: {e}")
+            return f"?REST FAILED: {e}"
+
+        if errors:
+            return f"?CREATE FAILED: {'; '.join(errors)}"
+
+        return f"OK: created {abspath}"
+
+    # ------------------------------------------------------------------
+    # del
+    # ------------------------------------------------------------------
+
+    def _del(self, args, session_id: int) -> str:
+        """Delete file(s) matching a glob pattern on the C64U's FTP filesystem.
+
+        The pattern's directory part resolves against the UCI DOS cwd (Step 21
+        context frame) exactly like mkdir/mkdisk; the basename is fnmatch'd
+        against the files in that directory. Directories are never deleted.
+        """
+        if not args or not args[0]:
+            return _DEL_USAGE
+        pattern = args[0]
+
+        abspath = self._resolve_abspath(pattern, session_id)
+        if abspath is None:
+            return _DEL_USAGE
+
+        dirpath = posixpath.dirname(abspath) or "/"
+        glob = posixpath.basename(abspath)
+        if not glob:
+            return _DEL_USAGE
+
+        host = self._resolve_host(session_id)
+        if not host:
+            return "?NO CLIENT IP - cannot reach C64U"
+
+        try:
+            with ftplib.FTP(host, timeout=10) as ftp:
+                ftp.login()
+                ftp.cwd(dirpath)
+                names = self._match_files(ftp, glob)
+                if not names:
+                    return f"?NOTHING MATCHED: {pattern}"
+                deleted = 0
+                failed = []
+                for name in names:
+                    try:
+                        ftp.delete(name)
+                        deleted += 1
+                    except ftplib.all_errors as e:
+                        failed.append(name)
+                        logger.error(f"del: could not delete {name}: {e}")
+        except Exception as e:
+            logger.error(f"del failed for {pattern}: {e}")
+            return f"?FTP FAILED: {e}"
+
+        if failed:
+            return f"OK: deleted {deleted} file(s); {len(failed)} failed"
+        return f"OK: deleted {deleted} file(s)"
+
+    def _match_files(self, ftp, glob):
+        """Return the names in the current FTP dir that are files and match glob.
+
+        Uses MLSD (which tags each entry file/dir) when the server supports it so
+        directories are excluded; falls back to NLST (no type info) when it does
+        not -- in that case DELE simply fails on a directory and it is skipped.
+        """
+        try:
+            return [
+                name
+                for name, facts in ftp.mlsd()
+                if facts.get("type") == "file" and fnmatch.fnmatch(name, glob)
+            ]
+        except ftplib.all_errors:
+            return [name for name in ftp.nlst() if fnmatch.fnmatch(name, glob)]

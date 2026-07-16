@@ -2562,3 +2562,43 @@ window `$8100-$9DFF` is untouched, so TASS/TMP image is safe. `bb_main` pinned `
 ### Next
 - **AA3 — docs:** rename HONDANI→HDN across `docs/user_manual/*`; add the "what/why of arming"
   explainer; document boot-arm + manual re-arm after programs.
+
+## Step 23 — cwd-frame matcher made table-driven (+`mkdisk`/`del`) 🔨 built, awaiting HW test
+
+**Problem.** The step-21 cwd CONTEXT frame (`\x01<cwd>\x01<line>`, so the server resolves relative
+paths) was only prepended for two commands, because `b6_disp`'s matcher (`$9E00` pocket) recognized
+only the literal words `"mkdir "`/`"memcpy "` via a hand-coded char-by-char compare chain. The new
+server commands `mkdisk`/`del` were never in that chain, so the wedge forwarded them **bare** — the
+server saw no `dos_cwd` and (correctly) rejected any relative path with its usage line. HW symptom:
+`mkdisk games.d64` / `del ECHO.PRG` → usage text; only absolute paths worked. (`mnt` is unaffected:
+it never used the frame — it hands the raw path to the Ultimate's own DOS1 engine, which tracks its
+own cwd. So "reuse GET_PATH like mnt" actually means reuse mkdir/memcpy's frame path, which is what
+this does.) Server side was already generic — `request_dispatcher` strips the `\x01…\x01` frame for
+*any* line — so **no cloud change was needed**; the fix is wedge-only.
+
+**Change (bank6 only).** Replaced the verbose per-command compare chain (`b6_ck_m`/`b6_ck_mkd`, ~118 B)
+with a compact table-driven matcher:
+- `b6_match` (`$9E11`, 48 B): folds each line char (`b6_fold`) and matches it against `b6_cmdtab`
+  entries; a match requires the whole word followed by a space. C=0 → fall into `b6_ctx` (device gate
+  + `b6_get_path`/`b6_prepend`, unchanged); C=1 → `sec`/`rts` forward the line unchanged. `B6_MTMP`
+  (`$cf66`, free scratch) holds the table letter across the fold+compare; X/Y are the table/line
+  indices (`b6_fold` preserves both).
+- `b6_cmdtab` (`$9E43`, 25 B): `MKDIR\0 MEMCPY\0 MKDISK\0 DEL\0 \xff`. **Adding a future cwd-frame
+  command is now a one-line table edit** — no code change.
+
+**Verification.** Build clean; `$9E00` pocket `.errorif ($9E9D)` bound holds — region now ends `$9E82`,
+**27 B free** (was 0). Diff vs prior build: **bank6 only**; banks 0-5,7 **byte-identical**. `b6_match`
+disassembly-verified (all branch targets land: `bmi`→`b6_m_no`, `beq`→`b6_m_space`, `bne`→`b6_m_skip`,
+loop→`b6_m_char`/`b6_m_entry`; `jsr $8023`=`b6_fold`). `b6_cmdtab` bytes confirmed in the binary. The
+`$8023` helper pocket (`b6_get_path`/`b6_prepend`/`b6_fold`) and `$9F58` pocket (`b6c3`/`b6_autocd`)
+are untouched.
+
+**HW test expectation.**
+- On `#t`/`#f`/`#h`: `mkdisk games.d64` (relative) creates in the current dir; `del ECHO.PRG` /
+  `del *.prg` (relative) delete in the current dir. Server log should now show `(cwd=…)` for both.
+- Absolute paths (`mkdisk /sd/home/x.d64`, `del /temp/*.tmp`) still work.
+- Regression: `mkdir`/`memcpy` relative + absolute unchanged; `#`-autocd, pwd/cd/ll, mnt/umnt,
+  status/time/menu, stock sweep + TASS launch/exit all unchanged (matcher only rewrote command
+  recognition; `b6_ctx` onward is byte-for-byte the old logic).
+- `del` while on `#n`: still forwarded to the server's NetDriveHandler (the `$cf2a` device gate isn't
+  a UCI letter on `#n`, so no frame is prepended — bare forward, as before).

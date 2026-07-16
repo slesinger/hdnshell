@@ -1,5 +1,5 @@
 """
-Unit tests for UltimateHandler (mkdir / memcpy) and the "csdb" alias on
+Unit tests for UltimateHandler (mkdir / memcpy / mkdisk) and the "csdb" alias on
 CSDBHandler.
 
 All network access (ftplib.FTP, REST readmem/writemem) is mocked - these
@@ -24,7 +24,7 @@ from sdk.shared_state import (
     update_session_state,
     reset_all_session_states,
 )
-from ultimate_handler import UltimateHandler
+from ultimate_handler import UltimateHandler, _DEL_USAGE
 from csdb_handler import CSDBHandler
 
 
@@ -50,6 +50,12 @@ class FakeFTP:
         self.cwd_calls = []
         self.cwd_should_fail = False
         self.retr_data = b""
+        # del support: mlsd() yields (name, {"type": "file"|"dir"}); delete()
+        # records DELE calls. Tests set `mlsd_entries` / `mlsd_should_fail`.
+        self.mlsd_entries = []
+        self.mlsd_should_fail = False
+        self.nlst_names = []
+        self.delete_calls = []
         FakeFTP.instances.append(self)
 
     def login(self):
@@ -70,6 +76,17 @@ class FakeFTP:
     def retrbinary(self, cmd, callback):
         self.retr_calls.append(cmd)
         callback(self.retr_data)
+
+    def mlsd(self):
+        if self.mlsd_should_fail:
+            raise ftplib.error_perm("500 MLSD not understood")
+        return list(self.mlsd_entries)
+
+    def nlst(self):
+        return list(self.nlst_names)
+
+    def delete(self, name):
+        self.delete_calls.append(name)
 
     def quit(self):
         pass
@@ -293,6 +310,182 @@ class TestMemcpyUsage:
         assert "Usage" in handler.handle("memcpy /Temp/x")
 
 
+class TestMkdisk:
+    def test_can_handle_mkdisk(self):
+        handler = UltimateHandler()
+        assert handler.can_handle("mkdisk games.d64")
+        assert handler.can_handle("MKDISK games.d64")
+
+    def test_mkdisk_success_d64_default(self, monkeypatch):
+        captured = {}
+
+        def fake_rest_create_disk(host, abspath, image_type, tracks=None, diskname=None):
+            captured["host"] = host
+            captured["abspath"] = abspath
+            captured["image_type"] = image_type
+            captured["tracks"] = tracks
+            captured["diskname"] = diskname
+            return []
+
+        monkeypatch.setattr(network_helper, "rest_create_disk", fake_rest_create_disk)
+        handler = UltimateHandler()
+        session_id = 60
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("mkdisk /Usb0/games.d64", session_id)
+
+        assert "OK" in response
+        assert "/Usb0/games.d64" in response
+        assert captured["host"] == "1.2.3.4"
+        assert captured["abspath"] == "/Usb0/games.d64"
+        assert captured["image_type"] == "d64"
+        assert captured["tracks"] is None
+        assert captured["diskname"] is None
+
+    def test_mkdisk_d64_explicit_tracks(self, monkeypatch):
+        captured = {}
+
+        def fake_rest_create_disk(host, abspath, image_type, tracks=None, diskname=None):
+            captured["tracks"] = tracks
+            return []
+
+        monkeypatch.setattr(network_helper, "rest_create_disk", fake_rest_create_disk)
+        handler = UltimateHandler()
+        session_id = 61
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("mkdisk /Usb0/games.d64,40", session_id)
+        assert "OK" in response
+        assert captured["tracks"] == 40
+
+    def test_mkdisk_d64_bad_tracks(self, monkeypatch):
+        handler = UltimateHandler()
+        session_id = 62
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("mkdisk /Usb0/games.d64,39", session_id)
+        assert response.startswith("?BAD TRACKS")
+
+    def test_mkdisk_d81_with_diskname_and_empty_tracks_field(self, monkeypatch):
+        captured = {}
+
+        def fake_rest_create_disk(host, abspath, image_type, tracks=None, diskname=None):
+            captured["tracks"] = tracks
+            captured["diskname"] = diskname
+            captured["image_type"] = image_type
+            return []
+
+        monkeypatch.setattr(network_helper, "rest_create_disk", fake_rest_create_disk)
+        handler = UltimateHandler()
+        session_id = 63
+        update_session_state(session_id, client_ip="1.2.3.4", dos_cwd="/Usb0")
+
+        response = handler.handle("mkdisk demos.d81,,MY DEMOS", session_id)
+        assert "OK" in response
+        assert captured["image_type"] == "d81"
+        assert captured["tracks"] is None
+        assert captured["diskname"] == "MY DEMOS"
+
+    def test_mkdisk_dnp_requires_tracks(self, monkeypatch):
+        handler = UltimateHandler()
+        session_id = 64
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("mkdisk big.dnp", session_id)
+        assert response.startswith("?BAD TRACKS")
+
+        response = handler.handle("mkdisk big.dnp,300", session_id)
+        assert response.startswith("?BAD TRACKS")
+
+    def test_mkdisk_dnp_with_tracks_and_diskname(self, monkeypatch):
+        captured = {}
+
+        def fake_rest_create_disk(host, abspath, image_type, tracks=None, diskname=None):
+            captured["tracks"] = tracks
+            captured["diskname"] = diskname
+            return []
+
+        monkeypatch.setattr(network_helper, "rest_create_disk", fake_rest_create_disk)
+        handler = UltimateHandler()
+        session_id = 65
+        update_session_state(session_id, client_ip="1.2.3.4", dos_cwd="/Usb0")
+
+        response = handler.handle("mkdisk big.dnp,128,ARCHIVE", session_id)
+        assert "OK" in response
+        assert captured["tracks"] == 128
+        assert captured["diskname"] == "ARCHIVE"
+
+    def test_mkdisk_bad_extension(self):
+        handler = UltimateHandler()
+        session_id = 66
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("mkdisk notes.txt", session_id)
+        assert "Usage" in response
+
+    def test_mkdisk_no_args_is_usage(self):
+        handler = UltimateHandler()
+        session_id = 67
+        response = handler.handle("mkdisk", session_id)
+        assert "Usage" in response
+
+    def test_mkdisk_relative_path_joins_cwd(self, monkeypatch):
+        captured = {}
+
+        def fake_rest_create_disk(host, abspath, image_type, tracks=None, diskname=None):
+            captured["abspath"] = abspath
+            return []
+
+        monkeypatch.setattr(network_helper, "rest_create_disk", fake_rest_create_disk)
+        handler = UltimateHandler()
+        session_id = 68
+        update_session_state(session_id, client_ip="1.2.3.4", dos_cwd="/Temp/games")
+
+        response = handler.handle("mkdisk games.d64", session_id)
+        assert "OK" in response
+        assert captured["abspath"] == "/Temp/games/games.d64"
+
+    def test_mkdisk_relative_path_without_cwd_is_usage(self, monkeypatch):
+        handler = UltimateHandler()
+        session_id = 69
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("mkdisk games.d64", session_id)
+        assert "Usage" in response
+
+    def test_mkdisk_no_client_ip(self, monkeypatch):
+        monkeypatch.setattr(network_helper, "read_last_c64_ip", lambda: "")
+        handler = UltimateHandler()
+        session_id = 70
+
+        response = handler.handle("mkdisk /Usb0/games.d64", session_id)
+        assert "?NO CLIENT IP" in response
+
+    def test_mkdisk_rest_errors_reported(self, monkeypatch):
+        monkeypatch.setattr(
+            network_helper, "rest_create_disk", lambda *a, **k: ["disk full"]
+        )
+        handler = UltimateHandler()
+        session_id = 71
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("mkdisk /Usb0/games.d64", session_id)
+        assert "?CREATE FAILED" in response
+        assert "disk full" in response
+
+    def test_mkdisk_transport_exception(self, monkeypatch):
+        def raising(*a, **k):
+            raise IOError("connection refused")
+
+        monkeypatch.setattr(network_helper, "rest_create_disk", raising)
+        handler = UltimateHandler()
+        session_id = 72
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("mkdisk /Usb0/games.d64", session_id)
+        assert "?REST FAILED" in response
+
+
 class TestCsdbAlias:
     def test_can_handle_csdb(self):
         handler = CSDBHandler()
@@ -433,3 +626,97 @@ class TestCwdContextFrame:
         # mixed-case path must survive (decoded as ASCII, not through petscii)
         RequestDispatcher().dispatch(self._framed("/Usb0/MyGames", "help"), session_id)
         assert get_session_state_copy(session_id).get("dos_cwd") == "/Usb0/MyGames"
+
+
+class TestDelCanHandle:
+    def test_can_handle_del_default(self):
+        assert UltimateHandler().can_handle("del *.prg", 200) is True
+
+    def test_del_yielded_on_netdrive(self):
+        # while #n is active, del must fall through to NetDriveHandler
+        update_session_state(201, active_module="n")
+        assert UltimateHandler().can_handle("del *.prg", 201) is False
+
+    def test_mkdir_still_claimed_on_netdrive(self):
+        # only del is context-sensitive; mkdir stays unconditional
+        update_session_state(202, active_module="n")
+        assert UltimateHandler().can_handle("mkdir /Temp/x", 202) is True
+
+
+class TestDel:
+    def _mk(self, session_id, entries, cwd=None):
+        update_session_state(session_id, client_ip="1.2.3.4")
+        if cwd is not None:
+            update_session_state(session_id, dos_cwd=cwd)
+
+        def factory(host=None, timeout=None):
+            ftp = FakeFTP(host=host, timeout=timeout)
+            ftp.mlsd_entries = entries
+            return ftp
+
+        return factory
+
+    def test_del_exact_name(self, monkeypatch):
+        entries = [("game.prg", {"type": "file"}), ("other.prg", {"type": "file"})]
+        monkeypatch.setattr(ftplib, "FTP", self._mk(210, entries))
+        resp = UltimateHandler().handle("del /Usb0/game.prg", 210)
+        assert resp == "OK: deleted 1 file(s)"
+        assert FakeFTP.instances[-1].delete_calls == ["game.prg"]
+        assert FakeFTP.instances[-1].cwd_calls == ["/Usb0"]
+
+    def test_del_wildcard_multiple_skips_dirs(self, monkeypatch):
+        entries = [
+            ("a.prg", {"type": "file"}),
+            ("b.prg", {"type": "file"}),
+            ("sub", {"type": "dir"}),
+            ("keep.d64", {"type": "file"}),
+        ]
+        monkeypatch.setattr(ftplib, "FTP", self._mk(211, entries))
+        resp = UltimateHandler().handle("del /Usb0/*.prg", 211)
+        assert resp == "OK: deleted 2 file(s)"
+        assert sorted(FakeFTP.instances[-1].delete_calls) == ["a.prg", "b.prg"]
+
+    def test_del_nothing_matched(self, monkeypatch):
+        entries = [("a.d64", {"type": "file"})]
+        monkeypatch.setattr(ftplib, "FTP", self._mk(212, entries))
+        resp = UltimateHandler().handle("del /Usb0/*.prg", 212)
+        assert resp == "?NOTHING MATCHED: /Usb0/*.prg"
+        assert FakeFTP.instances[-1].delete_calls == []
+
+    def test_del_relative_uses_cwd(self, monkeypatch):
+        entries = [("x.prg", {"type": "file"})]
+        monkeypatch.setattr(ftplib, "FTP", self._mk(213, entries, cwd="/Usb0/games"))
+        resp = UltimateHandler().handle("del *.prg", 213)
+        assert resp == "OK: deleted 1 file(s)"
+        assert FakeFTP.instances[-1].cwd_calls == ["/Usb0/games"]
+
+    def test_del_relative_no_cwd_is_usage(self, monkeypatch):
+        monkeypatch.setattr(ftplib, "FTP", self._mk(214, []))
+        update_session_state(214, dos_cwd=None)
+        resp = UltimateHandler().handle("del *.prg", 214)
+        assert resp == _DEL_USAGE
+        assert FakeFTP.instances == []
+
+    def test_del_no_client_ip(self, monkeypatch):
+        monkeypatch.setattr(ftplib, "FTP", FakeFTP)
+        monkeypatch.setattr(network_helper, "read_last_c64_ip", lambda: "")
+        resp = UltimateHandler().handle("del /Usb0/x.prg", 215)
+        assert "?NO CLIENT IP" in resp
+        assert FakeFTP.instances == []
+
+    def test_del_no_args_is_usage(self):
+        update_session_state(216, client_ip="1.2.3.4")
+        assert UltimateHandler().handle("del", 216) == _DEL_USAGE
+
+    def test_del_mlsd_fallback_to_nlst(self, monkeypatch):
+        def factory(host=None, timeout=None):
+            ftp = FakeFTP(host=host, timeout=timeout)
+            ftp.mlsd_should_fail = True
+            ftp.nlst_names = ["one.prg", "two.d64"]
+            return ftp
+
+        update_session_state(217, client_ip="1.2.3.4")
+        monkeypatch.setattr(ftplib, "FTP", factory)
+        resp = UltimateHandler().handle("del /Usb0/*.prg", 217)
+        assert resp == "OK: deleted 1 file(s)"
+        assert FakeFTP.instances[-1].delete_calls == ["one.prg"]
