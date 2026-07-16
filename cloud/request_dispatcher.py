@@ -20,6 +20,7 @@ if _HANDLERS_DIR not in sys.path:
 
 ChatHandler = importlib.import_module("chat_handler").ChatHandler
 HelpHandler = importlib.import_module("help_handler").HelpHandler
+TutorialHandler = importlib.import_module("tutorial_handler").TutorialHandler
 PythonEvalHandler = importlib.import_module("python_eval_handler").PythonEvalHandler
 UltimateHandler = importlib.import_module("ultimate_handler").UltimateHandler
 CSDBHandler = importlib.import_module("csdb_handler").CSDBHandler
@@ -40,6 +41,12 @@ class RequestDispatcher:
         """Initialize all request handlers in priority order"""
         try:
             # Order matters - first matching handler will process the request.
+            # TutorialHandler is checked right after HelpHandler, before the
+            # AI/CSDB/NetDrive catch-alls (TUTORIALS_PLAN.md §6): it only
+            # claims the tutorials menu words / tutN, plus the single-letter
+            # nav commands (n/b/s/r/q) -- and even those only while a
+            # tutorial is active for the session (see can_handle), so it
+            # never shadows BASIC or the other handlers otherwise.
             # UltimateHandler (mkdir/memcpy) MUST stay before CSDBHandler and
             # NetDriveHandler: those two claim *any* line once their module is
             # active (the active_module catch-all below), so if they preceded
@@ -47,6 +54,7 @@ class RequestDispatcher:
             # would be silently swallowed by the wrong handler.
             self.handlers = [
                 HelpHandler(),
+                TutorialHandler(),
                 PythonEvalHandler(),
                 ChatHandler(),
                 UltimateHandler(),

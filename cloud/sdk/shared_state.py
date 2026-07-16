@@ -22,6 +22,8 @@ def _new_session_state() -> Dict[str, Any]:
         "zip_files": None,
         "chat_history": [],
         "clipboard": "",
+        "tutorial_active": False,
+        "tutorial_id": None,
     }
 
 
