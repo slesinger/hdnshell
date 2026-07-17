@@ -224,31 +224,35 @@ def prompt_device_is(*letters: str) -> Callable[[Screen], bool]:
     return _verify
 
 
-def active_console_is(console_id: int, session_id: int = 0) -> Callable[[Screen], bool]:
+def active_console_is(console_id: int) -> Callable[[Screen], bool]:
     """
     Build a verify predicate for tut5-style steps ("press C=+CTRL+4") that
-    is True once `ConsoleManager` reports `console_id` active for
-    `session_id`.
+    is True once `ConsoleManager` reports `console_id` active for the
+    session running the tutorial.
 
-    The `Screen` argument is accepted (for signature compatibility with
-    every other verify predicate -- `TutorialSession` calls all of them as
-    `verify(screen)`) but unused: which console is active lives in
-    `ConsoleManager`, not the screen buffer.
+    `Tutorial`/`Step` objects (built once in `content.py` at import time)
+    are shared across every session, so the *session_id* to check against
+    can't be baked in here -- there is no one session_id to bake in.
+    Instead, the returned callable is tagged with a `_console_id`
+    attribute; `TutorialSession._run_verify()` special-cases any step
+    whose `verify` carries that tag and checks
+    `ConsoleManager.instance()._active.get(self.session_id)` itself,
+    using the *real* session_id, rather than ever calling this closure.
 
-    # TODO: session_id isn't known at content.py authoring time -- the
-    # real TutorialSession (Phase 5, per-session background runner) will
-    # need to either rebind this closure's session_id when a tutorial
-    # starts, or this helper's signature may need to change to a
-    # (screen, session_id) two-arg form called differently by the runner.
-    # Not settled yet; only used starting tut5 (Phase 4).
+    The closure below (`ConsoleManager` looked up against a `None`
+    session_id, which no real session ever uses) only runs if some other
+    caller invokes this verify directly instead of going through
+    `TutorialSession` -- a safe, always-False fallback rather than a
+    crash.
     """
 
     def _verify(screen: Screen) -> bool:  # noqa: ARG001 - Screen unused by design
         try:
             from sdk.console_manager import ConsoleManager
 
-            return ConsoleManager.instance()._active.get(session_id) == console_id
+            return ConsoleManager.instance()._active.get(None) == console_id
         except Exception:
             return False
 
+    _verify._console_id = console_id  # marker read by TutorialSession._run_verify
     return _verify

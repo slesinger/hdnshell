@@ -40,12 +40,20 @@ called by the handler thread) ever moves `_step_index`. See
 `_current_hint()` for the two texts and `next()`/`back()` for the state
 transitions.
 
-Off-shell guard (plan §5.2/§10.1): before painting/verifying, `_tick()`
-checks `_on_shell(session_id)` and returns without touching the screen
-if the user has switched to a server console (File Editor, Browser,
-...) so the coach never stomps on a console it doesn't own. See
+Off-shell guard (plan §5.2/§10.1): before painting/content-verifying,
+`_tick()` checks `_on_shell(session_id)` and returns without touching the
+screen if the user has switched to a server console (File Editor,
+Browser, ...) so the coach never stomps on a console it doesn't own. See
 `_on_shell()`'s docstring for how that's detected and its confirmed
 (non-VICE-testable) hardware trace.
+
+Console-tour exception (Phase 4, tut5): `active_console_is()` steps are
+specifically watching for the user to switch INTO a server console --
+exactly the transition that makes `_on_shell()` go False -- and their
+check reads `ConsoleManager` directly, never the screen, so they must
+still run off-shell. `_check_console_marker_step()` is the narrow,
+screen-free exception to the guard above; every other (content-reading)
+verify predicate still only ever runs on-shell.
 
 Design goal: `_tick()` is a single, synchronous, side-effect-only poll
 iteration with no thread/hardware dependency baked in, so tests can call
@@ -273,9 +281,17 @@ class TutorialSession:
         """
         One poll iteration:
           1. read the live screen+color.
-          2. if the user isn't at the shell (`_on_shell()` is False),
-             return without painting/verifying -- a server console owns
-             the display right now (plan §5.2).
+          2. if the user isn't at the shell (`_on_shell()` is False), a
+             server console owns the display right now (plan §5.2) --
+             never paint over it. But a console-tour step
+             (`active_console_is()`, tut5) is specifically watching for
+             the user to switch INTO a server console, i.e. exactly the
+             transition that makes `_on_shell()` go False, and its check
+             reads `ConsoleManager` directly rather than the screen (see
+             `_run_verify`'s `_console_id` special case) -- so it must
+             still run here. `_check_console_marker_step()` is the
+             off-shell counterpart of steps 3-4 below, scoped to just
+             that one case, and then `_tick()` returns without painting.
           3. build the verify-facing `Screen` with the coach's own
              overlay blanked out (`_verify_view()` -- see Task 1 in the
              module docstring: prevents the self-read bug).
@@ -302,6 +318,7 @@ class TutorialSession:
         color_bytes = network_helper.dma_read_memory(host, COLOR_ADDR, SCREEN_LEN)
 
         if not self._on_shell(self.session_id):
+            self._check_console_marker_step()
             return  # a server console owns the screen right now -- don't stomp on it
 
         with self._lock:
@@ -310,12 +327,7 @@ class TutorialSession:
         if not already_confirmed:
             verify_screen = self._verify_view(screen_bytes)
             result = self._run_verify(verify_screen)
-            with self._lock:
-                if self._entry_satisfied:
-                    if not result:
-                        self._entry_satisfied = False  # stale match cleared; a later True can now fire
-                elif result:
-                    self._confirmed = True  # genuine transition -> CONFIRM (index unchanged)
+            self._apply_verify_result(result)
 
         scr = bytearray(screen_bytes)
         col = bytearray(color_bytes)
@@ -325,12 +337,65 @@ class TutorialSession:
             self._last_box_rect = toaster_box_rect(hint_text)
         network_helper.send_screen_data(bytes(scr), bytes(col))
 
-    def _run_verify(self, verify_screen: Screen) -> bool:
+    def _apply_verify_result(self, result: bool) -> None:
+        """
+        Shared entry-suppression edge-trigger update (Task 2), used by
+        both the normal on-shell verify path in `_tick()` and the
+        off-shell console-marker path in `_check_console_marker_step()`.
+        """
+        with self._lock:
+            if self._entry_satisfied:
+                if not result:
+                    self._entry_satisfied = False  # stale match cleared; a later True can now fire
+            elif result:
+                self._confirmed = True  # genuine transition -> CONFIRM (index unchanged)
+
+    def _check_console_marker_step(self) -> None:
+        """
+        Off-shell counterpart to the verify step in `_tick()`, scoped to
+        `active_console_is()` steps only (tut5's console tour).
+
+        Every other verify predicate reads screen content, which is
+        meaningless (and unsafe to paint over) while a server console
+        owns the display -- that's what the off-shell guard protects.
+        But `active_console_is()` doesn't touch the screen at all; it
+        reads `ConsoleManager._active` directly (via `_run_verify`'s
+        `_console_id` special case), and the transition it's watching
+        for -- the user switching INTO a server console -- is exactly
+        what makes `_on_shell()` False. So this must run, and must NOT
+        attempt to read/paint the screen (there is none to safely touch).
+
+        No-ops for any other step (no `_console_id` marker), or once
+        already CONFIRMed, or on the last step, mirroring `_run_verify`'s
+        own guards.
+        """
+        with self._lock:
+            if self._confirmed:
+                return
+            idx = self._step_index
+            if idx >= len(self.tutorial.steps) - 1:
+                return
+            step = self.tutorial.steps[idx]
+
+        if getattr(step.verify, "_console_id", None) is None:
+            return  # not a console-tour step -- nothing to check off-shell
+
+        result = self._run_verify(None)
+        self._apply_verify_result(result)
+
+    def _run_verify(self, verify_screen: Optional[Screen]) -> bool:
         """
         Call the current step's `verify(verify_screen)`, best-effort: an
         exception is logged and treated as False. The last step's verify
         is never evaluated -- last steps are manual ("press q"), so they
         never enter CONFIRM via auto-detect.
+
+        Special case: `verify` callables built by `active_console_is()`
+        carry a `_console_id` marker (see that factory's docstring --
+        `Tutorial`/`Step` objects are shared across every session, so the
+        session_id to check can't be baked into the closure at content.py
+        authoring time). For those, check `ConsoleManager` directly against
+        *this session's* `session_id` instead of calling the closure.
         """
         with self._lock:
             idx = self._step_index
@@ -338,6 +403,17 @@ class TutorialSession:
             if idx >= last_index:
                 return False
             step = self.tutorial.steps[idx]
+
+        console_id = getattr(step.verify, "_console_id", None)
+        if console_id is not None:
+            try:
+                from sdk.console_manager import ConsoleManager
+
+                return ConsoleManager.instance()._active.get(self.session_id) == console_id
+            except Exception:
+                logger.debug("TutorialSession: active_console_is check failed", exc_info=True)
+                return False
+
         try:
             return bool(step.verify(verify_screen))
         except Exception:

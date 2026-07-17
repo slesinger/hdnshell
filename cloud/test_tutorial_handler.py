@@ -117,10 +117,19 @@ class TestNavGating:
         assert not handler.can_handle("n", other_session)
 
     def test_nav_false_for_unavailable_tutorial(self):
-        """tut3 has no content yet -- starting it must NOT arm nav gating."""
+        """A tutN with no registered content must NOT arm nav gating (all
+        five tutN slots have content as of Phase 4, so this monkeypatches
+        the registry to simulate the not-yet-authored case that
+        TutorialHandler.handle() still guards against)."""
+        from tutorials import TUTORIALS
+
         handler = TutorialHandler()
-        handler.handle("tut3", SESSION_ID)
-        assert not handler.can_handle("n", SESSION_ID)
+        removed = TUTORIALS.pop("tut3")
+        try:
+            handler.handle("tut3", SESSION_ID)
+            assert not handler.can_handle("n", SESSION_ID)
+        finally:
+            TUTORIALS["tut3"] = removed
 
 
 class TestHandleMenu:
@@ -166,14 +175,32 @@ class TestHandleStartTutorial:
         handler.handle("tut2", SESSION_ID)
         assert get_session(SESSION_ID) is not None
 
-    def test_unavailable_tutorial_does_not_activate(self):
+    def test_tut3_tut4_tut5_activate_like_tut1_tut2(self):
+        """Phase 4: all five tutN slots have content now."""
         handler = TutorialHandler()
         for tut_id in ("tut3", "tut4", "tut5"):
             response = handler.handle(tut_id, SESSION_ID)
+            assert tut_id in response
+            state = get_session_state_copy(SESSION_ID)
+            assert state["tutorial_active"] is True
+            assert state["tutorial_id"] == tut_id
+            handler.handle("q", SESSION_ID)
+
+    def test_unavailable_tutorial_does_not_activate(self):
+        """Monkeypatches the registry to simulate a not-yet-authored tutN
+        (see test_nav_false_for_unavailable_tutorial's docstring)."""
+        from tutorials import TUTORIALS
+
+        handler = TutorialHandler()
+        removed = TUTORIALS.pop("tut3")
+        try:
+            response = handler.handle("tut3", SESSION_ID)
             assert "not available yet" in response
             state = get_session_state_copy(SESSION_ID)
             assert state["tutorial_active"] is False
             assert state["tutorial_id"] is None
+        finally:
+            TUTORIALS["tut3"] = removed
 
     def test_starting_a_new_tutorial_stops_the_previous_session(self):
         from tutorials.session import get_session

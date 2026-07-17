@@ -22,6 +22,10 @@ Besides of mnt, cd, file is also impacted.
 ------
 QUEUE
 
+tool pro psani na obrazovku. nechce mi to zobrazit adresar.
+
+lowercase after start and boot screen and ready. modification.
+
 Run prg file by typing its name.
 
 cp, mv v ramci ultimate fs

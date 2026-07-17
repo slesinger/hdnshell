@@ -9,6 +9,7 @@ from tutorials.model import (
     SCREEN_ROWS,
     SCREEN_SIZE,
     Screen,
+    active_console_is,
     always_manual,
     screen_contains,
     screen_matches,
@@ -131,6 +132,23 @@ def test_screen_matches_is_case_insensitive():
     assert screen_matches(r"HELLO WORLD")(screen) is True
 
 
+def test_screen_matches_word_boundary_excludes_c64():
+    # tut3 step 1 ("i:how much is 96-32?") verifies with \b64\b so it
+    # can't fire just because "C64" is showing up somewhere else on
+    # screen -- "6" right after "C" isn't a word boundary.
+    buf = _blank_screen_bytes()
+    _write_row(buf, 0, "WELCOME TO YOUR C64")
+    screen_with_c64_only = Screen(bytes(buf))
+
+    buf2 = _blank_screen_bytes()
+    _write_row(buf2, 0, "THE ANSWER IS 64")
+    screen_with_standalone_64 = Screen(bytes(buf2))
+
+    verify = screen_matches(r"\b64\b")
+    assert verify(screen_with_c64_only) is False
+    assert verify(screen_with_standalone_64) is True
+
+
 def test_always_manual_never_advances():
     buf = _blank_screen_bytes()
     _write_row(buf, 0, "ANYTHING AT ALL")
@@ -140,3 +158,24 @@ def test_always_manual_never_advances():
     assert verify(screen) is False
     # Still False regardless of what's on screen.
     assert verify(Screen(bytes(_blank_screen_bytes()))) is False
+
+
+def test_active_console_is_carries_console_id_marker():
+    # TutorialSession._run_verify() special-cases this via the
+    # `_console_id` marker rather than ever calling the closure with the
+    # right session_id baked in (Tutorial/Step objects are shared across
+    # every session -- see the factory's own docstring).
+    verify = active_console_is(4)
+    assert verify._console_id == 4
+
+
+def test_active_console_is_fallback_closure_is_safe_but_never_true():
+    # If something calls the closure directly (bypassing TutorialSession's
+    # marker-based special case), it must degrade to a safe False rather
+    # than crash or accidentally match a real session.
+    from sdk.console_manager import ConsoleManager
+
+    ConsoleManager.reset()
+    verify = active_console_is(4)
+    screen = Screen(bytes(_blank_screen_bytes()))
+    assert verify(screen) is False

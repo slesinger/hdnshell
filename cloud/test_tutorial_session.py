@@ -21,7 +21,7 @@ from sdk.console_manager import ConsoleManager
 from sdk.petscii import ascii_to_screencode
 from sdk.shared_state import reset_all_session_states
 from sdk.toaster import toaster_box_rect
-from tutorials.content import tut1, tut2
+from tutorials.content import tut1, tut2, tut3, tut4, tut5
 from tutorials.model import Screen, Step, Tutorial, always_manual, screen_contains
 from tutorials.session import (
     SCREEN_ADDR,
@@ -394,6 +394,17 @@ def test_tut1_is_registered_with_seven_steps():
     assert "tut1" in TUTORIALS
     assert TUTORIALS["tut1"] is tut1
     assert len(TUTORIALS["tut1"].steps) == 7
+
+
+def test_tut3_tut4_tut5_are_registered():
+    from tutorials import TUTORIALS
+
+    assert TUTORIALS["tut3"] is tut3
+    assert TUTORIALS["tut4"] is tut4
+    assert TUTORIALS["tut5"] is tut5
+    assert len(tut3.steps) == 6
+    assert len(tut4.steps) == 7
+    assert len(tut5.steps) == 7
 
 
 def test_tut2_step1_verify_true_on_help_body_text():
@@ -781,3 +792,80 @@ class TestOffShellGuard:
         ConsoleManager.instance()._active[session_id] = 2  # File Editor
         session = TutorialSession(tut2, session_id=session_id)
         assert session._on_shell(session_id) is False
+
+
+# ----------------------------------------------------------------------
+# active_console_is() session-binding (tut5): Tutorial/Step objects are
+# shared across every session, so the verify closure can't have a
+# session_id baked in at content.py authoring time. _run_verify() must
+# check THIS session's session_id via the `_console_id` marker, not
+# whatever active_console_is() happened to close over.
+# ----------------------------------------------------------------------
+
+
+class TestActiveConsoleVerify:
+    def _wire_network(self, monkeypatch):
+        pushed = {}
+        monkeypatch.setattr(network_helper, "read_last_c64_ip", lambda: "10.0.0.5")
+        monkeypatch.setattr(
+            network_helper,
+            "dma_read_memory",
+            lambda host, address, length: _blank_buffer(),
+        )
+        monkeypatch.setattr(
+            network_helper,
+            "send_screen_data",
+            lambda screen_data, color_data: pushed.update(
+                screen=screen_data, color=color_data
+            ),
+        )
+        return pushed
+
+    def test_confirms_when_this_sessions_console_matches(self, monkeypatch):
+        self._wire_network(monkeypatch)
+        session_id = 20
+        # tut5 step index 1 is "Web browser" / active_console_is(4).
+        session = TutorialSession(tut5, session_id=session_id)
+        session._step_index = 1
+        session._confirmed = False
+        session._entry_satisfied = False
+
+        ConsoleManager.instance()._active[session_id] = 4
+        session._tick()
+
+        assert session._confirmed is True
+
+    def test_two_sessions_sharing_tut5_are_independent(self, monkeypatch):
+        """The SAME Tutorial/Step objects (module-level tut5) are used by
+        both sessions -- proves the console_id check reads THIS session's
+        session_id rather than whatever active_console_is() closed over."""
+        self._wire_network(monkeypatch)
+        session_a = TutorialSession(tut5, session_id=21)
+        session_b = TutorialSession(tut5, session_id=22)
+        for s in (session_a, session_b):
+            s._step_index = 1  # active_console_is(4)
+            s._confirmed = False
+            s._entry_satisfied = False
+
+        # Only session 21 has console 4 active; session 22 is elsewhere.
+        ConsoleManager.instance()._active[21] = 4
+        ConsoleManager.instance()._active[22] = 5
+
+        session_a._tick()
+        session_b._tick()
+
+        assert session_a._confirmed is True
+        assert session_b._confirmed is False
+
+    def test_does_not_confirm_when_console_mismatches(self, monkeypatch):
+        self._wire_network(monkeypatch)
+        session_id = 23
+        session = TutorialSession(tut5, session_id=session_id)
+        session._step_index = 1  # active_console_is(4)
+        session._confirmed = False
+        session._entry_satisfied = False
+
+        ConsoleManager.instance()._active[session_id] = 5  # Telegram, not Browser
+        session._tick()
+
+        assert session._confirmed is False

@@ -273,42 +273,68 @@ condition) / **demo** (what `s` types). Keep hints ≤ ~4 wrapped lines.
 
 ## 9. Build phases (execute in order)
 
-**Phase 0 — scaffolding**
-- [ ] Create `cloud/tutorials/` package: `model.py` (`Step`, `Tutorial`, `Screen`,
+**Phase 0 — scaffolding** ✅
+- [x] Create `cloud/tutorials/` package: `model.py` (`Step`, `Tutorial`, `Screen`,
       verify helpers), empty `content.py`, `__init__.py` with `TUTORIALS = {}`.
-- [ ] Unit-test the `Screen` decoder + `screen_contains`/`screen_matches` against
+- [x] Unit-test the `Screen` decoder + `screen_contains`/`screen_matches` against
       hand-built 1000-byte buffers. No hardware needed.
 
-**Phase 1 — menu + handler (no coach yet)**
-- [ ] `tutorial_handler.py`: `can_handle` for `tutorials`/`tut<N>`; `handle`
+**Phase 1 — menu + handler (no coach yet)** ✅
+- [x] `tutorial_handler.py`: `can_handle` for `tutorials`/`tut<N>`; `handle`
       returns the §7 menu and a stub "not yet implemented" for `tutN`.
-- [ ] Register in `request_dispatcher.py`.
-- [ ] Test on real C64U: `tutorials` prints the menu. (VICE can't emulate the
+- [x] Register in `request_dispatcher.py`.
+- [x] Test on real C64U: `tutorials` prints the menu. (VICE can't emulate the
       C64U DMA/REST path — go straight to hardware.)
 
-**Phase 2 — coach runner, MVP overlay (manual advance only)**
-- [ ] Factor the toaster box painter out of `ServerConsole` into a shared
+**Phase 2 — coach runner, MVP overlay (manual advance only)** ✅
+- [x] Factor the toaster box painter out of `ServerConsole` into a shared
       `paint_toaster(screen, color, text)` in `sdk/`.
-- [ ] `session.py`: poll loop that reads the screen and re-paints the current
+- [x] `session.py`: poll loop that reads the screen and re-paints the current
       step's hint each tick; nav `n`/`b`/`r`/`q` via the handler. **No verify yet**
       (every step is `always_manual`).
-- [ ] Wire `tut2` content with `always_manual` verifies.
-- [ ] Hardware test: `tut2`, walk with `n`/`b`, `q` clears the overlay cleanly.
-- [ ] Confirm the overlay survives BASIC redraws and doesn't corrupt typing.
+- [x] Wire `tut2` content with `always_manual` verifies.
+- [x] Hardware test: `tut2`, walk with `n`/`b`, `q` clears the overlay cleanly.
+- [x] Confirm the overlay survives BASIC redraws and doesn't corrupt typing.
 
-**Phase 3 — screen-read auto-advance + demo**
-- [ ] Add real `verify` predicates; auto-advance when matched.
-- [ ] Implement `s` → `send_c64_keyboard_input(step.demo_keys)`.
-- [ ] Add the "active console != shell → skip overlay" guard.
-- [ ] Finish `tut2` verifies; add `tut1`; hardware-test both end to end.
+**Phase 3 — screen-read auto-advance + demo** ✅
+- [x] Add real `verify` predicates; auto-advance when matched. Hardware testing
+      (2026-07-16) found two real bugs beyond the plan's scope and fixed them:
+      a self-read cascade (the coach matching its own painted hint text) and
+      pre-existing-content false positives (a step's verify already true from
+      unrelated leftover screen content) -- see `session.py`'s module
+      docstring for `_verify_view()`/`_latch_entry_satisfied()`. Also changed
+      the advance UX from "auto-advance the index" to two-state SHOWING/CONFIRM
+      (only `n` ever moves the index) per user feedback that toasts moved too
+      fast.
+- [x] Implement `s` → `send_c64_keyboard_input(step.demo_keys)`.
+- [x] Add the "active console != shell → skip overlay" guard.
+- [x] Finish `tut2` verifies; add `tut1`; hardware-test both end to end.
 
-**Phase 4 — remaining tutorials**
-- [ ] `tut5` (active-console verifies).
-- [ ] `tut3` behind capability gates (web-search key, Web Remote Control); skippable
-      steps when unconfigured.
-- [ ] `tut4` — confirm CSDB run syntax from `docs/user_manual/csdb.md`; leave the
-      `mkdisk` step marked/disabled until the TODO `mkdisk` command ships, then
-      enable. (`tut4` `requires=["mkdisk"]`; menu can show it as "(soon)".)
+**Phase 4 — remaining tutorials** ✅ (2026-07-17)
+- [x] `tut5` (active-console verifies). Required a real fix, not just content:
+      `active_console_is()`'s `session_id` can't be baked in at content.py
+      authoring time (Tutorial/Step objects are shared across every session),
+      so it now tags its closure with a `_console_id` marker that
+      `TutorialSession._run_verify()` resolves against *this session's*
+      `session_id`. Also found and fixed a real conflict: the off-shell guard
+      returned before ever calling `verify()`, but tut5's whole premise is
+      detecting the user switching INTO a server console -- exactly the
+      transition that makes `_on_shell()` False. `_check_console_marker_step()`
+      is the narrow, screen-free exception (console-tour steps don't read the
+      screen at all, so they're safe to check off-shell; every other,
+      content-reading verify predicate still only runs on-shell).
+- [x] `tut3` -- deterministic steps (the arithmetic question, "list the files")
+      auto-verify; open-ended AI-response steps (web search, screen reading)
+      are `always_manual()` with "press n to skip" in the hint rather than a
+      full capability-gate system, matching tut1's existing pattern for
+      unpredictable-output steps.
+- [x] `tut4` -- built against the real documented CSDB workflow
+      (`docs/user_manual/csdb.md`) and confirmed `mkdisk`/`mnt`/`cp` semantics,
+      not the plan's placeholder syntax. Note: `cp` only bridges Ultimate
+      `/temp` with a server-backed device (`n`/`c`) -- it cannot copy onto a
+      mounted disk image directly -- so "keep it" uses plain BASIC
+      `LOAD`/`SAVE` across two IEC devices instead of an unsupported `cp`
+      variant. `mkdisk` already ships, so no `requires=["mkdisk"]` gate needed.
 
 **Phase 5 — docs & polish**
 - [ ] `docs/user_manual/tutorials.md`; add to `docs-manifest.json` and
