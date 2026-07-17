@@ -389,15 +389,22 @@ class UltimateHandler(BaseHandler):
         Uses MLSD (which tags each entry file/dir) when the server supports it so
         directories are excluded; falls back to NLST (no type info) when it does
         not -- in that case DELE simply fails on a directory and it is skipped.
+
+        Matching mirrors `file` (_stat_entries): case-sensitive first, then a
+        case-insensitive fallback when nothing matched exactly -- `ll` shows real
+        case but users retype names in whatever keyboard case is handy.
         """
         try:
-            return [
-                name
-                for name, facts in ftp.mlsd()
-                if facts.get("type") == "file" and fnmatch.fnmatch(name, glob)
+            names = [
+                name for name, facts in ftp.mlsd() if facts.get("type") == "file"
             ]
         except ftplib.all_errors:
-            return [name for name in ftp.nlst() if fnmatch.fnmatch(name, glob)]
+            names = ftp.nlst()
+        matches = [n for n in names if fnmatch.fnmatchcase(n, glob)]
+        if not matches:
+            lowered = glob.lower()
+            matches = [n for n in names if fnmatch.fnmatchcase(n.lower(), lowered)]
+        return matches
 
     # ------------------------------------------------------------------
     # file

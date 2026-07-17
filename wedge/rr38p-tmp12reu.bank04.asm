@@ -713,6 +713,7 @@ b4_cd_arg:
 b4_cd_wr:
     lda $02a7,x            // write the path arg bytes (up to EOL, terminator omitted)
     beq b4_cd_wrd
+    jsr b4_fold           // fold SHIFTed/lowercase letters -> $41-$5A (case-insens cd)
     sta $df1d
     inx
     bne b4_cd_wr

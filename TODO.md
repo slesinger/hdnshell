@@ -5,6 +5,15 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
+mnt vyzaduje vsechny znaku lowercase.d64
+The command mnt <disk image name> requires that the `disk image name` is in all lowercase letters. What the user typicall wants to do is to `ll` the directory and then insert `mnt` in front of a disk image of his chioce. The disk image is listed in its real case, but the command requires lowercase. The command should be case insensitive and accept any case of the disk image name.
+Besides of mnt, cd, file is also impacted.
+
+
+
+
+
+
 
 
 
@@ -13,27 +22,25 @@ Ask me any questions before you proceed to ensure you understand the task well.
 
 
 
-mnt vyzaduje vsechny zvaku lowercase.d64
-The command mnt <disk image name> requires that the `disk image name` is in all lowercase letters. What the user typicall wants to do is to `ll` the directory and then insert `mnt` in front of a disk image of his chioce. The disk image is listed in its real case, but the command requires lowercase. The command should be case insensitive and accept any case of the disk image name.
-Besides of mnt, cd, file is also impacted.
-
+lowercase after start and boot screen and ready. modification.
+The HDN shell is build on top of RR cartridge but it is able to utilize the lower case/uppercase font. Can you switch the font to lower case after the start and boot screen text and the ready prompt? The iconic READY. has to be upper case. The boot screen text also should be uppercase. Make an analysis and tell me what is achievable with low risk.
 
 
 ------
 QUEUE
 
-tool pro psani na obrazovku. nechce mi to zobrazit adresar.
+po kazdem prikazu se po splneni chvili ceka, nez se objevi READY. U prikazy STATUS se to nedeje. Impacted are: ll, cd, tutorials
 
-lowercase after start and boot screen and ready. modification.
 
 Run prg file by typing its name.
 
+
+tool pro psani na obrazovku. nechce mi to zobrazit adresar.
+
+
 cp, mv v ramci ultimate fs
 
-csdb - mount disk
-run prg by typing its name
 
-po kazdem prikazu se po splneni chvili ceka, nez se objevi READY. U prikazy STATUS se to nedeje. Impacted are: ll, cd, tutorials
 
 AZ UPLOADUJI crt na GIHUB
 The UI also allows to easily enable/dasable the ROM/cartridge. The UI button Download&Update must work with the crt and cfg in the cart filder. Adjust the procedure.

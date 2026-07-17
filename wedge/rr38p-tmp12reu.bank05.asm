@@ -667,6 +667,20 @@ b5_pushfin:
     ldy #>B3_FIN
     jsr B5C3_RUN
     rts
+// b5_fold: case-fold a single path byte in A for the Ultimate DOS filename match.
+// The C64 keyboard sends SHIFTed letters as $C1-$DA (PETSCII), which are NOT ASCII
+// letters, so the Ultimate (case-INSENSITIVE on real ASCII) can't match them -> the
+// long-standing "mnt needs lowercase" bug. Fold $C1-$DA -> $41-$5A; leave everything
+// else ($41-$5A/$61-$7A letters, digits, '.', '/', '<-'=$5F, and $DB+ graphics)
+// untouched. Preserves X/Y (the send loop's index). Lives in the main-region gap.
+b5_fold:
+    cmp #$c1               // < $C1: not a SHIFTed letter -> leave as-is
+    bcc b5f_ret
+    cmp #$db               // >= $DB: not a SHIFTed A-Z letter -> leave as-is
+    bcs b5f_ret
+    and #$7f               // $C1-$DA -> $41-$5A (uppercase ASCII)
+b5f_ret:
+    rts
 .errorif (* > $9E9D), "bank5 main region overran the reserve ($9E9C)"
     .fill $9E9D - *, $00   // pad the reserve; real bank5 data resumes at $9E9D
 .errorif (* != $9E9D), "bank5 reserve fill did not land on $9E9D"
@@ -827,6 +841,7 @@ b5_domount:
 b5_dm_wr:
     lda $02a7,x            // write the path arg (up to EOL, terminator omitted)
     beq b5_dm_wd
+    jsr b5_fold           // fold SHIFTed letters $C1-$DA -> $41-$5A (case-insens mnt)
     sta $df1d
     inx
     bne b5_dm_wr

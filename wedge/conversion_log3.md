@@ -2691,3 +2691,41 @@ dict. The FTP path passes MLSD's dict straight through; the local path builds th
 
 **Tests.** 309 pass. New regression guards: `test_only_mlsd_fields_are_shown` (exact 4-line output —
 pins finding 2), `test_yields_to_netdrive_on_n` (pins finding 3), plus a `TestNetDriveFile` class.
+
+## Step 26 — case-insensitive filename args for `mnt` / `cd` / `file` / `del` ✅ HW TESTED 2026-07-17
+
+**Symptom (TODO.md).** `mnt <image>` (and `cd`, `file`) only worked when the disk-image name was
+typed in one specific case. Workflow is `ll` (names shown in real case) → retype with `mnt` in front,
+which failed unless the case happened to match.
+
+**Root cause — PETSCII SHIFT range, not a filesystem case issue.** A C64 letter key sends the SAME
+PETSCII byte regardless of font mode; only SHIFT changes it: unshifted = `$41–$5A`, SHIFTed = `$C1–$DA`.
+The Ultimate DOS matches filenames **case-INSENSITIVELY** but only on real ASCII letters
+(`$41–$5A`/`$61–$7A`). The SHIFTed codes `$C1–$DA` are **not** ASCII letters, so a SHIFTed name never
+matched → the "needs lowercase" feeling (in text font, unshifted looks lowercase). HW-confirmed:
+unshifted `mnt games.d64` mounts; SHIFTed `mnt GAMES.D64` silently failed (`ready.` with no mount).
+
+**Two regimes.**
+- **UCI-direct commands** (wedge writes path bytes straight to `$df1d`) have no shared chokepoint — each
+  needs its own fold. Full set that takes a typed filename: `cd`, `mnt`, `ll`/`dir <pat>`. `ll`/`dir`
+  already folded both sides (2026-07-11). Fixed the other two:
+  - **`mnt`** (bank05): new 11-byte `b5_fold` in the main-region gap `$9e92–$9e9c` (exact fit); the
+    `b5_dm_wr` send loop now `jsr b5_fold` per path byte (+3 B, third region `b5c3_end` `$9ff9→$9ffc`,
+    still <`$A000`). Fold is byte-guarded: only `$C1–$DA → $41–$5A`; leaves `.`/digits/`/`/`←`($5F)/
+    already-valid letters/`$DB+` graphics untouched. `umnt` unaffected (skips the path write).
+  - **`cd`** (bank04): the existing complete `b4_fold` (handles `$C1–$DA` AND `$61–$7A`, guarded) was
+    already used for the *keyword*; now also `jsr b4_fold` in the `b4_cd_wr` path loop (+3 B,
+    `b4_cd_ext` `$9e51→$9e54`, fits under the `$9E9D` reserve).
+- **Server-routed commands** get a single general chokepoint for free: `petscii_to_utf8` at the
+  transport boundary (`request_dispatcher.py`) maps unshifted→ASCII-lower and SHIFTed→ASCII-upper, so
+  the untranslatable high bytes never reach a handler. Only per-handler *match* policy remained:
+  - **`file`** already had a case-insensitive fallback (`ultimate_handler._stat_entries` +
+    `netdrive_handler._file_info`) → **no change**, HW-verified both cases work.
+  - **`del`** was the last gap (`_match_files` used case-sensitive `fnmatch.fnmatch`). Made it mirror
+    `file`: case-sensitive first, then case-fold fallback (exact match still wins). 2 new tests
+    (`test_del_case_insensitive_fallback`, `test_del_exact_match_wins_over_case_fold`); suites green.
+  - **create/duplicate** commands (`mkdir`/`mkdisk`/`cp`/`mv`/`memcpy`) deliberately NOT folded — the
+    typed case IS the name being created; folding would silently rename.
+
+**HW test 2026-07-17 ✅** `mnt` (unshifted + SHIFTed + mixed-case `MOJO←SIDE1.D64`) mounts; `umnt` ok;
+`cd` unshifted + SHIFTed ok, `cd ..`/`cd /` ok; `file` both cases ok. `del` = server unit-tested.

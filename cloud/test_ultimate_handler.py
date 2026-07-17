@@ -896,6 +896,22 @@ class TestDel:
         assert FakeFTP.instances[-1].delete_calls == ["game.prg"]
         assert FakeFTP.instances[-1].cwd_calls == ["/Usb0"]
 
+    def test_del_case_insensitive_fallback(self, monkeypatch):
+        """del mirrors file: no exact match -> case-fold (users retype names in
+        whatever keyboard case is handy; see the mnt note in TODO.md)."""
+        entries = [("Game.prg", {"type": "file"}), ("other.prg", {"type": "file"})]
+        monkeypatch.setattr(ftplib, "FTP", self._mk(230, entries))
+        resp = UltimateHandler().handle("del /Usb0/GAME.PRG", 230)
+        assert resp == "OK: deleted 1 file(s)"
+        assert FakeFTP.instances[-1].delete_calls == ["Game.prg"]
+
+    def test_del_exact_match_wins_over_case_fold(self, monkeypatch):
+        entries = [("game.prg", {"type": "file"}), ("GAME.PRG", {"type": "file"})]
+        monkeypatch.setattr(ftplib, "FTP", self._mk(231, entries))
+        resp = UltimateHandler().handle("del /Usb0/game.prg", 231)
+        assert resp == "OK: deleted 1 file(s)"
+        assert FakeFTP.instances[-1].delete_calls == ["game.prg"]
+
     def test_del_wildcard_multiple_skips_dirs(self, monkeypatch):
         entries = [
             ("a.prg", {"type": "file"}),
