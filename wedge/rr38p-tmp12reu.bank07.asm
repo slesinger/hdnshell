@@ -104,6 +104,7 @@ bb_pr2:
     bne bb_pr2
 bb_done:
     jsr bb_arm                // AA2 boot-arm (bb_arm lives in the roomy $9E00 pocket)
+    jsr font_lc               // HDN: select lowercase charset, keep boot text uppercase
     rts
 msg_reu:
     .byte $4D, $20, $52, $45, $55, $20, $00                    // "M REU " NUL
@@ -727,7 +728,43 @@ ba_tramp:
     .byte $8D, $00, $DE       // sta $de00
     .byte $60                 // rts
 ba_tramp_end:
-.errorif (* > $9E9D), "BB2 bank7 $9E00 pocket overran into $9E9D real data"
+// ---- font_lc: select lowercase/mixed charset, keep boot text looking uppercase --
+// Called by bb_done (same-bank jsr) once per cold boot, after the banner + REU/RR
+// line are on screen (IRQ off under the RR cold-start sei; bb_arm's trampoline left
+// bank7 mapped). The C64 font is a single global VIC setting, so flipping $D018 to
+// the lowercase/mixed charset would re-render the already-printed uppercase boot
+// text as lowercase. To prevent that, first bump every uppercase-letter screen code
+// ($01-$1A) in the top two screen pages ($0400-$05FF, well clear of the sprite
+// pointers at $07F8) into the shifted region ($41-$5A) -- those codes render as the
+// SAME uppercase glyphs in the lowercase charset. Digits/space/'*'/'.' are identical
+// in both charsets and left alone. Then set $D018 bit 1 (charset base -> lowercase).
+// Text printed AFTER this (the READY. prompt, later shell output) renders lowercase
+// -- by design (see conversion_log3 font-switch note). One-shot: bb_done runs once
+// per cold boot; on RESET the KERNAL restores $D018=uppercase and this re-runs.
+font_lc:
+    ldx #$00
+fl_lp:
+    lda $0400,x
+    jsr fl_sh
+    sta $0400,x
+    lda $0500,x
+    jsr fl_sh
+    sta $0500,x
+    inx
+    bne fl_lp
+    lda $d018                 // preserve screen-base bits; set only the charset bit
+    ora #$02                  // bit 1 -> charset base $1800 (lowercase/mixed)
+    sta $d018
+    rts
+fl_sh:                        // A: if $01<=A<=$1A -> A ORA $40 ($41-$5A); else unchanged
+    cmp #$1b
+    bcs fl_ret                // >= $1B (incl reverse-video, already-shifted) -> leave
+    cmp #$01
+    bcc fl_ret                // $00 -> leave
+    ora #$40                  // $01-$1A -> $41-$5A (uppercase glyph in lowercase charset)
+fl_ret:
+    rts
+.errorif (* > $9E9D), "BB2 bank7 $9E00 pocket overran into $9E9D real data (font_lc)"
     .fill $9E9D - *, $00              // pad dead pocket to the real data at $9E9D
     .byte $20, $BA, $DE, $EA, $EA, $EA    // data $9E9D (real bank7 data resumes)
     .byte $EA, $EA, $EA, $EA, $EA, $EA, $20, $BA, $DE, $EA, $EA, $EA, $EA, $EA, $EA, $EA    // data $9EA3

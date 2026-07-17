@@ -2729,3 +2729,44 @@ unshifted `mnt games.d64` mounts; SHIFTed `mnt GAMES.D64` silently failed (`read
 
 **HW test 2026-07-17 ✅** `mnt` (unshifted + SHIFTed + mixed-case `MOJO←SIDE1.D64`) mounts; `umnt` ok;
 `cd` unshifted + SHIFTed ok, `cd ..`/`cd /` ok; `file` both cases ok. `del` = server unit-tested.
+
+## Step 27 — lowercase charset after boot (`font_lc`) ✅ HW TESTED 2026-07-17
+
+**Goal (TODO.md).** HDN shell should run in the C64 **lowercase/mixed** font so lowercase letters are
+available for typing, while the **boot-banner text stays UPPERCASE** and the iconic `READY.` looks right.
+
+**Grilled first + the hard constraint.** The C64 font is a *single global* VIC setting (`$D018` bit 1:
+`$15`=uppercase/graphics, `$17`=lowercase/mixed) applied to the whole screen at once, and screen bytes
+are re-interpreted live the instant it flips. BASIC's ROM prints `READY.` (and the banner/BYTES-FREE
+line) as *unshifted* PETSCII → in lowercase mode those same bytes render as lowercase `ready.`. Keeping
+`READY.` uppercase in lowercase mode would need per-prompt rewriting on the **hot IMAIN idle path** — but
+**bank1 is full** (only 8 B free at `$9E51–$9E58`; see §23/§32), so that is the *high-risk* branch
+(cross-bank excursion + one-shot flag with no clean cold-boot-zeroed home). Honza's decision (grilled,
+3 questions): **safe boot-time flip, accept lowercase `ready.`**, applied every boot/reset.
+
+**Approach (low-risk, one-shot, no hot path, no flag).** Piggyback the existing cold-boot boot-banner
+printer. `bb_done` (bank7 `$8023` pocket) now `jsr font_lc` right after `jsr bb_arm` (which already left
+bank7 mapped), i.e. once the banner + REU/RR line are on screen, IRQ still off under the RR cold-start
+`sei`. New `font_lc` (bank7 `$9E00` pocket, `$9E5D`, ~46 B in the 64 B free after `ba_tramp_end`):
+- Walks the top two screen pages `$0400–$05FF` (rows 0–12, clear of the sprite pointers at `$07F8`) and
+  ORs `$40` into every uppercase-letter screen code `$01–$1A` → `$41–$5A`, which render as the **same
+  uppercase glyphs** in the lowercase charset. Guarded fold (`fl_sh`): `<$01` and `≥$1B` (incl.
+  reverse-video `$80+` and already-shifted `$41–$5A`) left untouched; digits/space/`*`/`.` are identical
+  in both charsets. So the already-printed boot text keeps looking uppercase after the flip.
+- Then `lda $d018 / ora #$02 / sta $d018` — sets only the charset bit, preserves the screen-base bits.
+
+Text printed *after* this (the `READY.` prompt, later shell output) renders lowercase — by design.
+One-shot: `bb_done` runs once per cold boot; on RESET the KERNAL restores `$D018`=uppercase and it re-runs.
+
+**Placement / no shift of pinned addrs.** `bb_main` stays pinned at `$8023` (trampoline `jsr $8023`).
+The 3-byte `jsr font_lc` shifts only bank7-internal labels (`reu_detect $8088→$808B`, `print_num
+$806D→$8070`, `rd_banks $80ED→$80F0`) — all label-resolved, no external hardcode (verified). `.errorif`
+guards in both pockets self-check overflow; the `$8023` `.fill $8100` and `$9E00` `.fill $9E9D` absorbed
+the growth. Cart size unchanged (65728 B). Only `bank07.asm` touched.
+
+**Risk that was tested.** The single hazard of flipping at boot rather than on first idle: a later
+cold-boot step (KERNAL screen re-init/CINT/clear) could reset `$D018` back to uppercase *after* `font_lc`.
+
+**HW test 2026-07-17 ✅** Banner + REU/RR + BYTES-FREE stay uppercase; font comes up lowercase/mixed;
+existing commands render cleanly in the new font. The flip stuck (no later `$D018` reset). `READY.` shows
+as lowercase `ready.` as accepted. NOT committed (Honza's call).
