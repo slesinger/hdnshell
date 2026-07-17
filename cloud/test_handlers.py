@@ -628,3 +628,67 @@ class TestNetDriveDel:
         handler = self._setup(tmp_path, monkeypatch, 303)
         resp = handler.handle("del", 303)
         assert resp == "Usage: del <pattern>"
+
+
+class TestNetDriveFile:
+    """`file <name>` on the #n network drive stats sandboxed workspace files.
+
+    Regression: `file aaa.prg` on #n used to answer with UltimateHandler's usage
+    line (HW-reported), because #n prepends no cwd frame so there was no dos_cwd
+    to resolve against. It is now yielded to this handler, like `del`.
+    """
+
+    def _setup(self, tmp_path, monkeypatch, session_id):
+        import netdrive_handler
+        monkeypatch.setattr(netdrive_handler, "WORKSPACE_DIR", str(tmp_path))
+        update_session_state(session_id, active_module="n", net_cwd="")
+        return netdrive_handler.NetDriveHandler()
+
+    def test_file_reports_name_type_size_and_modify(self, tmp_path, monkeypatch):
+        import os
+        import time
+
+        f = tmp_path / "aaa.prg"
+        f.write_bytes(b"x" * 9025)
+        mtime = time.mktime((2026, 7, 4, 15, 54, 18, 0, 0, -1))
+        os.utime(f, (mtime, mtime))
+
+        handler = self._setup(tmp_path, monkeypatch, 310)
+        assert handler.handle("file aaa.prg", 310).splitlines() == [
+            "NAME     aaa.prg",
+            "TYPE     PRG",
+            "SIZE     9025 BYTES",
+            "MODIFIED 2026-07-04 15:54:18",
+        ]
+
+    def test_file_on_directory(self, tmp_path, monkeypatch):
+        (tmp_path / "sub").mkdir()
+        handler = self._setup(tmp_path, monkeypatch, 311)
+        resp = handler.handle("file sub", 311)
+        assert "TYPE     DIR" in resp
+        assert "SIZE" not in resp
+
+    def test_file_not_found(self, tmp_path, monkeypatch):
+        handler = self._setup(tmp_path, monkeypatch, 312)
+        assert handler.handle("file nope.prg", 312) == "?NOT FOUND: nope.prg"
+
+    def test_file_case_insensitive_fallback(self, tmp_path, monkeypatch):
+        (tmp_path / "AAA.PRG").write_text("x")
+        handler = self._setup(tmp_path, monkeypatch, 313)
+        assert "NAME     AAA.PRG" in handler.handle("file aaa.prg", 313)
+
+    def test_file_glob_is_capped(self, tmp_path, monkeypatch):
+        for i in range(12):
+            (tmp_path / f"f{i}.prg").write_text("x")
+        handler = self._setup(tmp_path, monkeypatch, 314)
+        resp = handler.handle("file *.prg", 314)
+        assert resp.count("NAME") == 8
+        assert "...4 more match(es)" in resp
+
+    def test_file_outside_workspace_denied(self, tmp_path, monkeypatch):
+        handler = self._setup(tmp_path, monkeypatch, 315)
+        assert handler.handle("file ../x.prg", 315) == "?ACCESS DENIED - outside workspace"
+
+    def test_file_no_arg_usage(self, tmp_path, monkeypatch):
+        handler = self._setup(tmp_path, monkeypatch, 316)
+        assert "Usage: file" in handler.handle("file", 316)

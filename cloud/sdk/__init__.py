@@ -241,6 +241,13 @@ from .workspace import (
     get_workspace_config_path,
 )
 
+from .file_info import (
+    facts_from_stat,
+    format_file_info,
+    format_modify,
+    type_of,
+)
+
 from .net_utils import (
     get_primary_ip,
     get_network,
@@ -364,6 +371,11 @@ __all__ = [
     "WORKSPACE_DIR",
     "init_workspace",
     "get_workspace_config_path",
+    # File info (`file` command rendering)
+    "facts_from_stat",
+    "format_file_info",
+    "format_modify",
+    "type_of",
     # Network
     "get_primary_ip",
     "get_network",

@@ -27,11 +27,21 @@ import os
 import fnmatch
 import ftplib
 
-from sdk import BaseHandler, get_session_state_copy, update_session_state, WORKSPACE_DIR
+from sdk import (
+    BaseHandler,
+    get_session_state_copy,
+    update_session_state,
+    WORKSPACE_DIR,
+    facts_from_stat,
+    format_file_info,
+)
 
 logger = logging.getLogger(__name__)
 
-_NAV_COMMANDS = {"cd", "pwd", "ll", "dir", "cp", "put", "del"}
+_NAV_COMMANDS = {"cd", "pwd", "ll", "dir", "cp", "put", "del", "file"}
+
+# Mirrors ultimate_handler._FILE_MAX_MATCHES: `file *` must not flood the C64.
+_FILE_MAX_MATCHES = 8
 
 
 class NetDriveHandler(BaseHandler):
@@ -95,6 +105,9 @@ class NetDriveHandler(BaseHandler):
         if cmd == "del":
             return self._del_files(net_cwd, arg)
 
+        if cmd == "file":
+            return self._file_info(net_cwd, arg)
+
         return "Unknown command."
 
     def _resolve(self, net_cwd: str, rel_path: str):
@@ -154,6 +167,49 @@ class NetDriveHandler(BaseHandler):
         if deleted == 0:
             return f"?NOTHING MATCHED: {arg}"
         return f"OK: deleted {deleted} file(s)"
+
+    def _file_info(self, net_cwd: str, arg: str) -> str:
+        """Report type / size / modification time for workspace file(s).
+
+        Same command and same output as ultimate_handler's `file` (both render
+        via sdk.format_file_info) -- only the stat differs: a plain os.stat here
+        versus FTP MLSD against the C64U there. Matching mirrors that handler
+        too: glob, case-sensitive first then case-insensitive, capped output.
+        """
+        if not arg:
+            return "Usage: file <name>  (e.g. file game.prg)"
+        target_dir = self._resolve(net_cwd, os.path.dirname(arg))
+        if target_dir is None:
+            return "?ACCESS DENIED - outside workspace"
+        glob = os.path.basename(arg)
+        if not glob:
+            return "Usage: file <name>  (e.g. file game.prg)"
+        try:
+            entries = sorted(os.listdir(target_dir))
+        except OSError as e:
+            return f"?ERROR: {e}"
+
+        names = [n for n in entries if fnmatch.fnmatchcase(n, glob)]
+        if not names:
+            lowered = glob.lower()
+            names = [n for n in entries if fnmatch.fnmatchcase(n.lower(), lowered)]
+        if not names:
+            return f"?NOT FOUND: {arg}"
+
+        blocks = []
+        for name in names[:_FILE_MAX_MATCHES]:
+            full = os.path.join(target_dir, name)
+            try:
+                st = os.stat(full)
+            except OSError as e:
+                logger.error(f"NetDrive file stat failed for {name}: {e}")
+                continue
+            blocks.append(format_file_info(name, facts_from_stat(st, os.path.isdir(full))))
+        if not blocks:
+            return f"?ERROR: cannot stat {arg}"
+        if len(names) > _FILE_MAX_MATCHES:
+            blocks.append(f"...{len(names) - _FILE_MAX_MATCHES} more match(es)")
+        return "\n\n".join(blocks)
 
     def _get_file(self, net_cwd: str, arg: str, state: dict) -> str:
         """GET: push a workspace file onto the C64U's own FTP server (/temp)."""

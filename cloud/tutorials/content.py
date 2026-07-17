@@ -27,7 +27,7 @@ tut1 = Tutorial(
     blurb="Disks & games: browse, mount, run",
     steps=[
         Step(
-            hint='Pick a drive: type "#u" (USB) or "#s" (SD).',
+            hint='Pick a drive: type "#u" (USB) or "#f" (SD:/Flash).',
             # TODO(hw): confirm the exact echoed prompt/device format on
             # real hardware -- see prompt_device_is()'s own TODO(hw) note.
             verify=prompt_device_is("u", "s", "t", "f", "h"),
@@ -68,14 +68,14 @@ tut1 = Tutorial(
             demo_keys=b"mnt ",
         ),
         Step(
-            hint='See inside the disk: "$" or "ll".',
+            hint='See inside the disk: "$" (or F3).',
             # Same listing approximation as step 2.
             # TODO(hw): confirm on hardware once mount+listing content is known.
             verify=screen_contains(".d64", ".prg", ".d81", ".crt"),
             demo_keys=b"$\r",
         ),
         Step(
-            hint='Run the first program: "^*" (or "^name").',
+            hint='Run the first program: "/*" (or "/name").',
             # Detecting "a program started" from a screen snapshot alone
             # is unreliable (games clear/redraw the screen in every
             # imaginable way) -- manual advance is safer than a flaky
@@ -84,16 +84,16 @@ tut1 = Tutorial(
             # (e.g. a specific memory location) turns up during hardware
             # testing.
             verify=always_manual(),
-            demo_keys=b"^*\r",
+            demo_keys=b"/*\r",
         ),
         Step(
             hint=(
                 "Shell stepped aside so the game runs clean. Back at "
-                'BASIC, type "HONDANI" to re-arm the app keys. '
+                'BASIC, type "HDN" to re-arm the app keys. '
                 "Done -- press q."
             ),
             verify=always_manual(),
-            demo_keys=b"HONDANI\r",
+            demo_keys=b"HDN\r",
         ),
     ],
 )

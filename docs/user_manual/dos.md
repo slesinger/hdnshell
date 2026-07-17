@@ -81,7 +81,7 @@ The `mnt` command can mount disk images (D64/D71/D81) to a drive 8 or 9. This al
 
 ## Creating Directories, Copying Files
 
-To create directories (`mkdir`) and copy files between the Ultimate storage and the server-backed devices (`cp`), see the [File Operations](file-operations.md) chapter.
+To create directories (`mkdir`) and copy files between the Ultimate storage and the server-backed devices (`cp`), see the [File Operations](file-operations.md) chapter. To check a single file's type, size, and modification date without a full listing, see [`file`](file-operations.md#getting-file-info-file) in the same chapter.
 
 ## SoftIEC (SD2IEC Emulation)
 

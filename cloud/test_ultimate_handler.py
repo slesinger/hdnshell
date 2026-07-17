@@ -486,6 +486,238 @@ class TestMkdisk:
         assert "?REST FAILED" in response
 
 
+class TestFile:
+    """`file <name>` - stat via FTP MLSD, REST :info as best-effort enrichment."""
+
+    def _ftp(self, monkeypatch, entries):
+        monkeypatch.setattr(ftplib, "FTP", FakeFTP)
+        FakeFTP.instances = []
+        original_init = FakeFTP.__init__
+
+        def init(self, host=None, timeout=None):
+            original_init(self, host, timeout)
+            self.mlsd_entries = entries
+
+        monkeypatch.setattr(FakeFTP, "__init__", init)
+
+    def test_can_handle_file(self):
+        handler = UltimateHandler()
+        assert handler.can_handle("file game.prg")
+        assert handler.can_handle("FILE game.prg")
+
+    def test_no_args_is_usage(self):
+        handler = UltimateHandler()
+        assert "Usage: file" in handler.handle("file", 80)
+
+    def test_reports_type_size_and_modify(self, monkeypatch):
+        self._ftp(
+            monkeypatch,
+            [("game.prg", {"type": "file", "size": "12345", "modify": "20260714182203"})],
+        )
+        handler = UltimateHandler()
+        session_id = 81
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("file /Usb0/game.prg", session_id)
+        assert "NAME     game.prg" in response
+        assert "TYPE     PRG" in response
+        assert "SIZE     12345 BYTES" in response
+        assert "MODIFIED 2026-07-14 18:22:03" in response
+        assert FakeFTP.instances[0].cwd_calls == ["/Usb0"]
+
+    def test_directory_reports_dir_and_no_size(self, monkeypatch):
+        self._ftp(
+            monkeypatch, [("games", {"type": "dir", "size": "0", "modify": "20260101120000"})]
+        )
+        handler = UltimateHandler()
+        session_id = 82
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("file /Usb0/games", session_id)
+        assert "TYPE     DIR" in response
+        assert "SIZE" not in response
+
+    def test_ultimate_placeholder_timestamp_is_labelled(self, monkeypatch):
+        """The C64U reports 19800101000000 for entries with no real mtime
+        (hardware-verified on the root pseudo-dirs) - don't show it as a date."""
+        self._ftp(
+            monkeypatch, [("Usb0", {"type": "dir", "size": "0", "modify": "19800101000000"})]
+        )
+        handler = UltimateHandler()
+        session_id = 83
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("file /Usb0", session_id)
+        assert "MODIFIED (not set)" in response
+        assert "1980" not in response
+
+    def test_missing_modify_fact_is_tolerated(self, monkeypatch):
+        self._ftp(monkeypatch, [("game.prg", {"type": "file", "size": "10"})])
+        handler = UltimateHandler()
+        session_id = 84
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("file /Usb0/game.prg", session_id)
+        assert "MODIFIED ?" in response
+
+    def test_file_without_extension_is_typed_file(self, monkeypatch):
+        self._ftp(monkeypatch, [("readme", {"type": "file", "size": "10"})])
+        handler = UltimateHandler()
+        session_id = 85
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        assert "TYPE     FILE" in handler.handle("file /Usb0/readme", session_id)
+
+    def test_not_found(self, monkeypatch):
+        self._ftp(monkeypatch, [("other.prg", {"type": "file", "size": "1"})])
+        handler = UltimateHandler()
+        session_id = 86
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        assert "?NOT FOUND" in handler.handle("file /Usb0/game.prg", session_id)
+
+    def test_glob_matches_several(self, monkeypatch):
+        self._ftp(
+            monkeypatch,
+            [
+                ("a.d64", {"type": "file", "size": "174848"}),
+                ("b.d64", {"type": "file", "size": "174848"}),
+                ("c.prg", {"type": "file", "size": "10"}),
+            ],
+        )
+        handler = UltimateHandler()
+        session_id = 87
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("file /Usb0/*.d64", session_id)
+        assert "a.d64" in response and "b.d64" in response
+        assert "c.prg" not in response
+
+    def test_glob_output_is_capped(self, monkeypatch):
+        self._ftp(
+            monkeypatch,
+            [(f"f{i}.prg", {"type": "file", "size": "1"}) for i in range(12)],
+        )
+        handler = UltimateHandler()
+        session_id = 88
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("file /Usb0/*", session_id)
+        assert "...4 more match(es)" in response
+        assert response.count("NAME") == 8
+
+    def test_case_insensitive_fallback(self, monkeypatch):
+        """`ll` shows real case but users retype names lowercase (see the mnt
+        note in TODO.md) - an exact match must win, else fold case."""
+        self._ftp(monkeypatch, [("GAME.PRG", {"type": "file", "size": "10"})])
+        handler = UltimateHandler()
+        session_id = 89
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        assert "NAME     GAME.PRG" in handler.handle("file /Usb0/game.prg", session_id)
+
+    def test_exact_match_wins_over_case_fold(self, monkeypatch):
+        self._ftp(
+            monkeypatch,
+            [
+                ("game.prg", {"type": "file", "size": "10"}),
+                ("GAME.PRG", {"type": "file", "size": "20"}),
+            ],
+        )
+        handler = UltimateHandler()
+        session_id = 90
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("file /Usb0/game.prg", session_id)
+        assert "SIZE     10 BYTES" in response
+        assert "GAME.PRG" not in response
+
+    def test_relative_path_joins_cwd(self, monkeypatch):
+        self._ftp(monkeypatch, [("game.prg", {"type": "file", "size": "10"})])
+        handler = UltimateHandler()
+        session_id = 91
+        update_session_state(session_id, client_ip="1.2.3.4", dos_cwd="/Usb0/games")
+
+        response = handler.handle("file game.prg", session_id)
+        assert "NAME     game.prg" in response
+        assert FakeFTP.instances[0].cwd_calls == ["/Usb0/games"]
+
+    def test_relative_path_without_cwd_is_usage(self, monkeypatch):
+        self._ftp(monkeypatch, [])
+        handler = UltimateHandler()
+        session_id = 92
+        update_session_state(session_id, client_ip="1.2.3.4", dos_cwd=None)
+
+        assert "Usage: file" in handler.handle("file game.prg", session_id)
+
+    def test_no_client_ip(self, monkeypatch):
+        monkeypatch.setattr(network_helper, "read_last_c64_ip", lambda: "")
+        handler = UltimateHandler()
+        assert "?NO CLIENT IP" in handler.handle("file /Usb0/game.prg", 93)
+
+    def test_ftp_failure(self, monkeypatch):
+        def raising(*a, **k):
+            raise IOError("connection refused")
+
+        monkeypatch.setattr(ftplib, "FTP", raising)
+        handler = UltimateHandler()
+        session_id = 94
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        assert "?FTP FAILED" in handler.handle("file /Usb0/game.prg", session_id)
+
+    def test_mlsd_unsupported_falls_back_to_nlst(self, monkeypatch):
+        monkeypatch.setattr(ftplib, "FTP", FakeFTP)
+        FakeFTP.instances = []
+        original_init = FakeFTP.__init__
+
+        def init(self, host=None, timeout=None):
+            original_init(self, host, timeout)
+            self.mlsd_should_fail = True
+            self.nlst_names = ["game.prg"]
+
+        monkeypatch.setattr(FakeFTP, "__init__", init)
+        handler = UltimateHandler()
+        session_id = 95
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("file /Usb0/game.prg", session_id)
+        assert "NAME     game.prg" in response
+        assert "SIZE     ?" in response
+        assert "MODIFIED ?" in response
+
+    def test_only_mlsd_fields_are_shown(self, monkeypatch):
+        """Guards the HW regression where the REST :info bonus appended a
+        duplicate FILES line: `file` renders the MLSD facts and nothing else."""
+        self._ftp(
+            monkeypatch,
+            [("echo.prg", {"type": "file", "size": "10387", "modify": "20260704155418"})],
+        )
+        handler = UltimateHandler()
+        session_id = 96
+        update_session_state(session_id, client_ip="1.2.3.4")
+
+        response = handler.handle("file /Usb0/echo.prg", session_id)
+        assert response.splitlines() == [
+            "NAME     echo.prg",
+            "TYPE     PRG",
+            "SIZE     10387 BYTES",
+            "MODIFIED 2026-07-04 15:54:18",
+        ]
+
+    def test_yields_to_netdrive_on_n(self):
+        """On #n, `file` targets the workspace via NetDriveHandler - exactly like
+        `del`. Regression: UltimateHandler used to claim it and answer with the
+        usage line, because #n prepends no cwd frame (HW-reported)."""
+        handler = UltimateHandler()
+        session_id = 97
+        update_session_state(session_id, active_module="n")
+        assert not handler.can_handle("file aaa.prg", session_id)
+
+        update_session_state(session_id, active_module="c")
+        assert handler.can_handle("file aaa.prg", session_id)
+
+
 class TestCsdbAlias:
     def test_can_handle_csdb(self):
         handler = CSDBHandler()

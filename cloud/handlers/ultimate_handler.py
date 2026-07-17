@@ -20,6 +20,15 @@ Three commands live here:
                                 directory; directories are never deleted). When
                                 the #n network drive is active this command is
                                 yielded to NetDriveHandler instead.
+  - file <name>                Print type / size / modification date+time for a
+                                file on the C64U's filesystem, stat'd over FTP
+                                MLSD. Yielded to NetDriveHandler on #n, exactly
+                                like `del`. (REST /v1/files/<path>:info is NOT
+                                used: it is documented "Unfinished", and on real
+                                hardware it returns only path/filename/size/
+                                extension -- every field MLSD already provides,
+                                and no modification time at all. MLSD is the
+                                only route that satisfies the command.)
 
 Policy: memory access always goes over the Ultimate REST API
 (sdk/network_helper.py's dma_read_memory / dma_write_memory_rest), never
@@ -36,13 +45,18 @@ import re
 import fnmatch
 import ftplib
 
-from sdk import BaseHandler, get_session_state_copy, network_helper
+from sdk import BaseHandler, get_session_state_copy, network_helper, format_file_info
 
 logger = logging.getLogger(__name__)
 
 _MEMCPY_USAGE = "Usage: memcpy $START-$END /path/file  OR  memcpy /path/file $ADDR"
 _MKDISK_USAGE = "Usage: mkdisk <name>.d64[,tracks][,diskname]  (d64/d71/d81/dnp)"
 _DEL_USAGE = "Usage: del <pattern>  (e.g. del *.prg)"
+_FILE_USAGE = "Usage: file <name>  (e.g. file game.prg)"
+
+# Cap on how many matches `file` will report, so `file *` on a big directory
+# cannot flood the C64's 40-column screen (or the wire) with hundreds of blocks.
+_FILE_MAX_MATCHES = 8
 
 # extension (lowercase, no dot) -> REST create_<type> suffix
 _MKDISK_TYPES = ("d64", "d71", "d81", "dnp")
@@ -68,11 +82,11 @@ class UltimateHandler(BaseHandler):
         if not parts:
             return False
         cmd = parts[0].lower()
-        # `del` is context-sensitive: on the #n network drive it targets the
-        # server-local workspace (NetDriveHandler), so yield it there. mkdir/
-        # mkdisk/memcpy stay unconditional (always the C64U), per the dispatcher
-        # ordering note in request_dispatcher.py.
-        if cmd == "del":
+        # `del` and `file` are context-sensitive: on the #n network drive they
+        # target the server-local workspace (NetDriveHandler), so yield them
+        # there. mkdir/mkdisk/memcpy stay unconditional (always the C64U), per
+        # the dispatcher ordering note in request_dispatcher.py.
+        if cmd in ("del", "file"):
             state = get_session_state_copy(session_id)
             return state.get("active_module") != "n"
         return cmd in ("mkdir", "memcpy", "mkdisk")
@@ -90,6 +104,8 @@ class UltimateHandler(BaseHandler):
             return self._mkdisk(text, session_id)
         if cmd == "del":
             return self._del(args, session_id)
+        if cmd == "file":
+            return self._file(args, session_id)
         return "?ERROR"
 
     # ------------------------------------------------------------------
@@ -382,3 +398,74 @@ class UltimateHandler(BaseHandler):
             ]
         except ftplib.all_errors:
             return [name for name in ftp.nlst() if fnmatch.fnmatch(name, glob)]
+
+    # ------------------------------------------------------------------
+    # file
+    # ------------------------------------------------------------------
+
+    def _file(self, args, session_id: int) -> str:
+        """Report type / size / modification time for file(s) on the C64U.
+
+        Resolves <name> against the UCI DOS cwd exactly like mkdir/mkdisk/del,
+        then MLSDs the containing directory and reports every entry matching the
+        basename. The basename may be a glob, so `file *.d64` works like `del`
+        does; matching falls back to case-insensitive when nothing matches
+        exactly (the Ultimate FS preserves case but `ll` shows real case while
+        users routinely retype names lowercase).
+        """
+        if not args or not args[0]:
+            return _FILE_USAGE
+        pattern = args[0]
+
+        abspath = self._resolve_abspath(pattern, session_id)
+        if abspath is None:
+            return _FILE_USAGE
+
+        dirpath = posixpath.dirname(abspath) or "/"
+        glob = posixpath.basename(abspath)
+        if not glob:
+            return _FILE_USAGE
+
+        host = self._resolve_host(session_id)
+        if not host:
+            return "?NO CLIENT IP - cannot reach C64U"
+
+        try:
+            with ftplib.FTP(host, timeout=10) as ftp:
+                ftp.login()
+                ftp.cwd(dirpath)
+                entries = self._stat_entries(ftp, glob)
+        except Exception as e:
+            logger.error(f"file failed for {pattern}: {e}")
+            return f"?FTP FAILED: {e}"
+
+        if not entries:
+            return f"?NOT FOUND: {pattern}"
+
+        truncated = len(entries) > _FILE_MAX_MATCHES
+        blocks = [
+            format_file_info(name, facts) for name, facts in entries[:_FILE_MAX_MATCHES]
+        ]
+        if truncated:
+            blocks.append(f"...{len(entries) - _FILE_MAX_MATCHES} more match(es)")
+        return "\n\n".join(blocks)
+
+    def _stat_entries(self, ftp, glob):
+        """MLSD the current dir -> [(name, facts)] for entries matching glob.
+
+        Unlike _match_files this keeps directories (so `file` can say "DIR") and
+        keeps the facts dict (size/modify). Falls back to NLST names with empty
+        facts when the server has no MLSD -- the Ultimate's FTP does support it
+        (hardware-verified), but the fallback costs two lines and keeps `file`
+        working against anything else.
+        """
+        try:
+            listing = [(name, facts) for name, facts in ftp.mlsd()]
+        except ftplib.all_errors:
+            listing = [(name, {}) for name in ftp.nlst()]
+
+        matches = [(n, f) for n, f in listing if fnmatch.fnmatchcase(n, glob)]
+        if not matches:
+            lowered = glob.lower()
+            matches = [(n, f) for n, f in listing if fnmatch.fnmatchcase(n.lower(), lowered)]
+        return matches

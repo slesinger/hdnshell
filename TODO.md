@@ -5,19 +5,6 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
-create a new command that will work on the UCI and network drives:
-mkdisk <image name>.d64 - instead of d64 there can be d81 and other supported image types. The command will create a new disk image with the given name and type.
-It should accept default path (like the pwd is using GET_PATH) or accept relative and absolute path.
-Use REST API of the C64 Ultimate, see reast_api_calls.md and the DMA API to create the disk image on the UCI or network drive.
-Besides of mkdisk command, create `del <pattern>` command that will delete file or files on UCI drives or network drive.
-Also update the user manual and the documentation to reflect this new command.
-Ask me any questions before you proceed to ensure you understand the task well.
-
-
-
-
-
-
 
 
 
@@ -28,20 +15,21 @@ Ask me any questions before you proceed to ensure you understand the task well.
 
 mnt vyzaduje vsechny zvaku lowercase.d64
 The command mnt <disk image name> requires that the `disk image name` is in all lowercase letters. What the user typicall wants to do is to `ll` the directory and then insert `mnt` in front of a disk image of his chioce. The disk image is listed in its real case, but the command requires lowercase. The command should be case insensitive and accept any case of the disk image name.
+Besides of mnt, cd, file is also impacted.
 
 
 
 ------
 QUEUE
 
-'file'  is a new command that will print information about file. Use REAST API of DMA API.
 Run prg file by typing its name.
 
 cp, mv v ramci ultimate fs
 
-csdb - mount disk, run prg
+csdb - mount disk
+run prg by typing its name
 
-
+po kazdem prikazu se po splneni chvili ceka, nez se objevi READY. U prikazy STATUS se to nedeje. Impacted are: ll, cd, tutorials
 
 AZ UPLOADUJI crt na GIHUB
 The UI also allows to easily enable/dasable the ROM/cartridge. The UI button Download&Update must work with the crt and cfg in the cart filder. Adjust the procedure.
@@ -56,6 +44,9 @@ tut2 jak pouzivat help
 tut3 ask me anything, AI chat, how to use tools like search the web, read screen, let HDN shell control the console
 tut4 jak najit demo na csdb, jak ho spustit, jak ho ulozit na disk, jak ho spustit z disku
 tut5 complete migrate to C64 (HDN shell hez browser, Telegram, AI chat, all you need to abandon the PC, use C64 as your main computer, make it a bit fun)
+
+
+
 ```
 
 

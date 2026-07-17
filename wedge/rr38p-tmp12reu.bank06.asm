@@ -732,6 +732,9 @@ b6_cmdtab:
     .byte $4D,$45,$4D,$43,$50,$59,$00              // "MEMCPY"
     .byte $4D,$4B,$44,$49,$53,$4B,$00              // "MKDISK"
     .byte $44,$45,$4C,$00                          // "DEL"
+    .byte $46,$49,$4C,$45,$00                      // "FILE"
+    .byte $43,$50,$00                              // "CP"
+    .byte $4D,$56,$00                              // "MV"
     .byte $ff
 b6_ctx:
     // Device gate: only UCI-DOS drives own a cwd worth prepending. $cf2a is stored

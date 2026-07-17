@@ -2602,3 +2602,92 @@ are untouched.
   recognition; `b6_ctx` onward is byte-for-byte the old logic).
 - `del` while on `#n`: still forwarded to the server's NetDriveHandler (the `$cf2a` device gate isn't
   a UCI letter on `#n`, so no frame is prepended — bare forward, as before).
+
+## Step 24 — `file` command (+`CP`/`MV` reserved in the cwd table) 🔨 built, awaiting HW test
+
+**Goal.** New server command `file <name>` printing a file's type / size / modification date+time.
+Per the step-23 design this is a **one-line table edit** on the wedge plus a server-side handler —
+exactly the extension path step 23 opened up.
+
+**Change (bank6 only, 11 B of data).** Appended three words to `b6_cmdtab`:
+`FILE\0 CP\0 MV\0` (before the `\xff` terminator). `CP`/`MV` are added **now but inert** — the server
+does not implement them until step 25/26 — so that the whole task costs a single flash cycle. A word
+in the table only causes the cwd frame to be prepended; an unimplemented command still forwards and
+falls through to the server's existing handlers exactly as before.
+
+**Why these words are safe at `$02a7`.** None of `FILE`/`CP`/`MV` is a BASIC V2 keyword and no keyword
+is a prefix of them (nothing crunches on `FI`, `CP`, `MV`), so they reach the shadow line as plain
+PETSCII letters just like `MKDIR`/`DEL` already do.
+
+**`CP` interaction with the existing one-arg bridge (checked, benign).** `cp <name>` typed on `#t`
+while `active_module=="n"` is the documented "upload from /temp" bridge. It now arrives framed
+(`\x01<cwd>\x01cp <name>`); `request_dispatcher` strips the frame for *any* line, so NetDriveHandler
+sees `cp <name>` byte-identical to before. Only side effect: `dos_cwd` gets populated in session
+state, which that path ignores. No behaviour change.
+
+**Verification.** Build clean; `.errorif ($9E9D)` bound holds — region now ends `$9E8D`, **16 B free**
+(was 27). Binary diff vs prior build is provably minimal and mechanical:
+- `b6_cmdtab` at `$9E5B`: `46 49 4C 45 00 43 50 00 4D 56 00` then the `ff` terminator, which moved
+  `$9E5B`→`$9E66` (+11).
+- `b6_ctx` onward shifted by exactly +11 and is **byte-identical modulo the shift** (38 B compared).
+- One branch operand at `$9E0E` fixed up `$4D`→`$58` (+11).
+- Padding `$9E8D-$9E9C` still all-zero. **Zero bytes changed outside the `$9E00-$9E9C` reserve.**
+- Banks 0-5,7 **byte-identical** (rebuilt from HEAD and compared).
+
+**Server side (cloud, no wire-protocol change).** `UltimateHandler` claims `file` unconditionally,
+like `mkdir`/`mkdisk`/`memcpy`. It stats over **FTP MLSD**, not REST: `rest_api_calls.md` marks
+`GET /v1/files/<path>:info` *"Unfinished"* and, as documented, it returns only size+extension — **no
+modification time** — so MLSD is the only route that satisfies the spec. MLSD is HW-verified present
+on the Ultimate's FTP (`type=dir;size=0;modify=19800101000000; SD`). `network_helper.rest_file_info`
+is used best-effort on top and can only *add* fields MLSD didn't cover; it never raises and degrades
+to `{}`, so `file` cannot be broken by that unfinished route.
+
+**HW test expectation.**
+- On `#t`/`#f`/`#h`: `file game.prg` (relative) → NAME/TYPE/SIZE/MODIFIED block for the file in the
+  current dir. Server log should show `(cwd=…)`.
+- Absolute (`file /Usb0/game.prg`) and glob (`file *.d64`, capped at 8 matches) both work.
+- `file GAME.PRG` vs `file game.prg` — exact match wins, else case-insensitive retry.
+- **Open question for this test:** whether real files carry a true mtime. The root pseudo-dirs report
+  the `19800101000000` placeholder (shown as `(not set)`). If real files on USB0 also report 1980,
+  the Ultimate's FS keeps no mtime and the MODIFIED line is worth reconsidering.
+- Regression: `mkdir`/`memcpy`/`mkdisk`/`del` relative+absolute unchanged; `cp` on `#n`/`#c`/`#t`
+  unchanged (see the framing note above); `#`-autocd, pwd/cd/ll, mnt/umnt, status/time/menu, stock
+  sweep + TASS launch/exit all unchanged (pure data append; `b6_ctx` onward is byte-for-byte the old
+  logic, just relocated).
+
+### Step 24 — HW test #1 results ✅ wedge good, 2 server fixes
+
+**Wedge: PASS, no changes needed.** `file echo.prg` (relative, on `#f`) resolved against the cwd and
+returned a correct block — the `b6_cmdtab` append works exactly as step 23 predicted. `CP`/`MV` remain
+inert-but-armed. **No further asm change for step 24; the flashed .crt stands for steps 25/26.**
+
+**Finding 1 — real mtimes exist (question closed).** `MODIFIED 2026-07-04 15:54:18` on a real file.
+So `19800101000000` is a placeholder *only* on the root pseudo-dirs, and the `(not set)` labelling is
+right. **MLSD is confirmed sound as the stat source for `cp`/`mv` to build on.**
+
+**Finding 2 — REST `:info` bonus removed (server).** The route is *not* broken as `rest_api_calls.md`
+implies — it answered on HW — but it returns only
+`{"files": [{"path": "SD/HOME/echo.prg", "filename": "echo.prg", "size": 10387, "extension": "PRG"}]}`:
+**every field MLSD already gives, and still no mtime.** The generic "extra fields" printer rendered
+that whole list as a junk `FILES +'path': 'SD/HOME/echo.prg'…` line wrapping over 3 rows of the
+40-col screen. Empirically the bonus is 100% duplication with zero upside, so `_format_info`'s REST
+enrichment **and** `network_helper.rest_file_info` are deleted rather than special-cased — `file` is
+now MLSD-only. (Recorded here because the docs' "Unfinished" note is misleading: the route works, it
+is just useless for this command.)
+
+**Finding 3 — `file` on `#n` printed the usage line (server bug, fixed).** HW: `#n`, `pwd`=/demos,
+`ll` lists `aaa.prg`, but `file aaa.prg` → `Usage: file <name>`. Cause: `#n` is not a UCI device, so
+`b6_ctx`'s device gate (correctly) prepends **no** cwd frame → `dos_cwd` is None → `_resolve_abspath`
+returns None → usage. `file` had been scoped Ultimate-FS-only (netdrive was deferred to step 25), but
+a correct command answering "Usage" is worse than pulling the work forward. Fixed by following the
+**`del` precedent exactly**: `UltimateHandler.can_handle` now yields *both* `del` and `file` when
+`active_module=="n"`, and `NetDriveHandler` gained `file` (plain `os.stat`, sandboxed via `_resolve`).
+`#c` still answers usage for `file` — CSDB has no real filesystem; step 26 addresses it.
+
+**Refactor.** Both handlers must render an identical block, so the formatter moved to `sdk/file_info.py`
+(`format_file_info` / `facts_from_stat` / `format_modify` / `type_of`), keyed off an mlsd()-shaped facts
+dict. The FTP path passes MLSD's dict straight through; the local path builds the same shape from
+`os.stat`. Only "how do I stat this" is device-specific — the seam step 25's cp/mv abstraction extends.
+
+**Tests.** 309 pass. New regression guards: `test_only_mlsd_fields_are_shown` (exact 4-line output —
+pins finding 2), `test_yields_to_netdrive_on_n` (pins finding 3), plus a `TestNetDriveFile` class.

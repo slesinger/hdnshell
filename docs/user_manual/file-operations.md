@@ -34,3 +34,28 @@ To save or restore a block of memory (not a whole file that's already on a devic
 - On `n` (network drive): deletes within the current network-drive directory (sandboxed to the server workspace).
 
 **There is no confirmation prompt** — a matching file is deleted immediately, so double-check your pattern. `del` reports how many files it removed (`OK: deleted 3 file(s)`), or `?NOTHING MATCHED` when the pattern matches nothing. Deleting files requires the HDN Server to be running. On IEC-only drives (`8`/`9`/`s`, no server session), use the Retro Replay cartridge's own BASIC `DELETE` command or the drive command channel (`@s:name`) instead. You can also delete via the web UI's [File Manager](file-manager.md).
+
+## Getting File Info (`file`)
+
+`file <name>` — Print the type, size, and modification date/time of a file. `<name>` resolves against the current directory exactly like `mkdir`/`del` — a relative name is looked up inside the current directory, an absolute `/path/name` also works.
+
+```
+NAME     game.prg
+TYPE     PRG
+SIZE     12345 BYTES
+MODIFIED 2026-07-14 18:22:03
+```
+
+- The basename may be a glob, so `file *.d64` reports every match. Output is capped at 8 matches, after which `file` prints `...N more match(es)`.
+- Matching is case-sensitive first; if nothing matches exactly, it retries case-insensitively, so `file game.prg` also finds `GAME.PRG`.
+- TYPE is the uppercased file extension (`PRG`, `D64`, …), `FILE` when the name has no extension, or `DIR` for a directory. Directories show no SIZE line.
+- SIZE is in bytes.
+- MODIFIED is `YYYY-MM-DD HH:MM:SS`. Some entries — notably the pseudo-directories at the filesystem root (SD, Flash, Temp, USB0) — carry no real timestamp on the Ultimate; `file` prints `(not set)` for those instead of a misleading date.
+
+Like `del`, `file` operates on whichever drive you are currently on:
+
+- On `t`/`f`/`h`/`u`/`v` (Ultimate storage): reports on the Ultimate filesystem.
+- On `n` (network drive): reports within the current network-drive directory (sandboxed to the server workspace).
+- Not supported on `c` (CSDB), or on `8`/`9`/`s` (no server session).
+
+`file` reports `?NOT FOUND: <name>` when nothing matches, `?FTP FAILED: ...` on an FTP error, and `?NO CLIENT IP - cannot reach C64U` when the shell can't reach the C64U. Requires the HDN Server to be running.
