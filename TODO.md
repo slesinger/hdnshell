@@ -5,8 +5,7 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
-scrollback section using server as memory using C=+F5 (previous screen) and C=+F6 (next screen) - make it work. It should be possible to scrollback through the entire session history. The scrollback should be persistent across resets and power cycles. The scrollback should be stored in a file on the server. The scrollback should be searchable. The scrollback should be able to be cleared. The principle is the same like .bash_history. Create .history file on the server in .config directory.
-Ask me any questions before you proceed to ensure you understand the task well.
+Run prg file by typing its name like it is usual with PC DOS. It will load to RAM and run RUN. See screenshot where it is failing. After your change it will run properly.
 
 
 
@@ -31,10 +30,9 @@ Quick commands where the wait time is not observed:
 Slow commands where the wait time is observed:
 - ll (after empty directory listing)
 - tutorials
+- i:hi
+- m:dir
 - unknown command that is to server will respond with ?ERROR immediately
-
-
-Run prg file by typing its name like it is usual with PC DOS. It will load to RAM and run RUN. See screenshot where it is failing. After your change it will run properly.
 
 
 tool pro psani na obrazovku. nechce mi to zobrazit adresar.
