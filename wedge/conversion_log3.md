@@ -2832,3 +2832,290 @@ normal shell/BASIC unaffected. Docs added: `docs/user_manual/using-the-shell.md`
 **Deferred (Honza's call):** history `clear`/`search`, background-polling capture (catch >1-screen
 bursts / pure-BASIC scroll the boundary snapshot misses), run-a-command-from-a-history-page, and
 page-0/page-1 near-duplication polish on scrollback entry.
+
+## Step 29 — run a PRG by typing its name (PC-DOS style) — STEP 1: DETECT ONLY ✅ HW TESTED 2026-07-18
+
+**Goal (TODO.md).** Type a file's name at the shell prompt → load the PRG to RAM and RUN it
+(like PC DOS). Today `echo.prg` is unrecognised by the wedge → forwarded to the HDN server →
+`?ERROR`.
+
+**Grilled decisions (Honza).** Trigger = a bare token naming an EXISTING file, resolved in the
+current UCI dir then `/flash/bin`, case-insensitive, `<name>` or `<name>.prg`. Device = UCI DOS
+(h/t/f) only. Method = load bytes into RAM at the header load address (no autostart), fix BASIC
+`$2D/$2E`, then stuff `RUN`+CR into the keyboard buffer. Location = **PURE WEDGE (UCI DOS)** —
+server-independent (works with HDN server down), like cd/ll/mnt. Honza's explicit call over the
+lower-risk server-side option, after being shown the byte-budget cost.
+
+**Constraint discovered.** Only writable ROM = the bank pockets: bank4 reserve 56 B, bank4
+end-of-bank 22 B, bank6 $8023 30 B / reserve 16 B, bank7 reserve 21 B, rest ≤8 B. Largest
+contiguous = 56 B. Full feature ~120-160 B → must span pockets; built in small HW-tested steps.
+
+**Step 1 (this build) — detection only, zero RAM writes = zero corruption risk.** New catch-all
+`b4_runfile`, reached from every bank4 not-my-command exit (`b4_nomatch`, `b4_cd_nomatch`,
+`b4_dir_nm`, each `sec/rts` → `jmp b4_runfile`, +1 B each, absorbed by the reserve). It gates on
+`b4_curdev`+`b4_is_htf` (UCI DOS only; 8/9/S/C/N → C=1 unchanged → server), then issues UCI DOS
+`OPEN_FILE` ($02, attrib $01=read) with the raw typed line as the filename, reusing the bank3 leaf
+helpers via the b4c3 trampoline ($0386). Carry from `B3_FIN` (C=0 iff status "00") is the result:
+file exists → C=0 = handled **silently** (no `?ERROR`, shell just returns to `ready.`); not a file
+→ C=1 → bank3 `hsh_body` forwards to the server exactly as before. **No READ/RUN/CLOSE/fold/
+token-gate yet** (steps 2-3). Ref for the protocol: `cloud/oscar/include/ultimate_lib.c`
+(`uii_open_file`: wire = `[$01 target][$02 cmd][$01 attrib][filename]`; `uii_sendcommand` rewrites
+byte0 with the target).
+
+**Placement (bank4 only).** `b4_runfile=$9E68` (reserve, ends $9E95 < $9E9D), `rf_tail=$9FEA`
+(end-of-bank pocket, push+fin, ends $9FF9 < $A000), one `jmp` bridge between them (same bank,
+mapped together). **`b4_disp` $9C00 and `b4_read_dir_stream` $9F58 pins unchanged** (shift fully
+absorbed by the reserve fill). Byte-verify: **banks 0-3 + 5-7 byte-identical to HEAD**, only bank4
+changed (in-bank downstream shift + the two pockets); cart size unchanged.
+
+**Known step-1 limitations (by design, addressed later).** (a) No CLOSE — each detect leaks a
+DOS file handle; if a *repeat* `echo.prg` starts failing, that's the leak (RESET clears it) and
+step 2 (which needs open→read→close) fixes it. (b) No case-fold — SHIFTed letters ($C1-$DA) won't
+match; unshifted keys are ASCII $41-$5A which the Ultimate matches case-insensitively, so plain
+`echo.prg` is fine. (c) No single-token gate — a multi-word chat line on h/t/f fires one harmless
+local UCI OPEN (fails fast, no server hop) before forwarding to the AI.
+
+**HW test asks.** On `#h`/`#t`/`#f`: (1) `echo.prg` (a real BASIC PRG present) → should print
+**no `?ERROR`**, just `ready.` (silent = detected). (2) a name that does NOT exist → `?ERROR`
+(server), as today. (3) existing commands `pwd`/`cd`/`ll`/`dir`/`mnt`/`status`/`#`/`time` and AI
+chat all still work. (4) on `#8`/`#9` an unknown word still behaves exactly as before.
+
+**HW test 2026-07-18 ✅** All works (Honza: "all works, continue"). `echo.prg` detected silently,
+unknown name → ?ERROR, all existing commands + chat intact. NOT committed (Honza's call). → Step 2.
+
+## Step 29 — run-prg by name — STEP 2a: PROVE THE BANK5 LOADER PATH (border-flash probe) 🔨 awaiting HW test
+
+**Why re-architected.** Step 1 put detection in bank4, but the full LOADER (~150-200 B: READ_DATA→RAM
+loop + BASIC-pointer fixup + CLOSE + RUN-inject) does NOT fit bank4 (~15 B left) or bank3 (full). A
+Sonnet5 free-space audit (2026-07-18, evidence-checked against the built binary + the boot installer's
+exact DMA ranges) certified the safe reclaimable ROM:
+- **bank5 `$804E-$80FF` = 178 B contiguous** (tail of the HW-proven `$8023-$80FF` dead pocket; the boot
+  installer's bank5 DMA starts at `$8100`; `l1_poke`/`l1_text` use only `$8023-$804D`). Reachable via
+  the EXISTING `call_bank5` trampoline + the EXISTING `b5c3` (bank5→bank3 helpers, used by mnt/umnt).
+- **bank3 `$976A-$97A1` = 56 B** (verified-dead: no reference from any of the 8 banks). bank3-mapped in
+  the dispatch context (calls UCI helpers directly, no trampoline).
+- (bank0 291 B / bank2 102 B are safe too but need NEW trampolines → avoided.)
+
+**Chosen architecture (proven trampolines only — no new cross-bank machinery).**
+- **bank4 REVERTED to HEAD** (step-1 detection removed → bank4 pristine, zero bank4 risk).
+- Loader lives in **bank5 `$804E`** (`RF_LOADER`), reached by re-healing `call_bank5` (b5tramp) into
+  `$0378` and patching only its jsr target — no new trampoline.
+- **bank3 `hcb_runfile`** in the `$976A` annex is the catch-all: `hcb_no` (`jmp hsh_body`) → `jmp
+  hcb_runfile`; it re-heals b5tramp, patches the target to `RF_LOADER`, `jsr $0378`; C=0 from the
+  loader = handled, C=1 = not a UCI file → `jmp hsh_body` (server), exactly as before.
+
+**Step 2a = PROBE only (zero load logic).** `rf_probe` (bank5 `$804E`) gates on the current device
+(`$cf2a` = H/T/F); if UCI DOS it does `inc $d020` (border shift) + C=0 (handled); else C=1 (server).
+This proves the entire new invocation chain (bank3 hcb_runfile → re-healed call_bank5 → bank5 `$804E`
+→ clean return) is reachable AND stability-safe, before any OPEN/READ code exists.
+
+**Byte-verify (vs HEAD).** banks 0,1,2,4,6,7 **byte-IDENTICAL**; bank3 differs only `$976A-$97B5`
+(hcb_runfile in the dead annex + the 2-byte hcb_no operand; gateway/b5tramp/hsh_body unchanged); bank5
+differs only `$804E-$8063` (rf_probe; l1_poke/l1_text + TMP payload untouched). Cart size unchanged;
+all `.errorif` pocket guards hold. `hcb_runfile=$976A`, `rf_probe=$804E` (= `RF_LOADER`).
+
+**HW test asks.** On `#h`/`#t`/`#f`: (1) type `echo.prg` (or any unmatched word) → **border colour
+shifts** (probe fired through the new path). NOTE: during 2a ANY unmatched word on h/t/f flashes +
+is consumed (no chat) — expected; 2b restores real file detection. (2) `pwd`/`cd`/`ll`/`dir`/`mnt`/
+`status`/`#`/`time` still work normally. (3) On `#8`/`#9` an unmatched word → `?ERROR` (server),
+unchanged. (4) **Critical stability check:** launch TASS/TMP + a stock RR sweep (F1 fastload etc.) —
+must be intact (proves writing bank5 `$804E` + the bank3 annex didn't corrupt the REU image or stock
+RR). NOT committed (Honza's call).
+
+---
+
+## Step 29 — run-prg by name — STEP 2a HW TESTED OK + refined resolution (2026-07-18)
+
+**2a result (HW):** border flashes on `#h`/`#t`/`#f` for an unmatched word; mnt/cd/ll/pwd/status
+still work; TASS/TMP + stock RR intact. The multi-bank loader path (bank3 hcb_runfile → re-healed
+call_bank5 → bank5 `$804E` → clean return) is proven reachable AND stability-safe.
+
+**Refined resolution (Honza, 2026-07-18) — supersedes the earlier "h/t/f only, cwd then /flash/bin":**
+- `/flash/bin` is a GLOBAL PATH, reachable via an absolute UCI path **irrespective of the selected
+  drive** (works on `#8`/`#9` too).
+- Order: (1) on a UCI drive (h/t/f) try the CURRENT DIR first — `<name>` then `<name>.prg` (current
+  dir WINS); (2) fallback on ANY drive: `/flash/bin/<name>` then `/flash/bin/<name>.prg`. Found in
+  either → run. Not found anywhere → C=1 → server (e.g. `#8` `echo` → run if in /flash/bin; `#8`
+  `i:dir` → not in /flash/bin → server, as today).
+- On `#8`/`#9` there is NO UCI cwd (cd/pwd/ll are UCI-only) so step 1 is skipped — only /flash/bin.
+- => the H/T/F device gate is TEMPORARY (kept through 2c for the current-dir load); dropped in 2e
+  when the /flash/bin fallback (all-drives) is added.
+
+## Step 29 — STEP 2b = OPEN-DETECT with the REAL typed filename (awaiting HW test)
+
+`rf_probe` REPLACED by `rf_loader` (bank5 `$804E`, still pinned = `RF_LOADER`). Behaviour:
+1. `jsr b5c3_install` (this entry is NOT reached via b5_disp, so it heals its own `$0386` tramp).
+2. Device gate `$cf2a` ∈ {H,T,F} else C=1 (server) — unchanged from 2a.
+3. **Single-token gate:** scan `$02a7` (NUL-terminated shadow line); a SPACE anywhere → C=1 (server),
+   so chat sentences still forward. Empty line → C=1.
+4. **OPEN_FILE** (`$02`, attrib `$01`=read): IDLE (B3_IDLE) → write `$01`(DOS1)+`$02`+`$01`+filename
+   (each byte `b5_fold`ed, SHIFTed `$C1-$DA`→`$41-$5A`) → PUSH (B3_PUSH) → FIN (B3_FIN, C=0 iff status
+   "00" = file EXISTS).
+5. Exists → `inc $d020` (2b proof flash) + `rf_close` (CLOSE_FILE `$03` via b5_pushfin) + C=0 (handled,
+   no server). Not found / push-fail → C=1 (server).
+Reuses bank5 same-bank helpers: `b5c3_install`/`B5C3_RUN`, `b5_fold`, `b5_pushfin`. The 4 shared consts
+(B3_IDLE/B3_PUSH/B3_FIN/B5C3_RUN) moved ahead of `rf_loader` so both regions see them (no dup).
+
+**Byte-verify (vs HEAD).** banks 0,1,2,4,6,7 **byte-IDENTICAL**; bank3 unchanged from 2a
+(`$976A-$97B5`); bank5 differs only `$804E-$80C7` (122 B rf_loader; `$8100+` TMP payload untouched).
+Cart size unchanged; all `.errorif` pocket guards hold. `rf_loader=$804E`.
+
+**HW test asks (2b).** On `#h`/`#t`/`#f`: (1) type an EXISTING file's exact name in the current dir
+(e.g. `echo.prg`) → **border flashes** (found). (2) type a NON-existent word (e.g. `zzz`) → **no
+flash**, goes to chat/AI server (real detection restored — the 2a "any word flashes" quirk is gone).
+(3) a phrase WITH spaces (e.g. `hello there`) → chat, no flash. (4) mnt/umnt/cd/ll/pwd/status/#/time
+still work (proves the b5tramp re-heal + the new $804E code didn't disturb them). (5) **Stability:**
+TASS/TMP launch + stock RR sweep intact. NOTE: 2b does NOT load/run yet — a found file only flashes;
+READ_DATA→RAM is 2c. NOT committed.
+
+## Step 29 — STEP 2b HW TESTED OK; STEP 2c = READ_DATA -> RAM (awaiting HW test)
+
+**2b result (HW):** all tests pass. OPEN-detect with the real typed filename works; only
+existing files flash; non-files + spaced phrases go to chat; mnt/cd/ll/pwd/status/#/time intact;
+TASS/TMP + stock RR intact.
+
+**Scope decision (Honza, 2026-07-18):** SHIP CURRENT-DIR AUTO-RUN NOW; defer /flash/bin global
+PATH. Reason: exhaustive space audit (below) shows only ~225 B safe reachable ROM total, enough
+for a correct current-dir auto-run but NOT the extra ~60 B /flash/bin resolution.
+
+**SPACE AUDIT (why bank0 was rejected; Fable5-advised).** Fable5's biggest-risk warning was
+confirmed: bank0's "stock-zero" regions are NOT dead -- stock RR indexes them as RUNTIME BUFFERS
+(`sta $8000,x`, `sta/lda $8100,x`, `sta $9e00,x`, `lda/sta $9f80,x`, `lda $9f40,x`), so code there
+would be silently corrupted during fastload/freeze. RAM $C000 is also out (boot DMAs the TMP image
+to RAM $9000-$CEFF; bank7 -> $B200-$CEFF). bank6/bank7 pockets are used (auto-cd / boot banner).
+bank2 = only 51 B contiguous. => the ONLY safe reachable free space: bank5 pocket $804E-$80FF
+(178 B) + bank3 annex $9788-$97A1 (26 B) + bank3 jump-tail $806C-$8080 (21 B) = ~225 B. All three
+verified non-buffer (bank3's only indexed op `lda $9130,x` can't reach them).
+
+**2c layout (fits the 225 B budget).**
+- **bank5 pocket $804E-$8100 (FULL, 0 spare):** rf_loader = single-token gate + OPEN_FILE ($02)
+  + multi-packet READ_DATA ($04) streaming into RAM at the PRG's 2-byte header load address.
+  Accept-gated 512 B packets (mirror of b4_read_dir_stream) via inline $df1c/$df1e; store to
+  ($fb),y with $fb/$fc walking. Returns C=0 (loaded, file still OPEN, $fb/$fc = end+1) / C=1.
+  SAFETY: a bounded (256-poll) DATA_AV wait precedes the header read so a not-ready response can
+  never yield a garbage load address -> no random-RAM scribble; every wait bounded -> no hang.
+- **bank3 hcb_runfile ($976A-$97A1 annex, packed to exactly $97A2):** DEVICE gate ($cf2a in
+  H/T/F, moved out of the pocket) -> call rf_loader -> on C=0 set $2D/$2E from $fb/$fc + jsr
+  rf_close3; one shared `jmp hsh_body` (hcr_srv) for both not-UCI and not-found.
+- **bank3 rf_close3 ($806C jump-tail, 19 B):** DOS CLOSE_FILE ($03), bank3-direct helpers
+  (uci_idle_kick/hsh_push/hsh_fin), $8080 preserved (bit-skip target).
+The 2b border flash is REMOVED; success is silent (LIST reveals the load). READ_DATA streaming
+semantics are unverified until this HW test (the one remaining protocol unknown).
+
+**Byte-verify (vs HEAD).** banks 0,1,2,4,6,7 **byte-IDENTICAL**; bank5 only $804E-$80FF (pocket
+full; $8100+ TMP payload untouched); bank3 only $806C (rf_close3) + $976A-$97A1 (hcb_runfile) +
+$97B3-$97B5 (hcb_no, from 2a/2b). All `.errorif` guards hold. rf_loader=$804E, hcb_runfile=$976A,
+rf_close3=$806C.
+
+**HW test asks (2c).** On `#h`/`#t`/`#f`, in a dir containing a small **BASIC** .prg:
+(1) type the file's EXACT name -> brief pause, returns to READY (silent, no flash); then type
+`LIST` -> **the loaded BASIC program appears** (proves READ_DATA streamed bytes to $0801 and
+$2D/$2E is correct). Try `RUN` -> it should run. (2) type a NON-existent word -> chat/AI server.
+(3) a spaced phrase -> chat. (4) Regression: mnt/umnt/cd/ll/pwd/status/#/time still work.
+(5) STABILITY: after a load, the machine must not crash/behave oddly; TASS/TMP launch + stock RR
+sweep intact. (6) If LIST shows garbage / wrong first bytes, the READ header/streaming needs a
+tweak (report what LIST shows). NOTE: no auto-RUN yet -- you type LIST/RUN. Files >512 B exercise
+the multi-packet path -- test one if handy. NOT committed.
+
+## Step 29 — STEP 2c HW TESTED OK; STEP 2d = RUN-inject (auto-run) (awaiting HW test)
+
+**2c result (HW):** all works. Typing an existing file's name on h/t/f loads it into RAM at its
+header addr; LIST/RUN show + run it; multi-packet READ_DATA streaming is correct; non-files ->
+chat; regressions + TASS/TMP + stock RR intact. => READ_DATA streaming semantics CONFIRMED.
+
+**2d = auto-RUN.** After the READ completes, rf_loader (bank5 pocket) stuffs "RUN"+CR ($52 $55 $4E
+$0D) into the keyboard buffer $0277-$027A and sets $C6=4. On return, bank3 hcr_done still runs
+first (sets $2D/$2E from $fb/$fc + CLOSEs the file), then its rts unwinds to the BASIC READY loop
+which consumes the buffer -> the loaded PRG runs. So typing a filename now LOADS + RUNS it outright.
+
+**SPACE (pocket was exactly full).** To fit the ~21 B RUN-inject, two drops in rf_loader (both
+correctness-neutral): (1) the single-token gate -- a spaced/empty line now simply OPEN-fails ->
+C=1 -> server (same end result; one wasted OPEN round-trip on a multi-word line -> possible brief
+drive blink on h/t/f chat, acceptable, restore in a later phase if wanted); (2) OPEN's leading
+UCI idle-kick -- UCI is already idle at loader entry (the dispatch path to hcb_runfile issues no
+UCI for a plain filename; every prior shell UCI command ends idle via FIN+accept). The bounded
+DATA_AV wait before the header read is KEPT (the anti-garbage-address safety). Pocket now $804E-
+$80FD (172 B, 2 B spare); bank3 UNCHANGED from 2c.
+
+**Byte-verify (vs HEAD).** banks 0,1,2,4,6,7 **byte-IDENTICAL**; bank5 only $804E-$80FD ($8100+
+TMP payload untouched); bank3 only $806C + $976A-$97A1 + $97B3-$97B5 (unchanged from 2c). All
+`.errorif` guards hold. rf_loader=$804E, rf_rtxt=$80FA, hcb_runfile=$976A, rf_close3=$806C.
+
+**HW test asks (2d).** On `#h`/`#t`/`#f`, in a dir with a small PRG:
+(1) type the file's EXACT name + RETURN -> it should LOAD **and RUN automatically** (no LIST/RUN
+needed). Try both a BASIC PRG and a machine-code PRG (SYS autostart via the loaded header addr).
+(2) After it runs/returns, the prompt should be usable again; type another file name -> runs again
+(proves the file handle CLOSE works -> no handle leak on repeat). (3) NON-existent word -> chat/AI
+server (may show a brief drive access, then forwards -- expected with the token gate removed).
+(4) a spaced phrase -> chat (one wasted OPEN then server). (5) Regression: mnt/umnt/cd/ll/pwd/
+status/#/time still work. (6) STABILITY: TASS/TMP launch + stock RR sweep intact. If the program
+loads but does NOT auto-run (stays at READY), the shell's input path may clear $0277/$C6 -- report
+that and I'll adjust. NOT committed.
+
+## Step 29 — STEP 2d HW TESTED OK (auto-run works); STEP 2e = .prg-suffix retry — SPACE ANALYSIS
+
+**2d result (HW, Honza 2026-07-18):** ALL PASS. Typing an existing file's EXACT name on h/t/f now
+LOADS **and RUNS** it automatically (BASIC + machine-code PRGs); repeat runs work (no handle leak
+-> CLOSE is correct); non-files/spaced phrases -> chat; mnt/umnt/cd/ll/pwd/status/#/time intact;
+TASS/TMP + stock RR sweep intact. **The headline feature (run-by-name) is DONE.** Committed-ready.
+
+**2e goal:** type `echo` (no extension) -> try `echo`, and on OPEN-fail retry `echo.prg`.
+
+**SPACE WALL (measured 2026-07-18 from the .sym + source).** All three safe regions are full:
+- bank5 pocket: rf_loader ends at rf_rtxt $80FA-$80FD; TMP payload at $8100 => **2 B spare**.
+- bank3 annex $976A-$97A2: hcb_runfile ends EXACTLY at $97A2 => **0 B spare**.
+- bank3 jump-tail $806C: rf_close3 = 19 B ($806C-$807E), $8080 reserved (bit-skip) => **~0 B**.
+Total free safe ROM across the whole cartridge: **~2-4 B**. A spec-compliant 2e (second OPEN
+attempt = re-emit $01/$02/$01 preamble + folded filename loop + ".prg" suffix write + a ZP retry
+flag + retry jump) costs **~30-35 B**. It does NOT fit. (Confirms the 2d note's "2 B spare" +
+the audit's ~225 B total ceiling.) => 2e needs either a <10 B trick, ~30 B reclaimed from proven
+code (risky, re-tests everything), or DEFERRAL. Consulting Fable5 advisor before deciding.
+
+## Step 29 — SCOPE PIVOT (Honza 2026-07-18): DROP .prg-retry; ADD /flash/bin fallback
+
+**Honza's new spec:** user always types the EXACT (case-insensitive) name, INCLUDING any `.prg`.
+Resolution order = (1) current dir exact match [= 2d, DONE], (2) if not found, `/flash/bin/<name>`,
+(3) only if still not found -> server. So "2e" is now the previously-DEFERRED **/flash/bin global
+PATH**, not the suffix retry.
+
+### FULL CARTRIDGE SPACE MAP (measured 2026-07-18 via trailing-zero scan of build/bank0N.bin.raw)
+| region | free B | region | free B |
+|---|---|---|---|
+| bank3 annex ($976A->$97A2) | **0** | bank5 third ($9Fxx->$A000) | 6 (4 usable; last 2 = b5c3_vec) |
+| bank3 jumptail (->$8080) | 1 | bank6 $8023 pocket (->$8100) | **30** |
+| **bank4 reserve (->$9E9D)** | **56** | bank6 main (->$9E9D) | 16 |
+| **bank4 endbank (->$A000)** | **24** | bank6 third (->$A000) | 9 |
+| bank5 pocket (->$8100) | 2 | bank7 main (->$9E9D) | **21** |
+| bank5 main (->$9E9D) | 0 | bank7 $8023 / third | 7 / 8 |
+
+**No unopened bank exists.** banks 0/1/2 frozen/full; banks 3/4/5 reserves full-ish; **bank6 was
+already OPENED as the 4th shell reserve (step 21-pre)** and **bank7 is used by BB2 boot-banner** --
+both ~full (fragmented). Largest contiguous free block ANYWHERE = **bank4 reserve, 56 B**.
+
+### DESIGN THAT MINIMIZES NEW CODE: "prepend + reuse rf_loader"
+The `/flash/bin` attempt does NOT need a second 75 B OPEN routine. Instead REWRITE the RAM shadow
+line $02a7: prepend `"/flash/bin/"` in front of the typed name, then call the SAME `rf_loader`
+(bank5, $804E) again -- it now OPENs `/flash/bin/<name>` + reads + runs. rf_loader stays
+BYTE-IDENTICAL (zero regression risk to the proven loader). The ~40 B prepend routine + 11 B
+"/flash/bin/" string fit bank6's 30 B pocket (+ bank6 main 16 B) or bank4.
+
+### THE HARD BLOCKER (verified against the 2d call path): bank3 is the ONLY legal orchestration site
+Reaching bank5 rf_loader means re-healing the SHARED `$0378` RAM trampoline slot. `$0378` is LIVE
+ON THE STACK while any bank4 (`b4_disp`) code runs -- that is how bank3 called into bank4. 2d only
+works because `hcb_runfile` calls bank5 AFTER b4_disp has RETURNED (`$0378` free again). Therefore:
+- The run-by-name + /flash/bin ORCHESTRATION must live in **bank3** (call bank5 without nesting
+  inside the live bank4 trampoline). Moving it to bank4 => calls bank5 while b4tramp is on the
+  stack at $0378 => RAM-stub corruption. NOT allowed.
+- The /flash/bin retry adds ~45-52 B to bank3: heal b4tramp+retarget+jsr (prepend) THEN heal
+  b5tramp+retarget+jsr (rf_loader again). Each heal+retarget+call is ~26 B.
+- **bank3 is EXACTLY full (annex 0 B, reserve full).** => the orchestration has nowhere to go.
+
+**CONCLUSION:** /flash/bin is feasible ONLY by RECLAIMING ~45-52 B in bank3 (compact status / time /
+`#` / dispatcher -- all HW-tested code). Every free-space and new-bank route dead-ends at "bank3 is
+full and is the only site that can call bank5 without trampoline nesting." bank4's 56 B and bank6's
+pockets can hold the prepend + string, but NOT the orchestration. This is the "reclaim proven code"
+path Honza hoped to avoid; there is no alternative. Fable5 advisor (best suited to find the safest
+bank3 compaction) is DOWN until 6pm Prague (session API limit). Awaiting Honza's decision:
+(a) reclaim ~50 B in bank3 in small HW-tested steps, (b) wait for 6pm advisor to co-design the
+compaction, or (c) ship 2d as final + defer /flash/bin. 2d (current-dir run-by-name) is DONE and
+independent -- committable now regardless.
