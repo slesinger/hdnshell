@@ -5,34 +5,36 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
-mnt vyzaduje vsechny znaku lowercase.d64
-The command mnt <disk image name> requires that the `disk image name` is in all lowercase letters. What the user typicall wants to do is to `ll` the directory and then insert `mnt` in front of a disk image of his chioce. The disk image is listed in its real case, but the command requires lowercase. The command should be case insensitive and accept any case of the disk image name.
-Besides of mnt, cd, file is also impacted.
-
-
-
-
-
-
-
-
-
 scrollback section using server as memory using C=+F5 (previous screen) and C=+F6 (next screen) - make it work. It should be possible to scrollback through the entire session history. The scrollback should be persistent across resets and power cycles. The scrollback should be stored in a file on the server. The scrollback should be searchable. The scrollback should be able to be cleared. The principle is the same like .bash_history. Create .history file on the server in .config directory.
 Ask me any questions before you proceed to ensure you understand the task well.
 
 
 
-lowercase after start and boot screen and ready. modification.
-The HDN shell is build on top of RR cartridge but it is able to utilize the lower case/uppercase font. Can you switch the font to lower case after the start and boot screen text and the ready prompt? The iconic READY. has to be upper case. The boot screen text also should be uppercase. Make an analysis and tell me what is achievable with low risk.
+
+
+
+
+
+
+
 
 
 ------
 QUEUE
 
-po kazdem prikazu se po splneni chvili ceka, nez se objevi READY. U prikazy STATUS se to nedeje. Impacted are: ll, cd, tutorials
+There is user experience issue. The users has to wait an extra second after some commands are executed. The scenario is: user types command, command is executed, user sees full output, user can only see READY prompt after a second.
+Quick commands where the wait time is not observed:
+- ll (after non-empty directory listing)
+- cd
+- pwd
+- status
+Slow commands where the wait time is observed:
+- ll (after empty directory listing)
+- tutorials
+- unknown command that is to server will respond with ?ERROR immediately
 
 
-Run prg file by typing its name.
+Run prg file by typing its name like it is usual with PC DOS. It will load to RAM and run RUN. See screenshot where it is failing. After your change it will run properly.
 
 
 tool pro psani na obrazovku. nechce mi to zobrazit adresar.

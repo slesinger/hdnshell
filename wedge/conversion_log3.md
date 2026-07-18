@@ -2770,3 +2770,65 @@ cold-boot step (KERNAL screen re-init/CINT/clear) could reset `$D018` back to up
 **HW test 2026-07-17 ✅** Banner + REU/RR + BYTES-FREE stay uppercase; font comes up lowercase/mixed;
 existing commands render cleanly in the new font. The flip stuck (no later `$D018` reset). `READY.` shows
 as lowercase `ready.` as accepted. NOT committed (Honza's call).
+
+## Step 28 — scrollback via server memory (`C=+CTRL+F5/F7`) ✅ HW TESTED 2026-07-18
+
+**Goal (TODO.md).** Page back through the whole session's screen history — every line that has
+scrolled off the top — persistently across resets/power cycles, stored server-side, like a terminal
+scrollback / `.bash_history`. Keys: previous screen / next screen. Searchable + clearable were deferred
+by Honza ("I'll request search after hands-on"); v1 is **view-only**.
+
+**Grilled first + two Fable5-advised pivots off Honza's literal request.**
+- **Keys `C=+F5`/`C=+F6` → `C=+CTRL+F5`/`C=+CTRL+F7`.** `C=+F5/F6` needs `C=`-*without*-`CTRL`, but the
+  71-byte CINV keyscan stub (`$03A0`, §10a/16-fix) is at its hard `.errorif` cap — no room for a second
+  modifier branch — and `C=+F6` is physically `C=+SHIFT+F5`, whose `C=+SHIFT` flips the charset (fights
+  §27 lowercase boot). Staying in the existing `C=+CTRL` chord family costs ~3 bytes and dodges both.
+- **Capture mechanism: `$0326` CHROUT hook → server-side snapshot.** The KERNAL screen editor echoes
+  typed characters and executes RETURN via `$E716` *directly*, bypassing the `($0326)` IBSOUT vector —
+  so a CHROUT hook would miss every **typed command** scrolling off, which is exactly what Honza wants
+  to recover. The server already DMA-reads `$0400` invisibly (that's `scr_save`), so capture moved
+  entirely server-side: **near-zero new C64 code and it records typed input.** Honza chose
+  boundary-snapshot fidelity (vs continuous polling) — "keep it simple for now".
+
+**Server side (cloud/, no C64 risk; 354 tests green).**
+- `sdk/scrollback.py` — `HistoryStore` (plain-ASCII `workspace/.config/.history`, one screen row/line,
+  100 KB cap dropping oldest on a `\n` boundary), `total_pages`/`get_page` (page 1 = newest 25 lines,
+  higher = older, oldest page top-padded), `render_page(lines)→(1000 B screencodes, 1000 B colour
+  $0E)`, and `capture_screen(screen_bytes)` = **overlap-diff**: screencode→ASCII, drop trailing blank
+  rows, find the longest suffix of history that equals a prefix of the new frame, append only the
+  remainder (so an unchanged/repeated screen appends 0; a scroll-by-N appends N).
+- `sdk/command_handler.py` — console-0 COMMAND sub-cmds `SERVER_CMD_SCROLLBACK_PREV=$04` /
+  `_NEXT=$05`; a per-session `scrollback_page` cursor (0 = live saved screen, 1..N = history pages);
+  PREV clamps at oldest, NEXT at 0 (repaints saved live screen), both DMA-paint via `send_screen_data`;
+  RESTORE_SCREEN resets the cursor to 0. **Capture wired at two boundaries**, both best-effort
+  (try/except, never block dispatch): the existing `SAVE_SCREEN` (reuses the screen it already read) and
+  `handle_text_input` (DMA-reads `$0400` before dispatching, so the just-typed command line is recorded).
+
+**C64 side (bank02 only; byte-tight `$9CB7` `console_switch` segment left BYTE-IDENTICAL).** New code
+lives entirely in the roomy reclaimed `$9C41` pocket (~150 B free after `cvr_digits`), so nothing
+downstream shifts:
+- Table `cvr_digits` += `6, 3` (SFDX F5/F7) → RAM `$03F7/$03F8`; stub scan `ldx #$07→#$09`; `cs_install`
+  copy `ldx #$06→#$08`; the CINV stub's `jsr console_switch` → **`jsr csw_guard`** (same 3-byte size).
+- `csw_guard` (pocket): `cpx #$07 / bcs csw_scroll / jmp console_switch` — X=0..6 unchanged console
+  path, X=7/8 (F5/F7) → scrollback. `console_switch` itself never touched.
+- `csw_scroll` + `sb_modal` (pocket): `scr_save` (snapshots live screen + triggers the server
+  SAVE_SCREEN capture), initial page cmd `= X-3` ($04/$05) via the existing **`scr_cmd0`** (console-0 +
+  ack, reused verbatim), then `sb_modal` — a view-only `cs_modal`-style blocking loop (paced by
+  `cs_vsync`, self-scanned via `$FF9F`): `C=+CTRL+F5`→PREV, `C=+CTRL+F7`→NEXT (one page per press via
+  `cs_wait_release`, no flood), and **any key with no modifier held → exit** (`scr_restore` repaints the
+  live screen; the "exactly one of C=/CTRL held" case is ignored so a half-formed chord can't be
+  mistaken for the exit key). Server-unreachable at `scr_save` → abort untouched, stay local.
+
+**Byte delta (isolated: committed-source rebuild vs this build).** 105 bytes, all in `$9B7D..$9C4D`
+(stub counter + `jsr` operand, the `6,3` table bytes, `csw_guard`/`csw_scroll`/`sb_modal`, `cs_install`
+counter). **Zero bytes changed at/after `console_switch` `$9CB7`** — verified; `cs_modal`/`scr_*`/all
+other banks identical. `.errorif` pocket guards ($9C41, $9E80) all hold; cart size unchanged.
+
+**HW test 2026-07-18 ✅** All works properly: `C=+CTRL+F5/F7` page through server-stored history,
+any key returns to the live screen with the prompt intact, existing `C=+CTRL+1..7` console switch and
+normal shell/BASIC unaffected. Docs added: `docs/user_manual/using-the-shell.md` (Scrollback section) +
+`cloud-apps.md` cross-link. NOT committed (Honza's call).
+
+**Deferred (Honza's call):** history `clear`/`search`, background-polling capture (catch >1-screen
+bursts / pure-BASIC scroll the boundary snapshot misses), run-a-command-from-a-history-page, and
+page-0/page-1 near-duplication polish on scrollback entry.

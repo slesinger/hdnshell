@@ -3818,7 +3818,7 @@ cvr_live:
     cmp #$06               // both C= and CTRL held?
     bne cvr_clear
     lda $cb                // SFDX: matrix code of the key currently down
-    ldx #$07               // scan the 1..7 digit table ($03F0) from the top down
+    ldx #$09               // scan the 1..7 + F5/F7 table ($03F0) from the top down
 cvr_chk:
     dex                    // ran past index 0 => no digit matched: drop the chord
     bmi cvr_clear          //   (C=+CTRL held on a non-1..7 key, e.g. $CB=$40 as the
@@ -3839,7 +3839,7 @@ cvr_match:
     sta $03ee              // latch (one action per press)
     lda #$10               // page in bank2 (same value the HONDANI gate uses)
     sta $de00
-    jsr console_switch
+    jsr csw_guard          // scrollback-aware entry (X=7/8 -> scroll; else console)
     lda #$08               // restore bank1 with a CONSTANT (stock $DEE3 value)
     sta $de00
     jmp ($03ec)
@@ -3848,6 +3848,86 @@ cinv_tmpl_end:
 .errorif ($03a0 + (cinv_tmpl_end - cinv_tmpl)) > $03e7, "CINV stub overruns $03E7"
 cvr_digits:
     .byte 56, 59, 8, 11, 16, 19, 24    // SFDX matrix codes for keys 1..7 -> $03F0
+    .byte 6, 3                          // SFDX F5 (idx7=scroll prev), F7 (idx8=scroll next) -> $03F7/$03F8
+
+// csw_guard -- new console_switch entry point (the CINV RAM stub's cvr_match now
+// `jsr csw_guard` instead of `jsr console_switch`). Lives in this roomy reclaimed
+// pocket ($9BA9..$9C40, ~150 B) so the byte-tight $9CB7..$9E80 console_switch
+// segment stays byte-identical. X = matched table index 0..8. Index 0..6 =
+// C=+CTRL+1..7 -> unchanged console path (jmp console_switch). Index 7/8 =
+// C=+CTRL+F5/F7 -> scrollback (csw_scroll).
+csw_guard:
+    cpx #$07
+    bcs csw_scroll         // X=7 (C=+CTRL+F5=prev) / X=8 (C=+CTRL+F7=next)
+    jmp console_switch     // X=0..6: stock console-switch behaviour, unchanged
+// csw_scroll -- scrollback viewer (step 3). Entered from csw_guard with X=7
+// (C=+CTRL+F5 = page older) or X=8 (C=+CTRL+F7 = page newer), IRQ masked, bank2
+// mapped. Reuses the console-switch DMA machinery: scr_save snapshots the live
+// screen server-side (and, per command_handler.SAVE_SCREEN, captures it into the
+// .history transcript), then paging sends console-0 sub-commands $04 (PREV) / $05
+// (NEXT) via scr_cmd0 -- the server DMA-paints each 25-line page back into $0400.
+// Exit repaints the live screen (scr_restore, which also resets the server-side
+// page cursor). View-only: no keys are forwarded to BASIC. If scr_save fails
+// (server unreachable) we abort untouched and stay local.
+//   Page command from the entry key: cmd = X - 3  (X=7->$04 PREV, X=8->$05 NEXT).
+csw_scroll:
+    txa
+    sec
+    sbc #$03               // X=7 -> $04 (PREV), X=8 -> $05 (NEXT)
+    pha                    // stash the initial page cmd across scr_save (clobbers X/A)
+    jsr scr_save           // snapshot live screen + server-side history capture; blocks on ack
+    pla                    // recover cmd (PLA leaves scr_save's carry intact)
+    bcs sb_bail            // server unreachable -> abort, screen untouched
+    pha                    // keep cmd across cs_wait_release
+    jsr cs_wait_release    // drop the C=+CTRL+F5/F7 chord that triggered entry
+    pla
+    jsr scr_cmd0           // paint the first page (PREV/NEXT); reads the ack
+    jsr sb_modal           // block, paging on further C=+CTRL+F5/F7, until the user exits
+    jsr scr_restore        // repaint the live screen; server resets the page cursor
+sb_bail:
+    rts
+
+// sb_modal -- blocking scrollback paging loop (IRQ context, I=1). Mirrors
+// cs_modal's cadence/robustness but is VIEW-ONLY: C=+CTRL+F5 pages older, C=+CTRL+F7
+// pages newer, and any key pressed with NO modifiers held returns to the live
+// screen. While exactly one of C=/CTRL is held (a chord being assembled) we ignore
+// input, so a half-formed chord can never be mistaken for the exit key.
+sb_modal:
+    sei                    // GETIN below leaks I=0 (see cs_modal) -- keep IRQ masked
+    jsr cs_vsync           // pace ~60Hz (SCNKEY cadence)
+    jsr $ff9f              // SCNKEY (we scan ourselves; IRQs off)
+    lda $028d              // SHFLAG
+    and #$06               // C= (b1) + CTRL (b2)
+    cmp #$06               // both held?
+    beq sb_chord
+    tax                    // Z set iff no modifier held
+    bne sb_modal           // exactly one of C=/CTRL held -> chord assembling, ignore
+    jsr $ffe4              // GETIN -> A = PETSCII (0 = nothing typed this scan)
+    sei                    // GETIN cleared I on the way out -- restore (Z preserved)
+    beq sb_modal           // nothing typed -> keep viewing
+    lda #$00
+    sta $c6                // a real key with no modifier -> exit; flush so it isn't echoed
+    rts
+sb_chord:
+    lda $cb                // SFDX
+    cmp #6                 // F5 -> page older
+    beq sb_prev
+    cmp #3                 // F7 -> page newer
+    beq sb_next
+    lda #$00               // C=+CTRL on some other key -> drop the chord char, keep viewing
+    sta $c6
+    beq sb_modal
+sb_prev:
+    jsr cs_wait_release    // one page per press (release + flush), no network flood
+    lda #$04               // SERVER_CMD_SCROLLBACK_PREV
+    jsr scr_cmd0
+    jmp sb_modal
+sb_next:
+    jsr cs_wait_release
+    lda #$05               // SERVER_CMD_SCROLLBACK_NEXT
+    jsr scr_cmd0
+    jmp sb_modal
+
     .fill $9C41 - *, $00   // remaining reclaimed pocket up to cs_install
 .errorif (* != $9C41), "cinv_tmpl/pocket overran cs_install (pinned $9C41)"
 
@@ -3877,7 +3957,7 @@ csi_copy:
     sta $03a0,x
     dex
     bpl csi_copy
-    ldx #$06               // copy the 7-byte digit table out to $03F0 (16-fix:
+    ldx #$08               // copy the 9-byte digit+F5/F7 table out to $03F0 (16-fix:
 csi_dcopy:                 //   it no longer fits inside the stub after the
     lda cvr_digits,x       //   self-disarm prefix, so it lives at $03F0)
     sta $03f0,x

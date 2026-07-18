@@ -99,6 +99,17 @@ def get_workspace_config_path() -> str:
     return os.path.join(WORKSPACE_DIR, ".config", "cloud_config.cfg")
 
 
+def get_history_path() -> str:
+    """Return the path to workspace/.config/.history (console-0 scrollback).
+
+    Creates the workspace/.config directory if it doesn't exist yet (the
+    history file itself is created lazily on first write by HistoryStore).
+    """
+    config_dir = os.path.join(WORKSPACE_DIR, ".config")
+    _ensure_dir(config_dir)
+    return os.path.join(config_dir, ".history")
+
+
 def _ensure_dir(path: str):
     os.makedirs(path, exist_ok=True)
 

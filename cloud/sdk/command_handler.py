@@ -10,8 +10,14 @@ from typing import Optional, Tuple
 from .generate_pet_asc_table import Petscii
 from .console_manager import ConsoleManager, MIN_CONSOLE_ID, MAX_CONSOLE_ID
 from .network_helper import send_screen_data
+from .scrollback import HistoryStore, render_page
 
 logger = logging.getLogger(__name__)
+
+# Persistent console-0 scrollback transcript (workspace/.config/.history).
+# Module-level singleton; tests replace/repoint it to a tmp-file-backed
+# HistoryStore to avoid touching the real workspace.
+_history_store = HistoryStore()
 
 # Protocol constants
 MAGIC_BYTES = bytes([0xFE])
@@ -22,6 +28,12 @@ SERVER_CMD_GET_SCREEN = 0x01
 # restore the C64's own screen via DMA, so the C64 side needs no buffer RAM.
 SERVER_CMD_SAVE_SCREEN = 0x02
 SERVER_CMD_RESTORE_SCREEN = 0x03
+# Scrollback paging: view one screen OLDER (PREV) or NEWER (NEXT) than the
+# currently-displayed one, DMA-painting the result over the live screen.
+# See `handle_local_command` and `sdk/scrollback.py` for the page-cursor
+# semantics (page 0 == the live screen saved by SERVER_CMD_SAVE_SCREEN).
+SERVER_CMD_SCROLLBACK_PREV = 0x04
+SERVER_CMD_SCROLLBACK_NEXT = 0x05
 
 
 class CommandID:
@@ -156,8 +168,33 @@ class CommandHandler:
     @staticmethod
     def handle_text_input(data: bytes, session_id: int = 0) -> bytes:
         """
-        Handle text input by dispatching to appropriate handler
+        Handle text input by dispatching to appropriate handler.
+
+        Before dispatching, DMA-reads the live console-0 screen and
+        overlap-diffs it into the scrollback transcript (sdk/scrollback.py).
+        At this point the C64 screen holds whatever the previous command
+        left behind PLUS the line the user just typed + RETURN -- exactly
+        what should be scrollable once the next command's output starts
+        overwriting it. Capture is best-effort: a missing host or any DMA
+        failure is logged and swallowed so it can never block dispatch.
         """
+        try:
+            from .network_helper import dma_read_memory, read_last_c64_ip
+            from .shared_state import get_session_state_copy
+
+            state = get_session_state_copy(session_id)
+            host = state.get("client_ip") or read_last_c64_ip()
+            if host:
+                screen = dma_read_memory(host, 0x0400, 1000)
+                _history_store.capture_screen(screen)
+            else:
+                logger.warning(
+                    f"handle_text_input: no host for session {session_id}, "
+                    "skipping scrollback capture"
+                )
+        except Exception:
+            logger.exception("scrollback capture failed in handle_text_input")
+
         dispatcher = CommandHandler.get_dispatcher()
         return dispatcher.dispatch(data, session_id)
 
@@ -169,6 +206,17 @@ class CommandHandler:
         SERVER_CMD_SAVE_SCREEN: DMA-read the C64's screen ($0400) and colour
         ($D800) RAM and stash both in the session state.
         SERVER_CMD_RESTORE_SCREEN: DMA-write the stashed buffers back.
+        SERVER_CMD_SCROLLBACK_PREV / _NEXT: page the *displayed* screen one
+        step older / newer through the persistent scrollback transcript
+        (sdk/scrollback.py) and DMA-paint the result. The expected C64-side
+        flow is: SAVE_SCREEN (snapshot the live screen), any number of
+        PREV/NEXT (pure view -- nothing is written back to history),
+        then RESTORE_SCREEN to repaint the live screen and exit scrollback.
+        A per-session `scrollback_page` cursor in session state tracks
+        where the view currently is: 0 == the live saved screen, 1..N ==
+        history pages (1 = newest, N = HistoryStore.total_pages() =
+        oldest). PREV increments the cursor (older), NEXT decrements it
+        (newer); both clamp at their respective ends instead of wrapping.
 
         Both return a short ack only after the DMA transfer has completed --
         the C64 wedge blocks on that ack to sequence save -> screen switch
@@ -204,6 +252,15 @@ class CommandHandler:
             logger.info(f"SAVE_SCREEN for session {session_id} (host {host})")
             screen = dma_read_memory(host, 0x0400, 1000)
             color = dma_read_memory(host, 0xD800, 1000)
+            # Bring the transcript current the moment the user opens
+            # scrollback (overlap-diffed, so re-capturing the same screen
+            # the boundary capture just saw appends nothing new -- see
+            # HistoryStore.capture_screen). Never let a capture failure
+            # block SAVE_SCREEN itself.
+            try:
+                _history_store.capture_screen(screen)
+            except Exception:
+                logger.exception("capture_screen failed on SAVE_SCREEN")
             update_session_state(session_id, saved_screen=screen, saved_color=color)
             return b"00"
 
@@ -226,6 +283,50 @@ class CommandHandler:
                 send_screen_data(screen, color)
             else:
                 logger.warning("RESTORE_SCREEN with no saved screen for session")
+            # Returning to the live screen always exits scrollback view.
+            update_session_state(session_id, scrollback_page=0)
+            return b"00"
+
+        if data[0] == SERVER_CMD_SCROLLBACK_PREV:
+            total = _history_store.total_pages()
+            current = state.get("scrollback_page") or 0
+            new_page = min(current + 1, total)
+            logger.info(
+                f"SCROLLBACK_PREV for session {session_id}: "
+                f"page {current} -> {new_page} (total history pages={total})"
+            )
+            if new_page == 0:
+                screen = state.get("saved_screen")
+                color = state.get("saved_color")
+                if screen and color:
+                    send_screen_data(screen, color)
+            else:
+                screen, color = render_page(_history_store.get_page(new_page))
+                send_screen_data(screen, color)
+            update_session_state(session_id, scrollback_page=new_page)
+            return b"00"
+
+        if data[0] == SERVER_CMD_SCROLLBACK_NEXT:
+            current = state.get("scrollback_page") or 0
+            new_page = max(current - 1, 0)
+            logger.info(
+                f"SCROLLBACK_NEXT for session {session_id}: "
+                f"page {current} -> {new_page}"
+            )
+            if new_page == 0:
+                screen = state.get("saved_screen")
+                color = state.get("saved_color")
+                if screen and color:
+                    send_screen_data(screen, color)
+                else:
+                    logger.warning(
+                        "SCROLLBACK_NEXT reached the live screen with no "
+                        "saved screen for session"
+                    )
+            else:
+                screen, color = render_page(_history_store.get_page(new_page))
+                send_screen_data(screen, color)
+            update_session_state(session_id, scrollback_page=new_page)
             return b"00"
 
         logger.warning(f"Unknown local command 0x{data[0]:02X}")

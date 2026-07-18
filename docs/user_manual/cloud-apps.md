@@ -24,6 +24,8 @@ Press **C=+CTRL** together with a digit to switch consoles at any time:
 
 Switching is instantaneous. The server keeps each console's state alive so you can freely jump between them and return to exactly where you left off. When you switch away from the shell, the server saves your C64 screen and restores it when you come back with `C=+CTRL+1`.
 
+The same `C=+CTRL` chord also drives **scrollback**: `C=+CTRL+F5`/`F7` page back and forth through the local shell's screen history. See [Scrollback](using-the-shell.md#scrollback-screen-history).
+
 ## Good to Know
 
 - The switching keys aren't live until you type `HONDANI` at the `READY.` prompt to arm them.

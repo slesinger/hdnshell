@@ -239,6 +239,7 @@ from .workspace import (
     WORKSPACE_DIR,
     init_workspace,
     get_workspace_config_path,
+    get_history_path,
 )
 
 from .file_info import (

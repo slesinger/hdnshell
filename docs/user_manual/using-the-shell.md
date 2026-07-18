@@ -51,3 +51,24 @@ One side effect: if you've typed `HONDANI` to arm the [console-switching keys](c
 Pressing `CTRL` while listing directory or viewing long listings will slow down the output for better readability.
 
 `SHIFT+RETURN` - move to next line without executing command on current line.
+
+## Scrollback (Screen History)
+
+The C64 screen only holds 25 lines, so a previous command or its output disappears the moment the screen rolls over. Scrollback lets you page back through everything that has scrolled off — like a terminal's scrollback buffer or `.bash_history`.
+
+| Shortcut | Action |
+|----------|--------|
+| `C=+CTRL+F5` | Page **back** to the previous (older) screen |
+| `C=+CTRL+F7` | Page **forward** to the next (newer) screen |
+| any other key | Return to the live screen and resume typing |
+
+The first `C=+CTRL+F5` snapshots your current screen and shows the most recent stored page (which looks almost identical to what was on screen) — press it again to reach genuinely older content. When you return to the live screen, your prompt and any half-typed line are restored exactly as you left them.
+
+The history itself lives **on the HDN Server**, in `.config/.history`, so it survives resets and power cycles — you can scroll back through days or weeks of sessions. The file is capped at about 100 KB; the oldest lines are dropped as new ones arrive.
+
+### Good to Know
+
+- **Requires the HDN Server** and the `C=+CTRL` keys to be armed — the same conditions as the [console-switching keys](cloud-apps.md#console-switching). They are armed automatically at boot; if they went inactive after a `LOAD` or `RUN`, type `HONDANI` to re-arm them.
+- Scrollback is **view-only** in this version: to re-run an old command, page back to the live screen first, then move the cursor onto the line you want (as usual) and press `RETURN`.
+- History is captured when the shell handles a command and when you open scrollback. A single burst that scrolls **more than a full screen at once** (for example a very long `LIST`) may not record every line in the middle.
+- If the server is unreachable, `C=+CTRL+F5`/`F7` do nothing and you stay at the local prompt.
