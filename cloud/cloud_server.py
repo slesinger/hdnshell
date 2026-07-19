@@ -168,6 +168,18 @@ class C64Server:
                     response_data = CommandHandler.handle_keypress(data)
                 elif cmd_id == CommandID.TEXT_INPUT:
                     response_data = CommandHandler.handle_text_input(data, session_id)
+                    if response_data:
+                        resp = CommandHandler.create_response(
+                            response_type, response_data
+                        )
+                        # Explicit end-of-reply marker: the wedge's SOCKET_READ
+                        # loop watches for this $00 to stop immediately instead
+                        # of guessing completion via a quiet-gap retry window
+                        # (bank03.asm hsh_prlp). Scoped to this one wire path
+                        # only -- create_response's stripped format (and its
+                        # tests) stay untouched for every other response type.
+                        return resp + b"\x00"
+                    return None
                 elif cmd_id == CommandID.COMMAND:
                     # Local-shell commands (screen save/restore via DMA)
                     response_data = CommandHandler.handle_local_command(

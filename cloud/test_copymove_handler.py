@@ -465,6 +465,120 @@ class TestUciToUci:
         assert resp == "?CP/MV DOES NOT SUPPORT DIRECTORIES: /flash/bin"
 
 
+class TestDiskImageDestination:
+    """cp/mv where the destination is a .d64/.d71/.d81 sitting on the UCI
+    filesystem: the Ultimate reports it as type=file in its parent's MLSD
+    listing (see FakeFTP.seed_file), so without special-casing, `cp x.prg
+    games.d64` would silently overwrite the whole image instead of copying
+    x.prg into it."""
+
+    def test_cp_bare_disk_image_name_copies_into_it_not_over_it(self, monkeypatch):
+        ftp = FakeFTP()
+        ftp.seed_file("/sd/home/game.prg", b"1234")
+        ftp.seed_dir("/flash/bin")
+        ftp.seed_file("/flash/bin/games.d64", b"original-image-bytes")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(520, "/sd/home")
+        resp = handler.handle("cp game.prg /flash/bin/games.d64", 520)
+
+        assert resp == "OK: copied 1 file(s)"
+        assert ("/flash/bin/games.d64/game.prg", b"1234") in ftp.stor_calls
+        # the image itself must be untouched, not clobbered with game.prg's bytes
+        assert ftp.files["/flash/bin/games.d64"] == b"original-image-bytes"
+
+    def test_cp_explicit_path_inside_disk_image(self, monkeypatch):
+        ftp = FakeFTP()
+        ftp.seed_file("/sd/home/game.prg", b"1234")
+        ftp.seed_file("/flash/bin/games.d64", b"original-image-bytes")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(521, "/sd/home")
+        resp = handler.handle("cp game.prg /flash/bin/games.d64/renamed.prg", 521)
+
+        assert resp == "OK: copied 1 file(s)"
+        assert ("/flash/bin/games.d64/renamed.prg", b"1234") in ftp.stor_calls
+
+    def test_cp_glob_into_disk_image(self, monkeypatch):
+        ftp = FakeFTP()
+        ftp.seed_file("/sd/home/a.prg", b"1")
+        ftp.seed_file("/sd/home/b.prg", b"22")
+        ftp.seed_file("/flash/bin/games.d64", b"original-image-bytes")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(522, "/sd/home")
+        resp = handler.handle("cp *.prg /flash/bin/games.d64", 522)
+
+        assert resp == "OK: copied 2 file(s)"
+        assert ("/flash/bin/games.d64/a.prg", b"1") in ftp.stor_calls
+        assert ("/flash/bin/games.d64/b.prg", b"22") in ftp.stor_calls
+
+    def test_cp_out_of_disk_image_to_plain_directory(self, monkeypatch):
+        # Source side needed zero code changes -- cwd-ing into a .d64 was
+        # already generic behavior, this just confirms it end-to-end.
+        ftp = FakeFTP()
+        ftp.seed_file("/flash/bin/games.d64/game.prg", b"5678")
+        ftp.seed_dir("/temp")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(523, "/sd/home")
+        resp = handler.handle("cp /flash/bin/games.d64/game.prg /temp/game.prg", 523)
+
+        assert resp == "OK: copied 1 file(s)"
+        assert ("/temp/game.prg", b"5678") in ftp.stor_calls
+
+    def test_cp_into_unreachable_disk_image_gives_clear_error_not_overwrite(
+        self, monkeypatch
+    ):
+        ftp = FakeFTP()
+        ftp.seed_file("/sd/home/game.prg", b"1234")
+        ftp.seed_file("/flash/bin/broken.d64", b"original-image-bytes")
+        ftp.fail_cwd.add("/flash/bin/broken.d64")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(524, "/sd/home")
+        resp = handler.handle("cp game.prg /flash/bin/broken.d64", 524)
+
+        assert resp == "?CANNOT ENTER DISK IMAGE: /flash/bin/broken.d64"
+        assert ftp.files["/flash/bin/broken.d64"] == b"original-image-bytes"
+        assert ftp.stor_calls == []
+
+    def test_cp_overwriting_plain_file_destination_still_works(self, monkeypatch):
+        # Regression: a non-image existing file at the destination must
+        # still be overwritten in place exactly like before this change.
+        ftp = FakeFTP()
+        ftp.seed_file("/sd/home/game.prg", b"new")
+        ftp.seed_file("/temp/game.prg", b"stale")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(525, "/sd/home")
+        resp = handler.handle("cp game.prg /temp/game.prg", 525)
+
+        assert resp == "OK: copied 1 file(s)"
+        assert ftp.files["/temp/game.prg"] == b"new"
+
+    def test_mv_bare_disk_image_name_moves_into_it(self, monkeypatch):
+        ftp = FakeFTP()
+        ftp.seed_file("/sd/home/game.prg", b"1234")
+        ftp.seed_file("/flash/bin/games.d64", b"original-image-bytes")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(526, "/sd/home")
+        resp = handler.handle("mv game.prg /flash/bin/games.d64", 526)
+
+        assert resp == "OK: moved 1 file(s)"
+        assert ftp.files["/flash/bin/games.d64/game.prg"] == b"1234"
+        assert "/sd/home/game.prg" not in ftp.files
+        assert ftp.files["/flash/bin/games.d64"] == b"original-image-bytes"
+
+
 class TestUciWorkspace:
     def _ws_session(self, session_id, dos_cwd, net_cwd=""):
         update_session_state(
@@ -562,6 +676,23 @@ class TestUciWorkspace:
         assert "1 failed" in resp
         assert (tmp_path / "greet.prg").read_bytes() == b"world"
         assert "/sd/home/greet.prg" not in ftp.files
+
+    def test_cp_workspace_to_uci_bare_disk_image_name_copies_into_it(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.setattr(copymove_handler, "WORKSPACE_DIR", str(tmp_path))
+        (tmp_path / "greet.prg").write_bytes(b"world")
+        ftp = FakeFTP()
+        ftp.seed_file("/sd/home/games.d64", b"original-image-bytes")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        self._ws_session(606, "/sd/home", net_cwd="")
+        resp = handler.handle("cp n:greet.prg games.d64", 606)
+
+        assert resp == "OK: copied 1 file(s)"
+        assert ftp.files["/sd/home/games.d64/greet.prg"] == b"world"
+        assert ftp.files["/sd/home/games.d64"] == b"original-image-bytes"
 
 
 class TestWorkspaceToWorkspace:
@@ -669,6 +800,28 @@ class TestCsdbSource:
 
         assert resp == "OK: copied 1 file(s)"
         assert (tmp_path / "dest.prg").read_bytes() == b"hi"
+
+    def test_cp_from_csdb_into_disk_image_copies_into_it(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(copymove_handler, "WORKSPACE_DIR", str(tmp_path))
+
+        class FakeCSDB:
+            def _extract_matching_files(self, pattern, session_id):
+                p = tmp_path / "extracted.prg"
+                p.write_bytes(b"demo")
+                return (["Copied extracted.prg to /tmp/hdnshell"], [p])
+
+        ftp = FakeFTP()
+        ftp.seed_file("/flash/bin/games.d64", b"original-image-bytes")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        handler._csdb = FakeCSDB()
+        update_session_state(805, dos_cwd="/flash/bin", client_ip="1.2.3.4")
+
+        resp = handler.handle("cp c:extracted.prg /flash/bin/games.d64", 805)
+
+        assert ftp.files["/flash/bin/games.d64/extracted.prg"] == b"demo"
+        assert ftp.files["/flash/bin/games.d64"] == b"original-image-bytes"
 
 
 class TestCsdbCpUnchangedAfterSplit:

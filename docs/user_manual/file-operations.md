@@ -42,7 +42,21 @@ A wildcard (`*`/`?`) source requires an existing directory as the destination �
 
 CSDB's own single-argument `cp <pattern>` (download straight to `/temp` while browsing a release) is unchanged — see [CSDB](csdb.md). Likewise the network drive's single-argument `cp <name>` (push straight to `/temp`) still works exactly as before; the two-argument forms above are additive.
 
-Requires the HDN Server to be running; errors look like `?FTP FAILED: ...`, `?NO CLIENT IP - cannot reach C64U`, `?ACCESS DENIED - outside workspace`, `?NOTHING MATCHED: <pattern>`, or `?CP/MV DOES NOT SUPPORT DIRECTORIES: <path>` (the name matched a directory, not a file).
+Requires the HDN Server to be running; errors look like `?FTP FAILED: ...`, `?NO CLIENT IP - cannot reach C64U`, `?ACCESS DENIED - outside workspace`, `?NOTHING MATCHED: <pattern>`, `?CP/MV DOES NOT SUPPORT DIRECTORIES: <path>` (the name matched a directory, not a file), or `?CANNOT ENTER DISK IMAGE: <path>` (the destination looks like a `.d64`/`.d71`/`.d81` but couldn't be opened as one — nothing is overwritten in that case).
+
+### Copying Into and Out of Disk Images
+
+`cp`/`mv` can reach *inside* an existing `.d64`/`.d71`/`.d81` disk image directly — **no `mnt` needed.** An existing image counts as a directory: naming it as the destination copies the file inside (keeping its own name), and naming a file inside it as the source copies straight out. This works for both `cp` and `mv`, and for wildcard sources too.
+
+```
+cp game.prg games.d64                 copy game.prg into games.d64, same name
+cp game.prg games.d64/newname.prg     copy in, renamed to "newname.prg"
+cp *.prg games.d64                    copy every .prg in the current dir into games.d64
+cp games.d64/game.prg /temp           copy game.prg back out of the image, into /temp
+mv oldgame.prg games.d64              move (not copy) into the image
+```
+
+The image itself is never overwritten by this — only its contents change. `.dnp` isn't supported this way (see [Creating Disk Images](dos.md#creating-disk-images-mkdisk)). If you'd rather work with the image's contents the classic way — `LOAD"$",8`, `LOAD"name",8`, `SAVE` — mount it to a drive instead; see [Mounting and Unmounting Disk Images](dos.md#mounting-and-unmounting-disk-images).
 
 ## Saving and Loading Arbitrary Memory
 

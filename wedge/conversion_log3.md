@@ -3239,3 +3239,127 @@ those still print "NOT SUPPORTED ON IEC" as before; `#h`/`#t`/`#f`/`#u`/`#v` sti
 
 **HW result (Honza, 2026-07-19): "Works perfectly."** Confirmed on real hardware. `docs/user_manual/dos.md`'s
 "Current Device" section updated to document the new fresh-boot default. NOT committed.
+
+## Step 31 — explicit end-of-reply marker for the chat/AI path (built+byte-verified, awaiting HW test)
+
+**Problem (Honza, UX report):** after `tutorials`, `i:`, `m:`, or any unrecognized command (all four
+route through `hsh_body`'s AI/chat server-forward -- confirmed by tracing `hondani_err` ->
+`hsh_dispatch` -> `hsh_body`; the old bank2 `hn_*` copy is dead, unreachable since HONDANI's keyword
+path now short-circuits with an immediate `rts`), the reply prints correctly but READY doesn't appear
+for roughly another second. Root cause: `hsh_rd`'s "is there more?" loop kept a `$cf24 = $20` (32)
+quiet-gap retry window running *after* the last real chunk, each retry a full SOCKET_READ round-trip
+through the UCI hardware -- pure guesswork, because the wire carried no signal for "reply is complete."
+Checked `cloud_server.py`: every console-0 TEXT_INPUT reply is exactly one `sendall()` (never streamed
+in paused chunks), so the guesswork was pure overhead, not insurance against genuine mid-reply pauses.
+(Separately diagnosed but NOT part of this step: `ll` on an empty directory has a different, unrelated
+~0.85s delay -- `b4_read_dir_stream`'s single bounded first-packet DATA_AV wait timing out because no
+packet is ever sent for zero entries. Deferred to a follow-up step.)
+
+**Fix (Honza's steer: "an explicit end of the response" instead of shrinking the guess-window):**
+- **Server** (`cloud/cloud_server.py`, console-0 TEXT_INPUT branch only): appends a real `$00`
+  end-of-reply marker after the response bytes. Scoped to this one wire path -- `create_response`'s
+  existing stripped-null format (and its tests, e.g. `test_petscii_response_is_not_null_terminated_on_wire`)
+  stays untouched for KEYPRESS, COMMAND, and every server-side console (1-10, incl. console-10
+  code-chat). New test `test_text_input_response_ends_with_null_terminator` added; full suite green.
+- **Wedge** (`bank03.asm`, bank3 SS-freed pocket, $80F8): new `hsh_putc` -- the byte sink `hsh_prlp`
+  calls to CHROUT each reply byte. On seeing `$00`, it does NOT print it; instead it pops its own
+  return address (`pla`/`pla`, a tail-redirect) so control never goes back to `hsh_prlp`'s `jmp
+  hsh_prlp`, drains any stray trailing bytes in the current packet (none expected -- the marker is
+  always last), accepts, and jumps straight to `hsh_okcl` -- skipping the whole retry loop entirely.
+  Byte-neutral at the call site: only the `jsr $ffd2` operand in `hsh_prlp` was retargeted to `jsr
+  hsh_putc` (same 3 bytes), so nothing else in bank3 shifts. `hsh_prdn`'s fallback quiet-gap window
+  (for an older server that never sends the marker) was also shortened `$20`->`$08` (Honza's call) --
+  same 1-byte immediate operand, no shift. hcr_srv/flash_retry (step 29) and every other bank3 call
+  site are untouched.
+
+**Byte-verify** (vs HEAD): exactly 30 bytes differ, all in bank3: `hsh_putc` (26 B new code in the
+previously-zero SS-pocket tail, $80F8-$8113; ~303 B of that pocket remain free), the `hsh_prlp` jsr
+operand (2 B, $9AAF-$9AB0), and the `hsh_prdn` immediate (1 B, $9AB8). Banks 0/1/2/4/5/6/7 and all
+other bank3 code byte-for-byte identical. `.errorif` guards hold (fill still lands exactly on $8241,
+monitor header intact).
+
+**HW test asks (31).** Arm HDN with the rebuilt cartridge AND the updated `cloud_server.py` running
+(this step needs BOTH sides deployed together -- an old server won't send the marker, but the wedge
+falls back gracefully, just slower, not broken). (1) SPEED: `tutorials`, `i:hi`, `m:dir`, and a
+made-up/unrecognized command (AI ?ERROR path) should all now return to READY immediately after the
+reply is printed, no more ~1s pause. (2) CORRECTNESS: replies must print complete and un-truncated
+(compare against a known multi-line tutorials/chat reply). (3) REGRESSION: `ll` (both non-empty and
+empty dir -- empty dir's own delay is untouched by this step, expected), `cd`/`pwd`/`status`/`#`/
+`time`, run-by-name + `/flash/bin` fallback (step 29), ML monitor, TASS/TMP, stock RR sweep all
+intact. (4) MIXED-VERSION SANITY (optional but useful): point the cartridge at an OLD (pre-step-31)
+server if one's handy -- chat/AI should still work, just with the old ~short delay (now capped at 8
+retries instead of 32), never hang.
+
+## Step 32 — run-by-name: disable the cart before executing a loaded PRG (built+byte-verified, awaiting HW test)
+
+**Bug (Honza, real-hardware report):** `amica.prg` (a real machine-code paint program) DMA+runs
+correctly via the Ultimate's own menu, but shows a visibly different/corrupted screen right after
+launch when run via the wedge's type-a-name feature (steps 2d/3a/3b). A trivial BASIC-only test PRG
+was unaffected either way.
+
+**Root cause:** the RR cartridge is banked into $8000-$9FFF (and $A000-$BFFF in 16K mode) via
+`$DE00` for as long as the wedge is active -- it has to be, since bank1's keyword-scanner splice
+lives in that banked ROM and must stay resident to catch the next typed line. `rf_loader` (bank5,
+step 2) writes a loaded PRG's bytes into real RAM correctly (writes always reach RAM even with ROM
+banked in), then stuffs `"RUN"+CR` into the keyboard buffer. But nothing ever disables the cart
+before BASIC executes that queued RUN -- so if the PRG's own load address falls inside
+$8000-$9FFF/$A000-$BFFF, the CPU reads the cart's ROM there instead of the just-loaded bytes once
+execution reaches that range. Trivial BASIC PRGs (default $0801 load) never touch that range, hence
+the split symptom. This project's own TASS/TMP launcher (bank1 `$9D1D`) already established the fix
+pattern for exactly this class of problem: it does `$DE00=$0A` ("cart off") before jumping into a
+freshly-DMA'd image, hardware-proven working.
+
+**Fix, scoped minimally to fit bank1's ~16 B remaining budget:** `$DE00` writes can only safely
+happen from RAM-resident code (never from the cart ROM bank currently supplying the in-flight
+instruction stream -- confirmed by TASS's own launcher, which copies itself to RAM at `$0170`
+specifically for this reason). The one RAM-resident chokepoint that runs on every typed line *after*
+the whole dispatch chain (incl. run-by-name) has returned, and *before* falling through to BASIC's
+`jmp $e37b` warm start (which will immediately consume a queued `"RUN"+CR`), is `hd_stub` -- copied
+fresh into RAM at $0340 every line from the bank1 `$9E3A` template. It previously did an
+unconditional `lda #$08 / sta $de00` (restore bank1). Changed to: read `$C6` (KERNAL NDX, keyboard
+buffer count) into Y -- `rf_loader`'s RUN-inject always leaves exactly `$C6=4` as its last act before
+returning C=0, and nothing else on this return path touches `$C6` (checked every `$c6`/`$C6` site in
+all 8 banks' sources). If `Y==4`, use `$DE00=$0A` (cart fully off) instead of `$08` (restore bank1).
+Y was chosen over X because the entry comment documents X (stock BASIC error index) as the only
+register that must survive to `hd_pass` on the C=1 path -- Y is already unprotected there (`jsr
+$9b2e` clobbers it freely today).
+
+**Explicitly deferred (byte budget, documented residual risk):** does NOT restore the stock KERNAL
+IERROR vector ($0300/$0301, currently always pointed at this same `hd_stub`) before disabling the
+cart -- would cost ~12 more bytes this bank doesn't have free right now. If a program that gets
+cart-off'd here later returns control to BASIC (well-behaved utilities often do) and BASIC then hits
+a genuine runtime/syntax error, IERROR will still fire into a now-unmapped cart bank and crash. The
+CINV (raster-IRQ) console-switch hook is NOT at risk here -- it already has its own hardware-tested,
+RAM-only self-disarm (checks BASIC's own MSGFLG zero-page byte for "program mode" and restores the
+saved vector without touching any cart bank), and is normally only armed right after typing `HDN`
+anyway, not on every line.
+
+**NOTE:** this step was drafted without a completed second-opinion review -- the Fable5 advisor hit
+its own session limit mid-review (only got as far as opening the source file) and never returned a
+verdict. Proceeded on the primary author's own analysis (full `$c6` cross-bank audit, TASS-precedent
+RAM-only constraint, hand-counted then build-verified byte budget). Flag this if anything looks off
+during HW test -- this step has one fewer set of eyes on it than usual.
+
+**Byte-verify:** vs current tree (HEAD + step 31 uncommitted) -- bank1 differs by exactly 21 bytes:
+20 inside the `hd_stub` pocket ($9E45-$9E58, the tail of the template that changed; $9E3A-$9E44 --
+`sei`/select-bank2/`jsr $9b2e`/`lda #$08` -- is byte-identical) + 1 byte earlier at $9D8C, which is
+`hd_stubcopy`'s own `ldy #hd_stub_end-hd_stub-1` copy-count immediate ($16->$1E, i.e. 22->30, an
+automatic KickAssembler recompute for the now-31-byte template, not a hand edit). `.errorif` guards
+(`hd_stub_end` must land exactly on $9E59) held with zero bytes to spare. Banks 0, 2-7 byte-for-byte
+untouched (confirmed via `git diff --stat`).
+
+**HW test asks (32).** Arm HDN with the rebuilt cartridge. (1) THE BUG ITSELF: type a real
+machine-code program's name (e.g. `amica.prg`, or any known-good ML/game/demo, ideally one whose
+load address is known to fall in $8000-$9FFF or $A000-$BFFF) from its directory -> it should now run
+correctly, matching a manual Ultimate-menu DMA+run of the same file. (2) TRIVIAL CASE UNCHANGED: a
+simple BASIC-only PRG still runs fine (should have worked before and after -- confirms no
+regression). (3) POST-RUN STATE: after a cart-off'd program runs, the wedge should be inert (no `HDN`
+commands respond) until the user retypes `HDN` to re-arm -- expected/by design, confirm it matches
+that expectation and doesn't look like a hang. (4) REGRESSION: every other run-by-name path (current
+dir, `/flash/bin` fallback), `cd`/`ll`/`pwd`/`status`/`#`/`time`, TASS/TMP, ML monitor, stock RR
+sweep, console-switch (`HDN` then C=+CTRL+digit) all intact -- this touches the single most-executed
+RAM stub in the whole wedge (`hd_stub` runs on literally every typed line), so a regression here
+would be wide-reaching. (5) KNOWN GAP, not expected to be exercised by normal testing but worth
+knowing: if a cart-off'd program returns to BASIC and a *subsequent* line hits a genuine BASIC error,
+expect a crash (documented above, deferred fix) -- don't chase it this round unless it's cheap to
+confirm.

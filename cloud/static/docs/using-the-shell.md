@@ -2,6 +2,8 @@
 
 HDN Shell RR is a wedge inside a Retro Replay cartridge. You type at the ordinary BASIC `READY.` prompt; shell commands are recognized and executed by the cartridge, plain BASIC keeps working as always, and anything neither of them understands is forwarded to the HDN Server's AI chat.
 
+> **Run a program by typing its name.** You don't need `LOAD`/`RUN` or the cartridge's `/`, `^` shortcuts — just type a program's name and press RETURN. The shell finds it (in the current directory, or in the global `/flash/bin` folder), loads it, and runs it. See [Executing Programs](executing_programs.md#just-type-its-name).
+
 ## Commands
 
 `status` — Display the firmware identify string, local IP/netmask/gateway, and whether the HDN Server is reachable.
@@ -16,7 +18,7 @@ HDN Shell RR is a wedge inside a Retro Replay cartridge. You type at the ordinar
 
 `help` — Ask the server a question, or (if unreachable) print a short local pointer.
 
-For directory navigation (`cd`, `pwd`, `ll`/`dir`, `#<device>`), disk images (`mnt`/`umnt`), and file transfer (`mkdir`, `cp`), see [Navigating Disk Drives and Directories](dos.md). For saving/loading raw memory blocks, see [Memory Operations](memory-operations.md).
+For directory navigation (`cd`, `pwd`, `ll`/`dir`, `#<device>`), disk images (`mkdisk`, `mnt`/`umnt`), and file management (`mkdir`, `cp`, `mv`, `del`), see [Navigating Disk Drives and Directories](dos.md). For saving/loading raw memory blocks, see [Memory Operations](memory-operations.md).
 
 `ll` and `dir` accept a filter pattern, e.g. `ll outrun*` lists only entries whose name starts with `outrun` (case-insensitive prefix match; the trailing `*` is optional).
 
@@ -51,3 +53,24 @@ One side effect: if you've typed `HONDANI` to arm the [console-switching keys](c
 Pressing `CTRL` while listing directory or viewing long listings will slow down the output for better readability.
 
 `SHIFT+RETURN` - move to next line without executing command on current line.
+
+## Scrollback (Screen History)
+
+The C64 screen only holds 25 lines, so a previous command or its output disappears the moment the screen rolls over. Scrollback lets you page back through everything that has scrolled off — like a terminal's scrollback buffer or `.bash_history`.
+
+| Shortcut | Action |
+|----------|--------|
+| `C=+CTRL+F5` | Page **back** to the previous (older) screen |
+| `C=+CTRL+F7` | Page **forward** to the next (newer) screen |
+| any other key | Return to the live screen and resume typing |
+
+The first `C=+CTRL+F5` snapshots your current screen and shows the most recent stored page (which looks almost identical to what was on screen) — press it again to reach genuinely older content. When you return to the live screen, your prompt and any half-typed line are restored exactly as you left them.
+
+The history itself lives **on the HDN Server**, in `.config/.history`, so it survives resets and power cycles — you can scroll back through days or weeks of sessions. The file is capped at about 100 KB; the oldest lines are dropped as new ones arrive.
+
+### Good to Know
+
+- **Requires the HDN Server** and the `C=+CTRL` keys to be armed — the same conditions as the [console-switching keys](cloud-apps.md#console-switching). They are armed automatically at boot; if they went inactive after a `LOAD` or `RUN`, type `HONDANI` to re-arm them.
+- Scrollback is **view-only** in this version: to re-run an old command, page back to the live screen first, then move the cursor onto the line you want (as usual) and press `RETURN`.
+- History is captured when the shell handles a command and when you open scrollback. A single burst that scrolls **more than a full screen at once** (for example a very long `LIST`) may not record every line in the middle.
+- If the server is unreachable, `C=+CTRL+F5`/`F7` do nothing and you stay at the local prompt.

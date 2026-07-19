@@ -381,9 +381,37 @@ up_done:
 pf_txt:
     .byte $2f, $46, $4c, $41, $53, $48, $2f, $42, $49, $4e, $2f   // "/FLASH/BIN/" (ASCII;
                            //   passes b5_fold unchanged -> UCI case-insensitive match)
-.errorif (* > $8241), "step-3b flash_retry/prep_flash overran the kept $8241 monitor header"
+// Step 31: hsh_putc -- chat/AI reply byte sink for hsh_prlp (bank3 SS-pocket helper).
+// The server now appends an explicit $00 end-of-reply marker after console-0 TEXT_INPUT
+// payloads (cloud_server.py). Printing byte-by-byte via CHROUT as before, EXCEPT: on
+// seeing the $00 marker, discard OUR OWN return address (the two `pla`s undo the
+// `jsr hsh_putc` at the hsh_prlp call site -- classic 6502 tail-redirect) so control
+// never goes back to hsh_prlp's `jmp hsh_prlp`. Instead: drain any stray bytes left in
+// this packet (none expected -- the marker is always the last byte sent), accept it,
+// and finish straight through hsh_okcl -- skipping the whole quiet-gap retry loop that
+// used to add the visible post-output delay on tutorials/i:/m:/unrecognized-command.
+// Byte-neutral at the call site: only the `jsr $ffd2` operand in hsh_prlp was retargeted
+// to `jsr hsh_putc`, so nothing else in bank3 shifts. Falls back to the (now shortened,
+// see hsh_prdn) quiet-gap retry if talking to an older server that never sends the marker.
+hsh_putc:
+    cmp #$00
+    bne hp_print
+    pla                    // discard hsh_putc's own return address (lo)
+    pla                    //   (hi) -- never returns to hsh_prlp's "jmp hsh_prlp"
+hp_drain:
+    lda $df1c
+    and #$80               // DATA_AV -- drain any stray trailing bytes (none expected)
+    beq hp_finish
+    lda $df1e
+    jmp hp_drain
+hp_finish:
+    jsr hsh_fin            // accept this packet -> UCI back to idle
+    jmp hsh_okcl            // done: close socket, C=0 handled (server + wedge step 31)
+hp_print:
+    jmp $ffd2               // tail-call CHROUT; its rts returns to hsh_prlp's "jmp hsh_prlp"
+.errorif (* > $8241), "step-31 hsh_putc overran the kept $8241 monitor header"
     .fill $8241 - *, $00   // remainder of the reclaimed SS pocket (free bank3 reserve)
-.errorif (* != $8241), "step-3b fill did not land on $8241 (monitor header)"
+.errorif (* != $8241), "step-31 fill did not land on $8241 (monitor header)"
 b03_8241:
     jsr $8362              // 20 62 83
     .byte $0D, $20, $20, $41, $44, $44, $52, $20, $41, $52, $20, $58, $52, $20, $59, $52    // data $8244  text: ".  ADDR AR XR YR"
@@ -3140,11 +3168,16 @@ hsh_prlp:
     and #$80               // DATA_AV
     beq hsh_prdn
     lda $df1e
-    jsr $ffd2              // CHROUT (KERNAL -> ($0326)=$F1CA, bank-independent)
+    jsr hsh_putc            // print via CHROUT, UNLESS this is the $00 end-of-reply
+                             // marker (bank3-pocket helper; retarget only, byte-neutral
+                             // vs. the old `jsr $ffd2` -- see hsh_putc for the terminator
+                             // fast-finish that replaces blind quiet-gap retrying)
     jmp hsh_prlp
 hsh_prdn:
     jsr hsh_fin            // status/accept; chunk is out
-    lda #$20               // short gap window now that data has flowed
+    lda #$08               // fallback quiet-gap window (terminator missing, e.g. an
+                            // older server) -- normally unreached now that hsh_putc
+                            // finishes immediately on the $00 marker
     sta $cf24
     jmp hsh_rd             // next chunk
 hsh_nodat:

@@ -1,8 +1,34 @@
 # Executing Programs
 
-The most typical user path to run a game or a demo is by [navigating](dos.md#navigating-directories) to a D64 image, [mounting](dos.md#mounting-and-unmounting-disk-images) it, loading and running it.
+Because BASIC stays in place with HDN Shell RR, running programs works exactly as on a stock machine — plus the Retro Replay cartridge's fast-load shortcuts. But the easiest way of all is new: **just type the program's name.**
 
-Because BASIC stays in place with HDN Shell RR, running programs works exactly as on a stock machine — plus the Retro Replay cartridge's fast-load shortcuts.
+## Just Type Its Name
+
+The fastest way to run a program is to **type its name at the `READY.` prompt and press RETURN** — no `LOAD`, no `RUN`, no `/` or `↑` prefix. The shell finds the file, loads it into memory, and runs it for you, PC-DOS style:
+
+```
+outrun
+```
+
+If a file by that name exists, it loads and runs. A few things to know:
+
+- **Case-insensitive.** `OUTRUN`, `outrun`, and `OutRun` all match the same file.
+- **Type the exact filename, including any extension** — for example `game.prg`. (The shell does not guess extensions; type the name as it appears in the directory listing.)
+- Works for both BASIC and machine-code programs — the shell reads each program's own load address and starts it correctly.
+- Just a program name is a single word. If what you type has spaces (or isn't a real file), it's treated normally — as BASIC, or forwarded to [AI chat](ai-assistance.md).
+
+### Where the shell looks
+
+1. **The current directory** on the selected Ultimate drive (`#h`/`#t`/`#f`). Browse it first with [`cd`](dos.md#navigating-directories) and [`ll`](using-the-shell.md).
+2. **`/flash/bin`** — a global "programs" folder on the Ultimate's flash. If the name isn't in the current directory, the shell looks in `/flash/bin` next, on **any** drive.
+
+That second step is the genuinely handy part: copy your favourite tools and games into `/flash/bin` once, and you can launch them **by name from anywhere** — no mounting disk images, no navigating directories first. It works just like a command `PATH` on a PC. See [file operations](file-operations.md) for how to copy programs into `/flash/bin`.
+
+If the name is found in neither place, nothing is loaded and the line is handled normally.
+
+## The Classic Way
+
+You can still run a game or demo the traditional way: [navigate](dos.md#navigating-directories) to a D64 image, [mount](dos.md#mounting-and-unmounting-disk-images) it, then load and run.
 
 ## Load and Run
 

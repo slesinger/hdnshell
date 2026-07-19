@@ -454,6 +454,17 @@ MAX_URL_LEN = 2048
 MAX_BOOKMARKS = 50
 MAX_HISTORY = 50
 
+# Address-bar heuristic: does this look like a domain/URL, or a search query?
+# Covers dotted domains, bare IPv4 (LAN HDN Server addresses), and localhost —
+# a trailing TLD isn't required for the latter two.
+_DOMAIN_RE = re.compile(
+    r"^("
+    r"localhost"
+    r"|(\d{1,3}\.){3}\d{1,3}"
+    r"|[a-zA-Z0-9][a-zA-Z0-9\-.]*\.[a-zA-Z]{2,}"
+    r")(:[0-9]+)?(/.*)?$"
+)
+
 # ── Help screen content ──────────────────────────────────────────────
 HELP_LINES = [
     "=== HDNSH WEB BROWSER HELP   F8=close ===",
@@ -475,6 +486,7 @@ HELP_LINES = [
     "",
     " URL INPUT MODE",
     " Type URL    Enter address",
+    " Type words  Search the web (no dot = search)",
     " RETURN      Navigate",
     " STOP        Cancel",
     " LEFT/RIGHT  Move cursor",
@@ -780,12 +792,15 @@ class WebBrowserConsole(ServerConsole):
     # ── URL INPUT mode ───────────────────────────────────────────────
     def _key_url_input(self, key: int, mod: int):
         if key == KEY_RETURN:
-            # Navigate to entered URL
-            url = self.url_input.strip()
-            if url:
-                # Add https:// if no scheme
-                if not url.startswith(("http://", "https://")):
-                    url = "https://" + url
+            # Navigate to entered URL, or treat as a search query (omnibox-style)
+            text = self.url_input.strip()
+            if text:
+                if text.startswith(("http://", "https://", "search:")):
+                    url = text
+                elif self._looks_like_url(text):
+                    url = "https://" + text
+                else:
+                    url = "search:" + text
                 self.mode = MODE_BROWSE
                 self._navigate(url)
             return
@@ -948,7 +963,7 @@ class WebBrowserConsole(ServerConsole):
             if self.bookmarks and 0 <= self.bookmark_sel < len(self.bookmarks):
                 url = self.bookmarks[self.bookmark_sel]
                 if url:
-                    if not url.startswith(("http://", "https://")):
+                    if not url.startswith(("http://", "https://", "search:")):
                         url = "https://" + url
                     self.mode = MODE_BROWSE
                     self._navigate(url)
@@ -1166,7 +1181,10 @@ class WebBrowserConsole(ServerConsole):
 
         # Fetch and render
         try:
-            page_data = self._fetch_page(url)
+            if url.startswith("search:"):
+                page_data = self._fetch_search_results(url[len("search:") :])
+            else:
+                page_data = self._fetch_page(url)
             tab.title = page_data.get("title", url)[:20] or url[:20]
             tab.bg_color = self._css_bg_to_c64_color(
                 page_data.get("bg_color", "#ffffff")
@@ -1236,6 +1254,100 @@ class WebBrowserConsole(ServerConsole):
         Each element: {tag, text, href, alt, list_index}.
         """
         return _pw_worker.fetch_page(url)
+
+    @staticmethod
+    def _fetch_search_results(query: str) -> dict:
+        """Run a web search via SerpAPI and return page-shaped data.
+
+        Returns the same {title, bg_color, elements} shape a Playwright
+        fetch would, so results reuse _html_to_c64_lines()'s normal
+        rendering/link pipeline instead of a separate renderer.
+        """
+        query = query.strip()
+        if not query:
+            raise ValueError("Empty search query")
+
+        from sdk.config_manager import read_config
+
+        api_key = read_config().get("SERPAPI_API_KEY", "")
+        if not api_key:
+            raise RuntimeError(
+                "Web search needs a SerpAPI key — set SERPAPI_API_KEY in Settings."
+            )
+
+        from serpapi import GoogleSearch
+
+        search = GoogleSearch({"q": query, "api_key": api_key, "num": 10})
+        results = search.get_dict()
+        if "error" in results:
+            raise RuntimeError(f"Search failed: {results['error']}")
+
+        elements = [
+            {
+                "tag": "H2",
+                "text": f"Search: {query}",
+                "href": None,
+                "alt": None,
+                "list_index": -1,
+            },
+            {"tag": "HR", "text": "", "href": None, "alt": None, "list_index": -1},
+        ]
+
+        organic = results.get("organic_results", [])
+        for r in organic[:10]:
+            link = r.get("link") or ""
+            if not link:
+                continue
+            title = (r.get("title") or link).strip()
+            snippet = (r.get("snippet") or "").strip()
+            elements.append(
+                {
+                    "tag": "BLOCK_START",
+                    "text": "DIV",
+                    "href": None,
+                    "alt": None,
+                    "list_index": -1,
+                }
+            )
+            elements.append(
+                {"tag": "A", "text": title, "href": link, "alt": None, "list_index": -1}
+            )
+            if snippet:
+                elements.append(
+                    {
+                        "tag": "#text",
+                        "text": snippet,
+                        "href": None,
+                        "alt": None,
+                        "list_index": -1,
+                    }
+                )
+            elements.append(
+                {
+                    "tag": "BLOCK_END",
+                    "text": "DIV",
+                    "href": None,
+                    "alt": None,
+                    "list_index": -1,
+                }
+            )
+
+        if len(elements) == 2:  # only header + HR — no results survived
+            elements.append(
+                {
+                    "tag": "#text",
+                    "text": "No results found.",
+                    "href": None,
+                    "alt": None,
+                    "list_index": -1,
+                }
+            )
+
+        return {
+            "title": f"Search: {query}"[:60],
+            "bg_color": "#000000",
+            "elements": elements,
+        }
 
     # =================================================================
     #  HTML → C64 CONTENT LINES CONVERTER
@@ -1648,8 +1760,8 @@ class WebBrowserConsole(ServerConsole):
             0, (SCREEN_COLS - len(header)) // 2, header, COL_WHITE, reverse=True
         )
 
-        # Row 2: "URL:" label
-        self._put_text(2, 0, "URL:", COL_URL_LABEL_FG)
+        # Row 2: label
+        self._put_text(2, 0, "URL or google search phrase", COL_URL_LABEL_FG)
 
         # Row 3: URL input field
         # Show as much URL as fits, with cursor
@@ -1947,6 +2059,13 @@ class WebBrowserConsole(ServerConsole):
             send_vic_colors(border & 0x0F, background & 0x0F)
         except Exception as e:
             logger.warning(f"Could not send VIC colours: {e}")
+
+    @staticmethod
+    def _looks_like_url(text: str) -> bool:
+        """Address-bar heuristic: True for 'example.com/x', False for a search query."""
+        if " " in text:
+            return False
+        return bool(_DOMAIN_RE.match(text))
 
     @staticmethod
     def _css_bg_to_c64_color(css_color: str) -> int:

@@ -76,7 +76,7 @@ Syntax: `mkdisk <name>.<type>[,<tracks>][,<diskname>]`
 - `mkdisk archive.dnp,128,BACKUP` — create a 128-track DNP (a DNP **requires** a track count, 1–255)
 - `mkdisk /usb0/tools/util.d64` — create at an absolute path
 
-Track counts apply only where the format allows them: D64 accepts 35 (default) or 40; D71 (70) and D81 (160) are fixed, so any track value is ignored; DNP requires one. When no disk label is given, the Ultimate uses the file's name. Once created, mount the image with `mnt` (below).
+Track counts apply only where the format allows them: D64 accepts 35 (default) or 40; D71 (70) and D81 (160) are fixed, so any track value is ignored; DNP requires one. When no disk label is given, the Ultimate uses the file's name. Once created, mount the image with `mnt` (below) — or skip mounting entirely and use `cp`/`mv` to put files straight into it, see [Copying Into and Out of Disk Images](file-operations.md#copying-into-and-out-of-disk-images).
 
 ## Mounting and Unmounting Disk Images
 
@@ -88,6 +88,8 @@ The `mnt` command can mount disk images (D64/D71/D81) to a drive 8 or 9. This al
 - `mnt /mydir/myimage.d64` — Mount image absolute from root
 - `umnt` — Unmount the disk image on drive 8 (return to SD card directory)
 - `umnt 9` — Unmount the disk image on drive 9
+
+Mounting is only needed for the classic `LOAD`/`SAVE` workflow. To just move a PRG in or out of an image without mounting it anywhere, use `cp`/`mv` directly on the image — see [Copying Into and Out of Disk Images](file-operations.md#copying-into-and-out-of-disk-images).
 
 ## Creating Directories, Copying Files
 

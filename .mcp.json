@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "commodore64": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/home/honza/projects/c64u-mcp-server",
+        "python",
+        "server.py"
+      ],
+      "env": {
+        "C64U_URL": "http://192.168.1.65"
+      }
+    }
+  }
+}

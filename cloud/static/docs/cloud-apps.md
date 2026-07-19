@@ -17,12 +17,14 @@ Press **C=+CTRL** together with a digit to switch consoles at any time:
 | `C=+CTRL+1` | Local shell | Return to the BASIC prompt with the HDN Shell — your screen is restored exactly as you left it. |
 | `C=+CTRL+2` | [File Editor](server-file-editor.md) | A full-featured text editor that runs entirely on the server and streams its 40×25 display to the C64. Supports multiple open files (tabs), find & replace, block cut/copy/paste, split-pane view, a file browser, and an embedded shell console. |
 | `C=+CTRL+3` | [Coding Agent](coding-agent.md) | A conversational AI coding assistant powered by a large language model. Describe what you want to build in plain language; the agent writes the C source code, compiles it with the oscar64 compiler, and uploads the resulting `.prg` directly to your C64 Ultimate to run — all without leaving the C64. |
-| `C=+CTRL+4` | [Web Browser](web-browser.md) | A text-mode web browser that uses a headless Chromium browser (Playwright) on the server side to fetch and fully render pages — including JavaScript — then converts the result to PETSCII screen codes for the 40×25 display. Supports multiple tabs, bookmarks, history, and link navigation. |
+| `C=+CTRL+4` | [Web Browser](web-browser.md) | A text-mode web browser that uses a headless Chromium browser (Playwright) on the server side to fetch and fully render pages — including JavaScript — then converts the result to PETSCII screen codes for the 40×25 display. The address bar doubles as a [web search](web-browser.md#web-search) box (Google results via SerpAPI) when you type a phrase instead of a URL. Supports multiple tabs, bookmarks, history, and link navigation. |
 | `C=+CTRL+5` | [Telegram Chat](telegram-chat.md) | A Telegram client that connects to the Telegram network using the MTProto protocol (Telethon library). Browse your chat list, read messages, compose and send replies, and manage contacts — all from the C64 keyboard. |
 | `C=+CTRL+6` | [RSS Reader](rss-reader.md) | An RSS/Atom feed reader that fetches, parses, and displays news articles in a clean 40-column layout. Comes pre-loaded with Hacker News, BBC News, and CSDb Releases feeds. You can add, remove, and enable/disable feeds from the built-in feed directory. |
 | `C=+CTRL+7` | [Wikipedia Browser](wikipedia-browser.md) | A dedicated Wikipedia reader that strips pages down to essential text and links for the 40×25 PETSCII display. Supports multi-language search, link navigation, page history, and a table of contents overlay (Ctrl+T) for quick section jumping. |
 
 Switching is instantaneous. The server keeps each console's state alive so you can freely jump between them and return to exactly where you left off. When you switch away from the shell, the server saves your C64 screen and restores it when you come back with `C=+CTRL+1`.
+
+The same `C=+CTRL` chord also drives **scrollback**: `C=+CTRL+F5`/`F7` page back and forth through the local shell's screen history. See [Scrollback](using-the-shell.md#scrollback-screen-history).
 
 ## Good to Know
 

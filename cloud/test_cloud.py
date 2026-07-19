@@ -345,6 +345,26 @@ class TestServerIntegration:
 
         assert len(response) > 0
 
+    def test_text_input_response_ends_with_null_terminator(self, running_server):
+        """Console-0 TEXT_INPUT replies carry an explicit $00 end-of-reply
+        marker (unlike every other response type) so the wedge's SOCKET_READ
+        loop can stop the instant it sees it instead of guessing completion
+        via a quiet-gap retry window. See cloud_server.py's TEXT_INPUT branch
+        and bank03.asm's hsh_prlp."""
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.settimeout(self.SOCKET_TIMEOUT)
+        client.connect((running_server.host, running_server.port))
+
+        packet = bytes([0xFE, 0x02, 0x54, 0x45, 0x53, 0x54, 0x00])
+        client.send(packet)
+
+        response = client.recv(1024)
+
+        assert response.endswith(b"\x00")
+        # exactly one trailing null -- the payload itself must not be
+        # truncated or double-terminated
+        assert response[-2:-1] != b"\x00" or len(response) == 1
+
     @pytest.mark.skip(
         reason=(
             "SERVER_CMD_SAVE_SCREEN/RESTORE_SCREEN (console 0 COMMAND path) "

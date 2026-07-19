@@ -5,15 +5,13 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
-The server (cloud directory) has an LLM agent that has a tool that can send key strokes to the C64. There is also tool to read the memory $0400-$07f8 and hence it can see what is on the screen. It makes the agent fully capable of controlling the c64, actually doing stuff. I can ask "list directory for me" and it should be able to do it. For some reason this tool is not being called. Investigate the description of the tool and the prompt around. In addition, suggest how to make the harness around this agent to get all capabilities of working with the C64 ultimate complete. There is documentation rest_api_calls that describes what is possible to control over API. Suggest improvments to existing tools and also you can suggest new tools and agent improvements. The goal is to have a fully capable agent that can control the C64 and do anything that a human can do on it, including reading the screen, sending keystrokes, and interacting with the file system.
-Generate ideas of improvements, go wild, I will tell you what is good idea and what is not worth doing.
-Ask me any questions before you proceed to ensure you understand the task well.
-Use cheaper subagent when possible to save tokens.
+Copy PRG file between D64 and UCI
 
 
+Debug amica.prg DMA loading
 
 
-
+HDN Server web browser can navigate to pages if you know the URL of the page. But it is not possible to use google search to find things. Recommend how to implement a simplified page (such that can be displayed in the HDN server browser text mode) where user can simply search and get results like if it is simplified google search. There should be a good search engine behind this. Either to proxy google.com search more so it actually works, or to use search API such as Tavily.
 
 
 ------
@@ -23,37 +21,8 @@ QUEUE
 
 
 
-HDN Server web browser can navigate to pages if you know the URL of the page. But it is not possible to use google search to find things. Recommend how to implement a simplified page (such that can be displayed in the HDN server browser text mode) where user can simply search and get results like if it is simplified google search. There should be a good search engine behind this. Either to proxy google.com search more so it actually works, or to use search API such as Tavily.
 
-
-
-
-
-
-amica.prg
-
-
-
-
-jak kopirovat prg z a do d64
-
-
-C64 ultimate  MCP tools for coding agent
-
-
-There is user experience issue. The users has to wait an extra second after some commands are executed. The scenario is: user types command, command is executed, user sees full output, user can only see READY prompt after a second.
-Quick commands where the wait time is not observed:
-- ll (after non-empty directory listing)
-- cd
-- pwd
-- status
-Slow commands where the wait time is observed:
-- ll (after empty directory listing)
-- tutorials
-- i:hi
-- m:dir
-- unknown command that is to server will respond with ?ERROR immediately
-
+Kdyz nekdo nema sd, tak by se home melo brat v usb0/home
 
 
 

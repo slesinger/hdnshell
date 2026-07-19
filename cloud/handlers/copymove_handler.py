@@ -169,6 +169,44 @@ def _nothing_matched(ftp, src_abs: str, src_rest: str, src_base: str) -> str:
     return f"?NOTHING MATCHED: {src_rest}"
 
 
+_DISK_IMAGE_EXTS = (".d64", ".d71", ".d81")
+
+
+def _is_disk_image_name(name: str) -> bool:
+    return os.path.splitext(name)[1].lower() in _DISK_IMAGE_EXTS
+
+
+def _dst_is_dir_like(ftp, dst_abs: str, dst_facts):
+    """Returns (is_dir_like, error). is_dir_like is True when dst_abs should
+    be treated as a copy-INTO target: a real directory (MLSD type=dir), or
+    an existing .d64/.d71/.d81 disk image.
+
+    The Ultimate's FTP server reports a disk image as type=file in its
+    parent directory's MLSD listing (confirmed against real hardware -- see
+    the test doubles in test_copymove_handler.py), but DOS_CMD_CHANGE_DIR
+    documents images as enterable sub-filesystems, and cwd-ing into one
+    already works for the SOURCE side of cp/mv with no special-casing at
+    all. So here too: don't trust the MLSD type fact, probe with a real cwd.
+    .dnp is deliberately excluded -- it's a native partition format, not
+    documented as IEC-mountable like d64/d71/d81, and whether FTP can enter
+    one the same way is untested.
+
+    error is set (and is_dir_like False) only when the name LOOKS like a
+    disk image but cwd-ing into it failed -- the caller must stop there
+    rather than fall through to the ordinary overwrite-the-file path, which
+    would silently replace the whole disk image with the source's raw bytes.
+    """
+    if dst_facts and dst_facts.get("type") == "dir":
+        return True, None
+    if dst_facts and dst_facts.get("type") == "file" and _is_disk_image_name(dst_abs):
+        try:
+            ftp.cwd(dst_abs)
+            return True, None
+        except ftplib.all_errors:
+            return False, f"?CANNOT ENTER DISK IMAGE: {dst_abs}"
+    return False, None
+
+
 def _ftp_stat_exact(ftp, abspath: str):
     """MLSD-stat one path -- used for dest-is-dir checks and move-
     verification. Root always "exists". Exact case wins first; falls back
@@ -287,7 +325,9 @@ class CopyMoveHandler(BaseHandler):
             with ftplib.FTP(host, timeout=10) as ftp:
                 ftp.login()
                 dst_facts = _ftp_stat_exact(ftp, dst_abs)
-                dst_is_dir = bool(dst_facts and dst_facts.get("type") == "dir")
+                dst_is_dir, dst_err = _dst_is_dir_like(ftp, dst_abs, dst_facts)
+                if dst_err:
+                    return dst_err
 
                 try:
                     ftp.cwd(src_dir)
@@ -466,7 +506,9 @@ class CopyMoveHandler(BaseHandler):
             with ftplib.FTP(host, timeout=10) as ftp:
                 ftp.login()
                 dst_facts = _ftp_stat_exact(ftp, dst_abs)
-                dst_is_dir = bool(dst_facts and dst_facts.get("type") == "dir")
+                dst_is_dir, dst_err = _dst_is_dir_like(ftp, dst_abs, dst_facts)
+                if dst_err:
+                    return dst_err
                 if (len(names) > 1 or _has_glob(src_base)) and not dst_is_dir:
                     return _GLOB_DEST_USAGE
 
@@ -571,7 +613,9 @@ class CopyMoveHandler(BaseHandler):
                 with ftplib.FTP(host, timeout=10) as ftp:
                     ftp.login()
                     dst_facts = _ftp_stat_exact(ftp, dst_abs)
-                    dst_is_dir = bool(dst_facts and dst_facts.get("type") == "dir")
+                    dst_is_dir, dst_err = _dst_is_dir_like(ftp, dst_abs, dst_facts)
+                    if dst_err:
+                        return dst_err
                     if is_glob_like and not dst_is_dir:
                         return _GLOB_DEST_USAGE
                     for local_path in local_paths:
