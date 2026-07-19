@@ -74,6 +74,81 @@ _READ_CHUNK = 256
 _WRITE_CHUNK = 256
 
 
+# ----------------------------------------------------------------------
+# Module-level helpers (promoted out of UltimateHandler so copymove_handler.py
+# can reuse them without instantiating a handler; the instance methods below
+# are thin wrappers kept for existing call sites).
+# ----------------------------------------------------------------------
+
+def resolve_uci_abspath(path: str, session_id: int):
+    """Return an absolute path for `path`, or None if it can't be made absolute.
+
+    Absolute paths (leading '/') pass through unchanged. A relative path is
+    joined against this session's UCI DOS current directory, which the wedge
+    sends in the ``\\x01``-framed cwd context (see request_dispatcher). If the
+    path is relative and no valid cwd context is available (un-framed request,
+    or the cartridge's get_path failed and it fell open), returns None so the
+    caller keeps the old absolute-path-required behaviour.
+    """
+    if path.startswith("/"):
+        return path
+    state = get_session_state_copy(session_id)
+    cwd = state.get("dos_cwd")
+    if not cwd or not cwd.startswith("/"):
+        return None
+    # posix-join + normalise so a root cwd ("/") or a trailing slash cannot
+    # produce "//name", and any "." / ".." in the typed name is cleaned up.
+    return posixpath.normpath(cwd.rstrip("/") + "/" + path)
+
+
+def resolve_uci_host(session_id: int):
+    state = get_session_state_copy(session_id)
+    return state.get("client_ip") or network_helper.read_last_c64_ip()
+
+
+def match_ftp_files(ftp, glob):
+    """Return the names in the current FTP dir that are files and match glob.
+
+    Uses MLSD (which tags each entry file/dir) when the server supports it so
+    directories are excluded; falls back to NLST (no type info) when it does
+    not -- in that case DELE simply fails on a directory and it is skipped.
+
+    Matching mirrors `file` (stat_ftp_entries): case-sensitive first, then a
+    case-insensitive fallback when nothing matched exactly -- `ll` shows real
+    case but users retype names in whatever keyboard case is handy.
+    """
+    try:
+        names = [name for name, facts in ftp.mlsd() if facts.get("type") == "file"]
+    except ftplib.all_errors:
+        names = ftp.nlst()
+    matches = [n for n in names if fnmatch.fnmatchcase(n, glob)]
+    if not matches:
+        lowered = glob.lower()
+        matches = [n for n in names if fnmatch.fnmatchcase(n.lower(), lowered)]
+    return matches
+
+
+def stat_ftp_entries(ftp, glob):
+    """MLSD the current dir -> [(name, facts)] for entries matching glob.
+
+    Unlike match_ftp_files this keeps directories (so `file` can say "DIR") and
+    keeps the facts dict (size/modify). Falls back to NLST names with empty
+    facts when the server has no MLSD -- the Ultimate's FTP does support it
+    (hardware-verified), but the fallback costs two lines and keeps `file`
+    working against anything else.
+    """
+    try:
+        listing = [(name, facts) for name, facts in ftp.mlsd()]
+    except ftplib.all_errors:
+        listing = [(name, {}) for name in ftp.nlst()]
+
+    matches = [(n, f) for n, f in listing if fnmatch.fnmatchcase(n, glob)]
+    if not matches:
+        lowered = glob.lower()
+        matches = [(n, f) for n, f in listing if fnmatch.fnmatchcase(n.lower(), lowered)]
+    return matches
+
+
 class UltimateHandler(BaseHandler):
     """mkdir / memcpy against the Ultimate64/C64U's REST + FTP servers."""
 
@@ -113,24 +188,7 @@ class UltimateHandler(BaseHandler):
     # ------------------------------------------------------------------
 
     def _resolve_abspath(self, path: str, session_id: int):
-        """Return an absolute path for `path`, or None if it can't be made absolute.
-
-        Absolute paths (leading '/') pass through unchanged. A relative path is
-        joined against this session's UCI DOS current directory, which the wedge
-        sends in the ``\\x01``-framed cwd context (see request_dispatcher). If the
-        path is relative and no valid cwd context is available (un-framed request,
-        or the cartridge's get_path failed and it fell open), returns None so the
-        caller keeps the old absolute-path-required behaviour.
-        """
-        if path.startswith("/"):
-            return path
-        state = get_session_state_copy(session_id)
-        cwd = state.get("dos_cwd")
-        if not cwd or not cwd.startswith("/"):
-            return None
-        # posix-join + normalise so a root cwd ("/") or a trailing slash cannot
-        # produce "//name", and any "." / ".." in the typed name is cleaned up.
-        return posixpath.normpath(cwd.rstrip("/") + "/" + path)
+        return resolve_uci_abspath(path, session_id)
 
     # ------------------------------------------------------------------
     # mkdir
@@ -183,8 +241,7 @@ class UltimateHandler(BaseHandler):
         return _MEMCPY_USAGE
 
     def _resolve_host(self, session_id: int):
-        state = get_session_state_copy(session_id)
-        return state.get("client_ip") or network_helper.read_last_c64_ip()
+        return resolve_uci_host(session_id)
 
     def _memcpy_save(self, start_hex: str, end_hex: str, path: str, session_id: int) -> str:
         start = int(start_hex, 16)
@@ -384,27 +441,7 @@ class UltimateHandler(BaseHandler):
         return f"OK: deleted {deleted} file(s)"
 
     def _match_files(self, ftp, glob):
-        """Return the names in the current FTP dir that are files and match glob.
-
-        Uses MLSD (which tags each entry file/dir) when the server supports it so
-        directories are excluded; falls back to NLST (no type info) when it does
-        not -- in that case DELE simply fails on a directory and it is skipped.
-
-        Matching mirrors `file` (_stat_entries): case-sensitive first, then a
-        case-insensitive fallback when nothing matched exactly -- `ll` shows real
-        case but users retype names in whatever keyboard case is handy.
-        """
-        try:
-            names = [
-                name for name, facts in ftp.mlsd() if facts.get("type") == "file"
-            ]
-        except ftplib.all_errors:
-            names = ftp.nlst()
-        matches = [n for n in names if fnmatch.fnmatchcase(n, glob)]
-        if not matches:
-            lowered = glob.lower()
-            matches = [n for n in names if fnmatch.fnmatchcase(n.lower(), lowered)]
-        return matches
+        return match_ftp_files(ftp, glob)
 
     # ------------------------------------------------------------------
     # file
@@ -458,21 +495,4 @@ class UltimateHandler(BaseHandler):
         return "\n\n".join(blocks)
 
     def _stat_entries(self, ftp, glob):
-        """MLSD the current dir -> [(name, facts)] for entries matching glob.
-
-        Unlike _match_files this keeps directories (so `file` can say "DIR") and
-        keeps the facts dict (size/modify). Falls back to NLST names with empty
-        facts when the server has no MLSD -- the Ultimate's FTP does support it
-        (hardware-verified), but the fallback costs two lines and keeps `file`
-        working against anything else.
-        """
-        try:
-            listing = [(name, facts) for name, facts in ftp.mlsd()]
-        except ftplib.all_errors:
-            listing = [(name, {}) for name in ftp.nlst()]
-
-        matches = [(n, f) for n, f in listing if fnmatch.fnmatchcase(n, glob)]
-        if not matches:
-            lowered = glob.lower()
-            matches = [(n, f) for n, f in listing if fnmatch.fnmatchcase(n.lower(), lowered)]
-        return matches
+        return stat_ftp_entries(ftp, glob)

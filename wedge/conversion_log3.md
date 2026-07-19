@@ -3161,3 +3161,47 @@ inert no-op -> pressing it must NOT crash (just returns to the prompt/monitor). 
 run-by-name still LOADS+RUNS a typed filename on h/t/f; mnt/umnt/cd/ll/pwd/status/#/time intact.
 (4) STABILITY: TASS/TMP launch+exit, freeze->resume, normal BASIC, stock RR sweep all intact. If the
 monitor R header is garbled or anything crashes, report it. If all pass, 3b adds /flash/bin.
+
+## Step 29 — STEP 3a HW TESTED OK; STEP 3b = /flash/bin fallback (built+byte-verified, awaiting HW test)
+
+**3a result (HW, Honza 2026-07-19):** ALL PASS (screenshot). `MON` + `R` prints the register header
+". ADDR AR XR YR SP 01 NV-BDIZC" + values correctly -> the kept $808A->$8241 path + dispatch table
+survived the bank1 $85A6 retarget and the $808D-$8240 SS blank. Committed as a00d6a8 (with 2a-2d).
+=> bank3 now has a ~436 B reserve at $808D-$8240 (Silversurfer removed).
+
+**3b = /flash/bin fallback (this step).** All in the SS-freed bank3 pocket; rf_loader UNCHANGED.
+- **prep_flash ($80B9):** front-insert "/FLASH/BIN/" (pf_txt $80ED = 2F 46 4C 41 53 48 2F 42 49 4E 2F,
+  ASCII -- passes b5_fold unchanged -> UCI case-insensitive) into the $02a7 shadow line: find EOL,
+  GUARD `cpy #$4e` (skip if len>=78 so the +11 shift can't reach $0300/$0301 = the IERROR vector),
+  shift [0..len] right 11, insert prefix. C=1 = too long (line untouched).
+- **flash_retry ($808E):** reached by `hcr_srv: jmp flash_retry` (was `jmp hsh_body`). Does:
+  jsr rf_close3 (close a stale handle from a succeeded-OPEN-then-failed-READ edge; carry-silent) ->
+  jsr prep_flash (bcs -> fr_srv straight to server) -> heal call_bank5 UNCONDITIONALLY into $0378
+  (+ retarget RF_LOADER) -> jsr $0378 (rf_loader OPENs "/flash/bin/<name>" + reads + injects RUN) ->
+  C=0 => jmp hcr_done (shared epilogue: set $2D/$2E + CLOSE + rts); C=1 => jsr unprep_flash (shift
+  $02a7 back so the server gets the ORIGINAL line) -> jmp hsh_body.
+- **unprep_flash ($80DF):** copy $02b2.. -> $02a7.. through the NUL (undo the prepend).
+- **hcr_done ($9796):** new label on hcb_runfile's existing epilogue (0 new bytes there), reused by
+  both the current-dir path (fall-through) and flash_retry. `.const RF_LOADER` moved ahead of the
+  pocket (KickAss forward-ref) -- no byte change.
+- Fires on ALL devices: /flash/bin is an absolute UCI-DOS1 path, so it works on h/t/f AND #8/#9
+  (where the device gate skips the current-dir attempt but still routes through hcr_srv->flash_retry).
+
+**Byte-verify (vs HEAD = committed 2d+3a, a00d6a8):** ONLY bank3 changed, 106 B: flash code
+$808E-$80F7 + hcr_srv jmp $977A-$977B. stock $8265-$9768 IDENTICAL; $80F8-$8240 zeroed; $8241 monitor
+header intact; $808D=$60 (rts); rf_loader ($804E, bank5) UNTOUCHED; bank1 UNTOUCHED. `.errorif` pins
+hold (flash code fits, fill lands exactly on $8241). ~326 B of the SS pocket remain free. NOT committed.
+
+**HW test asks (3b).** Put a small PRG in **/flash/bin** on the Ultimate (e.g. `cp` a .prg there, or
+via the Ultimate menu). Then:
+(1) FROM A DIRECTORY THAT DOES NOT CONTAIN IT (any of #h/#t/#f), type the program's EXACT name ->
+    it should LOAD+RUN from /flash/bin. (2) CURRENT-DIR WINS: in a dir that DOES contain a same-named
+    file, typing the name runs the LOCAL one (current dir tried first). (3) ON #8/#9: type a
+    /flash/bin program's name -> runs (current-dir skipped, /flash/bin still searched). (4) NOT FOUND
+    anywhere: a made-up name -> goes to AI chat as normal, and the AI must receive the ORIGINAL text
+    (NOT "/flash/bin/..."); verify a normal chat sentence still answers correctly. (5) LONG LINE: a
+    chat line > ~77 chars -> still forwarded fine (prepend guard skips). (6) REPEAT: run a /flash/bin
+    program, return, run another -> no handle leak / hang. (7) REGRESSION: current-dir run-by-name
+    (2d) still works; mnt/umnt/cd/ll/pwd/status/#/time; TASS/TMP; ML monitor; stock RR sweep.
+NOTE: this validates that UCI DOS1 OPEN resolves the ABSOLUTE path "/flash/bin/<name>". If a
+/flash/bin program is NOT found (but exists), report it -- the path form/case may need a tweak.

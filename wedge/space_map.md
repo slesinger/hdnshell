@@ -19,7 +19,7 @@ was used, `~` where estimated.
 | 0 | 385 | 393 | 702 high-conf + ~420 med-low | 0 |
 | 1 | 16 (inside HDN pocket) | 16 | ~7 (entangled) | ~90-150 printer (entangled) |
 | 2 | 102 | 140 | 0 | 0 (FUNPAINT viewer ~460 optional) |
-| 3 | 14 | 20 | — (resolved, see §3) | ~535 Silversurfer |
+| 3 | ~340 | ~346 | — (resolved, see §3) | ~90 SS boot-detect (§5.1 item 2, remaining) |
 | 4 | 78 | 78 | 3 | 0 |
 | 5 | 6 | 6 | 3 | flash util: 0 cleanly recoverable |
 | 6 | 54 | 54 | 3 | 0 |
@@ -167,10 +167,18 @@ the copy boundary with tools/dis.py before trusting the 420-B figure.**
 
 ## 5. Drop candidates, ranked (owner decides case by case)
 
-### 5.1 Silversurfer (RS232) — bank 3, yield ~535 B — RECOMMENDED FIRST
+### 5.1 Silversurfer (RS232) — bank 3, yield ~535 B — item 1 DONE (2026-07-19)
 Approved category (C64U-only target; SS silicon can't exist).
-Three pieces:
-1. **Debugstub + UART driver $8081-$8089, $808D-$8240 (~445 B).** Removal:
+**Item 1 LANDED** (conversion_log3 step 3a, commit a00d6a8): the single-char SS-launch command was
+neutralized by retargeting the bank1 dispatch table at $85A6 ($EE->$E5, => the $80E6 rts no-op) and
+$808D-$8240 (436 B) was blanked. HW-tested (ML monitor R header intact). That pocket is now bank3's
+active reserve -- step 3b's /flash/bin `flash_retry`/`prep_flash` occupy $808E-$80F7 (~110 B), leaving
+~326 B free there ($80F8-$8240) + the original 14 B at $9FF2. Kept: $808A (jmp $8241) + the ML monitor
+register header $8241-$8264. Item 2 (boot-detect $957E-$95DE, ~90 B) remains available (trivial skip-
+patch) if more bank3 space is ever needed.
+Original three pieces (for reference):
+1. **Debugstub + UART driver $8081-$8089, $808D-$8240 (~445 B).** [DONE via bank1-table retarget --
+   simpler than the thunk patch below; see step 3a.] Original note: Removal:
    neutralize bank 1's thunk (bank01.asm:413 → point the single-char handler
    at an `rts`, same-size patch), then convert the bank-3 range to a `.fill`
    pocket. Keep $808A-$808C (`jmp $8241`) and $8241-$8264 (monitor header).

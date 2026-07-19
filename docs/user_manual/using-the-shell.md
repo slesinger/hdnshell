@@ -2,6 +2,8 @@
 
 HDN Shell RR is a wedge inside a Retro Replay cartridge. You type at the ordinary BASIC `READY.` prompt; shell commands are recognized and executed by the cartridge, plain BASIC keeps working as always, and anything neither of them understands is forwarded to the HDN Server's AI chat.
 
+> **Run a program by typing its name.** You don't need `LOAD`/`RUN` or the cartridge's `/`, `^` shortcuts — just type a program's name and press RETURN. The shell finds it (in the current directory, or in the global `/flash/bin` folder), loads it, and runs it. See [Executing Programs](executing_programs.md#just-type-its-name).
+
 ## Commands
 
 `status` — Display the firmware identify string, local IP/netmask/gateway, and whether the HDN Server is reachable.
@@ -16,7 +18,7 @@ HDN Shell RR is a wedge inside a Retro Replay cartridge. You type at the ordinar
 
 `help` — Ask the server a question, or (if unreachable) print a short local pointer.
 
-For directory navigation (`cd`, `pwd`, `ll`/`dir`, `#<device>`), disk images (`mkdisk`, `mnt`/`umnt`), and file management (`mkdir`, `cp`, `del`), see [Navigating Disk Drives and Directories](dos.md). For saving/loading raw memory blocks, see [Memory Operations](memory-operations.md).
+For directory navigation (`cd`, `pwd`, `ll`/`dir`, `#<device>`), disk images (`mkdisk`, `mnt`/`umnt`), and file management (`mkdir`, `cp`, `mv`, `del`), see [Navigating Disk Drives and Directories](dos.md). For saving/loading raw memory blocks, see [Memory Operations](memory-operations.md).
 
 `ll` and `dir` accept a filter pattern, e.g. `ll outrun*` lists only entries whose name starts with `outrun` (case-insensitive prefix match; the trailing `*` is optional).
 

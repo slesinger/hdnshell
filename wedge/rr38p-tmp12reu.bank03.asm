@@ -302,9 +302,88 @@ b03_808D:
 // real reserve since the annexes filled (space_map.md §5.1). Leading rts keeps the now-
 // dead $8087->$808D path harmless. Step 3b fills this pocket with flash_retry/prep_flash.
     rts                    // 60  ($808D: safety no-op for the now-dead $8087 jmp)
-.errorif (* > $8241), "SS-removal fill overran the kept $8241 monitor header"
-    .fill $8241 - *, $00   // reclaimed SS debugstub body (blanked) up to the kept header
-.errorif (* != $8241), "SS-removal fill did not land on $8241 (monitor header)"
+// =============================================================================
+.const RF_LOADER = $804E    // bank5 run-prg loader entry (pinned in bank05.asm); defined
+                            //   here (ahead of flash_retry) so the pocket + hcb_runfile see it
+// Step 3b: /flash/bin fallback for run-by-name. Lives in the SS-freed pocket; reached
+// by same-bank jmp from hcr_srv (hcb_runfile) -- bank3 is mapped in the dispatch context,
+// and hcr_srv runs AFTER b4_disp returned, so re-healing $0378 for bank5 does NOT nest
+// inside a live bank4 trampoline (the 2d call discipline). rf_loader is REUSED UNCHANGED:
+// we PREPEND "/FLASH/BIN/" into the $02a7 shadow line, then call rf_loader again -- it now
+// OPENs "/flash/bin/<name>", reads it, and injects "RUN". On any device (h/t/f AND #8/#9):
+// /flash/bin is an absolute UCI-DOS1 path, so the fallback works regardless of $cf2a.
+flash_retry:
+    // Close any stale handle: if the current-dir OPEN succeeded but the READ failed,
+    // rf_loader left the file OPEN -> a fresh OPEN could collide. Carry-silent no-op
+    // when nothing is open.
+    jsr rf_close3
+    jsr prep_flash         // $02a7 "<name>" -> "/FLASH/BIN/<name>"; C=1 = line too long
+    bcs fr_srv             //   (guard tripped -> line untouched) -> server
+    ldx #$0d               // re-heal call_bank5 into $0378 (UNCONDITIONAL: on the non-htf
+fr_cp:                     //   path $0378 still holds b4tramp from hsh_ck_b4)
+    lda b5tramp,x
+    sta $0378,x
+    dex
+    bpl fr_cp
+    lda #<RF_LOADER        // patch b5tramp jsr target -> bank5 loader
+    sta $037e
+    lda #>RF_LOADER
+    sta $037f
+    jsr $0378              // map bank5, OPEN "/flash/bin/<name>" + read + RUN-inject
+    bcc fr_loaded          // C=0 = loaded
+    jsr unprep_flash       // not found in /flash/bin -> restore $02a7 for the server
+fr_srv:
+    jmp hsh_body           // chat/AI server forward (NOT hcr_srv -> no loop)
+fr_loaded:
+    jmp hcr_done           // shared epilogue: set $2D/$2E from $fb/$fc + CLOSE + rts
+// prep_flash: front-insert "/FLASH/BIN/" (11 B) into the $02a7 shadow line. GUARD: the
+// line buffer runs $02a7-$02ff; $0300/$0301 is the IERROR vector HDN owns. Only prepend
+// if EOL index <= 77 (so the shifted NUL lands at <= $02ff) -- else skip (C=1), untouched.
+prep_flash:
+    ldy #$00
+pf_len:
+    lda $02a7,y            // find the NUL terminator; Y = line length on exit
+    beq pf_got
+    iny
+    bne pf_len
+pf_got:
+    cpy #$4e               // 78: if len >= 78, len+11 would overrun $02ff into $0300
+    bcs pf_fail
+    // shift [0..len] (incl NUL) right by 11: dest $02a7+11+y <- src $02a7+y, y = len..0
+pf_sh:
+    lda $02a7,y
+    sta $02b2,y            // $02b2 = $02a7 + 11
+    dey
+    bpl pf_sh
+    ldx #$0a               // insert the 11-byte prefix into [0..10]
+pf_ins:
+    lda pf_txt,x
+    sta $02a7,x
+    dex
+    bpl pf_ins
+    clc
+    rts
+pf_fail:
+    sec
+    rts
+// unprep_flash: undo prep_flash -- shift $02a7 back left by 11 (copy $02b2.. -> $02a7..
+// through the NUL) so the server gets the ORIGINAL typed line, not "/flash/bin/<line>".
+unprep_flash:
+    ldx #$00
+up_l:
+    lda $02b2,x
+    sta $02a7,x
+    beq up_done            // copied the NUL -> done
+    inx
+    bne up_l
+up_done:
+    rts
+pf_txt:
+    .byte $2f, $46, $4c, $41, $53, $48, $2f, $42, $49, $4e, $2f   // "/FLASH/BIN/" (ASCII;
+                           //   passes b5_fold unchanged -> UCI case-insensitive match)
+.errorif (* > $8241), "step-3b flash_retry/prep_flash overran the kept $8241 monitor header"
+    .fill $8241 - *, $00   // remainder of the reclaimed SS pocket (free bank3 reserve)
+.errorif (* != $8241), "step-3b fill did not land on $8241 (monitor header)"
 b03_8241:
     jsr $8362              // 20 62 83
     .byte $0D, $20, $20, $41, $44, $44, $52, $20, $41, $52, $20, $58, $52, $20, $59, $52    // data $8244  text: ".  ADDR AR XR YR"
@@ -2572,7 +2651,7 @@ bank03_data_9769:
 // the EXISTING call_bank5 trampoline (b5tramp) into $0378 and patching only its jsr
 // target -- NO new cross-bank trampoline is introduced.
 // rf_loader returns C=0 = handled (PRG loaded), C=1 = not a UCI file -> server.
-.const RF_LOADER = $804E    // bank5 run-prg loader entry (pinned in bank05.asm)
+// RF_LOADER const now defined earlier (ahead of the $808D pocket's flash_retry).
 hcb_runfile:
     // DEVICE gate (moved here from the loader to fit the READ loop in the pocket):
     // current-dir run-by-name is UCI-DOS only (h/t/f). Anything else -> server.
@@ -2584,7 +2663,8 @@ hcb_runfile:
     cmp #$46               // 'F' Ultimate Flash
     beq hcr_dev_ok
 hcr_srv:
-    jmp hsh_body           // not UCI DOS (or not a file) -> chat/AI server forward
+    jmp flash_retry        // step 3b: not found in current dir (or non-htf) -> try
+                           //   /flash/bin, then chat/AI server (flash_retry's own tail)
 hcr_dev_ok:
     ldx #$0d               // re-heal the 14-byte call_bank5 trampoline into $0378
 hcr_cp:                    //   (hsh_ck_b4 left b4tramp there; the bank6 path may
@@ -2599,12 +2679,15 @@ hcr_cp:                    //   (hsh_ck_b4 left b4tramp there; the bank6 path ma
     jsr $0378              // map bank5 ($88), jsr RF_LOADER, restore bank3 ($18)
     bcs hcr_srv            // C=1 = not a UCI file / read failure -> server (shared)
     // C=0 = PRG loaded into RAM at its header addr; $fb/$fc = end+1, file still OPEN.
+    // (RUN-inject already done by rf_loader in the bank5 pocket.) Shared epilogue --
+    // step 3b's flash_retry jumps here after a successful /flash/bin load.
+hcr_done:
     lda $fb                // set BASIC VARTAB (end-of-program) so LIST/RUN see it
     sta $2d
     lda $fc
     sta $2e
     jsr rf_close3          // CLOSE the file handle (bank3-direct, $806C)
-    rts                    // (2d will replace this rts with the RUN-inject)
+    rts                    // unwinds to BASIC READY -> keyboard buffer "RUN"+CR fires
 .errorif (* > $97A2), "hcb_runfile overran the $976A annex into the $97A2 gateway"
     .fill $97A2 - *, $00   // pad remaining verified-dead annex zeros up to $97A2
 bank03_data_97A2:

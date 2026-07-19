@@ -258,11 +258,20 @@ class CSDBHandler(BaseHandler):
             )
         return "\n".join(output) if output else "No results found."
 
-    def _cp_file(self, file_pattern: str, session_id: int) -> str:
-        """Copy file(s) from a release or zip."""
+    def _extract_matching_files(self, file_pattern: str, session_id: int):
+        """Download/extract release or zip member(s) matching file_pattern to
+        /tmp/hdnshell, WITHOUT uploading anywhere. Returns (output_lines,
+        files_to_upload) where files_to_upload is a list of local Path objects
+        ready to be sent onward (empty when there's nothing upload-worthy --
+        callers should treat that as "return '\\n'.join(output_lines)").
+
+        This is the copymove_handler.py `c:` reuse seam: everything here is
+        byte-for-byte what `_cp_file` did before the split, up to (and
+        including) computing files_to_upload.
+        """
         state = get_session_state_copy(session_id)
         if not state.get("active_dir") == "release" or not state.get("active_id"):
-            return "cp can only be used within a release."
+            return ["cp can only be used within a release."], []
 
         output = []
         tmp_dir = Path("/tmp/hdnshell")
@@ -272,7 +281,7 @@ class CSDBHandler(BaseHandler):
             # Copy from zip
             zip_path = tmp_dir / f"{state['zip_id']}.zip"
             if not zip_path.exists():
-                return f"Zip file for {state['zip_id']} not found."
+                return [f"Zip file for {state['zip_id']} not found."], []
             with zipfile.ZipFile(zip_path, "r") as z:
                 for f in state["zip_files"]:
                     if fnmatch.fnmatch(f, file_pattern):
@@ -282,7 +291,7 @@ class CSDBHandler(BaseHandler):
             # Copy from release
             release_info = self._get_parsed_release_info(state["active_id"])
             if not release_info or "files" not in release_info:
-                return "No files found for this release."
+                return ["No files found for this release."], []
 
             for f in release_info["files"]:
                 if fnmatch.fnmatch(f["name"], file_pattern):
@@ -297,7 +306,7 @@ class CSDBHandler(BaseHandler):
                         output.append(f"Copied {f['name']} to /tmp/hdnshell")
 
         if not output:
-            return "No files copied."
+            return ["No files copied."], []
 
         # If the copied file is a zip, extract allowed file types and upload via FTP
         allowed_exts = {
@@ -338,6 +347,13 @@ class CSDBHandler(BaseHandler):
                 file_path = tmp_dir / name
                 if file_path.suffix.lower() in allowed_exts:
                     files_to_upload.append(file_path)
+
+        return output, files_to_upload
+
+    def _cp_file(self, file_pattern: str, session_id: int) -> str:
+        """Copy file(s) from a release or zip to the C64U's /temp via FTP."""
+        state = get_session_state_copy(session_id)
+        output, files_to_upload = self._extract_matching_files(file_pattern, session_id)
 
         if not files_to_upload:
             return "\n".join(output)

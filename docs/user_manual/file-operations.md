@@ -6,14 +6,36 @@ Commands for creating directories, copying files, and moving raw memory blocks. 
 
 `mkdir <name>` — Create a directory in the current location. Only supported on the Ultimate filesystem (`t`/`f`/`h`/`u`/`v`). A relative `<name>` is created inside the current directory; an absolute `/path/name` works too.
 
-## Copying Files (`cp`)
+## Copying and Moving Files (`cp` / `mv`)
 
-`cp <name>` — Copy a file between the Ultimate filesystem's `/temp` folder and whichever server-backed device is currently active:
+`cp <src> <dst>` and `mv <src> <dst>` copy or move a single file (or, with a wildcard source, several) between the Ultimate filesystem and the `n` network drive, within the Ultimate filesystem itself, or (as a source only) out of CSDB.
 
-- On `n` (network drive): downloads `<name>` from the current network-drive directory into `/temp`.
-- On `c` (CSDB): downloads `<name>` (e.g. a release's `.zip`) into `/temp` — see [CSDB](csdb.md) for the full workflow.
-- On `t`/`f`/`h`/`u`/`v` (Ultimate storage): uploads `<name>` from `/temp` into the current directory of whichever server-backed device (`n` or `c`) you last had active.
-- Not supported on `8`/`9`/`s` (no server-side session to bridge to).
+Each of `<src>`/`<dst>` is one of:
+
+- **A bare path** — the Ultimate DOS filesystem. `t`/`f`/`h`/`u`/`v` are all the *same* physical drive, just different starting directories, so there is no per-letter prefix: an absolute path (`/temp/game.prg`) works from anywhere, and a relative path (`game.prg`, `../tools`) resolves against whatever directory you're currently in on that drive. A relative path typed while you're on a *different* device (e.g. `#n`) is a usage error — it has no Ultimate-DOS directory to resolve against.
+- **`n:<path>`** — the network drive. `n:` alone means the current network-drive directory; `n:/path` is root-relative *within* the network drive (not the real server filesystem); `n:path` is relative to the current network-drive directory.
+- **`c:<pattern>`** — CSDB, **source only**. Reuses the release/zip browsing you last did with `#c` (see [CSDB](csdb.md)) regardless of which device you're on right now, and uploads the matched file(s) to `<dst>` instead of always landing in `/temp`. `c:` cannot be a destination (CSDB is read-only), and `mv` cannot use it as a source (use `cp`).
+- **`8:`/`9:`/`s:`** — not supported; there is no server-side session to the real IEC drives.
+
+Examples (typed while `#h` has taken you to `/sd/home`):
+
+```
+cp /temp/echo.prg .              copy /temp/echo.prg into the current dir, same name
+cp /temp/echo.prg ../tools        copy into ../tools, same name
+cp echo.prg /usb0/tools           copy the current dir's echo.prg to /usb0/tools
+cp ../tools/echo.prg n:tools/new  copy to the network drive, renamed to "new"
+mv echo.prg n:archive             move (not copy) into the network drive's archive dir
+```
+
+The destination follows the usual `cp`/`mv` convention: if it's an existing directory, the file lands inside it under its original name; otherwise the destination path is the exact new name/location.
+
+A wildcard (`*`/`?`) source requires an existing directory as the destination — matching several files into one filename is ambiguous and rejected. Matching a single named source is case-insensitive as a fallback (an exact-case match always wins first, same as `del`/`file`); the destination name you type is always used exactly as typed, never case-folded.
+
+`mv` renames in place (fast, atomic) when both sides are on the same filesystem (Ultimate DOS, or the network drive). Moving between the Ultimate filesystem and the network drive copies the file, verifies it arrived intact, and only then deletes the original — if anything goes wrong, the source is left untouched.
+
+CSDB's own single-argument `cp <pattern>` (download straight to `/temp` while browsing a release) is unchanged — see [CSDB](csdb.md). Likewise the network drive's single-argument `cp <name>` (push straight to `/temp`) still works exactly as before; the two-argument forms above are additive.
+
+Requires the HDN Server to be running; errors look like `?FTP FAILED: ...`, `?NO CLIENT IP - cannot reach C64U`, `?ACCESS DENIED - outside workspace`, or `?NOTHING MATCHED: <pattern>`.
 
 ## Saving and Loading Arbitrary Memory
 

@@ -25,6 +25,7 @@ PythonEvalHandler = importlib.import_module("python_eval_handler").PythonEvalHan
 UltimateHandler = importlib.import_module("ultimate_handler").UltimateHandler
 CSDBHandler = importlib.import_module("csdb_handler").CSDBHandler
 NetDriveHandler = importlib.import_module("netdrive_handler").NetDriveHandler
+CopyMoveHandler = importlib.import_module("copymove_handler").CopyMoveHandler
 
 logger = logging.getLogger(__name__)
 
@@ -47,16 +48,21 @@ class RequestDispatcher:
             # nav commands (n/b/s/r/q) -- and even those only while a
             # tutorial is active for the session (see can_handle), so it
             # never shadows BASIC or the other handlers otherwise.
-            # UltimateHandler (mkdir/memcpy) MUST stay before CSDBHandler and
-            # NetDriveHandler: those two claim *any* line once their module is
-            # active (the active_module catch-all below), so if they preceded
-            # UltimateHandler a `mkdir`/`memcpy` typed while #c/#n is active
-            # would be silently swallowed by the wrong handler.
+            # UltimateHandler (mkdir/memcpy) and CopyMoveHandler (cp/mv, 2+ args)
+            # MUST stay before CSDBHandler and NetDriveHandler: those two claim
+            # *any* line once their module is active (the active_module
+            # catch-all below), so if they preceded UltimateHandler/
+            # CopyMoveHandler a `mkdir`/`memcpy`/2-arg `cp`/`mv` typed while
+            # #c/#n is active would be silently swallowed and misparsed by the
+            # wrong handler. CopyMoveHandler only claims `cp` with 2+ args, so
+            # legacy one-arg `cp` (CSDB / NetDrive's own) still falls through
+            # to them unchanged regardless of ordering.
             self.handlers = [
                 HelpHandler(),
                 TutorialHandler(),
                 PythonEvalHandler(),
                 ChatHandler(),
+                CopyMoveHandler(),
                 UltimateHandler(),
                 CSDBHandler(),
                 NetDriveHandler(),
