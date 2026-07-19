@@ -22,10 +22,20 @@ from agent_tools import (
     create_manual_tool,
     search_manual,
     create_screen_memory_tool,
-    create_c64_keyboard_tool,
+    create_c64_type_and_observe_tool,
+    create_c64_wait_for_screen_tool,
     create_c64_machine_control_tool,
     create_c64_memory_access_tool,
     create_c64_memory_analyzer_tool,
+    create_c64_list_drives_tool,
+    create_c64_mount_disk_tool,
+    create_c64_run_file_tool,
+    create_c64_configs_tool,
+    create_c64_create_disk_image_tool,
+    create_c64_file_info_tool,
+    create_c64_detect_video_mode_tool,
+    create_c64_screenshot_tool,
+    get_c64_world_state_summary,
     create_run_shell_command_tool,
     create_write_file_tool,
     create_read_file_tool,
@@ -105,14 +115,40 @@ LIVE C64 TOOLING RULES:
   (e.g. "list the files", "mount X", "run this", "show me Y") rather
   than asking HOW to do it, you must actually perform it: look up the
   exact command with hondani_shell_manual first if unsure of the exact
-  syntax, then call type_on_c64 to type it for real. Do not just
-  describe or explain the command in your reply when the user asked you
-  to do it - typing it IS the answer.
-- If the user asks about current on-screen content or errors, call get_screen first.
-- If the user asks to automate typing, use type_on_c64 and include explicit \n where RETURN is needed.
-- If the user asks to control machine state, use c64_machine_control.
+  syntax, then call type_and_observe to type it for real and see the
+  result. Do not just describe or explain the command in your reply when
+  the user asked you to do it - typing it IS the answer.
+- If the user only asks about current on-screen content or errors (no
+  typing involved), call get_screen instead.
+- type_and_observe types the given text (use explicit \n where RETURN is
+  needed) and automatically waits for the screen to stop changing before
+  returning it, so directory listings, disk mounts, and program loads are
+  captured once finished rather than mid-update. Use wait_for_c64_screen
+  (no typing) if you need to wait for a running program's own output.
+- If the user asks to control machine state (reset/reboot/poweroff/menu/
+  pause/resume), use c64_machine_control.
 - If the user asks to inspect/modify/execute memory on physical machine, use c64_memory_access.
 - If the user asks to analyze memory (e.g. SID location, sprite extraction), use c64_memory_analyze.
+- If the user asks what's mounted or wants to mount a disk image that
+  already exists on the Ultimate's file system, prefer c64_list_drives /
+  c64_mount_disk over typing "mnt" blind -- they report success/errors
+  structurally instead of requiring a screen read.
+- If the user wants to run/play a specific file that already exists on the
+  Ultimate (a .prg, .crt, .sid, or .mod), prefer c64_run_file over typing
+  LOAD/RUN -- it is more reliable and reports errors structurally.
+- If the user wants a new blank disk image created on the Ultimate, use
+  c64_create_disk_image; use c64_file_info to check a file/dir's size or
+  type without typing.
+- c64_configs can read (always allowed) or change (requires confirm=true)
+  Ultimate settings (drives, network, WiFi, clock, UI, tape). Always tell
+  the user what you're about to change before setting confirm=true.
+- If you suspect the display might be in a graphics/bitmap mode (a game or
+  demo running) rather than plain text, call c64_detect_video_mode before
+  trusting get_screen/type_and_observe's text rendering. If it reports a
+  non-text mode, or the user wants to actually see graphics/sprites (e.g.
+  to help play a game), use c64_screenshot -- but remember this chat is a
+  40-column C64 text screen and cannot show the image itself; just tell
+  the user it was captured and saved.
 - Before actions that can alter machine state or memory, summarize intended action in one short sentence.
 
 CRITICAL RULE:
@@ -316,6 +352,13 @@ class ChatHandler(BaseHandler):
                 )
             except Exception:
                 logger.warning("Could not load skill: %s", skill_name, exc_info=True)
+        try:
+            world_state = get_c64_world_state_summary()
+        except Exception:
+            logger.debug("Could not read C64 world-state summary", exc_info=True)
+            world_state = ""
+        if world_state:
+            parts.append(world_state)
         return "\n\n".join(part for part in parts if part)
 
     def get_status(self) -> str:
@@ -348,10 +391,19 @@ class ChatHandler(BaseHandler):
             manual_tool,
             create_c64ref_tool(),
             create_websearch_tool(),
-            create_c64_keyboard_tool(),
+            create_c64_type_and_observe_tool(),
+            create_c64_wait_for_screen_tool(),
             create_c64_machine_control_tool(),
             create_c64_memory_access_tool(),
             create_c64_memory_analyzer_tool(),
+            create_c64_list_drives_tool(),
+            create_c64_mount_disk_tool(),
+            create_c64_run_file_tool(),
+            create_c64_configs_tool(),
+            create_c64_create_disk_image_tool(),
+            create_c64_file_info_tool(),
+            create_c64_detect_video_mode_tool(),
+            create_c64_screenshot_tool(),
             create_run_shell_command_tool(),
             create_write_file_tool(self.working_dir),
             create_read_file_tool(self.working_dir),
@@ -640,16 +692,17 @@ class ChatHandler(BaseHandler):
         return any(getattr(tool, "name", "") == "hondani_shell_manual" for tool in tools)
 
     def _select_tools_for_query(self, query: str, session_id: int = 0) -> list:
+        # Previously this hard-restricted the toolset to hondani_shell_manual
+        # only whenever the query matched shell-docs keywords (mount/d64/
+        # hdnsh/...), regardless of whether the user was asking a question or
+        # asking the agent to DO something live. That contradicted both the
+        # LIVE C64 TOOLING RULES in CHAT_SYSTEM_PROMPT and the documented
+        # example in docs/user_manual/ai-assistance.md ("How do I list files
+        # on disk?" -> should type LL), and no regex can reliably tell those
+        # apart. The full toolset (manual included) is always given to the
+        # agent now; TOOL PRIORITY RULES in the system prompt is what steers
+        # it to check the manual before typing an exact command.
         local_tools = list(self.tools)
-
-        # For shell operation questions, force manual-first behavior by restricting
-        # the agent to the manual tool only.
-        if self._is_shell_docs_query(query):
-            local_tools = [
-                tool
-                for tool in local_tools
-                if getattr(tool, "name", "") == "hondani_shell_manual"
-            ]
 
         try:
             screen_tool = create_screen_memory_tool(session_id=session_id)
@@ -660,14 +713,6 @@ class ChatHandler(BaseHandler):
                 local_tools.append(screen_tool)
         except Exception:
             logger.debug("Could not create session tools for chat", exc_info=True)
-
-        # Do not add get_screen for docs-only questions to avoid unnecessary tool noise.
-        if self._is_shell_docs_query(query):
-            local_tools = [
-                tool
-                for tool in local_tools
-                if getattr(tool, "name", "") == "hondani_shell_manual"
-            ]
 
         return local_tools
 

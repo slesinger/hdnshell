@@ -982,7 +982,12 @@ bank01_data_8507:
     .byte $4F, $CC, $00, $73, $82, $D1, $82, $48, $82, $61, $82, $1C, $9D, $9D, $82, $76    // data $856F
     .byte $82, $1E, $82, $FD, $81, $76, $81, $17, $86, $D4, $86, $97, $89, $2E, $82, $EA    // data $857F
     .byte $82, $AE, $84, $C7, $84, $C9, $82, $AC, $85, $A9, $85, $F7, $82, $F4, $82, $E0    // data $858F
-    .byte $80, $63, $81, $0C, $81, $E6, $80, $EE, $80, $04, $81    // data $859F
+    .byte $80, $63, $81, $0C, $81, $E6, $80    // data $859F ($859F-$85A5)
+    // SS-launch single-char command retargeted $80EE -> $80E5 (dispatch rts-trick target
+    // +1 => the $80E6 rts no-op). Silversurfer (RS232) removed -- dead on C64U. Was $EE.
+    // See conversion_log3 step 3a + space_map.md §5.1. Same-size 1-byte data patch.
+    .byte $E5                                  // $85A6 (SS-launch -> $80E6 rts no-op)
+    .byte $80, $04, $81                        // $85A7-$85A9 (unchanged: hi=$80; $8104)
     lda #$03               // A9 03
     bit $04a9              // 2C A9 04
     sta $bd                // 85 BD

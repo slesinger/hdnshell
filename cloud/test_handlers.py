@@ -355,13 +355,46 @@ class TestChatHandler:
         assert files
         assert any(name.endswith(".md") for name in files)
 
-    def test_shell_docs_query_uses_manual_tool_only(self):
-        """Shell help queries should constrain tools to hondani_shell_manual."""
+    def test_shell_docs_query_keeps_full_toolset(self):
+        """Shell help queries used to be hard-restricted to hondani_shell_manual
+        only, which silently prevented the agent from acting even when the
+        phrasing implied "do it" (see docs/user_manual/ai-assistance.md's own
+        "How do I list files on disk?" -> types LL example). The regex used to
+        decide "question vs action" was inherently brittle, so the restriction
+        was removed entirely: the full toolset (manual included) is always
+        available, and TOOL PRIORITY RULES in the system prompt is what steers
+        the agent to check the manual before typing."""
         handler = ChatHandler()
         tools = handler._select_tools_for_query("how do i mount d64?", session_id=0)
+        tool_names = {getattr(tool, "name", "") for tool in tools}
 
-        assert tools
-        assert all(getattr(tool, "name", "") == "hondani_shell_manual" for tool in tools)
+        assert "hondani_shell_manual" in tool_names
+        assert "type_and_observe" in tool_names
+
+    def test_ai_assistance_doc_example_keeps_full_toolset(self):
+        """Regression test for the exact documented example in
+        docs/user_manual/ai-assistance.md: "How do I list files on disk?"
+        should be able to result in the agent typing LL, not just describing
+        it -- so type_and_observe must be available for this phrasing."""
+        handler = ChatHandler()
+        tools = handler._select_tools_for_query(
+            "How do I list files on disk?", session_id=0
+        )
+        tool_names = {getattr(tool, "name", "") for tool in tools}
+
+        assert "type_and_observe" in tool_names
+        assert "get_screen" in tool_names
+
+    def test_live_action_request_keeps_full_toolset(self):
+        """'list directory for me' must keep type_and_observe/get_screen
+        available. Regression test for the reported bug where the assistant
+        never called the live-tooling for this exact phrasing."""
+        handler = ChatHandler()
+        tools = handler._select_tools_for_query("list directory for me", session_id=0)
+        tool_names = {getattr(tool, "name", "") for tool in tools}
+
+        assert "type_and_observe" in tool_names
+        assert "get_screen" in tool_names
 
     def test_shell_docs_query_without_manual_returns_guidance(self):
         """If manual tool is missing, return direct guidance instead of looping tools."""

@@ -182,6 +182,131 @@ def rest_reboot(host: str) -> None:
     _requests.post(url, timeout=5)
 
 
+def rest_machine_pause(host: str) -> None:
+    """Pause the C64 CPU via REST API (PUT /v1/machine:pause)."""
+    import requests as _requests
+
+    resp = _requests.put(f"http://{host}/v1/machine:pause", timeout=5)
+    resp.raise_for_status()
+
+
+def rest_machine_resume(host: str) -> None:
+    """Resume the C64 CPU via REST API (PUT /v1/machine:resume)."""
+    import requests as _requests
+
+    resp = _requests.put(f"http://{host}/v1/machine:resume", timeout=5)
+    resp.raise_for_status()
+
+
+def rest_list_drives(host: str) -> dict:
+    """Return drive/mount status via REST API (GET /v1/drives)."""
+    import requests as _requests
+
+    resp = _requests.get(f"http://{host}/v1/drives", timeout=5)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def rest_mount_drive(
+    host: str, drive: str, image: str, image_type: str = None, mode: str = None
+) -> list:
+    """
+    Mount an existing image file (already on the Ultimate's file system)
+    onto the given drive via REST API (PUT /v1/drives/<drive>:mount).
+    Returns the 'errors' list from the JSON response (empty = success).
+    """
+    import requests as _requests
+    from urllib.parse import quote as _quote
+
+    url = f"http://{host}/v1/drives/{_quote(drive)}:mount"
+    params = {"image": image}
+    if image_type:
+        params["type"] = image_type
+    if mode:
+        params["mode"] = mode
+
+    resp = _requests.put(url, params=params, timeout=15)
+    if resp.status_code != 200:
+        return [f"HTTP {resp.status_code}: {resp.text}"]
+    try:
+        return resp.json().get("errors", [])
+    except ValueError as e:
+        return [f"bad JSON response: {e}"]
+
+
+def rest_run_file(host: str, kind: str, file: str, songnr: int = None) -> list:
+    """
+    Run/play a file already present on the Ultimate's file system via the
+    REST runners API (PUT /v1/runners:<kind>). *kind* is one of 'run_prg',
+    'run_crt', 'sidplay', 'modplay'. Returns the 'errors' list from the JSON
+    response (empty = success).
+    """
+    import requests as _requests
+
+    valid_kinds = {"run_prg", "run_crt", "sidplay", "modplay"}
+    if kind not in valid_kinds:
+        raise ValueError(
+            f"Unsupported run kind '{kind}', expected one of {sorted(valid_kinds)}"
+        )
+
+    url = f"http://{host}/v1/runners:{kind}"
+    params = {"file": file}
+    if songnr is not None:
+        params["songnr"] = songnr
+
+    resp = _requests.put(url, params=params, timeout=15)
+    if resp.status_code != 200:
+        return [f"HTTP {resp.status_code}: {resp.text}"]
+    try:
+        return resp.json().get("errors", [])
+    except ValueError as e:
+        return [f"bad JSON response: {e}"]
+
+
+def rest_get_configs(host: str, category: str = None, item: str = None) -> dict:
+    """
+    Read Ultimate configuration via REST API.
+    - no category: GET /v1/configs (list of categories)
+    - category only: GET /v1/configs/<category>
+    - category+item: GET /v1/configs/<category>/<item>
+    """
+    import requests as _requests
+    from urllib.parse import quote as _quote
+
+    if category and item:
+        url = f"http://{host}/v1/configs/{_quote(category)}/{_quote(item)}"
+    elif category:
+        url = f"http://{host}/v1/configs/{_quote(category)}"
+    else:
+        url = f"http://{host}/v1/configs"
+
+    resp = _requests.get(url, timeout=5)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def rest_set_config(host: str, category: str, item: str, value: str) -> dict:
+    """Set a single Ultimate configuration item via REST API (PUT /v1/configs/<category>/<item>)."""
+    import requests as _requests
+    from urllib.parse import quote as _quote
+
+    url = f"http://{host}/v1/configs/{_quote(category)}/{_quote(item)}"
+    resp = _requests.put(url, params={"value": value}, timeout=5)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def rest_file_info(host: str, path: str) -> dict:
+    """Return file/directory info via REST API (GET /v1/files/<path>:info)."""
+    import requests as _requests
+    from urllib.parse import quote as _quote
+
+    url = f"http://{host}/v1/files{_quote(path)}:info"
+    resp = _requests.get(url, timeout=5)
+    resp.raise_for_status()
+    return resp.json()
+
+
 def rest_create_disk(host: str, abspath: str, image_type: str, tracks=None, diskname=None) -> list:
     """
     Create a disk image on the Ultimate via REST. Returns the 'errors' list

@@ -40,6 +40,58 @@ _WRITE_OR_DESTRUCTIVE_PATTERNS = [
 ]
 
 
+# ------------------------------------------------------------------
+# Lightweight C64 "world state" cache: there's exactly one physical
+# machine, so a plain module-level cache (not per-session) is enough. Tools
+# that change machine state (type_and_observe, c64_machine_control,
+# c64_run_file, c64_mount_disk, c64_create_disk_image) record a short note
+# here; chat_handler folds a summary into the system prompt each turn so
+# the agent has a cheap hint of "what changed most recently" without
+# needing to blindly re-read the screen to find out. It is a hint, not a
+# source of truth -- always treated as possibly stale.
+# ------------------------------------------------------------------
+
+_c64_world_state: dict = {}
+_c64_world_state_lock = threading.Lock()
+
+
+def _update_world_state(**kwargs) -> None:
+    import time as _time
+
+    with _c64_world_state_lock:
+        _c64_world_state.update(kwargs)
+        _c64_world_state["updated_at"] = _time.time()
+
+
+def get_c64_world_state_summary() -> str:
+    """Short human-readable summary of the last known C64 state, if any."""
+    import time as _time
+
+    with _c64_world_state_lock:
+        state = dict(_c64_world_state)
+    if not state:
+        return ""
+
+    age_seconds = max(0, int(_time.time() - state.get("updated_at", _time.time())))
+    lines = [f"Known C64 state (as of {age_seconds}s ago -- may be stale, verify with a tool if it matters):"]
+    if "last_action" in state:
+        lines.append(f"- last action: {state['last_action']}")
+    if "last_typed" in state:
+        lines.append(f"- last keys typed: {state['last_typed']!r}")
+    if "last_screen_settled" in state:
+        settled = state["last_screen_settled"]
+        lines.append(
+            "- resulting screen: settled" if settled else "- resulting screen: still updating when last checked"
+        )
+    return "\n".join(lines)
+
+
+def _clear_world_state() -> None:
+    """Clear the cached world state (used on reset/reboot/poweroff, and by tests)."""
+    with _c64_world_state_lock:
+        _c64_world_state.clear()
+
+
 def _wrap_with_logging(tool_name: str, func):
     """Wrap a tool function with DEBUG logging of input and output."""
 
@@ -1186,7 +1238,12 @@ def create_list_files_tool(working_dir: str):
                 lambda *args, **kwargs: list_project_files(working_dir),
             ),
             name="list_project_files",
-            description="List all .c, .h, and .md files in the project directory.",
+            description=(
+                "List all .c, .h, and .md files in the CLOUD-SIDE assistant "
+                "workspace/project directory. This is NOT the C64's disk or "
+                "file system. To list files/directory on the actual C64 or a "
+                "mounted disk, use type_and_observe with 'll\\n' (or 'dir\\n')."
+            ),
         )
         logger.info("list_project_files tool initialized for dir '%s'", working_dir)
         return tool
@@ -1828,6 +1885,32 @@ def _format_screen_bytes(screen_bytes: bytes) -> str:
     return "\n".join(lines)
 
 
+_C64_COLOR_NAMES = [
+    "black", "white", "red", "cyan", "purple", "green", "blue", "yellow",
+    "orange", "brown", "lightred", "darkgrey", "grey", "lightgreen",
+    "lightblue", "lightgrey",
+]
+
+
+def _format_color_bytes(color_bytes: bytes) -> str:
+    """
+    Render a 1000-byte color RAM buffer ($D800-$DBE7) as a 25-line grid of
+    hex nibbles (0-F), one C64 color code per screen cell, matching the
+    layout of _format_screen_bytes.
+    """
+    if not color_bytes:
+        return "(no color data)"
+
+    cols, rows = 40, 25
+    data = color_bytes[: cols * rows].ljust(cols * rows, b"\x00")
+    lines = [
+        "".join(f"{b & 0x0F:X}" for b in data[r * cols : (r + 1) * cols])
+        for r in range(rows)
+    ]
+    legend = ", ".join(f"{i:X}={name}" for i, name in enumerate(_C64_COLOR_NAMES))
+    return f"Color RAM (hex nibble per cell): {legend}\n" + "\n".join(lines)
+
+
 def create_screen_memory_tool(
     session_id: int | None = None, console_id: int | None = None
 ):
@@ -1839,19 +1922,27 @@ def create_screen_memory_tool(
     *session_id* and *console_id* are accepted for API compatibility but ignored.
     """
     try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
 
-        def _tool(_input: str = "") -> str:
+        class GetScreenInput(BaseModel):
+            include_color: bool = Field(
+                default=False,
+                description=(
+                    "Set true to also read color RAM ($D800-$DBE7) and "
+                    "include it as a second 25-line grid of hex color "
+                    "codes. Use this to check for red/highlighted error "
+                    "text or other color-coded state; not needed for plain "
+                    "text reading (costs one extra hardware read)."
+                ),
+            )
+
+        def _tool(include_color: bool = False) -> str:
             from sdk.network_helper import dma_read_memory
 
             c64_ip = _read_last_c64_ip()
             if not c64_ip:
                 return "Error: No C64 IP configured. Run a network scan first."
-
-            # Debug mode: report connection target
-            if isinstance(_input, str) and _input.strip().lower().startswith("debug"):
-                return (
-                    f"get_screen: reading $0400-$07E7 (1000 bytes) from C64 at {c64_ip}"
-                )
 
             try:
                 screen = dma_read_memory(c64_ip, 0x0400, 1000)
@@ -1861,22 +1952,240 @@ def create_screen_memory_tool(
                 )
                 return f"Error: could not read C64 screen memory: {e}"
 
-            return _format_screen_bytes(screen)
+            result = _format_screen_bytes(screen)
+            if include_color:
+                try:
+                    color = dma_read_memory(c64_ip, 0xD800, 1000)
+                    result = f"{result}\n\n{_format_color_bytes(color)}"
+                except Exception as e:
+                    logger.exception(
+                        "get_screen: failed to read C64 color RAM from %s", c64_ip
+                    )
+                    result = f"{result}\n\nError reading color RAM: {e}"
+            return result
 
-        tool = Tool(
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging("get_screen", _tool),
             name="get_screen",
             description=(
-                "Return a 40x25 ASCII rendering of the C64 screen by reading screen RAM "
-                "($0400-$07E7) directly from the hardware via the Ultimate cartridge REST API. "
-                "Input is ignored. Use when the AI needs to see what is currently on the C64 screen."
+                "Return a 40x25 ASCII rendering of the C64 screen by reading "
+                "screen RAM ($0400-$07E7) directly from the hardware via the "
+                "Ultimate cartridge REST API. Set include_color=true to also "
+                "get a color RAM grid (useful to spot red/error text or "
+                "other color-coded state). Use when the AI needs to see "
+                "what is currently on the C64 text screen."
             ),
-            func=_wrap_with_logging("get_screen", _tool),
+            args_schema=GetScreenInput,
         )
         logger.info("get_screen tool initialized (live C64 screen read from $0400)")
         return tool
 
     except Exception as e:
         logger.error("Error initializing get_screen tool: %s", e)
+    return None
+
+
+# ------------------------------------------------------------------
+# Video-mode detection: is the VIC-II currently in text mode (where
+# get_screen's $0400 ASCII rendering is meaningful) or a bitmap/graphics
+# mode (where it isn't)? Efficient by design: 2 small reads (9 bytes total)
+# rather than scanning memory.
+# ------------------------------------------------------------------
+
+
+def c64_detect_video_mode() -> str:
+    """
+    Detect the VIC-II display mode and current screen/bitmap memory base
+    addresses from VIC registers $D011-$D018 and CIA#2 port A ($DD00, VIC
+    bank select).
+    """
+    from sdk.network_helper import dma_read_memory
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    try:
+        vic_regs = dma_read_memory(c64_ip, 0xD011, 8)  # $D011..$D018
+        cia2_pra = dma_read_memory(c64_ip, 0xDD00, 1)
+    except Exception as e:
+        return f"Error reading VIC/CIA registers: {e}"
+
+    if len(vic_regs) < 8 or len(cia2_pra) < 1:
+        return "Error: incomplete register read from hardware."
+
+    d011, d016, d018 = vic_regs[0], vic_regs[5], vic_regs[7]
+    ecm = bool(d011 & 0x40)
+    bmm = bool(d011 & 0x20)
+    mcm = bool(d016 & 0x10)
+
+    vic_bank_base = (3 - (cia2_pra[0] & 0x03)) * 0x4000
+    screen_base = vic_bank_base + ((d018 >> 4) & 0x0F) * 0x400
+    if bmm:
+        gfx_base = vic_bank_base + (0x2000 if (d018 & 0x08) else 0x0000)
+        gfx_label = "Bitmap"
+    else:
+        gfx_base = vic_bank_base + ((d018 >> 1) & 0x07) * 0x800
+        gfx_label = "Character"
+
+    if ecm and bmm:
+        mode_name = "invalid/undefined (ECM+BMM both set)"
+    elif ecm:
+        mode_name = "extended color text mode"
+    elif not bmm and not mcm:
+        mode_name = "standard text mode"
+    elif not bmm and mcm:
+        mode_name = "multicolor text mode"
+    elif bmm and not mcm:
+        mode_name = "standard bitmap mode"
+    else:
+        mode_name = "multicolor bitmap mode"
+
+    is_text_mode = not bmm
+    lines = [
+        f"Mode: {mode_name}",
+        f"is_text_mode: {is_text_mode}",
+        f"is_bitmap_mode: {bmm}",
+        f"multicolor: {mcm}",
+        f"VIC bank base: ${vic_bank_base:04X}",
+        f"Screen (text/attribute) memory base: ${screen_base:04X}",
+        f"{gfx_label} memory base: ${gfx_base:04X}",
+    ]
+    if not is_text_mode:
+        lines.append(
+            "get_screen reads $0400 as text screen codes -- not meaningful "
+            "right now since the display is in a bitmap/graphics mode. Use "
+            "c64_screenshot instead to see the actual picture."
+        )
+    elif screen_base != 0x0400:
+        lines.append(
+            f"Note: screen memory has been relocated to ${screen_base:04X} -- "
+            "get_screen (which always reads $0400) is reading the wrong "
+            "address right now."
+        )
+    return "\n".join(lines)
+
+
+def create_c64_detect_video_mode_tool():
+    """
+    Factory for a tool that cheaply detects the VIC-II display mode (text,
+    multicolor text, standard/multicolor bitmap, extended color) and the
+    current screen/bitmap memory base addresses, using 2 small hardware
+    reads (9 bytes total) instead of scanning memory.
+    """
+    try:
+        tool = Tool(
+            name="c64_detect_video_mode",
+            description=(
+                "Efficiently detect whether the C64 is currently in text "
+                "mode or a bitmap/graphics mode, and where screen/bitmap "
+                "memory currently lives, using 2 tiny hardware reads (VIC "
+                "registers $D011-$D018 and CIA#2 $DD00 for the VIC bank). "
+                "Call this before trusting get_screen if a game, demo, or "
+                "graphics program might be running -- get_screen's $0400 "
+                "text reading is meaningless in bitmap mode or if screen "
+                "memory has been relocated."
+            ),
+            func=_wrap_with_logging(
+                "c64_detect_video_mode", lambda _input="": c64_detect_video_mode()
+            ),
+        )
+        logger.info("c64_detect_video_mode tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing c64_detect_video_mode tool: %s", e)
+    return None
+
+
+# ------------------------------------------------------------------
+# Screenshot: capture a real frame from the Ultimate's live VIC video
+# stream. Unlike get_screen (text screen RAM only), this works in any
+# display mode -- text, bitmap, sprites, a running game or demo.
+# ------------------------------------------------------------------
+
+
+def get_c64_screenshot(timeout_seconds: float = 6.0) -> str:
+    """Capture one frame of the C64's actual video output and save it as a PNG."""
+    import time as _time
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    try:
+        import cloud
+
+        png_bytes = cloud.capture_video_frame(timeout_seconds=timeout_seconds)
+    except Exception as e:
+        return f"Error capturing C64 screenshot: {e}"
+
+    screenshots_dir = os.path.join(WORKSPACE_DIR, "assistant", "screenshots")
+    os.makedirs(screenshots_dir, exist_ok=True)
+    path = os.path.join(screenshots_dir, f"c64_screenshot_{int(_time.time())}.png")
+    with open(path, "wb") as f:
+        f.write(png_bytes)
+
+    mode_note = ""
+    try:
+        mode_note = "\n" + c64_detect_video_mode()
+    except Exception:
+        logger.debug("c64_screenshot: video-mode detection failed", exc_info=True)
+
+    return (
+        f"Screenshot captured (384x272) and saved to {path}.\n"
+        "This chat is displayed on the C64's own 40-column text screen, "
+        "which cannot show the image itself -- tell the user the file was "
+        "saved so they can open it separately (e.g. via the web UI)."
+        f"{mode_note}"
+    )
+
+
+def create_c64_screenshot_tool():
+    """
+    Factory for a tool that captures a single frame of the C64's real video
+    output (works in any display mode: text, bitmap, sprites, a running
+    game/demo) via the Ultimate's live VIC video stream, and saves it as a
+    PNG file for the user to view separately (this chat channel is C64
+    text-only and cannot render images).
+    """
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class ScreenshotInput(BaseModel):
+            timeout_seconds: float = Field(
+                default=6.0,
+                ge=1.0,
+                le=20.0,
+                description="Maximum seconds to wait for a complete video frame from the C64.",
+            )
+
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging("c64_screenshot", get_c64_screenshot),
+            name="c64_screenshot",
+            description=(
+                "Capture a single still frame of the C64's actual video "
+                "output -- whatever is really being displayed: text, "
+                "bitmap graphics, sprites, a game, a demo -- via the "
+                "Ultimate's live VIC video stream, and save it as a PNG "
+                "file. Unlike get_screen (which only reads text-mode screen "
+                "RAM at $0400 and is meaningless in graphics modes), this "
+                "works regardless of display mode. Use it when "
+                "c64_detect_video_mode reports a bitmap/graphics mode, or "
+                "whenever you need to actually see graphics/sprites (e.g. "
+                "to help play or debug a game). IMPORTANT: this chat "
+                "channel is a 40-column C64 text screen and cannot display "
+                "the image itself -- tell the user the file was saved and "
+                "where, for them to open separately; do not claim to "
+                "'see' the picture yourself beyond what the tool result "
+                "text reports."
+            ),
+            args_schema=ScreenshotInput,
+        )
+        logger.info("c64_screenshot tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing c64_screenshot tool: %s", e)
     return None
 
 
@@ -1946,6 +2255,196 @@ def create_c64_keyboard_tool():
         return tool
     except Exception as e:
         logger.error("Error initializing type_on_c64 tool: %s", e)
+    return None
+
+
+# ------------------------------------------------------------------
+# Wait-for-stable-screen tool: closes the timing gap between typing a
+# command (e.g. "ll" to list a directory) and reading the result. The
+# C64/drive needs time to process and render output; calling get_screen
+# immediately after type_on_c64 can capture a stale or half-updated screen.
+# ------------------------------------------------------------------
+
+
+def _poll_c64_screen_until_stable(
+    c64_ip: str, max_wait_seconds: float, poll_interval: float
+) -> tuple[bool, bytes]:
+    """
+    Poll C64 screen RAM ($0400-$07E7) until two consecutive reads are
+    identical (screen "settled") or *max_wait_seconds* elapses.
+
+    Returns (settled, last_screen_bytes). Raises on a read error.
+    """
+    import time
+
+    from sdk.network_helper import dma_read_memory
+
+    max_wait_seconds = max(0.5, min(float(max_wait_seconds), 20.0))
+    poll_interval = max(0.1, min(float(poll_interval), max_wait_seconds))
+
+    deadline = time.monotonic() + max_wait_seconds
+    previous = None
+    while True:
+        current = dma_read_memory(c64_ip, 0x0400, 1000)
+        if previous is not None and current == previous:
+            return True, current
+        previous = current
+        if time.monotonic() >= deadline:
+            return False, previous
+        time.sleep(poll_interval)
+
+
+def wait_for_c64_screen(max_wait_seconds: float = 5.0, poll_interval: float = 0.3) -> str:
+    """
+    Poll C64 screen RAM ($0400-$07E7) until it stops changing between two
+    consecutive reads, or *max_wait_seconds* elapses, then return the
+    rendered screen. Use after typing a command whose output takes a moment
+    to appear (directory listings, disk access, loading).
+    """
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    try:
+        settled, screen = _poll_c64_screen_until_stable(
+            c64_ip, max_wait_seconds, poll_interval
+        )
+    except Exception as e:
+        logger.exception("wait_for_c64_screen: failed to read C64 screen memory from %s", c64_ip)
+        return f"Error: could not read C64 screen memory: {e}"
+
+    status = "screen settled" if settled else "timed out, screen may still be updating"
+    return f"({status})\n{_format_screen_bytes(screen)}"
+
+
+def type_and_observe(
+    text: str, max_wait_seconds: float = 5.0, poll_interval: float = 0.3
+) -> str:
+    """
+    Type keystrokes on the C64 (as send_keys_to_c64 does), then poll the
+    screen until it stops changing (as wait_for_c64_screen does), and return
+    the settled result -- in one call, so the wait step can't be skipped.
+
+    *text* is a plain ASCII string. Use '\\n' to send RETURN.
+    """
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    type_result = send_keys_to_c64(text)
+    if type_result.startswith("Error"):
+        return type_result
+
+    try:
+        settled, screen = _poll_c64_screen_until_stable(
+            c64_ip, max_wait_seconds, poll_interval
+        )
+    except Exception as e:
+        logger.exception(
+            "type_and_observe: failed to read C64 screen memory from %s", c64_ip
+        )
+        return f"{type_result}\nError: could not read resulting screen: {e}"
+
+    status = "screen settled" if settled else "timed out, screen may still be updating"
+    _update_world_state(
+        last_action=f"typed {text!r}",
+        last_typed=text,
+        last_screen_settled=settled,
+    )
+    return f"{type_result}\n({status})\n{_format_screen_bytes(screen)}"
+
+
+def create_c64_wait_for_screen_tool():
+    """
+    Factory for a LangChain Tool that polls the C64 screen until it stops
+    changing (or a timeout), then returns it. Advanced/standalone use only
+    (e.g. waiting for a running program to produce output with no new
+    keystrokes involved) -- for typing a command and observing the result,
+    use type_and_observe instead, which does both in one call.
+    """
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class WaitForScreenInput(BaseModel):
+            max_wait_seconds: float = Field(
+                default=5.0,
+                ge=0.5,
+                le=20.0,
+                description="Maximum seconds to wait for the screen to stop changing.",
+            )
+
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging("wait_for_c64_screen", wait_for_c64_screen),
+            name="wait_for_c64_screen",
+            description=(
+                "Poll the C64 screen (with no new typing) until it stops "
+                "changing, then return it. Use this when waiting for a "
+                "running program's own output (e.g. after c64_run_file) "
+                "rather than after typing -- for typing + observing, use "
+                "type_and_observe instead. Polls screen RAM ($0400-$07E7) "
+                "until two consecutive reads are identical (settled) or "
+                "max_wait_seconds elapses, then returns the 40x25 ASCII screen."
+            ),
+            args_schema=WaitForScreenInput,
+        )
+        logger.info("wait_for_c64_screen tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing wait_for_c64_screen tool: %s", e)
+    return None
+
+
+def create_c64_type_and_observe_tool():
+    """
+    Factory for the primary "act on the live machine" tool: types keystrokes
+    and then polls the screen until it stops changing before returning it,
+    in one call. Combines send_keys_to_c64 + wait-for-stable-screen so the
+    agent cannot forget to wait before reading the result of what it typed.
+    """
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class TypeAndObserveInput(BaseModel):
+            text: str = Field(
+                description=(
+                    "Plain ASCII string to type. Use '\\n' to press RETURN "
+                    "(e.g. to submit a command or confirm a prompt). "
+                    "Example: 'LOAD\"*\",8,1\\n' types a LOAD command and "
+                    "presses RETURN."
+                )
+            )
+            max_wait_seconds: float = Field(
+                default=5.0,
+                ge=0.5,
+                le=20.0,
+                description=(
+                    "Maximum seconds to wait for the screen to stop changing "
+                    "after typing. Use a larger value (e.g. 10-15) for slow "
+                    "operations like disk directory listings or loading."
+                ),
+            )
+
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging("type_and_observe", type_and_observe),
+            name="type_and_observe",
+            description=(
+                "Inject key strokes into the C64 keyboard buffer via the "
+                "Ultimate cartridge DMA service, then wait for the screen to "
+                "stop changing and return it. This is THE way to act on the "
+                "live machine and see the result -- use it any time the user "
+                "asks you to DO something (list files, mount a disk, run a "
+                "program, type a command) rather than just explain it. "
+                "Look up the exact command with hondani_shell_manual first "
+                "if you are not sure of the exact syntax."
+            ),
+            args_schema=TypeAndObserveInput,
+        )
+        logger.info("type_and_observe tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing type_and_observe tool: %s", e)
     return None
 
 
@@ -2384,6 +2883,8 @@ def c64_machine_control(action: str) -> str:
         send_poweroff,
         rest_menu_button,
         rest_reboot,
+        rest_machine_pause,
+        rest_machine_resume,
     )
 
     c64_ip = _read_last_c64_ip()
@@ -2394,19 +2895,36 @@ def c64_machine_control(action: str) -> str:
     try:
         if act in ("reset", "soft_reset"):
             send_reset(c64_ip)
-            return "Reset command sent."
-        if act in ("poweroff", "power_off"):
+            result = "Reset command sent."
+        elif act in ("poweroff", "power_off"):
             send_poweroff(c64_ip)
-            return "Power-off command sent."
-        if act in ("menu", "menu_button"):
+            result = "Power-off command sent."
+        elif act in ("menu", "menu_button"):
             rest_menu_button(c64_ip)
-            return "Menu button triggered via REST API."
-        if act in ("reboot", "hard_reboot"):
+            result = "Menu button triggered via REST API."
+        elif act in ("reboot", "hard_reboot"):
             rest_reboot(c64_ip)
-            return "Reboot triggered via REST API."
-        return "Error: unsupported action. Use reset/poweroff/menu_button/reboot."
+            result = "Reboot triggered via REST API."
+        elif act == "pause":
+            rest_machine_pause(c64_ip)
+            result = "CPU paused (DMA line held low)."
+        elif act == "resume":
+            rest_machine_resume(c64_ip)
+            result = "CPU resumed."
+        else:
+            return (
+                "Error: unsupported action. Use reset/poweroff/menu_button/"
+                "reboot/pause/resume."
+            )
     except Exception as e:
         return f"Error sending machine control action '{act}': {e}"
+
+    if act in ("reset", "soft_reset", "reboot", "hard_reboot", "poweroff", "power_off"):
+        # A reset/reboot/poweroff invalidates any cached "last typed/mounted"
+        # state -- whatever was on screen or running is gone.
+        _clear_world_state()
+    _update_world_state(last_action=f"machine_control: {act}")
+    return result
 
 
 def create_c64_machine_control_tool():
@@ -2417,14 +2935,20 @@ def create_c64_machine_control_tool():
 
         class C64ControlInput(BaseModel):
             action: str = Field(
-                description="Action: reset, poweroff, menu_button, or reboot."
+                description=(
+                    "Action: reset, poweroff, menu_button, reboot, pause, or "
+                    "resume. pause freezes the CPU (useful before inspecting "
+                    "memory with c64_memory_access/c64_memory_analyze so a "
+                    "running program isn't racing you); resume unfreezes it."
+                )
             )
 
         tool = StructuredTool.from_function(
             func=_wrap_with_logging("c64_machine_control", c64_machine_control),
             name="c64_machine_control",
             description=(
-                "Control the physical C64 Ultimate machine state (reset, reboot, menu button, poweroff)."
+                "Control the physical C64 Ultimate machine state (reset, "
+                "reboot, menu button, poweroff, pause, resume)."
             ),
             args_schema=C64ControlInput,
         )
@@ -2432,6 +2956,429 @@ def create_c64_machine_control_tool():
         return tool
     except Exception as e:
         logger.error("Error initializing c64_machine_control tool: %s", e)
+    return None
+
+
+# ------------------------------------------------------------------
+# Drive status / mount tools (GET /v1/drives, PUT /v1/drives/<d>:mount)
+# ------------------------------------------------------------------
+
+
+def c64_list_drives() -> str:
+    """List drive/mount status on the physical C64 Ultimate."""
+    from sdk.network_helper import rest_list_drives
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    try:
+        data = rest_list_drives(c64_ip)
+    except Exception as e:
+        return f"Error reading drive status: {e}"
+
+    lines = []
+    for entry in data.get("drives", []):
+        for name, info in entry.items():
+            if not isinstance(info, dict):
+                continue
+            image = info.get("image_file") or "(none)"
+            path = info.get("image_path", "")
+            lines.append(
+                f"drive {name}: enabled={info.get('enabled')} "
+                f"bus_id={info.get('bus_id')} type={info.get('type')} "
+                f"image={image}" + (f" path={path}" if path else "")
+            )
+    return "\n".join(lines) if lines else "No drives reported."
+
+
+def create_c64_list_drives_tool():
+    """Factory for a read-only tool listing drive/mount status."""
+    try:
+        tool = Tool(
+            name="c64_list_drives",
+            description=(
+                "List the status of all drives (A, B, softiec) on the "
+                "physical C64 Ultimate: enabled state, bus ID, drive type, "
+                "and any currently mounted disk image and its path. "
+                "Read-only. Use this instead of typing/screen-scraping to "
+                "check what's mounted."
+            ),
+            func=_wrap_with_logging(
+                "c64_list_drives", lambda _input="": c64_list_drives()
+            ),
+        )
+        logger.info("c64_list_drives tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing c64_list_drives tool: %s", e)
+    return None
+
+
+def c64_mount_disk(
+    drive: str, image: str, image_type: str = "", mode: str = ""
+) -> str:
+    """Mount an existing disk image (already on the Ultimate's file system) onto a drive."""
+    from sdk.network_helper import rest_mount_drive
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    try:
+        errors = rest_mount_drive(c64_ip, drive, image, image_type or None, mode or None)
+    except Exception as e:
+        return f"Error mounting '{image}' on drive {drive}: {e}"
+
+    if errors:
+        return f"Mount reported errors: {'; '.join(errors)}"
+    _update_world_state(last_action=f"mounted '{image}' on drive {drive}")
+    return f"Mounted '{image}' on drive {drive}."
+
+
+def create_c64_mount_disk_tool():
+    """Factory for a tool that mounts a disk image onto a drive via REST API."""
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class MountDiskInput(BaseModel):
+            drive: str = Field(
+                description="Drive letter to mount onto, e.g. 'a' or 'b'."
+            )
+            image: str = Field(
+                description=(
+                    "Full path to an existing image file on the Ultimate's "
+                    "file system, e.g. '/usb0/games/mygame.d64'."
+                )
+            )
+            image_type: str = Field(
+                default="",
+                description="Optional: d64, g64, d71, g71, or d81. Defaults to the file's extension.",
+            )
+            mode: str = Field(
+                default="",
+                description="Optional: readwrite, readonly, or unlinked. Defaults to the drive's current mode.",
+            )
+
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging("c64_mount_disk", c64_mount_disk),
+            name="c64_mount_disk",
+            description=(
+                "Mount an existing disk image file (already present on the "
+                "Ultimate's file system, e.g. uploaded via the Files tab or "
+                "CSDB import) onto a drive, via the Ultimate REST API. More "
+                "reliable than typing 'mnt' blind: reports mount errors "
+                "structurally instead of requiring a screen read to check."
+            ),
+            args_schema=MountDiskInput,
+        )
+        logger.info("c64_mount_disk tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing c64_mount_disk tool: %s", e)
+    return None
+
+
+# ------------------------------------------------------------------
+# Runners (PUT /v1/runners:run_prg / :run_crt / :sidplay / :modplay)
+# ------------------------------------------------------------------
+
+
+def c64_run_file(file: str, kind: str = "run_prg", songnr: int = None) -> str:
+    """Run/play a file already present on the Ultimate's file system."""
+    from sdk.network_helper import rest_run_file
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    try:
+        errors = rest_run_file(c64_ip, kind, file, songnr)
+    except Exception as e:
+        return f"Error running '{file}' ({kind}): {e}"
+
+    if errors:
+        return f"Run reported errors: {'; '.join(errors)}"
+    verb = {
+        "run_prg": "Loaded and ran",
+        "run_crt": "Started cartridge",
+        "sidplay": "Playing SID",
+        "modplay": "Playing MOD",
+    }.get(kind, "Ran")
+    _update_world_state(last_action=f"{verb.lower()} '{file}' ({kind})")
+    return f"{verb} '{file}'."
+
+
+def create_c64_run_file_tool():
+    """
+    Factory for a tool that runs/plays a file already present on the
+    Ultimate's file system via the REST runners API. Far more reliable than
+    typing LOAD/RUN and hoping: the machine resets and DMA-loads the file
+    directly, and mount/load errors are reported structurally.
+    """
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class RunFileInput(BaseModel):
+            file: str = Field(
+                description=(
+                    "Full path to the file on the Ultimate's file system, "
+                    "e.g. '/usb0/games/game.prg'."
+                )
+            )
+            kind: str = Field(
+                default="run_prg",
+                description=(
+                    "run_prg (default): load+run a .prg. run_crt: start a "
+                    ".crt cartridge image. sidplay: play a .sid tune. "
+                    "modplay: play an Amiga .mod file."
+                ),
+            )
+            songnr: int = Field(
+                default=None,
+                description="Optional song/subtune number for sidplay.",
+            )
+
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging("c64_run_file", c64_run_file),
+            name="c64_run_file",
+            description=(
+                "Run or play a file that already exists on the Ultimate's "
+                "file system: load+run a .prg, start a .crt, or play a .sid/"
+                ".mod tune. This resets the machine and DMA-loads the file "
+                "directly via the REST API -- prefer this over typing "
+                "LOAD/RUN with type_and_observe when you know the exact "
+                "file path, since it's more reliable and reports errors "
+                "structurally."
+            ),
+            args_schema=RunFileInput,
+        )
+        logger.info("c64_run_file tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing c64_run_file tool: %s", e)
+    return None
+
+
+# ------------------------------------------------------------------
+# Ultimate settings (GET/PUT /v1/configs) -- read is safe, writes require
+# an explicit confirm=True since this can change drives, network password,
+# etc. and there's no code-level undo.
+# ------------------------------------------------------------------
+
+
+def c64_configs(
+    operation: str = "get",
+    category: str = "",
+    item: str = "",
+    value: str = "",
+    confirm: bool = False,
+) -> str:
+    """Read or write Ultimate configuration settings via REST API."""
+    from sdk.network_helper import rest_get_configs, rest_set_config
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    op = (operation or "get").strip().lower()
+    try:
+        if op == "get":
+            data = rest_get_configs(c64_ip, category or None, item or None)
+            return json.dumps(data, indent=2)
+        if op == "set":
+            if not category or not item:
+                return "Error: 'set' requires both category and item."
+            if not confirm:
+                return (
+                    "Refused: setting an Ultimate config item changes real "
+                    "machine/network behavior. Re-call with confirm=true "
+                    f"to actually set {category!r}/{item!r} to {value!r}."
+                )
+            data = rest_set_config(c64_ip, category, item, value)
+            return json.dumps(data, indent=2)
+        return "Error: operation must be 'get' or 'set'."
+    except Exception as e:
+        return f"Error accessing Ultimate configs: {e}"
+
+
+def create_c64_configs_tool():
+    """
+    Factory for a tool that reads/writes Ultimate configuration settings
+    (drives, network, WiFi, tape, UI, clock, etc). Reads are unrestricted;
+    writes require confirm=True since they change real machine/network
+    behavior with no code-level undo.
+    """
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class ConfigsInput(BaseModel):
+            operation: str = Field(
+                default="get",
+                description="'get' (default, read-only) or 'set' (write, requires confirm=true).",
+            )
+            category: str = Field(
+                default="",
+                description=(
+                    "Config category, e.g. 'Drive A Settings'. Wildcards "
+                    "allowed. Omit to list all categories (get only)."
+                ),
+            )
+            item: str = Field(
+                default="",
+                description="Config item within the category, e.g. 'Drive Bus ID'. Wildcards allowed.",
+            )
+            value: str = Field(
+                default="",
+                description="New value to set (set operation only).",
+            )
+            confirm: bool = Field(
+                default=False,
+                description="Must be true to actually perform a 'set'. Ignored for 'get'.",
+            )
+
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging("c64_configs", c64_configs),
+            name="c64_configs",
+            description=(
+                "Read or write Ultimate configuration settings (drives, "
+                "network, WiFi, clock, UI, tape, etc) via the REST API. "
+                "operation='get' with no category lists all categories; "
+                "with a category lists its items; with category+item reads "
+                "specific value(s). operation='set' changes one item and "
+                "REQUIRES confirm=true -- always tell the user what you're "
+                "about to change before setting confirm=true, since this "
+                "affects real machine/network behavior."
+            ),
+            args_schema=ConfigsInput,
+        )
+        logger.info("c64_configs tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing c64_configs tool: %s", e)
+    return None
+
+
+# ------------------------------------------------------------------
+# Disk image creation (PUT /v1/files/<path>:create_d64/d71/d81/dnp) and
+# file/directory info (GET /v1/files/<path>:info)
+# ------------------------------------------------------------------
+
+
+def c64_create_disk_image(
+    path: str, image_type: str = "d64", tracks: int = None, diskname: str = ""
+) -> str:
+    """Create a new (empty, formatted) disk image on the Ultimate's own file system."""
+    from sdk.network_helper import rest_create_disk
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    itype = (image_type or "d64").strip().lower()
+    if itype not in ("d64", "d71", "d81", "dnp"):
+        return "Error: image_type must be one of d64, d71, d81, dnp."
+    if itype == "dnp" and not tracks:
+        return "Error: dnp images require an explicit 'tracks' count."
+
+    try:
+        errors = rest_create_disk(c64_ip, path, itype, tracks, diskname or None)
+    except Exception as e:
+        return f"Error creating {itype} image '{path}': {e}"
+
+    if errors:
+        return f"Create reported errors: {'; '.join(errors)}"
+    _update_world_state(last_action=f"created {itype} image at '{path}'")
+    return f"Created {itype} image at '{path}'."
+
+
+def create_c64_create_disk_image_tool():
+    """Factory for a tool that creates a new disk image on the Ultimate's file system."""
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class CreateDiskInput(BaseModel):
+            path: str = Field(
+                description=(
+                    "Full path (from the file system root) for the new image, "
+                    "including filename, e.g. '/usb0/games/newdisk.d64'."
+                )
+            )
+            image_type: str = Field(
+                default="d64",
+                description="d64 (default, 35 or 40 tracks), d71 (70 tracks), d81, or dnp.",
+            )
+            tracks: int = Field(
+                default=None,
+                description="Track count. d64: 35 or 40 (default 35). dnp: required, up to 255.",
+            )
+            diskname: str = Field(
+                default="",
+                description="Optional disk name for the header; defaults to the filename.",
+            )
+
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging("c64_create_disk_image", c64_create_disk_image),
+            name="c64_create_disk_image",
+            description=(
+                "Create a new, empty, formatted disk image (.d64/.d71/.d81/"
+                ".dnp) directly on the Ultimate's own file system via the "
+                "REST API. Use before c64_mount_disk if the user wants a "
+                "fresh disk to write files onto."
+            ),
+            args_schema=CreateDiskInput,
+        )
+        logger.info("c64_create_disk_image tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing c64_create_disk_image tool: %s", e)
+    return None
+
+
+def c64_file_info(path: str) -> str:
+    """Return basic file/directory info (size, extension) from the Ultimate's file system."""
+    from sdk.network_helper import rest_file_info
+
+    c64_ip = _read_last_c64_ip()
+    if not c64_ip:
+        return "Error: No C64 IP configured. Run a network scan first."
+
+    try:
+        data = rest_file_info(c64_ip, path)
+    except Exception as e:
+        return f"Error reading file info for '{path}': {e}"
+    return json.dumps(data, indent=2)
+
+
+def create_c64_file_info_tool():
+    """Factory for a read-only tool returning file/directory info from the Ultimate's file system."""
+    try:
+        from langchain_core.tools import StructuredTool
+        from pydantic import BaseModel, Field
+
+        class FileInfoInput(BaseModel):
+            path: str = Field(
+                description="Full path on the Ultimate's file system, e.g. '/usb0/games/game.prg'. Wildcards allowed."
+            )
+
+        tool = StructuredTool.from_function(
+            func=_wrap_with_logging("c64_file_info", c64_file_info),
+            name="c64_file_info",
+            description=(
+                "Get basic info (size, extension) about a file or directory "
+                "on the Ultimate's own file system via the REST API. "
+                "Read-only."
+            ),
+            args_schema=FileInfoInput,
+        )
+        logger.info("c64_file_info tool initialized")
+        return tool
+    except Exception as e:
+        logger.error("Error initializing c64_file_info tool: %s", e)
     return None
 
 

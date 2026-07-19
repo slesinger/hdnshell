@@ -271,8 +271,20 @@ bank03_data_8045:
     jmp $8265              // 4C 65 82
 bank03_data_806C:
 .errorif (* != $806C), "bank03_data_806C shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $806C
-    .byte $00, $00, $00, $00, $00    // data $807C
+// rf_close3 (HDN run-prg): DOS CLOSE_FILE ($03), bank3-direct (no trampoline needed;
+// bank3 is mapped in the dispatch context). Called by hcb_runfile after rf_loader
+// reports a loaded PRG. Silent on status. Lives in the verified-dead $806C jump-table
+// tail (21 B zeros; $8080 preserved for the 'bit $8080' skip-trick below).
+rf_close3:
+    jsr uci_idle_kick      // UCI idle / abort any leftover
+    lda #$01               // TARGET_DOS1
+    sta $df1d
+    lda #$03               // DOS_CMD_CLOSE_FILE
+    sta $df1d
+    jsr hsh_push
+    jmp hsh_fin            // tail: drain status + accept -> idle (carry ignored)
+.errorif (* > $8080), "rf_close3 overran the $806C tail into $8080 (bit-skip target)"
+    .fill $8081 - *, $00   // pad remaining zeros up to (and preserving) $8080
     nop                    // EA
     nop                    // EA
     nop                    // EA
@@ -282,212 +294,17 @@ bank03_data_806C:
     jmp b03_808D           // 4C 8D 80
     jmp b03_8241           // 4C 41 82
 b03_808D:
-    ldx #$00               // A2 00
-b03_808F:
-    lda $80cf,x            // BD CF 80
-    sta $ce00,x            // 9D 00 CE
-    lda $81cf,x            // BD CF 81
-    sta $cf00,x            // 9D 00 CF
-    inc $d020              // EE 20 D0   VIC border color
-    inx                    // E8
-    bne b03_808F           // D0 EE
-    jsr $8362              // 20 62 83
-    .byte $0D, $0D, $53, $54, $41, $52, $54, $45, $44, $20, $44, $45, $42, $55, $47, $53    // data $80A4  text: "..STARTED DEBUGS"
-    .byte $54, $55, $42, $20, $4F, $4E, $20, $53, $53, $20, $2D, $20, $4B, $49, $43, $4B    // data $80B4  text: "TUB ON SS - KICK"
-    .byte $20, $49, $4E, $20, $59, $45, $52, $20, $50, $43, $00    // data $80C4  text: " IN YER PC."
-    jmp $ce06              // 4C 06 CE
-    jmp $ce11              // 4C 11 CE
-    lda #$04               // A9 04
-    jsr $ceff              // 20 FF CE
-    jsr $ce11              // 20 11 CE
-    jmp $ce0b              // 4C 0B CE
-    sei                    // 78
-    jsr $cf45              // 20 45 CF
-    bcs b03_8109           // B0 23
-    cmp #$41               // C9 41
-    bne b03_8109           // D0 1F
-    jsr $cf5c              // 20 5C CF
-    cmp #$42               // C9 42
-    bne b03_80F4           // D0 03
-    jmp $ce3c              // 4C 3C CE
-b03_80F4:
-    cmp #$43               // C9 43
-    bne b03_80FB           // D0 03
-    jmp $ce87              // 4C 87 CE
-b03_80FB:
-    cmp #$44               // C9 44
-    bne b03_8102           // D0 03
-    jmp $cece              // 4C CE CE
-b03_8102:
-    cmp #$4b               // C9 4B
-    bne b03_8109           // D0 03
-    jmp $cedb              // 4C DB CE
-b03_8109:
-    cli                    // 58
-    rts                    // 60
-    lda $a0                // A5 A0
-    pha                    // 48
-    lda $a1                // A5 A1
-    pha                    // 48
-    lda $a2                // A5 A2
-    pha                    // 48
-    lda $a3                // A5 A3
-    pha                    // 48
-    jsr $cf5c              // 20 5C CF
-    sta $a2                // 85 A2
-    jsr $cf5c              // 20 5C CF
-    sta $a3                // 85 A3
-    jsr $cf5c              // 20 5C CF
-    sta $a0                // 85 A0
-    jsr $cf5c              // 20 5C CF
-    sta $a1                // 85 A1
-    ldy #$00               // A0 00
-b03_812D:
-    jsr $cf5c              // 20 5C CF
-    sta ($a0),y            // 91 A0
-    inc $a0                // E6 A0
-    bne b03_8138           // D0 02
-    inc $a1                // E6 A1
-b03_8138:
-    lda $a1                // A5 A1
-    cmp $a3                // C5 A3
-    bne b03_812D           // D0 EF
-    lda $a0                // A5 A0
-    cmp $a2                // C5 A2
-    bne b03_812D           // D0 E9
-    pla                    // 68
-    sta.abs $00a3          // 8D A3 00
-    pla                    // 68
-    sta.abs $00a2          // 8D A2 00
-    pla                    // 68
-    sta.abs $00a1          // 8D A1 00
-    pla                    // 68
-    sta.abs $00a0          // 8D A0 00
-    cli                    // 58
-    rts                    // 60
-    lda $a0                // A5 A0
-    pha                    // 48
-    lda $a1                // A5 A1
-    pha                    // 48
-    lda $a2                // A5 A2
-    pha                    // 48
-    lda $a3                // A5 A3
-    pha                    // 48
-    jsr $cf5c              // 20 5C CF
-    sta $a2                // 85 A2
-    jsr $cf5c              // 20 5C CF
-    sta $a3                // 85 A3
-    jsr $cf5c              // 20 5C CF
-    sta $a0                // 85 A0
-    jsr $cf5c              // 20 5C CF
-    sta $a1                // 85 A1
-    ldy #$00               // A0 00
-b03_8178:
-    lda ($a0),y            // B1 A0
-    jsr $cf62              // 20 62 CF
-    inc $a0                // E6 A0
-    bne b03_8183           // D0 02
-    inc $a1                // E6 A1
-b03_8183:
-    lda $a1                // A5 A1
-    cmp $a3                // C5 A3
-    bne b03_8178           // D0 EF
-    lda $a0                // A5 A0
-    cmp $a2                // C5 A2
-    bne b03_8178           // D0 E9
-    pla                    // 68
-    sta $a3                // 85 A3
-    pla                    // 68
-    sta $a2                // 85 A2
-    pla                    // 68
-    sta $a1                // 85 A1
-    pla                    // 68
-    sta $a0                // 85 A0
-    cli                    // 58
-    rts                    // 60
-    jsr $cf5c              // 20 5C CF
-    sta $a0                // 85 A0
-    jsr $cf5c              // 20 5C CF
-    sta $a1                // 85 A1
-    jmp ($00a0)            // 6C A0 00
-    lda #$37               // A9 37
-    sta $01                // 85 01   CPU port: mem banking
-    cli                    // 58
-    jsr $a659              // 20 59 A6
-    jmp $a7ae              // 4C AE A7
-    lda $de01              // AD 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
-    ora #$01               // 09 01
-    sta $de01              // 8D 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
-    ldx #$00               // A2 00
-b03_81BF:
-    stx $de0f              // 8E 0F DE
-    cpx $de0f              // EC 0F DE
-    bne b03_81CC           // D0 05
-    inx                    // E8
-    bne b03_81BF           // D0 F5
-    clc                    // 18
-    rts                    // 60
-b03_81CC:
-    sec                    // 38
-    rts                    // 60
-    tax                    // AA
-    lda $de01              // AD 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
-    ora #$01               // 09 01
-    sta $de01              // 8D 01 DE   RR ext control: b1 AllowBank,b2 NoFreeze,b6 REU-compat map
-    lda #$87               // A9 87
-    sta $de0a              // 8D 0A DE
-    lda #$83               // A9 83
-    sta $de0b              // 8D 0B DE
-    stx $de08              // 8E 08 DE
-    lda #$00               // A9 00
-    sta $de09              // 8D 09 DE
-    lda #$03               // A9 03
-    sta $de0b              // 8D 0B DE
-    lda #$00               // A9 00
-    sta $de09              // 8D 09 DE
-    jmp $cf3f              // 4C 3F CF
-    lda $de0d              // AD 0D DE
-    and #$01               // 29 01
-    rts                    // 60
-    lda $de0d              // AD 0D DE
-    and #$20               // 29 20
-    rts                    // 60
-    lda $de0e              // AD 0E DE
-    and #$10               // 29 10
-    rts                    // 60
-    lda #$03               // A9 03
-    sta $de0c              // 8D 0C DE
-    rts                    // 60
-    lda #$01               // A9 01
-    sta $de0c              // 8D 0C DE
-    rts                    // 60
-    jsr $cf27              // 20 27 CF
-    bne b03_821C           // D0 03
-    jsr $cf39              // 20 39 CF
-b03_821C:
-    jsr $cf3f              // 20 3F CF
-    jsr $cf27              // 20 27 CF
-    bne b03_8226           // D0 02
-    sec                    // 38
-    rts                    // 60
-b03_8226:
-    lda $de08              // AD 08 DE
-    clc                    // 18
-    rts                    // 60
-b03_822B:
-    jsr $cf45              // 20 45 CF
-    bcs b03_822B           // B0 FB
-    rts                    // 60
-    pha                    // 48
-b03_8232:
-    jsr $cf33              // 20 33 CF
-    beq b03_8232           // F0 FB
-b03_8237:
-    jsr $cf2d              // 20 2D CF
-    beq b03_8237           // F0 FB
-    pla                    // 68
-    sta $de08              // 8D 08 DE
-    rts                    // 60
+// Silversurfer (RS232) debugstub + UART driver REMOVED -- step 3a (2026-07-18). Dead on
+// C64U (no RS232 SS silicon). The bank1 single-char SS-launch command was retargeted
+// ($85A6 $EE->$E5 => dispatch to the $80E6 rts no-op), so $8087 (jmp $808D) is now
+// unreferenced; bank1:2131 -> $808A (jmp $8241, ML monitor register header) is UNAFFECTED
+// and the header $8241-$8264 is KEPT. This reclaims $808D-$8240 (436 B) -- bank3's first
+// real reserve since the annexes filled (space_map.md §5.1). Leading rts keeps the now-
+// dead $8087->$808D path harmless. Step 3b fills this pocket with flash_retry/prep_flash.
+    rts                    // 60  ($808D: safety no-op for the now-dead $8087 jmp)
+.errorif (* > $8241), "SS-removal fill overran the kept $8241 monitor header"
+    .fill $8241 - *, $00   // reclaimed SS debugstub body (blanked) up to the kept header
+.errorif (* != $8241), "SS-removal fill did not land on $8241 (monitor header)"
 b03_8241:
     jsr $8362              // 20 62 83
     .byte $0D, $20, $20, $41, $44, $44, $52, $20, $41, $52, $20, $58, $52, $20, $59, $52    // data $8244  text: ".  ADDR AR XR YR"
@@ -2745,32 +2562,51 @@ bank03_sub_972B:
 bank03_sub_9744:
 bank03_data_9769:
 .errorif (* != $9769), "bank03_data_9769 shifted"
-    .byte $60, $00, $00, $00, $00, $00, $00, $00, $00    // data $9769
-bank03_sub_9772:
-    brk                    // 00
-bank03_data_9773:
-.errorif (* != $9773), "bank03_data_9773 shifted"
-    .byte $00, $00, $00, $00    // data $9773
-bank03_sub_9777:
-    brk                    // 00
-bank03_data_9778:
-.errorif (* != $9778), "bank03_data_9778 shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9778
-    .byte $00    // data $9788
-bank03_sub_9789:
-    brk                    // 00
-bank03_data_978A:
-.errorif (* != $978A), "bank03_data_978A shifted"
-    .byte $00, $00, $00, $00, $00    // data $978A
-bank03_sub_978F:
-    brk                    // 00
-bank03_sub_9790:
-    brk                    // 00
-bank03_data_9791:
-.errorif (* != $9791), "bank03_data_9791 shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9791
-bank03_sub_97A1:
-    brk                    // 00
+    .byte $60              // $9769: preserved trailing byte (stock zero-pad tail)
+// =============================================================================
+// HDN run-prg (step 2) -- catch-all invoked from hcb_no after bank4 returns C=1.
+// Lives in the verified-dead $976A-$97A1 annex (subagent audit 2026-07-18: nothing
+// in any of the 8 banks references this range). bank3 is mapped here (dispatch
+// context) so it could call the UCI leaf helpers directly; it reaches the bank5
+// loader (RF_LOADER=$804E, in the hardware-proven $804E-$80FF pocket) by re-healing
+// the EXISTING call_bank5 trampoline (b5tramp) into $0378 and patching only its jsr
+// target -- NO new cross-bank trampoline is introduced.
+// rf_loader returns C=0 = handled (PRG loaded), C=1 = not a UCI file -> server.
+.const RF_LOADER = $804E    // bank5 run-prg loader entry (pinned in bank05.asm)
+hcb_runfile:
+    // DEVICE gate (moved here from the loader to fit the READ loop in the pocket):
+    // current-dir run-by-name is UCI-DOS only (h/t/f). Anything else -> server.
+    lda $cf2a              // current device letter (already normalized uppercase)
+    cmp #$48               // 'H' Ultimate Home
+    beq hcr_dev_ok
+    cmp #$54               // 'T' Ultimate Temp
+    beq hcr_dev_ok
+    cmp #$46               // 'F' Ultimate Flash
+    beq hcr_dev_ok
+hcr_srv:
+    jmp hsh_body           // not UCI DOS (or not a file) -> chat/AI server forward
+hcr_dev_ok:
+    ldx #$0d               // re-heal the 14-byte call_bank5 trampoline into $0378
+hcr_cp:                    //   (hsh_ck_b4 left b4tramp there; the bank6 path may
+    lda b5tramp,x          //    have patched its bank operand -- re-heal fresh)
+    sta $0378,x
+    dex
+    bpl hcr_cp
+    lda #<RF_LOADER        // patch b5tramp's jsr target ($037E/$037F) -> bank5 loader
+    sta $037e
+    lda #>RF_LOADER
+    sta $037f
+    jsr $0378              // map bank5 ($88), jsr RF_LOADER, restore bank3 ($18)
+    bcs hcr_srv            // C=1 = not a UCI file / read failure -> server (shared)
+    // C=0 = PRG loaded into RAM at its header addr; $fb/$fc = end+1, file still OPEN.
+    lda $fb                // set BASIC VARTAB (end-of-program) so LIST/RUN see it
+    sta $2d
+    lda $fc
+    sta $2e
+    jsr rf_close3          // CLOSE the file handle (bank3-direct, $806C)
+    rts                    // (2d will replace this rts with the RUN-inject)
+.errorif (* > $97A2), "hcb_runfile overran the $976A annex into the $97A2 gateway"
+    .fill $97A2 - *, $00   // pad remaining verified-dead annex zeros up to $97A2
 bank03_data_97A2:
 .errorif (* != $97A2), "bank03_data_97A2 shifted"
 // =============================================================================
@@ -2804,7 +2640,7 @@ hcb_cp:
     bcs hcb_no             // C=1 = bank4 didn't handle -> chat/AI / c/n forward
     rts                    // C=0 = handled -> no stock ?SYNTAX ERROR
 hcb_no:
-    jmp hsh_body           // not a bank4 command -> normal chat/AI forward
+    jmp hcb_runfile        // HDN run-prg: try bank5 loader (catch-all), else server
 b4tramp:
     .byte $A9, $80         // lda #$80      map bank4
     .byte $8D, $00, $DE    // sta $de00

@@ -223,13 +223,16 @@ tut3 = Tutorial(
             # The AI dispatches a real "ll", so the same directory-listing
             # heuristic as tut1's ll steps applies here too. (Real
             # hardware bug found here, 2026-07-17: the agent was
-            # describing "ll" instead of actually typing it -- fixed in
-            # chat_handler.py's CHAT_SYSTEM_PROMPT, which told the model
-            # to consult the manual for "file listing"-type asks without
-            # ever telling it to then act via type_on_c64 for a live
-            # do-it-now request. The system prompt now says explicitly:
-            # if the user asked you to DO it, call type_on_c64, don't
-            # just describe it.)
+            # describing "ll" instead of actually typing it. First fix was
+            # prompt-only and didn't hold -- chat_handler.py's
+            # _select_tools_for_query() was still hard-restricting the
+            # toolset to hondani_shell_manual-only for any query matching
+            # shell-docs keywords, regardless of question-vs-action
+            # phrasing, which silently removed the typing tool entirely.
+            # Fixed 2026-07-18 by dropping that restriction and trusting
+            # the system prompt's TOOL PRIORITY RULES instead; typing is
+            # now done via the type_and_observe tool, which also waits for
+            # the screen to settle before returning.)
             verify=screen_contains(".d64", ".prg", ".d81", ".crt"),
             demo_keys=b"i:list the files on this disk\r",
         ),

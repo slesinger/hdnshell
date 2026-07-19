@@ -791,14 +791,20 @@ def c64_keyboard():
 # ─── Stream control ────────────────────────────────────────────────────────────
 
 
-@app.route("/streams/video/start", methods=["PUT"])
-def start_video_stream():
-    """Tell U64 to start sending its VIC video stream to this server (UDP 11000),
-    and start the local UDP listener if not already running."""
+def _ensure_video_stream_active() -> str:
+    """
+    Tell U64 to start sending its VIC video stream to this server (UDP
+    11000), and start the local UDP listener if not already running. Shared
+    by the /streams/video/start route and capture_video_frame().
+
+    Returns the server IP the stream was pointed at. Raises RuntimeError if
+    no C64 IP is configured, or OSError if both REST and TCP-fallback start
+    attempts fail.
+    """
     global _video_active, _video_udp_thread, _video_stop_event
     last_ip = read_last_c64_ip()
     if not last_ip:
-        return jsonify({"error": "No C64 IP configured"}), 400
+        raise RuntimeError("No C64 IP configured")
 
     server_ip = _get_outbound_ip()
     try:
@@ -807,12 +813,8 @@ def start_video_stream():
         resp.raise_for_status()
     except requests.RequestException as exc:
         logger.warning(f"U64 stream start via REST failed: {exc} — trying TCP fallback")
-        try:
-            # TCP fallback: SOCKET_CMD_VICSTREAM_ON (0xFF20)
-            _send_tcp_cmd(last_ip, 0x20)
-        except OSError as tcp_exc:
-            logger.exception("TCP fallback for video stream also failed")
-            return jsonify({"error": str(tcp_exc)}), 500
+        # TCP fallback: SOCKET_CMD_VICSTREAM_ON (0xFF20)
+        _send_tcp_cmd(last_ip, 0x20)
 
     if not _video_active:
         _video_active = True
@@ -832,14 +834,11 @@ def start_video_stream():
         _video_stop_event = stop_evt
         _video_udp_thread.start()
 
-    return jsonify(
-        {"status": "ok", "streaming_to": server_ip, "port": U64_VIDEO_UDP_PORT}
-    )
+    return server_ip
 
 
-@app.route("/streams/video/stop", methods=["PUT"])
-def stop_video_stream():
-    """Stop the video stream."""
+def _stop_video_stream_internal() -> None:
+    """Stop the video stream. Shared by the /streams/video/stop route and capture_video_frame()."""
     global _video_active
     _video_active = False
     if _video_stop_event is not None:
@@ -856,7 +855,80 @@ def stop_video_stream():
             except OSError:
                 pass
 
+
+@app.route("/streams/video/start", methods=["PUT"])
+def start_video_stream():
+    try:
+        server_ip = _ensure_video_stream_active()
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except OSError as exc:
+        logger.exception("TCP fallback for video stream also failed")
+        return jsonify({"error": str(exc)}), 500
+
+    return jsonify(
+        {"status": "ok", "streaming_to": server_ip, "port": U64_VIDEO_UDP_PORT}
+    )
+
+
+@app.route("/streams/video/stop", methods=["PUT"])
+def stop_video_stream():
+    """Stop the video stream."""
+    _stop_video_stream_internal()
     return jsonify({"status": "ok"})
+
+
+def capture_video_frame(timeout_seconds: float = 6.0) -> bytes:
+    """
+    Capture a single still frame from the U64's live VIC video stream and
+    return it PNG-encoded (384x272 RGB).
+
+    Temporarily subscribes to the existing video relay -- the same one
+    /ws/video browser clients use -- starting the stream if nobody is
+    currently watching, and stopping it again afterward if this call was
+    the one that started it (so it doesn't leave the stream running, or
+    cut off an actual browser viewer).
+    """
+    import time as _time
+
+    from sdk.vic_video import FRAME_WIDTH, FRAME_HEIGHT, decode_vic_packet, encode_png
+
+    was_active = _video_active
+    if not was_active:
+        _ensure_video_stream_active()
+
+    q: queue.Queue = queue.Queue(maxsize=64)
+    with _video_lock:
+        _video_clients.append(q)
+
+    frame = bytearray(FRAME_WIDTH * FRAME_HEIGHT * 3)
+    frames_completed = 0
+    deadline = _time.monotonic() + timeout_seconds
+    try:
+        while frames_completed < 2:
+            remaining = deadline - _time.monotonic()
+            if remaining <= 0:
+                break
+            try:
+                packet: bytes = q.get(timeout=remaining)
+            except queue.Empty:
+                break
+            if decode_vic_packet(packet, frame):
+                frames_completed += 1
+    finally:
+        with _video_lock:
+            if q in _video_clients:
+                _video_clients.remove(q)
+        if not was_active:
+            _stop_video_stream_internal()
+
+    if frames_completed == 0:
+        raise RuntimeError(
+            "Timed out waiting for a video frame from the C64. Is the "
+            "'Web Remote Control' service enabled on the Ultimate?"
+        )
+
+    return encode_png(bytes(frame), FRAME_WIDTH, FRAME_HEIGHT)
 
 
 @app.route("/streams/audio/start", methods=["PUT"])

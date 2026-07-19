@@ -3119,3 +3119,45 @@ bank3 compaction) is DOWN until 6pm Prague (session API limit). Awaiting Honza's
 (a) reclaim ~50 B in bank3 in small HW-tested steps, (b) wait for 6pm advisor to co-design the
 compaction, or (c) ship 2d as final + defer /flash/bin. 2d (current-dir run-by-name) is DONE and
 independent -- committable now regardless.
+
+## Step 29 — SCOPE: /flash/bin fallback via SS removal. STEP 3a = Silversurfer removal (built+byte-verified, awaiting HW test)
+
+**Resolution (Honza + Fable5 space_map.md):** the /flash/bin fallback is feasible by RECLAIMING
+bank3 space (the only legal orchestration site -- see prior entry's nesting proof) via dropping the
+**Silversurfer (RS232) debugstub** (dead on C64U; space_map §5.1). Design (Fable5-reviewed):
+- REUSE `rf_loader` UNCHANGED. The /flash/bin attempt PREPENDS "/flash/bin/" into the $02a7 RAM
+  shadow line, then calls rf_loader again -> it OPENs "/flash/bin/<name>". No 2nd OPEN routine.
+- Orchestration `flash_retry` + `prep_flash` + string live in the SS-freed bank3 $808D-$8240 pocket
+  (~436 B), reached by same-bank jsr from `hcb_runfile`/`hcr_srv`. rf_loader stays byte-identical.
+- Fable5 caught 2 bugs to fix in 3b: (1) prepend must GUARD EOL index <= 77 (else it shifts $02a7
+  past $02FF into $0300/$0301 = the IERROR vector HDN owns -> dead wedge); (2) on /flash/bin OPEN
+  fail, RESTORE the line (shift back) before `jmp hsh_body`, else the server gets "/flash/bin/<chat>".
+  Plus: heal b5tramp unconditionally, `jsr rf_close3` at flash_retry entry (closes a handle-leak
+  edge), and reuse `hcb_runfile`'s epilogue via a `hcr_done` label.
+
+**3a = SS removal (this step).** Two changes, byte-verified vs the 2d build:
+- **bank1: 1 byte** -- table $85A6 $EE->$E5. The single-char SS-launch command dispatched (rts-trick,
+  value+1) to $80EE->$80EF (`jsr $9f51`/inline $8087 -> bank3 $808D SS debugstub). Retargeted to
+  $80E5->$80E6 (an existing bare `rts`) => SS-launch is now a clean no-op. bank1 otherwise frozen.
+  (Fable5's Q2: a bare "$808D=rts, no bank1 change" is UNSAFE -- the bank1 thunk continuation plants
+  a deferred return into $CE00 that relies on the SS driver's self-copy; severing at the bank1 table
+  is the correct fix and matches space_map §5.1's plan of record.)
+- **bank3: $808D-$8240 blanked** (436 B SS debugstub reclaimed; $808D left as a safety `rts` for the
+  now-dead $8087 `jmp $808D`). KEPT: $8087-$808C (the two jmps, incl. $808A `jmp $8241`) and the
+  $8241-$8264 ML monitor register header (". ADDR AR XR YR SP 01 NV-BDIZC.", reached via bank1:2131
+  -> $808A). `.errorif` pins the fill to land exactly on $8241 (no address shift). Verified: all
+  SS-body labels self-contained except b03_808D (kept). This is bank3's first real reserve since the
+  annexes filled.
+
+**Byte-verify:** vs reconstructed 2d build -- bank1 differs ONLY at $85A6 (1 B); bank3 differs ONLY
+in $808D-$8240 (422 B, all inside the pocket); banks 0/2/4/5/6/7 + all 2d code (rf_loader $804E,
+hcb_runfile $976A, rf_close3 $806C) UNTOUCHED. All `.errorif` guards hold. NOT committed.
+
+**HW test asks (3a).** Arm HDN if needed. (1) ML MONITOR: enter the RR machine-code monitor and show
+registers (the `R`/register command) -> the ". ADDR AR XR YR SP 01 NV-BDIZC." header + values must
+print correctly (proves the kept $808A->$8241 path + dispatch table survived the bank1 retarget).
+(2) The single-char Silversurfer command (whatever key launched "STARTED DEBUGSTUB ON SS") is now an
+inert no-op -> pressing it must NOT crash (just returns to the prompt/monitor). (3) REGRESSION: 2d
+run-by-name still LOADS+RUNS a typed filename on h/t/f; mnt/umnt/cd/ll/pwd/status/#/time intact.
+(4) STABILITY: TASS/TMP launch+exit, freeze->resume, normal BASIC, stock RR sweep all intact. If the
+monitor R header is garbled or anything crashes, report it. If all pass, 3b adds /flash/bin.

@@ -78,7 +78,141 @@ l1_text:                        // "**** COMMODORE 64 SHELL V1 ****" in C64 scre
     .byte $13, $08, $05, $0c, $0c, $20                                // "SHELL "
     .byte $16, $31, $20                                               // "V1 "
     .byte $2a, $2a, $2a, $2a                                          // "****"
-.errorif (* > $8100), "BB-L1 bank5 $8023 pocket overran into $8100 TMP payload"
+// =============================================================================
+// Shared bank5 constants (bank3 frozen leaf helpers + the bank5->bank3 trampoline).
+// Defined here (ahead of rf_loader at $804E) so both the run-prg loader and the
+// b5_disp/mnt region below can reference them.
+.const B3_IDLE  = $9dbb     // bank3 uci_idle_kick (frozen)
+.const B3_PUSH  = $9b20     // bank3 hsh_push (frozen)
+.const B3_FIN   = $9b6a     // bank3 hsh_fin (frozen)
+.const B5C3_RUN = $0386     // bank5->bank3 RAM trampoline (shares b4c3's $0386 slot)
+// =============================================================================
+// HDN run-prg (step 2d OPEN + READ_DATA -> RAM + RUN-inject) -- rf_loader entry,
+// pinned $804E (hcb_runfile in bank3 hardcodes RF_LOADER=$804E). Reached via the
+// re-healed call_bank5 tramp (bank3 hcb_runfile -> call_bank5 $0378 -> $804E). This
+// entry is NOT reached through b5_disp, so it must heal its OWN b5c3 first.
+//
+// bank3 hcb_runfile does the DEVICE gate (h/t/f) BEFORE the call, then sets $2D/$2E
+// + CLOSEs AFTER a C=0 return. Here: OPEN_FILE ($02, attrib=read) the whole $02a7
+// token in the DOS1 current dir; if it opens (status "00"), READ_DATA ($04) streams
+// the file (accept-gated 512 B packets) into RAM at its own 2-byte header load addr,
+// then stuffs "RUN"+CR into the keyboard buffer so BASIC auto-runs at READY. Returns
+// C=0 = loaded (file left OPEN, $fb/$fc = end+1), C=1 = not-a-file / read failure.
+//
+// SPACE: the pocket is full ($804E-$8100). To fit the RUN-inject, the single-token
+// gate and OPEN's leading UCI-idle were dropped: a spaced/empty line simply OPEN-
+// fails here -> C=1 -> server (same end result, just one wasted OPEN round-trip on a
+// multi-word line); and UCI is already idle at loader entry (the dispatch path to
+// hcb_runfile issues no UCI for a plain filename, and every prior shell UCI command
+// ends idle via FIN+accept). SAFETY: a bounded DATA_AV wait precedes the 2-byte
+// header read so a not-ready response can never yield a garbage load address (random-
+// RAM scribble); every wait is bounded (256 polls) -> no hang. ZP $fb/$fc = store ptr
+// (RUN's CLR re-derives $2F-$32 from $2D). Reuses b5c3_install/B5C3_RUN + b5_fold.
+.errorif (* != $804E), "rf_loader not at $804E (RF_LOADER const in bank03 would break)"
+rf_loader:
+    jsr b5c3_install       // heal the bank5->bank3 RAM trampoline @ $0386 (this entry
+                           //   is not reached via b5_disp, so heal it ourselves)
+    // OPEN_FILE (attrib = read) the whole $02a7 shadow line as a filename in the DOS1
+    // current dir. (device + token gating live in bank3 / a spaced/empty line just
+    // OPEN-fails -> C=1 -> server. UCI is idle at entry, so no leading idle-kick.)
+    lda #$01               // TARGET_DOS1
+    sta $df1d
+    lda #$02               // DOS_CMD_OPEN_FILE
+    sta $df1d
+    lda #$01               // attrib = read
+    sta $df1d
+    ldx #$00
+rf_wr:
+    lda $02a7,x            // write the filename bytes (up to EOL, terminator omitted)
+    beq rf_wrd
+    jsr b5_fold           // fold SHIFTed letters $C1-$DA -> $41-$5A (case-insens)
+    sta $df1d
+    inx
+    bne rf_wr
+rf_wrd:
+    ldx #<B3_PUSH
+    ldy #>B3_PUSH
+    jsr B5C3_RUN
+    bcs rf_notours         // push failed -> treat as not found -> server
+    ldx #<B3_FIN
+    ldy #>B3_FIN
+    jsr B5C3_RUN           // drain data + read status + accept; C=0 iff status "00"
+    bcc rf_read            // C=0 = file exists/open -> READ it
+rf_notours:
+    sec                    // not-a-file / push-fail / no-data -> server forward
+    rts
+rf_read:
+    // ---- READ_DATA ($04): stream the whole file into RAM at its header load addr ----
+    lda #$01               // TARGET_DOS1 (UCI is idle after OPEN's FIN)
+    sta $df1d
+    lda #$04               // DOS_CMD_READ_DATA
+    sta $df1d
+    ldx #<B3_PUSH
+    ldy #>B3_PUSH
+    jsr B5C3_RUN           // PUSH (+ bounded busy-wait: response is ready on return)
+    bcs rf_notours         // push failed -> nothing written -> server
+    // bounded wait for the FIRST packet's DATA_AV before reading the 2-byte header
+    ldy #$00
+rf_wda:
+    lda $df1c
+    and #$80               // DATA_AV?
+    bne rf_hdr
+    iny
+    bne rf_wda             // ~256 polls...
+    beq rf_notours         // ...no data at all -> safe (nothing written) -> server
+rf_hdr:
+    lda $df1e              // PRG header load-address lo
+    sta $fb
+    lda $df1e              // PRG header load-address hi
+    sta $fc
+rf_pkt:
+    ldy #$00               // store index stays 0; the pointer walks via inc $fb/$fc
+rf_rd:                     // drain the current packet -> ($fb),y
+    lda $df1c
+    and #$80               // DATA_AV?
+    beq rf_acc             // packet drained -> accept & fetch next
+    lda $df1e
+    sta ($fb),y
+    inc $fb
+    bne rf_rd
+    inc $fc
+    bne rf_rd              // 16-bit ptr ($fc=0 wrap impossible for a real load)
+rf_acc:
+    lda $df1c
+    ora #$02               // DATA_ACC -> release the next packet
+    sta $df1c
+    ldy #$00
+rf_ak:
+    lda $df1c
+    and #$02               // wait (bounded) for the ack to clear = sync point
+    beq rf_chk
+    iny
+    bne rf_ak
+    beq rf_fin             // ack stuck (~256 polls) -> finish (bounded, no hang)
+rf_chk:
+    lda $df1c
+    and #$80               // another packet ready now?
+    bne rf_pkt             // yes -> drain it (resets Y=0)
+rf_fin:
+    ldx #<B3_FIN
+    ldy #>B3_FIN
+    jsr B5C3_RUN           // drain trailing status + accept -> UCI idle (file still OPEN)
+    // ---- RUN-inject: "RUN"+CR into the keyboard buffer -> BASIC auto-runs at READY.
+    // (bank3 hcr_done still runs first on return: sets $2D/$2E + CLOSEs the file, then
+    // its rts unwinds to the BASIC READY loop which consumes the buffer.)
+    ldx #$03
+rf_ri:
+    lda rf_rtxt,x
+    sta $0277,x            // keyboard buffer $0277-$027A
+    dex
+    bpl rf_ri
+    lda #$04
+    sta $c6                // keyboard buffer char count = 4 ("RUN"+CR)
+    clc                    // handled: PRG loaded, $fb/$fc = end+1 (bank3 sets $2D/$2E)
+    rts
+rf_rtxt:
+    .byte $52, $55, $4e, $0d   // "RUN" + CR (PETSCII)
+.errorif (* > $8100), "rf_loader bank5 $804E pocket overran into $8100 TMP payload"
     .fill $8100 - *, $00      // rest of the dead $8023-$80FF pocket (unchanged zeros)
     .byte $4C, $B7, $80    // data $8100 (TMP payload resumes -- jmp $80B7)
     .byte $4C, $EA, $81, $01, $00, $54, $4D, $50, $20, $31, $2E, $32, $20, $20, $20, $52    // data $8103
@@ -579,10 +713,7 @@ l1_text:                        // "**** COMMODORE 64 SHELL V1 ****" in C64 scre
 // $cf26/$cf30/$cf31): $cf43 = target IEC device byte ($08/$09); $cf44 = write-path
 // flag (1 = mnt writes the path arg, 0 = umnt writes none); $cf48 = path start idx.
 // =============================================================================
-.const B3_IDLE  = $9dbb     // bank3 uci_idle_kick (frozen)
-.const B3_PUSH  = $9b20     // bank3 hsh_push (frozen)
-.const B3_FIN   = $9b6a     // bank3 hsh_fin (frozen)
-.const B5C3_RUN = $0386     // bank5->bank3 RAM trampoline (shares b4c3's $0386 slot)
+// (B3_IDLE/B3_PUSH/B3_FIN/B5C3_RUN are defined ahead of rf_loader near $804E.)
 b5_disp:
 .errorif (* != $9E00), "b5_disp not at $9E00"
     jsr b5c3_install       // heal the bank5->bank3 RAM trampoline @ $0386

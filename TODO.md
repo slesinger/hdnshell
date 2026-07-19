@@ -5,9 +5,15 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
-Run prg file by typing its name like it is usual with PC DOS. It will load to RAM and run RUN. See screenshot where it is failing. After your change it will run properly.
+
+Update docs/user_manual to stress enough that user can just type a name of program to run it. The cool thing is that HDN shell also checks the /flash/bin directory and if it finds a prg file there, it will load it to RAM and run it. This is very useful to avoid joggling with disk and navigate between directories.
 
 
+
+The server (cloud directory) has an LLM agent that has a tool that can send key strokes to the C64. There is also tool to read the memory $0400-$07f8 and hence it can see what is on the screen. It makes the agent fully capable of controlling the c64, actually doing stuff. I can ask "list directory for me" and it should be able to do it. For some reason this tool is not being called. Investigate the description of the tool and the prompt around. In addition, suggest how to make the harness around this agent to get all capabilities of working with the C64 ultimate complete. There is documentation rest_api_calls that describes what is possible to control over API. Suggest improvments to existing tools and also you can suggest new tools and agent improvements. The goal is to have a fully capable agent that can control the C64 and do anything that a human can do on it, including reading the screen, sending keystrokes, and interacting with the file system.
+Generate ideas of improvements, go wild, I will tell you what is good idea and what is not worth doing.
+Ask me any questions before you proceed to ensure you understand the task well.
+Use cheaper subagent when possible to save tokens.
 
 
 
@@ -20,6 +26,47 @@ Run prg file by typing its name like it is usual with PC DOS. It will load to RA
 
 ------
 QUEUE
+
+I need to copy file from #n network drive to UCI and vice versa.
+I tried this
+#n
+cd greet
+ll
+(there is a file called greet.prg)
+cp greet.prg h:
+cp greet.prg h:/sd/home/greet.prg
+But none of these works now.
+While doing this, also make support for mv.
+If doing support for these is too complex or risky for wedge, it is ok to have it server supported only.
+It should also be able to copy/move files from/to UCI drives and between UCI and network drives.
+
+
+
+
+The command `cd` without parameter should bring to original directory for given drive
+#h -> /sd/home
+#f -> /flash
+#t -> /temp
+
+
+
+
+HDN Server web browser can navigate to pages if you know the URL of the page. But it is not possible to use google search to find things. Recommend how to implement a simplified page (such that can be displayed in the HDN server browser text mode) where user can simply search and get results like if it is simplified google search. There should be a good search engine behind this. Either to proxy google.com search more so it actually works, or to use search API such as Tavily.
+
+
+
+
+
+
+
+
+
+
+
+DODELAT POPIS
+F3 lists current IEC device, while ll lists UCI device indepenedently.
+
+
 
 There is user experience issue. The users has to wait an extra second after some commands are executed. The scenario is: user types command, command is executed, user sees full output, user can only see READY prompt after a second.
 Quick commands where the wait time is not observed:
@@ -35,10 +82,10 @@ Slow commands where the wait time is observed:
 - unknown command that is to server will respond with ?ERROR immediately
 
 
-tool pro psani na obrazovku. nechce mi to zobrazit adresar.
 
 
-cp, mv v ramci ultimate fs
+
+
 
 
 
@@ -46,15 +93,6 @@ AZ UPLOADUJI crt na GIHUB
 The UI also allows to easily enable/dasable the ROM/cartridge. The UI button Download&Update must work with the crt and cfg in the cart filder. Adjust the procedure.
 Server UI has Enable and Disable buttons who need to influence if HDN shell cartridge is inserted or is empty slot. Previously these buttons worked but instead of manipulating cartridge slot, it was manipulating BASIC ROM.
 Ask me any questions before you proceed to ensure you understand the task well.
-
-
-# tutorial pres input keys
-User would type `tutorials`, server would send list of tutorials. Zde je seznam tutorialu:
-tut1 prchazet disk, mount disk, run game
-tut2 jak pouzivat help
-tut3 ask me anything, AI chat, how to use tools like search the web, read screen, let HDN shell control the console
-tut4 jak najit demo na csdb, jak ho spustit, jak ho ulozit na disk, jak ho spustit z disku
-tut5 complete migrate to C64 (HDN shell hez browser, Telegram, AI chat, all you need to abandon the PC, use C64 as your main computer, make it a bit fun)
 
 
 
