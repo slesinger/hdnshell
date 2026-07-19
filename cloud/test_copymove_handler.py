@@ -63,6 +63,7 @@ class FakeFTP:
         self.mkd_calls = []
         self.fail_stor = set()  # basenames that raise on STOR
         self.fail_rename = set()  # fromnames that raise on rename
+        self.fail_cwd = set()  # paths that raise on cwd (e.g. nonexistent dir)
         FakeFTP.instances.append(self)
 
     def login(self):
@@ -79,6 +80,8 @@ class FakeFTP:
 
     def cwd(self, path):
         self.cwd_calls.append(path)
+        if path in self.fail_cwd:
+            raise ftplib.error_perm("550 Requested action not taken.")
         self.current_dir = path
 
     def mlsd(self):
@@ -207,12 +210,45 @@ class TestPathGrammar:
         monkeypatch.setattr(copymove_handler, "WORKSPACE_DIR", str(tmp_path))
         assert _resolve_workspace_path("", "../../etc/passwd") is None
 
-    def test_relative_uci_with_no_cwd_frame_is_usage_error(self, monkeypatch):
+    def test_relative_bare_with_no_cwd_frame_falls_back_to_workspace(self, monkeypatch):
+        # No dos_cwd this request (e.g. typed on #n) -- a bare *relative* token
+        # can no longer mean a UCI path (there's no live UCI cwd to resolve
+        # against), so it's treated as net_cwd-relative instead. Nothing is
+        # seeded at that workspace path here, so this surfaces as NOTHING
+        # MATCHED rather than the old hard usage error.
         monkeypatch.setattr(ftplib, "FTP", FakeFTP)
         handler = CopyMoveHandler()
         update_session_state(400, client_ip="1.2.3.4")  # no dos_cwd
         resp = handler.handle("cp echo.prg /temp/echo.prg", 400)
-        assert resp == "Usage: cp <src> <dst>"
+        assert resp == "?NOTHING MATCHED: echo.prg"
+
+    def test_classify_bare_relative_with_no_frame_is_workspace(self):
+        update_session_state(499, client_ip="1.2.3.4")  # no dos_cwd
+        assert _classify("digitalclock.prg", 499) == ("n", "digitalclock.prg")
+        # absolute bare paths are always UCI, frame or not
+        assert _classify("/sd/home/medlicek", 499) == ("uci", "/sd/home/medlicek")
+
+    def test_relative_bare_src_with_no_cwd_frame_resolves_against_workspace(
+        self, tmp_path, monkeypatch
+    ):
+        # Regression: `cp digitalclock.prg /sd/home/medlicek` typed while on #n
+        # (no UCI cwd frame this request) used to hard-fail with the usage
+        # string even though the bare source obviously meant "the file in my
+        # current network-drive directory" -- #n is the only device that sends
+        # no frame, so that's the only live directory a bare relative token
+        # could mean.
+        monkeypatch.setattr(copymove_handler, "WORKSPACE_DIR", str(tmp_path))
+        (tmp_path / "digitalclock.prg").write_bytes(b"code")
+        ftp = FakeFTP()
+        ftp.seed_dir("/sd/home")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        update_session_state(498, net_cwd="", client_ip="1.2.3.4")  # no dos_cwd
+        resp = handler.handle("cp digitalclock.prg /sd/home/medlicek", 498)
+
+        assert resp == "OK: copied 1 file(s)"
+        assert ftp.files["/sd/home/medlicek"] == b"code"
 
     def test_c_as_destination_errors(self):
         handler = CopyMoveHandler()
@@ -332,6 +368,102 @@ class TestUciToUci:
         resp = handler.handle("cp a.prg /temp/a.prg", 507)
         assert "NO CLIENT IP" in resp
 
+    def test_mv_overwrites_existing_destination_file(self, monkeypatch):
+        # Regression: RNTO refuses to overwrite an existing file on the real
+        # Ultimate FTP server (450 Requested file action not taken), even
+        # though STOR-based cp overwrites the same path silently. mv must
+        # delete the stale destination first so it behaves the same way.
+        ftp = FakeFTP()
+        ftp.seed_file("/sd/home/greet.prg", b"new")
+        ftp.seed_file("/temp/greet.prg", b"stale")
+
+        def rename(fromname, toname):
+            if toname in ftp.files:
+                raise ftplib.error_perm("450 Requested file action not taken.")
+            FakeFTP.rename(ftp, fromname, toname)
+
+        ftp.rename = rename
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(508, "/sd/home")
+        resp = handler.handle("mv greet.prg /temp/greet.prg", 508)
+
+        assert resp == "OK: moved 1 file(s)"
+        assert ftp.delete_calls == ["/temp/greet.prg"]
+        assert ftp.files["/temp/greet.prg"] == b"new"
+
+    def test_nonexistent_source_dir_reports_nothing_matched(self, monkeypatch):
+        # Regression: a source directory that doesn't exist on the C64U (e.g.
+        # a typo'd path) used to bubble up as a raw "?FTP FAILED: 550 ..."
+        # from the cwd() call instead of the same friendly ?NOTHING MATCHED
+        # used when the directory exists but nothing in it matches.
+        ftp = FakeFTP()
+        ftp.fail_cwd.add("/sd/medlicek")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(509, "/sd/home")
+        resp = handler.handle("cp /sd/medlicek/greet2 /temp/greet2", 509)
+
+        assert resp == "?NOTHING MATCHED: /sd/medlicek/greet2"
+
+    def test_mv_cross_directory_falls_back_to_copy_when_rename_rejected(self, monkeypatch):
+        # Regression: the real Ultimate FTP server's RNFR/RNTO only renames
+        # in place -- moving a file to a *different* directory comes back
+        # "450 Requested file action not taken." mv must fall back to
+        # copy + verify + delete-source so it still works, just slower.
+        ftp = FakeFTP()
+        ftp.seed_file("/flash/bin/greet2", b"payload")
+        ftp.seed_dir("/sd/home/medlicek")
+        ftp.fail_rename.add("greet2")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(510, "/sd/home/medlicek")
+        resp = handler.handle("mv /flash/bin/greet2 .", 510)
+
+        assert resp == "OK: moved 1 file(s)"
+        assert ftp.files["/sd/home/medlicek/greet2"] == b"payload"
+        assert "/flash/bin/greet2" not in ftp.files
+        assert ftp.delete_calls == ["/flash/bin/greet2"]
+
+    def test_glob_into_directory_with_different_on_disk_case(self, monkeypatch):
+        # Regression: the Ultimate's own top-level mounts (Temp, Flash, SD,
+        # USB0) are capitalized on disk -- typing the lowercase "/temp" you'd
+        # naturally use for #t's mount root used to fail the dest-is-dir
+        # check (_ftp_stat_exact did an exact-case-only compare), so a
+        # wildcard cp into it wrongly reported the "needs an existing
+        # directory" usage error even though /temp obviously exists.
+        ftp = FakeFTP()
+        ftp.seed_file("/flash/bin/a.prg", b"1")
+        ftp.seed_file("/flash/bin/b.prg", b"22")
+        ftp.dirs.setdefault("/", []).append(("Temp", {"type": "dir"}))
+        ftp.dirs.setdefault("/Temp", [])
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(512, "/flash/bin")
+        resp = handler.handle("cp *.prg /temp", 512)
+
+        assert resp == "OK: copied 2 file(s)"
+        assert ("/temp/a.prg", b"1") in ftp.stor_calls
+        assert ("/temp/b.prg", b"22") in ftp.stor_calls
+
+    def test_mv_directory_source_gives_clear_error(self, monkeypatch):
+        # A bare name that resolves to a directory (not a file) used to
+        # report the same generic ?NOTHING MATCHED as a name that truly
+        # isn't there at all -- cp/mv only ever moves files, so say that.
+        ftp = FakeFTP()
+        ftp.seed_dir("/flash/bin")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(511, "/sd/home")
+        resp = handler.handle("mv /flash/bin .", 511)
+
+        assert resp == "?CP/MV DOES NOT SUPPORT DIRECTORIES: /flash/bin"
+
 
 class TestUciWorkspace:
     def _ws_session(self, session_id, dos_cwd, net_cwd=""):
@@ -351,6 +483,23 @@ class TestUciWorkspace:
 
         assert resp == "OK: copied 1 file(s)"
         assert (tmp_path / "echo.prg").read_bytes() == b"hello"
+
+    def test_cp_uci_to_workspace_nonexistent_source_dir_reports_nothing_matched(
+        self, tmp_path, monkeypatch
+    ):
+        # Same regression as TestUciToUci's version, for the uci->n: leg
+        # exercised directly by the hardware-test repro:
+        # `cp /sd/medlicek/greet2 n:` where /sd/medlicek was never a real dir.
+        monkeypatch.setattr(copymove_handler, "WORKSPACE_DIR", str(tmp_path))
+        ftp = FakeFTP()
+        ftp.fail_cwd.add("/sd/medlicek")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        self._ws_session(605, "/sd/home", net_cwd="")
+        resp = handler.handle("cp /sd/medlicek/greet2 n:", 605)
+
+        assert resp == "?NOTHING MATCHED: /sd/medlicek/greet2"
 
     def test_cp_workspace_to_uci(self, tmp_path, monkeypatch):
         monkeypatch.setattr(copymove_handler, "WORKSPACE_DIR", str(tmp_path))
@@ -479,6 +628,47 @@ class TestCsdbSource:
 
         assert "extracted.prg" in resp
         assert (tmp_path / "extracted.prg").read_bytes() == b"demo"
+
+    def test_bare_filename_while_on_csdb_is_treated_as_csdb_source(
+        self, tmp_path, monkeypatch
+    ):
+        # Regression: browsing a release with #c and typing a bare filename
+        # (no c: prefix, matching the muscle memory of CSDB's own one-arg
+        # `cp <pattern>`) used to silently fall back to workspace-relative
+        # resolution (the #n bare-token convenience fix) and fail with
+        # ?NOTHING MATCHED, even though #c is the device actually active.
+        monkeypatch.setattr(copymove_handler, "WORKSPACE_DIR", str(tmp_path))
+
+        class FakeCSDB:
+            def _extract_matching_files(self, pattern, session_id):
+                assert pattern == "extracted.prg"
+                p = tmp_path / "extracted.prg"
+                p.write_bytes(b"demo")
+                return (["Copied extracted.prg to /tmp/hdnshell"], [p])
+
+        handler = CopyMoveHandler()
+        handler._csdb = FakeCSDB()
+        update_session_state(803, net_cwd="", active_module="c")  # no dos_cwd
+
+        resp = handler.handle("cp extracted.prg n:extracted.prg", 803)
+
+        assert "extracted.prg" in resp
+        assert (tmp_path / "extracted.prg").read_bytes() == b"demo"
+
+    def test_bare_destination_while_on_csdb_stays_workspace_relative(
+        self, tmp_path, monkeypatch
+    ):
+        # c: can never be a destination -- a bare *destination* token while
+        # on #c must not be swept into the source-only CSDB override above.
+        monkeypatch.setattr(copymove_handler, "WORKSPACE_DIR", str(tmp_path))
+        (tmp_path / "greet.prg").write_bytes(b"hi")
+        update_session_state(804, net_cwd="", active_module="c")  # no dos_cwd
+
+        handler = CopyMoveHandler()
+        resp = handler.handle("cp n:greet.prg dest.prg", 804)
+
+        assert resp == "OK: copied 1 file(s)"
+        assert (tmp_path / "dest.prg").read_bytes() == b"hi"
 
 
 class TestCsdbCpUnchangedAfterSplit:

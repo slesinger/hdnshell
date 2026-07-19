@@ -70,7 +70,11 @@ def _has_glob(name: str) -> bool:
     return "*" in name or "?" in name
 
 
-def _classify(token: str):
+def _has_explicit_prefix(token: str) -> bool:
+    return len(token) >= 2 and token[1] == ":"
+
+
+def _classify(token: str, session_id: int = None):
     """Return (kind, remainder). kind in {"uci", "n", "c", "iec"}.
 
     Only `n:`/`c:`/`8:`/`9:`/`s:` are recognised prefixes -- there is
@@ -78,11 +82,24 @@ def _classify(token: str):
     they fall through as ordinary "uci" text, which is correct since those
     letters are just different starting directories on the one UCI
     filesystem, not separate devices).
+
+    A bare token with no prefix resolves against whichever device this
+    command was actually typed on. An absolute UCI path ("/...") always
+    means the Ultimate filesystem, from any device. A *relative* bare token
+    resolves against the live UCI cwd IF this request carried the wedge's
+    \\x01-framed cwd context (h/t/f/u/v always send one) -- but if it didn't,
+    the cartridge wasn't on a UCI device this request, so the only live
+    "current directory" left is net_cwd (#n). This is not a guess or a
+    cached device flag: frame presence is a fresh, per-request signal.
     """
     if len(token) >= 2 and token[1] == ":":
         kind = _PREFIX_LETTERS.get(token[0].lower())
         if kind:
             return kind, token[2:]
+    if session_id is not None and not token.startswith("/"):
+        state = get_session_state_copy(session_id)
+        if not state.get("dos_cwd"):
+            return "n", token
     return "uci", token
 
 
@@ -141,20 +158,39 @@ def _ftp_stor_bytes(ftp, abspath: str, data: bytes) -> None:
     ftp.storbinary(f"STOR {base}", io.BytesIO(data))
 
 
+def _nothing_matched(ftp, src_abs: str, src_rest: str, src_base: str) -> str:
+    """?NOTHING MATCHED, except when the bare name is actually a directory --
+    cp/mv only ever moves files, so that's a much clearer answer than
+    implying nothing is there at all."""
+    if not _has_glob(src_base):
+        facts = _ftp_stat_exact(ftp, src_abs)
+        if facts and facts.get("type") == "dir":
+            return f"?CP/MV DOES NOT SUPPORT DIRECTORIES: {src_rest}"
+    return f"?NOTHING MATCHED: {src_rest}"
+
+
 def _ftp_stat_exact(ftp, abspath: str):
-    """MLSD-stat one exact path (no case fold -- used for dest-is-dir checks
-    and move-verification, not source matching). Root always "exists"."""
+    """MLSD-stat one path -- used for dest-is-dir checks and move-
+    verification. Root always "exists". Exact case wins first; falls back
+    to a case-insensitive match otherwise, same as match_ftp_files --
+    needed because the Ultimate's own top-level mounts (Temp, Flash, SD,
+    USB0) are capitalized on disk regardless of how a path was typed."""
     if abspath in ("", "/"):
         return {"type": "dir"}
     dirpath = posixpath.dirname(abspath) or "/"
     base = posixpath.basename(abspath)
     try:
         ftp.cwd(dirpath)
-        for name, facts in ftp.mlsd():
-            if name == base:
-                return facts
+        entries = list(ftp.mlsd())
     except ftplib.all_errors:
         return None
+    for name, facts in entries:
+        if name == base:
+            return facts
+    lowered = base.lower()
+    for name, facts in entries:
+        if name.lower() == lowered:
+            return facts
     return None
 
 
@@ -197,8 +233,19 @@ class CopyMoveHandler(BaseHandler):
     # ------------------------------------------------------------------
 
     def _dispatch(self, src_tok, dst_tok, is_move, session_id) -> str:
-        src_kind, src_rest = _classify(src_tok)
-        dst_kind, dst_rest = _classify(dst_tok)
+        src_kind, src_rest = _classify(src_tok, session_id)
+        dst_kind, dst_rest = _classify(dst_tok, session_id)
+
+        # A bare source with no UCI cwd frame falls back to workspace-
+        # relative (see _classify) -- but if you're actively browsing CSDB
+        # (#c) rather than #n, a bare filename obviously means the release
+        # you're looking at, not something in the workspace. Source only:
+        # c: can never be a destination, so a bare *destination* in this
+        # situation is left as workspace-relative regardless of module.
+        if src_kind == "n" and not _has_explicit_prefix(src_tok):
+            state = get_session_state_copy(session_id)
+            if state.get("active_module") == "c":
+                src_kind, src_rest = "c", src_tok
 
         if src_kind == "iec" or dst_kind == "iec":
             return _NO_IEC
@@ -238,13 +285,17 @@ class CopyMoveHandler(BaseHandler):
 
         try:
             with ftplib.FTP(host, timeout=10) as ftp:
+                ftp.login()
                 dst_facts = _ftp_stat_exact(ftp, dst_abs)
                 dst_is_dir = bool(dst_facts and dst_facts.get("type") == "dir")
 
-                ftp.cwd(src_dir)
+                try:
+                    ftp.cwd(src_dir)
+                except ftplib.all_errors:
+                    return f"?NOTHING MATCHED: {src_rest}"
                 names = match_ftp_files(ftp, src_base)
                 if not names:
-                    return f"?NOTHING MATCHED: {src_rest}"
+                    return _nothing_matched(ftp, src_abs, src_rest, src_base)
                 if (len(names) > 1 or _has_glob(src_base)) and not dst_is_dir:
                     return _GLOB_DEST_USAGE
 
@@ -254,11 +305,46 @@ class CopyMoveHandler(BaseHandler):
                     target = posixpath.join(dst_abs, name) if dst_is_dir else dst_abs
                     try:
                         if is_move:
-                            ftp.rename(full_src, target)
+                            renamed = False
+                            try:
+                                # RNTO refuses to overwrite an existing file
+                                # on this FTP server (450); STOR-based cp
+                                # overwrites silently, so mv must match that
+                                # by clearing the old destination first.
+                                existing = _ftp_stat_exact(ftp, target)
+                                if existing and existing.get("type") == "file":
+                                    ftp.delete(target)
+                                ftp.rename(full_src, target)
+                                renamed = True
+                            except ftplib.all_errors as e:
+                                logger.info(
+                                    f"uci->uci rename {full_src} -> {target} "
+                                    f"rejected ({e}), falling back to copy+delete"
+                                )
+                            if not renamed:
+                                # This FTP server's RNFR/RNTO apparently can't
+                                # move a file across directories (only rename
+                                # in place) -- fall back to the same
+                                # copy + verify + delete-source pattern the
+                                # UCI<->n: move path already uses.
+                                data = _ftp_retr_bytes(ftp, full_src)
+                                _ftp_stor_bytes(ftp, target, data)
+                                remote_facts = _ftp_stat_exact(ftp, target)
+                                remote_size = (
+                                    int(remote_facts["size"])
+                                    if remote_facts and remote_facts.get("size") is not None
+                                    else None
+                                )
+                                if remote_size is None or remote_size != len(data):
+                                    raise IOError(
+                                        f"short write: got {remote_size}, "
+                                        f"expected {len(data)}"
+                                    )
+                                ftp.delete(full_src)
                         else:
                             _ftp_stor_bytes(ftp, target, _ftp_retr_bytes(ftp, full_src))
                         done += 1
-                    except ftplib.all_errors as e:
+                    except Exception as e:
                         failed += 1
                         logger.error(
                             f"uci->uci {'mv' if is_move else 'cp'} failed for {name}: {e}"
@@ -296,10 +382,14 @@ class CopyMoveHandler(BaseHandler):
 
         try:
             with ftplib.FTP(host, timeout=10) as ftp:
-                ftp.cwd(src_dir)
+                ftp.login()
+                try:
+                    ftp.cwd(src_dir)
+                except ftplib.all_errors:
+                    return f"?NOTHING MATCHED: {src_rest}"
                 names = match_ftp_files(ftp, src_base)
                 if not names:
-                    return f"?NOTHING MATCHED: {src_rest}"
+                    return _nothing_matched(ftp, src_abs, src_rest, src_base)
                 if (len(names) > 1 or _has_glob(src_base)) and not dst_is_dir:
                     return _GLOB_DEST_USAGE
 
@@ -374,6 +464,7 @@ class CopyMoveHandler(BaseHandler):
 
         try:
             with ftplib.FTP(host, timeout=10) as ftp:
+                ftp.login()
                 dst_facts = _ftp_stat_exact(ftp, dst_abs)
                 dst_is_dir = bool(dst_facts and dst_facts.get("type") == "dir")
                 if (len(names) > 1 or _has_glob(src_base)) and not dst_is_dir:
@@ -478,6 +569,7 @@ class CopyMoveHandler(BaseHandler):
                 return _NO_CLIENT_IP
             try:
                 with ftplib.FTP(host, timeout=10) as ftp:
+                    ftp.login()
                     dst_facts = _ftp_stat_exact(ftp, dst_abs)
                     dst_is_dir = bool(dst_facts and dst_facts.get("type") == "dir")
                     if is_glob_like and not dst_is_dir:

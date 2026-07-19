@@ -147,6 +147,10 @@ def test_configs_get_returns_json():
         assert "Drive A Settings" in result
 
 
+def _config_value_response(value) -> dict:
+    return {"Drive A Settings": {"Drive Bus ID": {"current": value}}, "errors": []}
+
+
 def test_configs_set_requires_confirm():
     with patch("agent_tools._read_last_c64_ip", return_value="192.168.1.1"), patch(
         "sdk.network_helper.rest_set_config"
@@ -160,7 +164,16 @@ def test_configs_set_requires_confirm():
         assert "refused" in result.lower()
         mock_set.assert_not_called()
 
-        mock_set.return_value = {"errors": []}
+
+def test_configs_set_confirms_when_readback_matches_requested_value():
+    with patch("agent_tools._read_last_c64_ip", return_value="192.168.1.1"), patch(
+        "sdk.network_helper.rest_set_config", return_value={"errors": []}
+    ) as mock_set, patch(
+        "sdk.network_helper.rest_get_configs",
+        side_effect=[_config_value_response(8), _config_value_response(9)],
+    ):
+        tool = create_c64_configs_tool()
+        assert tool is not None
         result = tool.func(
             operation="set",
             category="Drive A Settings",
@@ -168,7 +181,56 @@ def test_configs_set_requires_confirm():
             value="9",
             confirm=True,
         )
+
         mock_set.assert_called_once_with("192.168.1.1", "Drive A Settings", "Drive Bus ID", "9")
+        assert "confirmed" in result.lower()
+        assert "now 9" in result
+        assert "was 8" in result
+
+
+def test_configs_set_reports_not_changed_when_readback_still_shows_old_value():
+    # The API can report no errors even when the hardware silently ignored
+    # the write -- the tool must catch this via the post-set readback and
+    # refuse to claim success.
+    with patch("agent_tools._read_last_c64_ip", return_value="192.168.1.1"), patch(
+        "sdk.network_helper.rest_set_config", return_value={"errors": []}
+    ), patch(
+        "sdk.network_helper.rest_get_configs",
+        side_effect=[_config_value_response(8), _config_value_response(8)],
+    ):
+        tool = create_c64_configs_tool()
+        assert tool is not None
+        result = tool.func(
+            operation="set",
+            category="Drive A Settings",
+            item="Drive Bus ID",
+            value="9",
+            confirm=True,
+        )
+
+        assert "not changed" in result.lower()
+        assert "do not tell the user this succeeded" in result.lower()
+
+
+def test_configs_set_reports_uncertain_when_readback_mismatches_request():
+    with patch("agent_tools._read_last_c64_ip", return_value="192.168.1.1"), patch(
+        "sdk.network_helper.rest_set_config", return_value={"errors": []}
+    ), patch(
+        "sdk.network_helper.rest_get_configs",
+        side_effect=[_config_value_response(8), _config_value_response(10)],
+    ):
+        tool = create_c64_configs_tool()
+        assert tool is not None
+        result = tool.func(
+            operation="set",
+            category="Drive A Settings",
+            item="Drive Bus ID",
+            value="9",
+            confirm=True,
+        )
+
+        assert "uncertain" in result.lower()
+        assert "now 10" in result
 
 
 # ---------------------------------------------------------------------------

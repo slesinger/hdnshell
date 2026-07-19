@@ -3165,8 +3165,25 @@ def create_c64_run_file_tool():
 # ------------------------------------------------------------------
 # Ultimate settings (GET/PUT /v1/configs) -- read is safe, writes require
 # an explicit confirm=True since this can change drives, network password,
-# etc. and there's no code-level undo.
+# etc. and there's no code-level undo. A "set" is also self-verifying: the
+# Ultimate's PUT response can come back with an empty 'errors' list even
+# when the value did not actually change on real hardware, so this always
+# reads the value back afterward and only reports success if the readback
+# actually shows the new value -- never trust "no error" alone.
 # ------------------------------------------------------------------
+
+
+def _extract_config_current_value(data: dict):
+    """Pull the first {"current": ...} value out of a /v1/configs GET response."""
+    if not isinstance(data, dict):
+        return None
+    for key, val in data.items():
+        if key == "errors" or not isinstance(val, dict):
+            continue
+        for item_val in val.values():
+            if isinstance(item_val, dict) and "current" in item_val:
+                return item_val["current"]
+    return None
 
 
 def c64_configs(
@@ -3184,24 +3201,61 @@ def c64_configs(
         return "Error: No C64 IP configured. Run a network scan first."
 
     op = (operation or "get").strip().lower()
-    try:
-        if op == "get":
+    if op == "get":
+        try:
             data = rest_get_configs(c64_ip, category or None, item or None)
-            return json.dumps(data, indent=2)
-        if op == "set":
-            if not category or not item:
-                return "Error: 'set' requires both category and item."
-            if not confirm:
-                return (
-                    "Refused: setting an Ultimate config item changes real "
-                    "machine/network behavior. Re-call with confirm=true "
-                    f"to actually set {category!r}/{item!r} to {value!r}."
-                )
-            data = rest_set_config(c64_ip, category, item, value)
-            return json.dumps(data, indent=2)
+        except Exception as e:
+            return f"Error accessing Ultimate configs: {e}"
+        return json.dumps(data, indent=2)
+
+    if op != "set":
         return "Error: operation must be 'get' or 'set'."
+
+    if not category or not item:
+        return "Error: 'set' requires both category and item."
+    if not confirm:
+        return (
+            "Refused: setting an Ultimate config item changes real "
+            "machine/network behavior. Re-call with confirm=true "
+            f"to actually set {category!r}/{item!r} to {value!r}."
+        )
+
+    try:
+        before_data = rest_get_configs(c64_ip, category, item)
     except Exception as e:
-        return f"Error accessing Ultimate configs: {e}"
+        return f"Error reading current value before set: {e}"
+    before_value = _extract_config_current_value(before_data)
+
+    try:
+        rest_set_config(c64_ip, category, item, value)
+    except Exception as e:
+        return f"Error sending set request: {e}"
+
+    try:
+        after_data = rest_get_configs(c64_ip, category, item)
+    except Exception as e:
+        return (
+            f"Set request sent for {category!r}/{item!r} but could not "
+            f"verify the new value afterward: {e}. Treat this as "
+            "UNCONFIRMED, not success."
+        )
+    after_value = _extract_config_current_value(after_data)
+
+    if after_value is not None and str(after_value) == str(value):
+        return f"Confirmed: {category}/{item} is now {after_value} (was {before_value})."
+    if after_value == before_value:
+        return (
+            f"NOT changed: {category}/{item} is still {after_value} after "
+            f"the set request (requested {value!r}). The API call reported "
+            "no error, but the hardware did not apply it -- do not tell the "
+            "user this succeeded."
+        )
+    return (
+        f"Uncertain: {category}/{item} is now {after_value} (was "
+        f"{before_value}, requested {value!r}) -- the value changed but "
+        "does not match what was requested. Report the actual current "
+        "value, not that the requested change succeeded."
+    )
 
 
 def create_c64_configs_tool():
@@ -3251,7 +3305,10 @@ def create_c64_configs_tool():
                 "specific value(s). operation='set' changes one item and "
                 "REQUIRES confirm=true -- always tell the user what you're "
                 "about to change before setting confirm=true, since this "
-                "affects real machine/network behavior."
+                "affects real machine/network behavior. A 'set' reads the "
+                "value back afterward and tells you whether it actually "
+                "changed on the hardware -- trust that reported outcome, "
+                "not just the absence of an error."
             ),
             args_schema=ConfigsInput,
         )

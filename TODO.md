@@ -6,8 +6,6 @@ Ask me any questions before you proceed to ensure you understand the task well.
 
 ```
 
-Update docs/user_manual to stress enough that user can just type a name of program to run it. The cool thing is that HDN shell also checks the /flash/bin directory and if it finds a prg file there, it will load it to RAM and run it. This is very useful to avoid joggling with disk and navigate between directories.
-
 
 
 The server (cloud directory) has an LLM agent that has a tool that can send key strokes to the C64. There is also tool to read the memory $0400-$07f8 and hence it can see what is on the screen. It makes the agent fully capable of controlling the c64, actually doing stuff. I can ask "list directory for me" and it should be able to do it. For some reason this tool is not being called. Investigate the description of the tool and the prompt around. In addition, suggest how to make the harness around this agent to get all capabilities of working with the C64 ultimate complete. There is documentation rest_api_calls that describes what is possible to control over API. Suggest improvments to existing tools and also you can suggest new tools and agent improvements. The goal is to have a fully capable agent that can control the C64 and do anything that a human can do on it, including reading the screen, sending keystrokes, and interacting with the file system.
@@ -17,15 +15,6 @@ Use cheaper subagent when possible to save tokens.
 
 
 
-
-
-
-
-
-
-
-------
-QUEUE
 
 I need to copy file from #n network drive to UCI and vice versa.
 I tried this
@@ -47,6 +36,19 @@ The command `cd` without parameter should bring to original directory for given 
 #h -> /sd/home
 #f -> /flash
 #t -> /temp
+Also, I have noticed that UCI commands are different to those serving IEC. Hence let's make a change that UCI drive will be active by default and positioned at `/` root directory. That means that after fresh start I will be able to list IEC by `$` or `@9` changing to different drive and then `$`. But also I wil be able to do `ll` immediately after start. Hence the message `not supported on iec` will not be needed any more. I hope this will simplyfy thing withint the wedge RR cvartridge.
+
+
+
+Whenever the server app outputs back tick (`) it is converted to $00 but it has to be converted to screencode $27.
+
+
+
+
+
+------
+QUEUE
+
 
 
 
@@ -58,7 +60,9 @@ HDN Server web browser can navigate to pages if you know the URL of the page. Bu
 
 
 
+amica.prg
 
+jak kopirovat prg z a do d64
 
 
 

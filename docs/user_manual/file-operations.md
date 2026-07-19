@@ -8,13 +8,13 @@ Commands for creating directories, copying files, and moving raw memory blocks. 
 
 ## Copying and Moving Files (`cp` / `mv`)
 
-`cp <src> <dst>` and `mv <src> <dst>` copy or move a single file (or, with a wildcard source, several) between the Ultimate filesystem and the `n` network drive, within the Ultimate filesystem itself, or (as a source only) out of CSDB.
+`cp <src> <dst>` and `mv <src> <dst>` copy or move a single file (or, with a wildcard source, several) between the Ultimate filesystem and the `n` network drive, within the Ultimate filesystem itself, or (as a source only) out of CSDB. Only files are moved — there is no support for copying/moving whole directories.
 
 Each of `<src>`/`<dst>` is one of:
 
-- **A bare path** — the Ultimate DOS filesystem. `t`/`f`/`h`/`u`/`v` are all the *same* physical drive, just different starting directories, so there is no per-letter prefix: an absolute path (`/temp/game.prg`) works from anywhere, and a relative path (`game.prg`, `../tools`) resolves against whatever directory you're currently in on that drive. A relative path typed while you're on a *different* device (e.g. `#n`) is a usage error — it has no Ultimate-DOS directory to resolve against.
+- **A bare path** — resolves against whichever device you're currently on. An *absolute* path (`/temp/game.prg`) is always the Ultimate DOS filesystem (`t`/`f`/`h`/`u`/`v` are all the *same* physical drive, just different starting directories, so there's no per-letter prefix), from any device. A *relative* path (`game.prg`, `../tools`) resolves against your current directory on the Ultimate filesystem while you're on `t`/`f`/`h`/`u`/`v`; typed while you're on `#n` it resolves against your current *network-drive* directory instead (the same as writing `n:game.prg`); typed while you're on `#c`, actively browsing a release, it's understood as a file from that release (the same as writing `c:game.prg` — see below). In each case that's simply the one live "current directory" a bare relative path can mean on the device you're actually on.
 - **`n:<path>`** — the network drive. `n:` alone means the current network-drive directory; `n:/path` is root-relative *within* the network drive (not the real server filesystem); `n:path` is relative to the current network-drive directory.
-- **`c:<pattern>`** — CSDB, **source only**. Reuses the release/zip browsing you last did with `#c` (see [CSDB](csdb.md)) regardless of which device you're on right now, and uploads the matched file(s) to `<dst>` instead of always landing in `/temp`. `c:` cannot be a destination (CSDB is read-only), and `mv` cannot use it as a source (use `cp`).
+- **`c:<pattern>`** — CSDB, **source only**. Reuses the release/zip browsing you last did with `#c` (see [CSDB](csdb.md)) regardless of which device you're on right now, and uploads the matched file(s) to `<dst>` instead of always landing in `/temp`. `c:` cannot be a destination (CSDB is read-only), and `mv` cannot use it as a source (use `cp`). The prefix is only *required* once you've switched away from `#c` and still want to pull from that release — while `#c` is your current device, a bare filename works the same way (see above).
 - **`8:`/`9:`/`s:`** — not supported; there is no server-side session to the real IEC drives.
 
 Examples (typed while `#h` has taken you to `/sd/home`):
@@ -27,15 +27,22 @@ cp ../tools/echo.prg n:tools/new  copy to the network drive, renamed to "new"
 mv echo.prg n:archive             move (not copy) into the network drive's archive dir
 ```
 
+And while browsing a CSDB release with `#c` (see [CSDB](csdb.md)):
+
+```
+cp game.d64 /temp     copy a file straight from the release to /temp, same name
+cp *.d64 n:downloads  copy every .d64 in the release into the network drive's downloads dir
+```
+
 The destination follows the usual `cp`/`mv` convention: if it's an existing directory, the file lands inside it under its original name; otherwise the destination path is the exact new name/location.
 
 A wildcard (`*`/`?`) source requires an existing directory as the destination — matching several files into one filename is ambiguous and rejected. Matching a single named source is case-insensitive as a fallback (an exact-case match always wins first, same as `del`/`file`); the destination name you type is always used exactly as typed, never case-folded.
 
-`mv` renames in place (fast, atomic) when both sides are on the same filesystem (Ultimate DOS, or the network drive). Moving between the Ultimate filesystem and the network drive copies the file, verifies it arrived intact, and only then deletes the original — if anything goes wrong, the source is left untouched.
+`mv` renames in place (fast, atomic) whenever it can — same directory on the Ultimate filesystem, or same directory on the network drive. Anywhere else — a different directory on the Ultimate filesystem, or crossing to/from the network drive — it copies the file, verifies it arrived intact, and only then deletes the original; if anything goes wrong, the source is left untouched. Which path is used is an internal detail and never changes the result, only how long it takes.
 
 CSDB's own single-argument `cp <pattern>` (download straight to `/temp` while browsing a release) is unchanged — see [CSDB](csdb.md). Likewise the network drive's single-argument `cp <name>` (push straight to `/temp`) still works exactly as before; the two-argument forms above are additive.
 
-Requires the HDN Server to be running; errors look like `?FTP FAILED: ...`, `?NO CLIENT IP - cannot reach C64U`, `?ACCESS DENIED - outside workspace`, or `?NOTHING MATCHED: <pattern>`.
+Requires the HDN Server to be running; errors look like `?FTP FAILED: ...`, `?NO CLIENT IP - cannot reach C64U`, `?ACCESS DENIED - outside workspace`, `?NOTHING MATCHED: <pattern>`, or `?CP/MV DOES NOT SUPPORT DIRECTORIES: <path>` (the name matched a directory, not a file).
 
 ## Saving and Loading Arbitrary Memory
 

@@ -90,6 +90,8 @@ cp *.zip
 
 > Note the default target directory for copied files is `/temp` on the Ultimate storage.
 
+To choose the destination yourself instead of always landing in `/temp`, use the two-argument form: `cp <file> <dst>` (still works with a bare filename while `#c` is your current device, no `c:` prefix needed), e.g. `cp *.zip n:downloads` or `cp meetro-side-a.d64 /usb0`. This also works from any other device by prefixing the source with `c:`, e.g. typing `cp c:*.zip /temp` while on `#h`. See [Copying and Moving Files](file-operations.md#copying-and-moving-files-cp--mv) for the full grammar.
+
 Some downloads on CSDB require being logged in. You can optionally enter your CSDB username and password in the server web UI `Settings`, and the server will use them when fetching files.
 
 

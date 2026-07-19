@@ -33,6 +33,10 @@ In some commands you can use `:` notation to avoid necessity to switch devices. 
 
 `ll <pattern>` — List only entries whose name **starts with** the pattern (case-insensitive prefix match). A trailing `*` is optional, so `ll outrun` and `ll outrun*` behave identically. On `#c`/`#n` the filter is applied by the server.
 
+**`ll`/`dir` do NOT work on `#8`/`#9`/`#s`** — a real floppy drive, a SoftIEC device, or a disk image mounted with `mnt` all present themselves as an ordinary IEC drive, and there is no UCI/server session to list through. Typing `ll` or `dir` there prints `NOT SUPPORTED ON IEC`. This is by design, not a bug.
+
+To see the directory of a real or mounted IEC drive, use the Retro Replay cartridge's own `$` command (see [Retro Replay Toolkit](using-the-shell.md#retro-replay-toolkit)) — just type `$` and press RETURN. It prints the directory directly through the cartridge, which is both faster and non-destructive: unlike `LOAD"$",8` (which loads the directory as a fake BASIC program, wiping out whatever program was in memory), `$` leaves the current BASIC program untouched. `LOAD"$",8` then `LIST` still works as a classic-BASIC fallback, but `$` is preferred.
+
 ## Navigating Directories
 
 The `cd` command is used to change directories, similar to Linux/Windows shells.
@@ -50,6 +54,8 @@ To show the current directory, simply type `pwd`.
 ## Loading Programs
 
 Loading works the classic way — BASIC stays, so `LOAD"demo*",8,1` works exactly as always. The Retro Replay cartridge also adds fast-load shortcuts (`/`, `%`, `^`, `F1`) — see [Executing Programs](executing_programs.md) for the full list, including a known `F1` limitation while console-switching is armed.
+
+On `#8`/`#9`/`#s` (a real drive, SoftIEC, or a `mnt`-ed image), the "just type its name" shortcut (see [Executing Programs](executing_programs.md#just-type-its-name)) does not apply. Instead use the Retro Replay cartridge's own load-and-run shortcut: `^filename` (e.g. `^greet2`), or `^*` to run the first file on the disk — see [Retro Replay Toolkit](using-the-shell.md#retro-replay-toolkit). Classic BASIC (`LOAD"filename",8` then `RUN`, or `LOAD"*",8,1` then `RUN`) still works too.
 
 To load a file to an arbitrary memory address of your choice, use [`memcpy`](memory-operations.md#saving-and-restoring-memory-blocks-memcpy).
 
