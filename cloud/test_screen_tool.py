@@ -32,6 +32,20 @@ def test_backtick_maps_to_apostrophe_screen_code():
     assert ascii_to_screencode(ord("`")) == 0x27
 
 
+def test_backtick_in_server_response_renders_as_apostrophe():
+    """Regression test: server responses go out as PETSCII bytes
+    (BaseHandler.utf8_to_petscii), which the real C64 KERNAL then converts
+    to a screen code on its own. Backtick has no real PETSCII glyph, so it
+    must be sent as PETSCII apostrophe ($27) -- not left as raw PETSCII
+    $60, which the KERNAL renders as $00 instead of an apostrophe."""
+    from sdk.base_handler import BaseHandler
+    from sdk.petscii import petscii_to_screencode
+
+    petscii_bytes = BaseHandler.utf8_to_petscii("`")
+    assert petscii_bytes == b"'"
+    assert petscii_to_screencode(petscii_bytes[0]) == 0x27
+
+
 def test_get_screen_tool_no_c64_ip():
     with patch("agent_tools._read_last_c64_ip", return_value=""):
         tool = create_screen_memory_tool()

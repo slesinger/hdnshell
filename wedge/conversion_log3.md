@@ -3205,3 +3205,37 @@ via the Ultimate menu). Then:
     (2d) still works; mnt/umnt/cd/ll/pwd/status/#/time; TASS/TMP; ML monitor; stock RR sweep.
 NOTE: this validates that UCI DOS1 OPEN resolves the ABSOLUTE path "/flash/bin/<name>". If a
 /flash/bin program is NOT found (but exists), report it -- the path form/case may need a tweak.
+
+## Step 30 — default device = UCI not IEC (HW TESTED OK)
+
+**Problem (Honza, TODO.md):** fresh boot's lazy-default for the private current-device byte $CF2A
+was '8' (IEC device 8), so `pwd`/`cd`/`dir`/`ll` typed right after power-on printed "NOT SUPPORTED ON
+IEC" until the user ran `#h`/`#t`/`#f` once. Honza wants UCI active by default, positioned at UCI
+DOS1's real root ("/"), so `ll` (and pwd/cd) work immediately -- stock `$`/`@9` IEC directory listing
+is unaffected (KERNAL device 8/$ba, orthogonal to $CF2A).
+
+**Fix: 2 bytes, both sites that lazy-default $CF2A when it holds a byte outside the valid device set.**
+- bank3 `hd_nc_ext` ($97F9, annex tail): `lda #$38` ('8') -> `lda #$48` ('H').
+- bank4 `b4_cd_ext` ($9E5D, reserve tail, the bank4 copy used while bank4 is mapped): same `lda #$38`
+  -> `lda #$48`.
+No other change: `hd_norm_cur`/`b4_curdev`'s valid-set compares (8/9/S/H/T/F/C/N/U/V) are unchanged,
+and neither lazy-default site calls CHANGE_DIR -- it only rewrites $CF2A. So a genuinely fresh $CF2A
+now routes pwd/cd/dir/ll to UCI DOS1 (b4_is_htf passes 'H') and shows whatever path DOS1 already sits
+at (root "/" on a cold Ultimate boot, since nothing ever CDs it there); explicit `#h` still moves to
+/sd/home as before. `b6_ctx`'s cwd-prepend gate already treated a cold-boot-garbage-matches-UCI-letter
+$CF2A as harmless/self-healing (see its existing comment), so this is compatible with that path too.
+
+**Byte-verify** (vs the last built `build/rr38p-tmp12reu.rebuilt.bin`, pre-change): exactly 2 bytes
+differ in the whole 65536-byte image, at bin offsets $77F9 and $9E5D (bank3/bank4 respectively),
+both $38->$48. Nothing else shifted.
+
+**HW test asks.** Fresh boot (power-cycle or reset) the Ultimate with the cartridge, then WITHOUT
+typing any `#x` first: (1) `pwd` -> should print a path (no longer "NOT SUPPORTED ON IEC") -- note
+whatever it prints (expected "/"). (2) `ll` -> should list that directory instead of erroring.
+(3) `#` (bare) -> now prints 'H' (previously '8'). (4) `cd ..`/`cd <name>` should work relative to
+that same starting point. (5) REGRESSION: `#8`/`#9`/`#s` still select IEC and `pwd`/`ll`/`cd` on
+those still print "NOT SUPPORTED ON IEC" as before; `#h`/`#t`/`#f`/`#u`/`#v` still auto-cd correctly;
+`$`/`@9`+`$` (stock KERNAL IEC listing) unaffected.
+
+**HW result (Honza, 2026-07-19): "Works perfectly."** Confirmed on real hardware. `docs/user_manual/dos.md`'s
+"Current Device" section updated to document the new fresh-boot default. NOT committed.

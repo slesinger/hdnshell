@@ -5,42 +5,12 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
-
-
-
 The server (cloud directory) has an LLM agent that has a tool that can send key strokes to the C64. There is also tool to read the memory $0400-$07f8 and hence it can see what is on the screen. It makes the agent fully capable of controlling the c64, actually doing stuff. I can ask "list directory for me" and it should be able to do it. For some reason this tool is not being called. Investigate the description of the tool and the prompt around. In addition, suggest how to make the harness around this agent to get all capabilities of working with the C64 ultimate complete. There is documentation rest_api_calls that describes what is possible to control over API. Suggest improvments to existing tools and also you can suggest new tools and agent improvements. The goal is to have a fully capable agent that can control the C64 and do anything that a human can do on it, including reading the screen, sending keystrokes, and interacting with the file system.
 Generate ideas of improvements, go wild, I will tell you what is good idea and what is not worth doing.
 Ask me any questions before you proceed to ensure you understand the task well.
 Use cheaper subagent when possible to save tokens.
 
 
-
-
-I need to copy file from #n network drive to UCI and vice versa.
-I tried this
-#n
-cd greet
-ll
-(there is a file called greet.prg)
-cp greet.prg h:
-cp greet.prg h:/sd/home/greet.prg
-But none of these works now.
-While doing this, also make support for mv.
-If doing support for these is too complex or risky for wedge, it is ok to have it server supported only.
-It should also be able to copy/move files from/to UCI drives and between UCI and network drives.
-
-
-
-
-The command `cd` without parameter should bring to original directory for given drive
-#h -> /sd/home
-#f -> /flash
-#t -> /temp
-Also, I have noticed that UCI commands are different to those serving IEC. Hence let's make a change that UCI drive will be active by default and positioned at `/` root directory. That means that after fresh start I will be able to list IEC by `$` or `@9` changing to different drive and then `$`. But also I wil be able to do `ll` immediately after start. Hence the message `not supported on iec` will not be needed any more. I hope this will simplyfy thing withint the wedge RR cvartridge.
-
-
-
-Whenever the server app outputs back tick (`) it is converted to $00 but it has to be converted to screencode $27.
 
 
 
@@ -62,14 +32,13 @@ HDN Server web browser can navigate to pages if you know the URL of the page. Bu
 
 amica.prg
 
+
+
+
 jak kopirovat prg z a do d64
 
 
-
-
-DODELAT POPIS
-F3 lists current IEC device, while ll lists UCI device indepenedently.
-
+C64 ultimate  MCP tools for coding agent
 
 
 There is user experience issue. The users has to wait an extra second after some commands are executed. The scenario is: user types command, command is executed, user sees full output, user can only see READY prompt after a second.

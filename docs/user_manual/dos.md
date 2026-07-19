@@ -25,6 +25,8 @@ There are following devices available:
 
 In some commands you can use `:` notation to avoid necessity to switch devices. For example, `c:find hondani` will search for string hondani on CSDB virtual device while you can have #8 as the current device.
 
+> **Default on a fresh boot:** the current device starts on Ultimate storage (UCI), positioned wherever the Ultimate's own DOS is (its root, `/`, right after power-on) — **not** on `#8`. This means `ll`, `pwd`, and `cd` all work immediately after boot, with no need to type `#h`/`#t`/`#f` first, and you won't see `NOT SUPPORTED ON IEC` unless you explicitly switch to `#8`/`#9`/`#s`. To browse a real/mounted IEC drive instead, switch with `#8` (or `#9`) and use the cartridge's own `$` command (see below) — or use SoftIEC's `@`/`$:*` commands on `#s`.
+
 ## Listing Files (Directory Listing)
 
 `ll` — List files on the current device.
@@ -50,6 +52,8 @@ To show the current directory, simply type `pwd`.
 `cd /mydir/` — Enter directory "mydir" (absolute from root)
 
 `cd ..` — Go up one level (parent directory)
+
+**`cd`/`pwd` do NOT work on `#8`/`#9`/`#s`** either, for the same reason as `ll`/`dir` above — there is no UCI/server session on a real IEC drive, a SoftIEC device, or a `mnt`-ed image, so both commands print `NOT SUPPORTED ON IEC`. Subdirectories on a SoftIEC drive still exist and can be navigated — see [Navigating Subdirectories on SoftIEC](#navigating-subdirectories-on-softiec) below.
 
 ## Loading Programs
 
@@ -94,6 +98,48 @@ To create directories (`mkdir`) and copy files between the Ultimate storage and 
 Software IEC emulation was popularized by [SD2IEC](https://www.c64-wiki.com/wiki/SD2IEC) project. You can [build your own easily](https://randomnerdtutorials.com/esp32-microsd-card-arduino/) but the good thing on C64U is that you do not need to. You can enable SoftIEC in the menu and you will see it as device #s (IEC device 10).
 
 Refere to very detailed [documentation in C64OS post](https://c64os.com/post/sd2iecdocumentation#filemanagement). Kudos to Greg for his amazing work on all the documentation pages.
+
+### Navigating Subdirectories on SoftIEC
+
+Unlike a real 1541, SoftIEC exposes the Ultimate's SD card with real subdirectories (CMD-style partitions). The shell's own `cd`/`ll` don't reach them on `#s` (see the note above), but the classic DOS wedge commands the cartridge already provides — `@` and `$`, documented in [Retro Replay Toolkit](using-the-shell.md#retro-replay-toolkit) — talk to the drive's DOS directly and work fine:
+
+- `@cd:<name>` — descend into subdirectory `<name>` (sends the CMD-style `CD:` DOS command straight to the drive's command channel).
+- `@cd:..` — go back up to the parent directory.
+- `$:*` — list the current directory (the classic wedge `$` command, drive number and `:pattern` both optional — `*` matches everything).
+
+Example, starting on `#s` at the SD card root:
+
+```
+@ll
+73,u64iec ultimate dos v1.1,00,00
+ready.
+
+$:*
+0 "/sd/home/"         00 2a
+0    "games"       dir
+...
+65535 blocks free.
+00, ok,00,00
+ready.
+
+@cd:games
+
+ready.
+
+$:*
+0 "/sd/home/games/" 00 2a
+23   "digitalclock"    prg
+...
+65535 blocks free.
+00, ok,00,00
+ready.
+
+@cd:..
+
+ready.
+```
+
+`@ll` above is just an example of an unrecognized DOS command: SoftIEC ignores it, so reading the error channel returns the drive's power-up identification string (`73,u64iec ultimate dos v1.1,00,00`) rather than an actual error — it does **not** list files. Use `$:*` (or plain `$`) for that.
 
 ## Drive Status
 

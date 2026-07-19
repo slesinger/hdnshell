@@ -853,7 +853,7 @@ b4_f1:
 b4_f2:
     rts
 // b4_curdev: copy of bank3 hd_norm_cur -- A = current device letter from $cf2a,
-// lazy-defaulting to '8' (and rewriting $cf2a) if it holds a non-device byte.
+// lazy-defaulting to 'H' (UCI) (and rewriting $cf2a) if it holds a non-device byte.
 b4_curdev:
     lda $cf2a
     cmp #$38               // '8'
@@ -973,13 +973,15 @@ b4_fl_rts:
 // single UCI drive (their auto-cd already moved its cwd to /usbN), so remap U/V to
 // 'T' here -> b4_is_htf treats them as UCI and every command routes correctly.
 // $cf2a is left as 'U'/'V' (bare '#' shows it via bank3 hd_nc_ext), only the
-// returned routing letter is 'T'. Anything else (garbage) -> default '8'.
+// returned routing letter is 'T'. Anything else (garbage) -> default 'H' (UCI;
+// see hd_nc_ext step 30 note -- no CHANGE_DIR here, so a fresh $cf2a just routes
+// pwd/cd/dir/ll to whatever path DOS1 already sits at, root "/" on cold boot).
 b4_cd_ext:
     cmp #$55               // 'U'
     beq b4_cd_uv
     cmp #$56               // 'V'
     beq b4_cd_uv
-    lda #$38               // else uninitialized/unknown -> default '8'
+    lda #$48               // else uninitialized/unknown -> default 'H' (UCI)
     sta $cf2a
     rts
 b4_cd_uv:

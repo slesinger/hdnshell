@@ -35,5 +35,10 @@ class Petscii:
         # ASCII $61–$7A (a–z) → PETSCII $41–$5A
         elif 0x61 <= a_byte <= 0x7A:  # a-z
             return a_byte - 0x20
+        # ASCII ` (0x60) has no PETSCII equivalent; the C64 charset renders
+        # PETSCII $60 as a graphics glyph, not an apostrophe. Send real
+        # PETSCII apostrophe ($27) instead so it displays as one.
+        elif a_byte == 0x60:
+            return 0x27
         # Everything else maps directly
         return a_byte

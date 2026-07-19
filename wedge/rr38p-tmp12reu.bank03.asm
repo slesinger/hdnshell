@@ -2773,13 +2773,17 @@ b5tramp:
 // --- 16-DEV: hd_norm_cur U/V extension (annex tail) --------------------------
 // bare '#' display + lazy-default: accept the NEW UCI letters U (/usb0) and
 // V (/usb1) so a bare '#' after '#u'/'#v' prints the letter instead of resetting
-// $cf2a to '8'. A = folded $cf2a on entry (already != 8/9/S/H/T/F/C/N).
+// $cf2a to 'H'. A = folded $cf2a on entry (already != 8/9/S/H/T/F/C/N).
+// Step 30: default device is now UCI ('H'), not IEC ('8') -- no CHANGE_DIR is
+// issued here, so a genuinely fresh $cf2a lands pwd/cd/dir/ll on whatever path
+// UCI DOS1 already sits at (root "/" on a cold Ultimate boot), while still
+// routing as a UCI device instead of printing "NOT SUPPORTED ON IEC".
 hd_nc_ext:
     cmp #$55               // 'U' -> keep as-is (fall to hd_nce_ok, return A)
     beq hd_nce_ok
     cmp #$56               // 'V'
     beq hd_nce_ok
-    lda #$38               // else uninitialized/unknown -> default '8'
+    lda #$48               // else uninitialized/unknown -> default 'H' (UCI)
     sta $cf2a
 hd_nce_ok:
     rts
@@ -3319,7 +3323,7 @@ hd_f1:
 hd_f2:
     rts
 // hd_norm_cur: return A = current device letter from $CF2A, lazy-defaulting to
-// '8' (and rewriting $CF2A) if it holds anything outside the valid device set.
+// 'H' (UCI) (and rewriting $CF2A) if it holds anything outside the valid device set.
 hd_norm_cur:
     lda $cf2a
     cmp #$38               // '8'
@@ -3338,7 +3342,7 @@ hd_norm_cur:
     beq hd_ncok
     cmp #$4e               // 'N'
     beq hd_ncok
-    jmp hd_nc_ext          // 16-DEV: accept U/V (display as-is) else default '8'
+    jmp hd_nc_ext          // 16-DEV: accept U/V (display as-is) else default 'H'
     nop                    // (padding: keep hd_ncok at its frozen address, no shift)
     nop
 hd_ncok:
