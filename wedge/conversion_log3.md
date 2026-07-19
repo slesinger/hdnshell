@@ -3290,7 +3290,20 @@ intact. (4) MIXED-VERSION SANITY (optional but useful): point the cartridge at a
 server if one's handy -- chat/AI should still work, just with the old ~short delay (now capped at 8
 retries instead of 32), never hang.
 
-## Step 32 — run-by-name: disable the cart before executing a loaded PRG (built+byte-verified, awaiting HW test)
+## Step 32 — run-by-name: disable the cart before executing a loaded PRG (REVERTED -- wrong diagnosis)
+
+**REVERTED same-session, before commit.** The root-cause theory below (cart ROM shadowing
+$8000-$9FFF/$A000-$BFFF at runtime) was disproven by hardware evidence: `amica.prg` actually loads
+at $0801-$5DC6, nowhere near that range. The patch itself also had two real bugs (`cpy #$04`
+clobbering the carry flag `bcs hd_pass` depended on; using live KERNAL `$C6` keyboard type-ahead
+count as a trigger, which false-positived on ordinary typing and bricked the wedge mid-session --
+hardware symptom: `ll`/general typing hung with no READY). `bank01.asm` was `git checkout`'d back to
+HEAD (572a74a) to remove it entirely -- zero trace of this step remains in the tree. The REAL root
+cause was found afterward via direct hardware memory-diffing: see **Step 33**, which supersedes this
+entirely. Left here only as a postmortem (matches this project's convention of keeping failed rounds
+for the record, e.g. steps 8-12 rounds 1-11 in the historical docs).
+
+**Original (wrong) writeup, kept for the record:**
 
 **Bug (Honza, real-hardware report):** `amica.prg` (a real machine-code paint program) DMA+runs
 correctly via the Ultimate's own menu, but shows a visibly different/corrupted screen right after
@@ -3363,3 +3376,108 @@ would be wide-reaching. (5) KNOWN GAP, not expected to be exercised by normal te
 knowing: if a cart-off'd program returns to BASIC and a *subsequent* line hits a genuine BASIC error,
 expect a crash (documented above, deferred fix) -- don't chase it this round unless it's cheap to
 confirm.
+
+## Step 33 — real fix for the amica.prg corruption bug: rf_loader's READ_DATA omitted the mandatory length field (built+byte-verified, awaiting HW test)
+
+**Root cause, found via direct hardware memory-diffing (not guesswork) after Step 32's theory was
+disproven.** Method: loaded `amica.prg` via the wedge's run-by-name feature, dumped $0801-$5DC6 over
+the C64U REST API (`/v1/machine:readmem`); separately DMA-loaded (no run) the same file via the
+Ultimate's own `load_prg_file` runner as a clean reference, paused the CPU, dumped the same range.
+Byte-diffed the two dumps: **identical for the first 4094 bytes, then ~99% different from packet 8
+($1801) onward.** Repeated with a second, unrelated file (`GRILLED_UNTIL_DEAD-TSN.PRG`, 15448 B, a
+different directory) -- it truncated at the **exact same address** ($2D/$2E read back $17FF both
+times). Two different files, different sizes, different directories, identical cutoff byte -> rules
+out a random DATA_AV timing race (the working theory going in) and points at a deterministic
+protocol bug instead.
+
+**Found it:** `docs/development/ultimate_dos-1.1.md` #2.4 documents `DOS_CMD_READ_DATA` as a 4-byte
+command: `$01 $04 [len_lo] [len_hi]` (16-bit length, max 65535). `rf_loader`'s `rf_read` (bank5) was
+pushing only `$01 $04` and calling `B3_PUSH` immediately -- **the mandatory length field was never
+written.** The Ultimate firmware evidently falls back to some fixed transfer size when it's missing,
+which explains the exact, file-independent cutoff.
+
+**Fix:** push the documented max length ($FFFF -- let the transfer run to real EOF regardless of
+file size) before the push. **Space problem:** bank5's `rf_loader` pocket had only 2 B free (of 6 in
+the whole bank; space_map.md already called bank5 "effectively saturated") -- not enough for the
+extra bytes. Per Honza's steer, consulted Fable5 (author of space_map.md) for placement; Fable5's
+ruling: move the **entire** 4-byte command assembly into a new bank3 stub, `b3_dos1_read` ($8114, in
+the reclaimed Silversurfer pocket, ~280 B still free there after), which builds `$01 $04 $FF $FF`
+then tail-calls the existing `hsh_push` (verified safe: `hsh_push` takes no register inputs, clobbers
+A as its first instruction). `rf_loader` already round-trips into bank3 for every leaf helper via the
+same `B5C3_RUN` trampoline (`B3_PUSH`/`B3_FIN`/`B3_IDLE`), so this is the established mechanism, not
+a new one -- `rf_read` shrinks to a 3-instruction cross-bank call (`ldx/ldy #B3_DOS1_READ; jsr
+B5C3_RUN`), a **net +10 B gain** in the previously-saturated bank5 pocket (2 B free -> 12 B free).
+New pinned cross-bank address: `b3_dos1_read`=$8114 (bank03), hardcoded as `.const B3_DOS1_READ` in
+bank05 -- added to space_map.md's pinned-address list.
+
+**Byte-verify:** bank5 `rf_read` shrunk (10 B), `rf_rtxt` moved $80FA->$80F0 confirming the pocket
+gain; bank3 gained `b3_dos1_read` (21 B) right after step 31's `hsh_putc`, `.errorif`-guarded, fill to
+$8241 absorbs the rest. Banks 0,1,2,4,6,7 byte-for-byte untouched (`git diff --stat` empty). Build
+clean, no `.errorif` failures.
+
+**HW test asks (33).** Arm HDN with the rebuilt cartridge. (1) THE BUG ITSELF: run-by-name a real
+multi-packet PRG (`amica.prg`, or `GRILLED_UNTIL_DEAD-TSN.PRG` from `/flash/carts`) -> should now
+load+run correctly, matching a manual Ultimate-menu DMA+run of the same file (no more striped/glitched
+screen). (2) A large file well past 21 packets if one's handy, to stress the fix further. (3)
+REGRESSION: `mnt`/`umnt` (bank5's *other* `B3_PUSH` caller, `$23`/`$24` DOS commands -- unaffected,
+confirmed by inspection, but worth confirming on hardware); current-dir run-by-name + `/flash/bin`
+fallback on a small (1-packet) file; `cd`/`ll`/`pwd`/`status`/`#`/`time`; chat/AI (`i:`/`m:`/
+`tutorials`, step 31's `hsh_putc` path, right next to the new stub in the same bank3 pocket); TASS/TMP;
+ML monitor `R` header (confirms $8241 still intact past the pocket growth); stock RR sweep.
+
+**HW RESULT (Honza + Claude, same session): Step 33's length-field fix alone did NOT fix the bug.**
+Claude tested directly against real hardware via the C64U REST API (same memory-diff methodology:
+DMA-load a clean reference copy of `amica.prg` via the Ultimate's own `load_prg_file`, pause, dump
+$0801-$5DC6; separately run it via wedge type-a-name, dump the same range; byte-diff), twice, from two
+independent clean boots (F7 from the CYBERPUNX menu each time). Both times: **byte-for-byte identical
+truncation at file offset 4094 ($17FF)** -- the exact same cutoff as before Step 33, unchanged. Also
+re-confirmed the deployed `.crt` genuinely contained the fix (file size match, source `grep` confirmed
+`rf_read` calls `B3_DOS1_READ`). This falsifies "the missing length field is why the transfer
+truncates" as the operative cause (it's still a real protocol violation per UCI DOS 1.1 #2.4, kept
+fixed regardless) and sent the investigation back to Fable5 for round 2.
+
+## Step 34 — the REAL fix: replace rf_loader's bounded DATA_AV waits with a state-aware bank3 wait (built+byte-verified, awaiting HW test)
+
+**Fable5's revised diagnosis, given the Step 33 falsification as new evidence:** the cutoff -- 4094
+data bytes + 2 header bytes = exactly 4096 = exactly 8 x 512B packets -- is a filesystem/SD-card
+cluster-boundary signature, not a protocol-format issue. The firmware serves the first ~4KB from an
+already-buffered read-ahead quickly (every inter-packet gap comfortably under the old bound), then
+stalls for a fresh cluster fetch (can be multi-ms, worst case ~100-200ms on a slow card) -- and
+`rf_loader`'s old `rf_chk` (bank5) did a **single-shot, completely unwaited** `DATA_AV` check right
+after the inter-packet ack cleared, with no bound/retry at all, misreading that stall as end-of-
+transfer. (`rf_wda`, the FIRST-packet wait, had an actual bound -- ~256 polls, ~2.8ms -- equally too
+short, but `rf_chk` had none whatsoever, which is the sharper bug.) Corroborating evidence Fable5
+found: `docs/inspiration/ultimate_lib.h` documents `$DF1C` bits 5:4 as a genuine STATE machine
+(00=idle mid the DATA_AV/STAT_AV/ERROR/ABORT_P/DATA_ACC/CMD_BUSY bits), and the reference driver
+(`docs/inspiration/ultimate_lib.c`'s `uii_sendcommand`/`uii_accept`) waits on that state **unbounded**
+instead of guessing via a fixed timeout -- the "is more data coming" signal was always available,
+`rf_loader` just wasn't reading it. (Also confirmed: the reference driver's own `uii_read_file` sends
+READ_DATA with no length bytes either and works fine on real hardware -- independent proof the missing
+length field was never the actual cause.)
+
+**Fix:** new bank3 helper `b3_wait_pkt` ($812B, right after `b3_dos1_read` in the same reclaimed SS
+pocket) replaces both bounded loops with one state-aware wait: checks the inter-packet ack, then
+`DATA_AV` (packet ready, C=0), then `STAT_AV`-with-no-data or state-idle (real end, C=1), falling back
+to a ~64K-poll (~1-2.5s) escape bound that should never fire in normal operation -- a safety net, not a
+real timeout budget. Two entry points into the same loop: `b3_dos1_read` now does `jsr hsh_push` (was
+a tail-`jmp`) then falls through into `b3_wait_pkt` for the first-packet wait (replaces `rf_wda`,
+deleted entirely from bank5 -- the existing `bcs rf_notours` after the `B3_DOS1_READ` call already
+covers both push-fail and no-data-at-all); `rf_loader`'s `rf_acc` now `jsr`s `B3_WAIT_PKT` directly for
+the inter-packet wait (replaces `rf_ak`+`rf_chk`).
+
+**Byte-verify:** bank5 shrank further -- `rf_rtxt` moved $80F0->$80D6 (Step 33's position) -> now
+$80D6, pocket free space $80DA-$8100 = **38 B** (was 2 B before Step 33, 12 B after Step 33 alone).
+Bank3 gained `b3_wait_pkt` (~42 B) right after `b3_dos1_read`, `.errorif`-guarded, ~236 B still free in
+that pocket up to $8241. Banks 0,1,2,4,6,7 byte-for-byte untouched (`git diff --stat` empty). Build
+clean, no `.errorif` failures. New pinned address: `b3_wait_pkt`=$812B (bank03), `B3_WAIT_PKT` const
+in bank05. `space_map.md` updated (§1, §2 banks 3+5, §4 pinned list).
+
+**Not yet HW-tested.** Same test plan as Step 33's HW asks (this section supersedes it): the
+truncation bug itself (`amica.prg` / `GRILLED_UNTIL_DEAD-TSN.PRG` via run-by-name should now load+run
+completely), a single-packet file for regression (`greet.prg`), `mnt`/`umnt`, current-dir + `/flash/bin`
+fallback, `cd`/`ll`/`pwd`/`status`/`#`/`time`, chat/AI (step 31's `hsh_putc`, same bank3 pocket), TASS/
+TMP, ML monitor `R` header, stock RR sweep. Fable5 also flagged a discriminating case worth watching:
+if the fix still stops at exactly the same 4096-byte boundary but now exits cleanly/fast (state genuinely
+went idle rather than stalling), that would instead point at a firmware-side per-command transfer cap
+requiring reissued READ_DATA commands -- a different, small follow-up fix, not expected but worth
+noting if seen.

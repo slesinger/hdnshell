@@ -5,24 +5,14 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
-Copy PRG file between D64 and UCI
+There are places where SD card is mentioned where some people if they do not have SD card and they only have USB, they would hit a wall. I can only think of /sd/home is a problem. First scan the wedge and server code and try to identify all places where SD card is mentioned and then we can discuss how to fix it. I think the wedge is the main place where this is a problem, but there might be other places too. For places confirmed I will ask you to make a logic that if /sd is not present, use /usb0 instead and if /usb0 is not present, use /flash/home. Do an analysis first.
+Use Opus or Fable5 subagents should you need an advice. All changes in wedge need to be done very carefully, step by step and always hw tested.
 
-
-Debug amica.prg DMA loading
-
-
-HDN Server web browser can navigate to pages if you know the URL of the page. But it is not possible to use google search to find things. Recommend how to implement a simplified page (such that can be displayed in the HDN server browser text mode) where user can simply search and get results like if it is simplified google search. There should be a good search engine behind this. Either to proxy google.com search more so it actually works, or to use search API such as Tavily.
 
 
 ------
 QUEUE
 
-
-
-
-
-
-Kdyz nekdo nema sd, tak by se home melo brat v usb0/home
 
 
 

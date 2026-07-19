@@ -19,9 +19,9 @@ was used, `~` where estimated.
 | 0 | 385 | 393 | 702 high-conf + ~420 med-low | 0 |
 | 1 | 16 (inside HDN pocket) | 16 | ~7 (entangled) | ~90-150 printer (entangled) |
 | 2 | 102 | 140 | 0 | 0 (FUNPAINT viewer ~460 optional) |
-| 3 | ~340 | ~346 | — (resolved, see §3) | ~90 SS boot-detect (§5.1 item 2, remaining) |
+| 3 | ~236 | ~242 | — (resolved, see §3) | ~90 SS boot-detect (§5.1 item 2, remaining) |
 | 4 | 78 | 78 | 3 | 0 |
-| 5 | 6 | 6 | 3 | flash util: 0 cleanly recoverable |
+| 5 | ~42 | ~42 | 3 | flash util: 0 cleanly recoverable |
 | 6 | 54 | 54 | 3 | 0 |
 | 7 | 36 | 36 | 3 | 0 |
 | **Σ** | **~691** | **~743** | **~1140 pending verification** | **~535 approved-category + optionals** |
@@ -79,17 +79,21 @@ fully packed (DOS wedge, ML monitor, TASS/TMP launcher, F-key macros, HDN hook).
 | $9E8F-$9E9D | 14 | b | stock zeros |
 | $9EF5-$9EFF | 10 | b | stock zeros |
 
-### Bank 3 — 14 B usable
-Only $9FF2-$9FFF (14, class b). Remaining 6 B are 2-byte slack scraps pinned
-inside full HDN annexes ($807F preserves the `bit $8080` trick byte — do not
-touch). All five original pockets are consumed; new bank-3 space must come from
-the Silversurfer removal (§5.1).
+### Bank 3 — ~236 B usable
+Reclaimed Silversurfer pocket $80F8-$8241 (§5.1): step 31's `hsh_putc`, step
+32's `b3_dos1_read`, and step 34's `b3_wait_pkt` now occupy $80F8-$8155
+(93 B), leaving 236 B free at $8155-$8241 (`.errorif`-guarded, kept: $8241
+`jmp` + ML monitor register header).
+Plus the original 14 B at $9FF2-$9FFF (class b) and 6 B of 2-byte slack scraps
+pinned inside full HDN annexes ($807F preserves the `bit $8080` trick byte — do
+not touch). All five original pockets are consumed; further bank-3 space must
+come from Silversurfer item 2 (§5.1) or the reclaimed pocket's remaining ~280 B.
 
 ### Banks 4-7 — 174 B total, all tails of HDN reserve pockets
 | Bank | Ranges | Bytes |
 |---|---|---:|
 | 4 | $9E65-$9E9D (56) + $9FEA-$A000 (22) | 78 |
-| 5 | $80FE-$8100 (2) + $9FFC-$A000 (4) | 6 |
+| 5 | $80DA-$8100 (38, was 2 -- step 32 moved rf_read's DOS_CMD_READ_DATA command assembly to bank3, step 34 additionally replaced the two 8-bit-bounded DATA_AV waits with a single state-aware bank3 call) + $9FFC-$A000 (4) | ~42 |
 | 6 | $80E2-$8100 (30) + $9E8D-$9E9D (16) + $9FF8-$A000 (8) | 54 |
 | 7 | $80F9-$8100 (7) + $9E88-$9E9D (21) + $9FF8-$A000 (8) | 36 |
 
@@ -159,7 +163,9 @@ the copy boundary with tools/dis.py before trusting the 420-B figure.**
   (entangled, ~10 B, don't bother initially).
 - Pinned addresses that must never move (hardcoded cross-bank):
   bank2 `hondani_err`=$9B2E, `cs_install`=$9C41, `console_switch`=$9CB7;
-  bank3 leaf helpers B3_IDLE=$9DBB/B3_PUSH=$9B20/B3_FIN=$9B6A/B3_DOS1=$9DCC;
+  bank3 leaf helpers B3_IDLE=$9DBB/B3_PUSH=$9B20/B3_FIN=$9B6A/B3_DOS1=$9DCC/
+  `b3_dos1_read`=$8114 (step 32, hardcoded as `B3_DOS1_READ` in bank05.asm)/
+  `b3_wait_pkt`=$812B (step 34, hardcoded as `B3_WAIT_PKT` in bank05.asm);
   bank4 `b4_disp`=$9C00; bank5 `rf_loader`=$804E, `b5_disp`=$9E00;
   bank6 `b6_disp`=$9E00; bank7 `bb_main`=$8023; bank3 $8080 (`bit $8080` trick).
 

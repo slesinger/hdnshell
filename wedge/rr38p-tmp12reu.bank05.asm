@@ -85,6 +85,8 @@ l1_text:                        // "**** COMMODORE 64 SHELL V1 ****" in C64 scre
 .const B3_IDLE  = $9dbb     // bank3 uci_idle_kick (frozen)
 .const B3_PUSH  = $9b20     // bank3 hsh_push (frozen)
 .const B3_FIN   = $9b6a     // bank3 hsh_fin (frozen)
+.const B3_DOS1_READ = $8114 // bank3 b3_dos1_read: full READ_DATA cmd ($01 $04 $FF $FF) + push (step 32, frozen)
+.const B3_WAIT_PKT  = $812b // bank3 b3_wait_pkt: state-aware packet wait (step 34, frozen)
 .const B5C3_RUN = $0386     // bank5->bank3 RAM trampoline (shares b4c3's $0386 slot)
 // =============================================================================
 // HDN run-prg (step 2d OPEN + READ_DATA -> RAM + RUN-inject) -- rf_loader entry,
@@ -143,23 +145,15 @@ rf_notours:
     rts
 rf_read:
     // ---- READ_DATA ($04): stream the whole file into RAM at its header load addr ----
-    lda #$01               // TARGET_DOS1 (UCI is idle after OPEN's FIN)
-    sta $df1d
-    lda #$04               // DOS_CMD_READ_DATA
-    sta $df1d
-    ldx #<B3_PUSH
-    ldy #>B3_PUSH
-    jsr B5C3_RUN           // PUSH (+ bounded busy-wait: response is ready on return)
-    bcs rf_notours         // push failed -> nothing written -> server
-    // bounded wait for the FIRST packet's DATA_AV before reading the 2-byte header
-    ldy #$00
-rf_wda:
-    lda $df1c
-    and #$80               // DATA_AV?
-    bne rf_hdr
-    iny
-    bne rf_wda             // ~256 polls...
-    beq rf_notours         // ...no data at all -> safe (nothing written) -> server
+    // Step 32/34: command assembly ($01 $04 [len_lo] [len_hi], per UCI DOS 1.1 #2.4) AND
+    // the first-packet wait both moved to bank3's b3_dos1_read/b3_wait_pkt -- see the
+    // bank03.asm comment for the full story (length field alone did NOT fix the real
+    // truncation bug; the state-aware wait does). C=0 = push ok + a packet is ready ->
+    // read the header; C=1 = push failed or genuinely no data -> server forward.
+    ldx #<B3_DOS1_READ
+    ldy #>B3_DOS1_READ
+    jsr B5C3_RUN           // full cmd + PUSH + state-aware first-packet wait
+    bcs rf_notours         // push failed / no data -> nothing written -> server
 rf_hdr:
     lda $df1e              // PRG header load-address lo
     sta $fb
@@ -181,18 +175,15 @@ rf_acc:
     lda $df1c
     ora #$02               // DATA_ACC -> release the next packet
     sta $df1c
-    ldy #$00
-rf_ak:
-    lda $df1c
-    and #$02               // wait (bounded) for the ack to clear = sync point
-    beq rf_chk
-    iny
-    bne rf_ak
-    beq rf_fin             // ack stuck (~256 polls) -> finish (bounded, no hang)
-rf_chk:
-    lda $df1c
-    and #$80               // another packet ready now?
-    bne rf_pkt             // yes -> drain it (resets Y=0)
+    // Step 34: state-aware wait (was: rf_ak+rf_chk, two 8-bit ~256-poll/~2.8ms bounded
+    // loops -- too short to survive a real SD-card cluster-fetch stall, which is what
+    // was actually truncating multi-packet loads at a fixed byte count). C=0 = next
+    // packet ready (DATA_AV) -> drain it; C=1 = real end (status/idle) or the ~64K-poll
+    // escape bound -> finish.
+    ldx #<B3_WAIT_PKT
+    ldy #>B3_WAIT_PKT
+    jsr B5C3_RUN
+    bcc rf_pkt             // packet ready -> drain it (resets Y=0)
 rf_fin:
     ldx #<B3_FIN
     ldy #>B3_FIN

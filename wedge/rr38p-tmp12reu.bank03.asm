@@ -409,7 +409,78 @@ hp_finish:
     jmp hsh_okcl            // done: close socket, C=0 handled (server + wedge step 31)
 hp_print:
     jmp $ffd2               // tail-call CHROUT; its rts returns to hsh_prlp's "jmp hsh_prlp"
-.errorif (* > $8241), "step-31 hsh_putc overran the kept $8241 monitor header"
+// Step 32/33: b3_dos1_read -- assembles the FULL DOS_CMD_READ_DATA command and pushes it.
+// The UCI DOS 1.1 protocol documents a 4-byte command "$01 $04 [len_lo] [len_hi]"
+// (docs/development/ultimate_dos-1.1.md #2.4, 16-bit max 65535); the original rf_loader
+// (bank5) pushed only "$01 $04". Fixed here by requesting the documented max ($FFFF).
+// **This fix alone did NOT resolve the truncation** -- HW A/B tested (two independent
+// clean-boot runs, before/after): byte-for-byte IDENTICAL cutoff at file offset 4094
+// ($17FF) both times. The reference driver (docs/inspiration/ultimate_lib.c's
+// uii_read_file) also sends READ_DATA with no length bytes and works fine on real
+// hardware, confirming the missing field was never the operative cause. Kept anyway
+// since it's still the documented format. The REAL cause is below (step 34).
+//
+// Step 34: b3_wait_pkt -- state-aware replacement for rf_loader's two 8-bit-bounded
+// (~256 poll, ~2.8ms) waits (former rf_wda + rf_ak/rf_chk in bank5), which is what
+// was actually truncating the load. Root cause (Fable5 space-audit + protocol-doc
+// analysis): the cutoff (4094 data bytes = exactly 8 x 512B packets = one 4KB
+// FAT-cluster-sized chunk) is a real SD-card/filesystem read-ahead boundary -- the
+// firmware serves ~4KB of already-buffered data quickly (each inter-packet gap well
+// under the old bound), then stalls for a fresh cluster fetch (can be multi-ms, worst
+// case ~100-200ms on a slow card) -- and the old rf_chk did a SINGLE-SHOT, UNWAITED
+// DATA_AV check with no bound at all, misreading that stall as end-of-transfer.
+// $DF1C's bits 5:4 are a STATE machine (docs/inspiration/ultimate_lib.h: DATA_AV |
+// STAT_AV | STATE x2 | ERROR | ABORT_P | DATA_ACC | CMD_BUSY; 00=idle), which is the
+// deterministic "more data is still coming" signal the reference driver (ultimate_lib.c
+// uii_sendcommand/uii_accept) actually waits on, UNBOUNDED, instead of guessing via a
+// short fixed timeout. This bank3 helper does the same: C=0 = DATA_AV set (packet
+// ready); C=1 = real end (STAT_AV-with-no-data, or state idle) OR a ~64K-poll (~1-2.5s)
+// escape bound that should never fire in normal operation (broken-firmware safety net
+// only, not a real timeout budget).
+// Two entry points, same loop: b3_dos1_read falls through here after a successful PUSH
+// (first-packet wait, replaces rf_wda); rf_loader also jsr's straight to b3_wait_pkt
+// directly for the inter-packet wait (replaces rf_ak+rf_chk) -- see B3_WAIT_PKT in
+// bank05.asm. hsh_push takes no register inputs (clobbers A first), so no calling-
+// convention risk at either entry.
+.errorif (* != $8114), "b3_dos1_read moved -- update B3_DOS1_READ const in bank05.asm"
+b3_dos1_read:
+    lda #$01               // TARGET_DOS1
+    sta $df1d
+    lda #$04               // DOS_CMD_READ_DATA
+    sta $df1d
+    lda #$ff
+    sta $df1d              // len_lo = $FF
+    sta $df1d              // len_hi = $FF (read to real EOF, per protocol max)
+    jsr hsh_push            // push the command (was: tail-call/jmp)
+    bcs b3wp_no             // push failed -> C=1 (reuses the sec/rts below)
+b3_wait_pkt:                // ALSO reached directly (inter-packet wait) via B3_WAIT_PKT
+    ldx #$00
+    ldy #$00
+b3wp:
+    lda $df1c
+    and #$02               // accept handshake from the last packet still pending?
+    bne b3wp_n              //   not synced yet -> keep waiting
+    lda $df1c
+    and #$80               // DATA_AV?
+    bne b3wp_ok             //   next packet ready
+    lda $df1c
+    and #$40               // STAT_AV with no data pending?
+    bne b3wp_no              //   end of data, status waiting -> done
+    lda $df1c
+    and #$30               // state 00 = idle?
+    beq b3wp_no              //   command fully complete -> done
+b3wp_n:
+    inx
+    bne b3wp
+    iny
+    bne b3wp                // ~64K polls (seconds) -> escape, never in normal op
+b3wp_no:
+    sec
+    rts
+b3wp_ok:
+    clc
+    rts
+.errorif (* > $8241), "step-34 b3_dos1_read/b3_wait_pkt overran the kept $8241 monitor header"
     .fill $8241 - *, $00   // remainder of the reclaimed SS pocket (free bank3 reserve)
 .errorif (* != $8241), "step-31 fill did not land on $8241 (monitor header)"
 b03_8241:
