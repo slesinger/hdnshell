@@ -109,7 +109,7 @@ bb_done:
 msg_reu:
     .byte $4D, $20, $52, $45, $55, $20, $00                    // "M REU " NUL
 msg_rr:
-    .byte $43, $50, $58, $20, $52, $52, $20, $33, $2E, $38, $50, $0D, $00   // "CPX RR 3.8P" CR NUL
+    .byte $48, $44, $4E, $20, $43, $50, $58, $20, $52, $52, $20, $33, $2E, $38, $50, $0D, $00   // "HDN CPX RR 3.8P" CR NUL (HDN: +4B branding prefix)
 
 // print_num: A = 0..99 -> decimal via CHROUT, leading zero suppressed. A/X/Y clobbered.
 print_num:
