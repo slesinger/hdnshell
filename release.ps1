@@ -4,6 +4,7 @@ $UI_DIST = "$UI_DIR/dist"
 $CLOUD_DIR = "cloud"
 $CLOUD_STATIC_DIR = "$CLOUD_DIR/static"
 $RELEASE_DIR = "release"
+$CRT_OUT = "wedge/build/hdn-rr38p-tmp12reu.crt"
 
 # Resolve version from latest git tag (strip leading 'v'); fall back to "0.0.0"
 $VERSION = (git describe --tags --abbrev=0 2>$null) -replace '^[vV]', ''
@@ -64,5 +65,6 @@ if (!(Test-Path $RELEASE_DIR)) { New-Item -ItemType Directory $RELEASE_DIR }
 
 # Copy result to release folder
 Copy-Item -Path "$CLOUD_DIR/dist/hdnsh-server-win.exe" -Destination "$RELEASE_DIR/" -Force
+if (Test-Path $CRT_OUT) { Copy-Item -Path $CRT_OUT -Destination "$RELEASE_DIR/" -Force }
 
 Write-Host "--- Release Build Complete! ---" -ForegroundColor Green

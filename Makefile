@@ -124,7 +124,7 @@ clean-dist:
 # Copy built executables from dist to release only if build succeeded
 copy-to-release:
 	mkdir -p $(RELEASE_DIR)
-	if [ -f $(BIN_OUT) ]; then cp -f $(BIN_OUT) $(RELEASE_DIR)/; fi
+	if [ -f $(CRT_OUT) ]; then cp -f $(CRT_OUT) $(RELEASE_DIR)/; fi
 	if [ -f $(CLOUD_DIR)/dist/hdnsh-server-linux ]; then cp -f $(CLOUD_DIR)/dist/hdnsh-server-linux $(RELEASE_DIR)/; fi
 	if [ -f $(CLOUD_DIR)/dist/hdnsh-server-mac ]; then cp -f $(CLOUD_DIR)/dist/hdnsh-server-mac $(RELEASE_DIR)/; fi
 	# Windows build is handled by PowerShell script

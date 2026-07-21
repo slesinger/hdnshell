@@ -32,5 +32,4 @@ echo "Built: $OUT/hdn-rr38p-tmp12reu.crt"
 # Deploy to BOTH flashable names in wedge/ -- a stale copy under either name
 # once shadowed a fresh build and invalidated a whole hardware test round.
 cp "$OUT/hdn-rr38p-tmp12reu.crt" "$DIR/hdn-rr38p-tmp12reu.crt"
-cp "$OUT/hdn-rr38p-tmp12reu.crt" "$DIR/rr38p-tmp12reu.crt"
-echo "Deployed: $DIR/hdn-rr38p-tmp12reu.crt + $DIR/rr38p-tmp12reu.crt (identical)"
+echo "Deployed: $DIR/hdn-rr38p-tmp12reu.crt"
