@@ -22,7 +22,7 @@ For directory navigation (`cd`, `pwd`, `ll`/`dir`, `#<device>`), disk images (`m
 
 `ll` and `dir` accept a filter pattern, e.g. `ll outrun*` lists only entries whose name starts with `outrun` (case-insensitive prefix match; the trailing `*` is optional).
 
-Switching to an Ultimate drive with `#t`/`#f`/`#h`/`#u`/`#v` also jumps to that drive's mount root (`/temp`, `/flash`, `/sd/home`, `/usb0`, `/usb1`) — see [Navigating Disk Drives and Directories](dos.md#current-device).
+The Ultimate directory shortcuts `#t`/`#f`/`#h`/`#u`/`#v`/`#w` each jump straight to a fixed folder (`/temp`, `/flash`, `/sd/home`, `/usb0`, `/usb1`, `/usb0/home`) — see [Navigating Disk Drives and Directories](dos.md#current-device).
 
 Anything typed that isn't one of the commands above (or valid BASIC) is forwarded to the AI chat automatically — there's no need to prefix it with anything. See [AI Assistance](ai-assistance.md).
 

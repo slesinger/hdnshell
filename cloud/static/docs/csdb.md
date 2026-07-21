@@ -18,8 +18,7 @@ cp *.zip
 #t
 dir
 mnt meetro-side-a.d64
-#8
-dir
+$
 LOAD"*",8,1
 RUN
 ```
@@ -27,6 +26,8 @@ RUN
 > Note that even though this demo comes with two D64 images zipped into one zip file, the zip will get automatically extracted during the `cp` command.
 
 > Note that when mounting D64 image, it will mount to device 8. If you already have a disk mounted on this device, you need to unmount it first with `umnt` command.
+
+> The mounted disk is a real IEC drive (device 8), so it is browsed with the cartridge's `$` command (type `$` and RETURN to list it), not the shell's `dir`. See [Navigating Disk Drives and Directories](dos.md#real-iec-drives-8-9-and-softiec).
 
 > Note that most of directory listings on floppy disks are optimized for upper case font and may not render as nice. You can use C= + SHIFT to switch between fonts.
 
