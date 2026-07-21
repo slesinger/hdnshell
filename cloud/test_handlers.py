@@ -566,6 +566,42 @@ class TestRequestDispatcher:
         # Should get empty or minimal response
         assert len(response) > 0
 
+    def test_dispatch_module_switch_csdb_netdrive(self):
+        """Switching #c <-> #n must work in BOTH directions.
+
+        Regression (HW-reported): while CSDB was the active module, typing "#n"
+        was swallowed by CSDBHandler's active-module catch-all and answered
+        "No results found." instead of switching to the network drive, because
+        CSDBHandler.can_handle did not list "#n" as an explicit escape (the
+        mirror-image NetDriveHandler already escaped "#c").
+        """
+        from request_dispatcher import RequestDispatcher
+
+        dispatcher = RequestDispatcher()
+        sid = 90210
+
+        def send(text: str) -> str:
+            petscii = BaseHandler.utf8_to_petscii(text) + b"\x00"
+            return BaseHandler.petscii_to_utf8(
+                dispatcher.dispatch(petscii, sid).rstrip(b"\x00")
+            )
+
+        send("#c")
+        assert get_session_state_copy(sid).get("active_module") == "c"
+
+        # csdb -> netdrive (the reported bug: this used to stay on "c")
+        reply = send("#n")
+        assert get_session_state_copy(sid).get("active_module") == "n"
+        assert "no results found" not in reply.lower()
+
+        # netdrive -> csdb still works (was already correct)
+        send("#c")
+        assert get_session_state_copy(sid).get("active_module") == "c"
+
+        # and back again
+        send("#n")
+        assert get_session_state_copy(sid).get("active_module") == "n"
+
 
 class TestCodeChatSemanticChecks:
     """Test semantic guardrails used by CodeChatHandler."""

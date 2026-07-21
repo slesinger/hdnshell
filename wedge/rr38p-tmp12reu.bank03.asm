@@ -2869,19 +2869,21 @@ b5tramp:
     .byte $A9, $18         // lda #$18      restore bank3
     .byte $8D, $00, $DE    // sta $de00
     .byte $60              // rts
-// --- 16-DEV: hd_norm_cur U/V extension (annex tail) --------------------------
-// bare '#' display + lazy-default: accept the NEW UCI letters U (/usb0) and
-// V (/usb1) so a bare '#' after '#u'/'#v' prints the letter instead of resetting
-// $cf2a to 'H'. A = folded $cf2a on entry (already != 8/9/S/H/T/F/C/N).
-// Step 30: default device is now UCI ('H'), not IEC ('8') -- no CHANGE_DIR is
-// issued here, so a genuinely fresh $cf2a lands pwd/cd/dir/ll on whatever path
-// UCI DOS1 already sits at (root "/" on a cold Ultimate boot), while still
-// routing as a UCI device instead of printing "NOT SUPPORTED ON IEC".
+// --- 16-DEV: hd_norm_cur U/V/W extension (annex tail) ------------------------
+// bare '#' display + lazy-default: accept the UCI letters U (/usb0), V (/usb1) and
+// W (/usb0/home) so a bare '#' after '#u'/'#v'/'#w' prints the letter instead of
+// resetting $cf2a to 'H'. A = folded $cf2a on entry (already != H/T/F/C/N).
+// Step 30: default device is now UCI ('H') -- no CHANGE_DIR is issued here, so a
+// genuinely fresh $cf2a lands pwd/cd/dir/ll on whatever path UCI DOS1 already sits
+// at (root "/" on a cold Ultimate boot), while still routing as a UCI device.
+// U/V/W are consecutive ($55-$57): a range check keeps this at the same 14 bytes the
+// old U/V two-compare form used, so it still fits the exactly-full $97xx annex.
 hd_nc_ext:
-    cmp #$55               // 'U' -> keep as-is (fall to hd_nce_ok, return A)
-    beq hd_nce_ok
-    cmp #$56               // 'V'
-    beq hd_nce_ok
+    cmp #$55               // < 'U' ($55)? -> not a UCI letter -> default
+    bcc hd_nc_def
+    cmp #$58               // <= 'W' ($57)? ($55-$57 = U/V/W) -> keep as-is, return A
+    bcc hd_nce_ok
+hd_nc_def:
     lda #$48               // else uninitialized/unknown -> default 'H' (UCI)
     sta $cf2a
 hd_nce_ok:
@@ -3113,11 +3115,11 @@ hd_setdev:
     bne hsh_body           // '#' + 2+ chars -> not a device command -> AI
     jsr hd_fold            // fold A to uppercase (accept both cases)
     cmp #$38               // '8'
-    beq hd_local
+    beq hd_bad
     cmp #$39               // '9'
-    beq hd_local
+    beq hd_bad
     cmp #$53               // 'S' SoftIEC
-    beq hd_local
+    beq hd_bad
     cmp #$48               // 'H' Ultimate Home
     beq hd_hook            // 16-DEV: UCI drive -> bank6 auto-cd (sets $cf2a + CHANGE_DIR)
     cmp #$54               // 'T' Ultimate Temp
@@ -3128,16 +3130,19 @@ hd_setdev:
     beq hd_fwd
     cmp #$4e               // 'N' Network -> set + eager forward
     beq hd_fwd
-// 16-DEV: H/T/F (branched here) + the NEW U/V + any unknown '#x' (fall-through) all
+// 16-DEV: H/T/F (branched here) + U/V/W + any unknown '#x' (fall-through) all
 // route into the bank5->bank6 dispatch chain. bank6 b6_disp sees the leading '#' and
-// hands off to b6_autocd: for a UCI letter (H/T/F/U/V) it sets $cf2a and issues a
+// hands off to b6_autocd: for a UCI letter (H/T/F/U/V/W) it sets $cf2a and issues a
 // CHANGE_DIR to that drive's mount root, returning C=0 (handled); for a non-UCI '#x'
 // it returns C=1, so the line falls through bank4 to hsh_body -> AI, exactly as before.
 hd_hook:
     jmp hsh_ck_b5
-hd_local:
-    sta $cf2a              // store device letter; done, no server
-    clc
+// step 31: 8/9/S (IEC/SoftIEC) dropped -- IEC device selection is no longer handled
+// by this shell. Short-circuit straight to the stock ?SYNTAX ERROR (C=1) instead of
+// falling through the bank5/6/AI chain, so a mistyped/deprecated device letter gives
+// a deterministic, standard error rather than an AI reply (or nothing, if offline).
+hd_bad:
+    sec
     rts
 hd_fwd:
     sta $cf2a              // store 'C'/'N', then eager-forward the '#c'/'#n' line
@@ -3428,14 +3433,10 @@ hd_f2:
     rts
 // hd_norm_cur: return A = current device letter from $CF2A, lazy-defaulting to
 // 'H' (UCI) (and rewriting $CF2A) if it holds anything outside the valid device set.
+// step 31: 8/9/S removed from the valid set -- IEC device letters are no longer
+// stored into $CF2A by this shell at all (dropped in hd_setdev).
 hd_norm_cur:
     lda $cf2a
-    cmp #$38               // '8'
-    beq hd_ncok
-    cmp #$39               // '9'
-    beq hd_ncok
-    cmp #$53               // 'S'
-    beq hd_ncok
     cmp #$48               // 'H'
     beq hd_ncok
     cmp #$54               // 'T'
@@ -3446,7 +3447,7 @@ hd_norm_cur:
     beq hd_ncok
     cmp #$4e               // 'N'
     beq hd_ncok
-    jmp hd_nc_ext          // 16-DEV: accept U/V (display as-is) else default 'H'
+    jmp hd_nc_ext          // 16-DEV: accept U/V/W (display as-is) else default 'H'
     nop                    // (padding: keep hd_ncok at its frozen address, no shift)
     nop
 hd_ncok:

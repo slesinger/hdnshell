@@ -67,10 +67,10 @@ bank06_data_8023:
 .const B6_LINLEN  = $cf64   // original $02a7 line length
 .const B6_MTMP    = $cf66   // b6_match: holds the table letter across fold+compare
 .const B6C3_RUN   = $0386   // bank6->bank3 leaf trampoline (SHARES b5c3's $0386 slot)
-.const B3_IDLE = $9dbb      // bank3 uci_idle_kick  (frozen)
-.const B3_PUSH = $9b20      // bank3 hsh_push       (frozen)
-.const B3_WDAV = $9b55      // bank3 hsh_wdav       (frozen)
-.const B3_FIN  = $9b6a      // bank3 hsh_fin        (frozen)
+.const B3_IDLE = $9dac      // bank3 uci_idle_kick  (frozen) [step-31 re-frozen]
+.const B3_PUSH = $9b1d      // bank3 hsh_push       (frozen) [step-31 re-frozen]
+.const B3_WDAV = $9b52      // bank3 hsh_wdav       (frozen) [step-31 re-frozen]
+.const B3_FIN  = $9b67      // bank3 hsh_fin        (frozen) [step-31 re-frozen]
 b6_helpers:
 .errorif (* != $8023), "bank6 helper block not at $8023"
 // b6_fold: normalize letter in A to uppercase (copy of bank4 b4_fold / bank3 hd_fold).
@@ -186,6 +186,14 @@ b6_pp_d2:
     sta $02a8,x            // [cwd+1] = $01 frame marker (line follows, already shifted)
 b6_pp_done:
     rts
+// #w-relocation: b6_autocd's parallel letter/offset index tables live here in the
+// $8023-$80FF pocket (moved out of the $9F58 third region, which had no room left for
+// the added #w entry). b6_ac_off values index into b6_ac_paths (in the third region);
+// both are absolute-addressed and bank6 is always mapped when b6_autocd reads them.
+b6_ac_lets:
+    .byte $54,$46,$48,$55,$56,$57                      // T  F  H  U  V  W
+b6_ac_off:
+    .byte 0, 6, 13, 22, 28, 34                         // -> /TEMP /FLASH /SD/HOME /USB0 /USB1 /USB0/HOME
 .errorif (* > $8100), "bank6 helper block overran the $8023-$80FF pocket into $8100"
     .fill $8100 - *, $00   // pad the pocket; TMP payload resumes at $8100
 .errorif (* != $8100), "bank6 helper fill did not land on $8100"
@@ -738,8 +746,8 @@ b6_cmdtab:
     .byte $ff
 b6_ctx:
     // Device gate: only UCI-DOS drives own a cwd worth prepending. $cf2a is stored
-    // already-folded (hd_setdev). T/F/H today; U/V reserved for the deferred #u/#v
-    // (dormant -- $cf2a can't hold them until bank3 adds those letters, see 16-DEV).
+    // already-folded (hd_setdev/b6_autocd). UCI letters T/F/H/U/V/W all qualify;
+    // c/n (logical devices) do not -- the server tracks their own cwd.
     // Read RAW (no hd_norm_cur normalize): a cold-boot garbage $cf2a matching a UCI
     // letter before any #/pwd/cd just prepends the real current dir -> harmless
     // (fail-open still holds); self-heals on the first #x/pwd/cd. (Fable5 nit, accepted.)
@@ -753,6 +761,8 @@ b6_ctx:
     cmp #$55               // 'U'
     beq b6_go
     cmp #$56               // 'V'
+    beq b6_go
+    cmp #$57               // 'W' (/usb0/home)
     beq b6_go
     sec                    // non-UCI device -> forward unchanged (server needs abs path)
     rts
@@ -917,7 +927,7 @@ b6c3_end:
 b6_autocd:
     lda $02a7+1           // the device letter after '#'
     jsr b6_fold           // fold to uppercase (A held through the dex search below)
-    ldx #$04              // search the 5-letter table, index 4..0
+    ldx #$05              // search the 6-letter table, index 5..0
 b6_ac_find:
     cmp b6_ac_lets,x
     beq b6_ac_hit
@@ -955,17 +965,16 @@ b6_ac_wrd:
 b6_ac_ok:
     clc                   // handled (device selected + cd attempted) -> no stock error
     rts
-// parallel letter/offset tables + packed NUL-terminated path blob (PETSCII-uppercase;
-// '/'=$2F, '0'=$30, '1'=$31). Offsets index into b6_ac_paths.
-b6_ac_lets:
-    .byte $54,$46,$48,$55,$56                          // T  F  H  U  V
-b6_ac_off:
-    .byte 0, 6, 13, 22, 28                             // -> /TEMP /FLASH /SD/HOME /USB0 /USB1
+// NUL-terminated path blob (PETSCII-uppercase; '/'=$2F, '0'=$30, '1'=$31).
+// b6_ac_off (in the $8023 pocket) indexes into this. The parallel letter/offset
+// index tables (b6_ac_lets/b6_ac_off) live in the $8023-$80FF pocket to keep this
+// third region under $A000 after the #w (/USB0/HOME) entry was added.
 b6_ac_paths:
     .byte $2F,$54,$45,$4D,$50,$00                      //  0: "/TEMP"
     .byte $2F,$46,$4C,$41,$53,$48,$00                  //  6: "/FLASH"
     .byte $2F,$53,$44,$2F,$48,$4F,$4D,$45,$00          // 13: "/SD/HOME"
     .byte $2F,$55,$53,$42,$30,$00                      // 22: "/USB0"
     .byte $2F,$55,$53,$42,$31,$00                      // 28: "/USB1"
+    .byte $2F,$55,$53,$42,$30,$2F,$48,$4F,$4D,$45,$00  // 34: "/USB0/HOME"
 .errorif (* > $A000), "bank6 third region (b6c3 + b6_autocd) overran into $A000"
     .fill $A000 - *, $00   // pad the rest of the end-of-bank pocket ($9F58 region)

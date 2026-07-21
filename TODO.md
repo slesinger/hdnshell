@@ -5,18 +5,30 @@ Ask me any questions before you proceed to ensure you understand the task well.
 ```
 
 ```
-There are places where SD card is mentioned where some people if they do not have SD card and they only have USB, they would hit a wall. I can only think of /sd/home is a problem. First scan the wedge and server code and try to identify all places where SD card is mentioned and then we can discuss how to fix it. I think the wedge is the main place where this is a problem, but there might be other places too. For places confirmed I will ask you to make a logic that if /sd is not present, use /usb0 instead and if /usb0 is not present, use /flash/home. Do an analysis first.
-Use Opus or Fable5 subagents should you need an advice. All changes in wedge need to be done very carefully, step by step and always hw tested.
-
 
 
 ------
 QUEUE
 
+You are a senior C64 aseembler coder. You will be extending functionality of Retro Replay cartridge BASIC. Important is that you must not break any existing functionality of the cartridge. We will do small steps and I will always hardware test your changes to catch any corruption early.
+Operate only in the "wedge" directory or in the cloud directory.
+Ask me any questions to make sure you understand what is needed. Grill me.
+
+# YOUR CURRENT TASK:
+Put HDN in front of CPX RR 3.8P in the boot screen. The whole text will be like
+16M REU UCI v1.2 HDN CPX RR 3.8P
+
+# FURTHER NOTES FOR THIS TASK
+Ask me any questions to make sure you understand what is needed. Grill me.
+Use subagents utilizing smaller models like Sonnet5 to avoid hitting model quota limit. Also use Fable5 model as an advisor.
+Reminder: do small steps, I do not mind test more often to make sure nothing is corrupted.
 
 
 
 
+
+See what this project is about. Suggest how to implement clipboard features on the C64 HDN Shell. My first idea is that it should work in local console on current screen, it should work in server apps. The clipboard storage will be on the server, so no memory will be consumed in the C64. The clippboard will work also between all server apps and between server apps and local console. It should use combination of keys C=+CTRL+... as this combination is very unique and will collide with other applications. The biggest challenge is how to select content to be copied. There will be also need to use line-vise selection and also block rectangle selection.
+Suggest user experience. Generate plan for implementation.
 
 
 
@@ -30,22 +42,3 @@ Ask me any questions before you proceed to ensure you understand the task well.
 
 ```
 
-
-## PRGlets Operations
-
-PRGlets are small programs that are loaded into memory and executed on demand. The code has to be relocatable and conform to PRGlet calling conventions. They can compile on cloud on demand from high-level language (e.g. C) or assembly.
-PRGlets can be used in HTML pages with Hondani browser.
-There can always be only one PRGlet loaded at a time. It can receive data from stdin and return data to stdout which is always a dedicated buffer in memory (C64 RAM is swapped out to REU to free space for stdin/out data and then swapped back to C64 RAM). You can imagine PRGlet as always available, like being on a PATH in Linux.
-
-```prglet load "<filename>"``` - load PRGlet from disk
-```prglet run <name> [args...]``` - run loaded PRGlet with optional arguments
-```prglet list``` - list loaded PRGlets
-```prglet unload <name>``` - unload PRGlet from memory
-
-## Residential Programs
-
-Residential programs are tiny programs loaded into memory and remain there for quick access. They can be used to extend the functionality of the system or provide commonly used utilities. Multiple residential programs can be loaded simultaneously. Residential can handle exution from an interrupt on every frame.
-
-```resident load "<filename>"``` - load a program to stay resident in memory
-```resident list``` - list resident programs
-```resident unload <name>``` - unload resident program from memory

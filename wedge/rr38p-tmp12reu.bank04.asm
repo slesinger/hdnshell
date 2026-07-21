@@ -598,15 +598,16 @@ bank04_data_80B4:
 // falls through to hsh_body = chat/AI, which also gives c/n its server-forward).
 //
 // 15b/15c: 'pwd' and 'cd', dispatched by current device ($cf2a). Both share the
-// device policy:
-//   h/t/f -> UCI DOS: pwd = GET_PATH ($12) prints the path; cd = CHANGE_DIR ($11)
-//            sends the path arg, silent on success, "NOT FOUND" on non-"00" status
-//            (bank4 copies of dos1_read_print + the bounded UCI helpers; $dfxx/$ffd2
-//            bank-independent, scratch $cf26/$cf30/$cf31/$cf47/$cf48 shared with
-//            bank3 -- safe, transient, never both banks active).
+// device policy (step 31: IEC 8/9/s removed -- $cf2a only holds a UCI letter or c/n):
+//   h/t/f/u/v/w -> UCI DOS: pwd = GET_PATH ($12) prints the path; cd = CHANGE_DIR
+//            ($11) sends the path arg, silent on success, "NOT FOUND" on non-"00"
+//            status (bank4 copies of dos1_read_print + the bounded UCI helpers;
+//            $dfxx/$ffd2 bank-independent, scratch $cf26/$cf30/$cf31/$cf47/$cf48
+//            shared with bank3 -- safe, transient, never both banks active).
+//            u/v/w are remapped to 't' by b4_curdev (one UCI drive), so they route
+//            through the same h/t/f path.
 //   c/n   -> return C=1 (not handled) so bank3 falls through to hsh_body, which
 //            forwards the raw "pwd"/"cd ..." line to the server (tracks cwd/module).
-//   8/9/s -> print "NOT SUPPORTED ON IEC" (cd/pwd are non-IEC only).
 // Any other line -> C=1 -> bank3 chat/AI (unchanged). The Ultimate CHANGE_DIR
 // handles "..", "/", relative and absolute natively, so cd needs no path parsing.
 // =============================================================================
@@ -619,11 +620,11 @@ bank04_data_80B4:
 .const B4_BUFMAX = 80
 .const B4_PAT    = $cfd0    // folded filter pattern (B4_PATMAX bytes)
 .const B4_PATMAX = 40
-.const B3_FIN   = $9b6a     // CONS: bank3 hsh_fin (byte-identical to the former local fin helper)
-.const B3_IDLE  = $9dbb     // CONS: bank3 uci_idle_kick
-.const B3_PUSH  = $9b20     // CONS: bank3 hsh_push
-.const B3_WDAV  = $9b55     // CONS: bank3 hsh_wdav
-.const B3_DOS1  = $9dcc     // CONS: bank3 dos1_read_print + 3 (past its own 'sta $cf47')
+.const B3_FIN   = $9b67     // CONS: bank3 hsh_fin (byte-identical to the former local fin helper) [step-31 re-frozen]
+.const B3_IDLE  = $9dac     // CONS: bank3 uci_idle_kick [step-31 re-frozen]
+.const B3_PUSH  = $9b1d     // CONS: bank3 hsh_push [step-31 re-frozen]
+.const B3_WDAV  = $9b52     // CONS: bank3 hsh_wdav [step-31 re-frozen]
+.const B3_DOS1  = $9dbd     // CONS: bank3 dos1_read_print + 3 (past its own 'sta $cf47') [step-31 re-frozen]
 b4_disp:
 .errorif (* != $9C00), "b4_disp not at $9C00"
     jsr b4c3_install       // CONS: heal the bank4->bank3 RAM trampoline @ $0386
@@ -661,10 +662,9 @@ b4_ck_pwd:
     beq b4_nomatch
     cmp #$4e
     beq b4_nomatch
-    jsr b4_is_htf          // Z=1 iff H/T/F
-    beq b4_pwd_ok          // else 8/9/s -> not supported
-    jmp b4_prnsup
-b4_pwd_ok:
+    // step 31: everything else is a UCI drive (H/T/F, with U/V/W remapped to 'T' by
+    // b4_curdev). 8/9/S can no longer reach $cf2a, so the old b4_is_htf gate + the
+    // "NOT SUPPORTED ON IEC" branch are gone -- fall straight through to GET_PATH.
     lda #$12               // DOS_CMD_GET_PATH
     sta $cf47               // pre-stash cmd; B3_DOS1 enters past bank3's own 'sta $cf47'
     ldx #<B3_DOS1
@@ -700,8 +700,7 @@ b4_cd_arg:
     beq b4_cd_nomatch
     cmp #$4e
     beq b4_cd_nomatch
-    jsr b4_is_htf
-    bne b4_prnsup          // 8/9/s -> not supported
+    // step 31: else = UCI drive (see pwd note) -> straight to CHANGE_DIR.
     ldx #<B3_IDLE
     ldy #>B3_IDLE
     jsr B4C3_RUN
@@ -737,23 +736,12 @@ b4_cd_el:
 b4_cd_ok:
     clc
     rts
-// b4_prnsup: print "NOT SUPPORTED ON IEC" + CR; handled (clc). Shared pwd+cd.
-b4_prnsup:
-    ldx #$00
-b4_psl:
-    lda b4_nsupmsg,x
-    beq b4_psd
-    jsr $ffd2
-    inx
-    bne b4_psl
-b4_psd:
-    clc
-    rts
+// step 31: b4_prnsup ("NOT SUPPORTED ON IEC" printer) removed with the IEC device
+// support -- $cf2a can no longer hold 8/9/S, so it was unreachable.
 // ---- ll / dir : bare token, list the current directory (step 16a) ----------
 // Reached via the b4_j_dir/b4_j_ll thunks (out of the dispatcher's beq range).
-// h/t/f -> UCI DOS OPEN_DIR ($13) then READ_DIR ($14) -> CHROUT the listing.
+// UCI drive (h/t/f/u/v/w) -> DOS OPEN_DIR ($13) then READ_DIR ($14) -> CHROUT listing.
 // c/n   -> C=1 (bank3 forwards the raw line to the server, which lists+filters).
-// 8/9/s -> b4_prnsup "NOT SUPPORTED ON IEC" (no KERNAL dir port; use stock RR $).
 // Only the *bare* token is ours; "ll <arg>"/"dir <arg>" fall through (C=1) so a
 // pattern on c/n still forwards to the server verbatim. The h/t/f client-side
 // pattern filter is DEFERRED to 16b. Multi-packet READ_DIR streaming is done here
@@ -802,8 +790,7 @@ b4_do_dir:
     beq b4_dir_nm
     cmp #$4e
     beq b4_dir_nm
-    jsr b4_is_htf          // Z=1 iff H/T/F
-    bne b4_prnsup          // 8/9/s -> "NOT SUPPORTED ON IEC"
+    // step 31: else = UCI drive (see pwd note) -> OPEN_DIR/READ_DIR the current dir.
     jsr b4_open_dir        // DOS OPEN_DIR ($13) on the current dir (silent)
     lda #$00
     sta B4_BUFLEN          // 16b-2: start with an empty entry-name buffer
@@ -826,19 +813,9 @@ b4_open_dir:
     ldy #>B3_FIN
     jsr B4C3_RUN
     rts
-// b4_is_htf: Z=1 iff A is 'H','T' or 'F' (A clobbered to $00/$01).
-b4_is_htf:
-    cmp #$48
-    beq b4_htf_y
-    cmp #$54
-    beq b4_htf_y
-    cmp #$46
-    beq b4_htf_y
-    lda #$01               // Z=0 -> not h/t/f
-    rts
-b4_htf_y:
-    lda #$00               // Z=1 -> h/t/f
-    rts
+// step 31: b4_is_htf removed -- b4_curdev now only ever returns a UCI letter (H/T/F,
+// with U/V/W remapped to 'T') or c/n (filtered out before this point), so the
+// H/T/F-vs-IEC gate had no remaining false case.
 // b4_fold: copy of bank3 hd_fold -- normalize letter in A to uppercase.
 b4_fold:
     cmp #$c1
@@ -854,14 +831,11 @@ b4_f2:
     rts
 // b4_curdev: copy of bank3 hd_norm_cur -- A = current device letter from $cf2a,
 // lazy-defaulting to 'H' (UCI) (and rewriting $cf2a) if it holds a non-device byte.
+// step 31: the dead 8/9/S comparisons are gone -- $cf2a can only hold a UCI letter
+// (H/T/F/U/V/W) or c/n now. H/T/F/C/N return as-is; U/V/W (and cold-boot garbage) go
+// to b4_cd_ext (U/V/W -> 'T'; garbage -> default 'H').
 b4_curdev:
     lda $cf2a
-    cmp #$38               // '8'
-    beq b4_ncok
-    cmp #$39               // '9'
-    beq b4_ncok
-    cmp #$53               // 'S'
-    beq b4_ncok
     cmp #$48               // 'H'
     beq b4_ncok
     cmp #$54               // 'T'
@@ -872,17 +846,13 @@ b4_curdev:
     beq b4_ncok
     cmp #$4e               // 'N'
     beq b4_ncok
-    jmp b4_cd_ext          // 16-DEV: U/V -> route as UCI (remap 'T'), else default '8'
-    nop                    // (padding: keep b4_ncok at its address, no shift)
-    nop
+    jmp b4_cd_ext          // 16-DEV: U/V/W -> route as UCI (remap 'T'), else default 'H'
 b4_ncok:
     rts
 // CONS stage 2: the local dos1_read_print, idle_kick, widl, push, wdav and fin
 // helper bodies moved to bank3 (called via the $0386 trampoline, B3_DOS1/B3_IDLE/
 // B3_PUSH/B3_WDAV/B3_FIN) -- reclaims the bank4 main-area space they used to hold.
-b4_nsupmsg:
-    .byte $4E, $4F, $54, $20, $53, $55, $50, $50, $4F, $52, $54, $45, $44   // "NOT SUPPORTED"
-    .byte $20, $4F, $4E, $20, $49, $45, $43, $0D, $00                        // " ON IEC",CR,0
+// step 31: b4_nsupmsg ("NOT SUPPORTED ON IEC") removed with the IEC device support.
 b4_cderr:
     .byte $4E, $4F, $54, $20, $46, $4F, $55, $4E, $44, $0D, $00              // "NOT FOUND",CR,0
 // =============================================================================
@@ -968,24 +938,26 @@ b4_fl_reset:
     sta B4_BUFLEN          // ready for the next entry
 b4_fl_rts:
     rts
-// --- 16-DEV: b4_curdev U/V extension (in the reserve fill; no shift) ----------
-// pwd/cd/dir/ll routing: the NEW letters U (/usb0) and V (/usb1) select the SAME
-// single UCI drive (their auto-cd already moved its cwd to /usbN), so remap U/V to
-// 'T' here -> b4_is_htf treats them as UCI and every command routes correctly.
-// $cf2a is left as 'U'/'V' (bare '#' shows it via bank3 hd_nc_ext), only the
-// returned routing letter is 'T'. Anything else (garbage) -> default 'H' (UCI;
-// see hd_nc_ext step 30 note -- no CHANGE_DIR here, so a fresh $cf2a just routes
-// pwd/cd/dir/ll to whatever path DOS1 already sits at, root "/" on cold boot).
+// --- 16-DEV: b4_curdev U/V/W extension (in the reserve fill; no shift) ---------
+// pwd/cd/dir/ll routing: the letters U (/usb0), V (/usb1) and W (/usb0/home) all
+// select the SAME single UCI drive (their auto-cd already moved its cwd there), so
+// remap U/V/W to 'T' here -> b4_is_htf treats them as UCI and every command routes
+// correctly. $cf2a is left as 'U'/'V'/'W' (bare '#' shows it via bank3 hd_nc_ext),
+// only the returned routing letter is 'T'. Anything else (garbage) -> default 'H'
+// (UCI; no CHANGE_DIR here, so a fresh $cf2a just routes pwd/cd/dir/ll to whatever
+// path DOS1 already sits at, root "/" on cold boot).
 b4_cd_ext:
     cmp #$55               // 'U'
     beq b4_cd_uv
     cmp #$56               // 'V'
     beq b4_cd_uv
+    cmp #$57               // 'W'
+    beq b4_cd_uv
     lda #$48               // else uninitialized/unknown -> default 'H' (UCI)
     sta $cf2a
     rts
 b4_cd_uv:
-    lda #$54               // U/V -> route as 'T' (single UCI drive)
+    lda #$54               // U/V/W -> route as 'T' (single UCI drive)
     rts
 .errorif (* > $9E9D), "bank4 module + b4_cd_ext overran the reserve ($9E9C)"
     .fill $9E9D - *, $00   // pad the reserve; real bank4 data resumes at $9E9D

@@ -149,8 +149,11 @@ class CSDBHandler(BaseHandler):
             return True
         # Only assume csdb module if user explicitly switched to it
         if state.get("active_module") == "c":
-            # Don't handle if another command is detected
-            if any(t.startswith(p) for p in ["i:", ":", "help"]):
+            # Don't handle if an explicit switch to another module is detected.
+            # "#n" MUST be here (mirrors NetDriveHandler excluding "#c"): otherwise
+            # this active-module catch-all swallows "#n" as a CSDB search query and
+            # the user can never switch csdb -> netdrive.
+            if any(t.startswith(p) for p in ["i:", "#n", ":", "help"]):
                 return False
             return True
         return False

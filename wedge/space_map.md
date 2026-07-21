@@ -19,12 +19,19 @@ was used, `~` where estimated.
 | 0 | 385 | 393 | 702 high-conf + ~420 med-low | 0 |
 | 1 | 16 (inside HDN pocket) | 16 | ~7 (entangled) | ~90-150 printer (entangled) |
 | 2 | 102 | 140 | 0 | 0 (FUNPAINT viewer ~460 optional) |
-| 3 | ~236 | ~242 | — (resolved, see §3) | ~90 SS boot-detect (§5.1 item 2, remaining) |
-| 4 | 78 | 78 | 3 | 0 |
+| 3 | ~251 | ~257 | — (resolved, see §3) | ~90 SS boot-detect (§5.1 item 2, remaining) |
+| 4 | 161 | 161 | 3 | 0 |
 | 5 | ~42 | ~42 | 3 | flash util: 0 cleanly recoverable |
-| 6 | 54 | 54 | 3 | 0 |
+| 6 | 37 | 37 | 3 | 0 |
 | 7 | 36 | 36 | 3 | 0 |
-| **Σ** | **~691** | **~743** | **~1140 pending verification** | **~535 approved-category + optionals** |
+| **Σ** | **~772** | **~824** | **~1140 pending verification** | **~535 approved-category + optionals** |
+
+Step 31 (2026-07-21) deltas folded into the totals above: bank 3 +15 B (shell-reserve
+tail freed by dropping `#8/#9/#s`), bank 4 +83 B (dead IEC-branch cleanup), bank 6
+-17 B (index tables relocated into the `$8023` pocket + `#w` path string added). Σ
+carries the prior running total plus this step's net +81 B; it is not a fresh sum
+of the column above (that column already had pre-existing rounding/overlap drift
+predating this step — not something this pass reconciles).
 
 Feature-presence summary (the good and bad news):
 
@@ -79,7 +86,7 @@ fully packed (DOS wedge, ML monitor, TASS/TMP launcher, F-key macros, HDN hook).
 | $9E8F-$9E9D | 14 | b | stock zeros |
 | $9EF5-$9EFF | 10 | b | stock zeros |
 
-### Bank 3 — ~236 B usable
+### Bank 3 — ~251 B usable
 Reclaimed Silversurfer pocket $80F8-$8241 (§5.1): step 31's `hsh_putc`, step
 32's `b3_dos1_read`, and step 34's `b3_wait_pkt` now occupy $80F8-$8155
 (93 B), leaving 236 B free at $8155-$8241 (`.errorif`-guarded, kept: $8241
@@ -89,12 +96,24 @@ pinned inside full HDN annexes ($807F preserves the `bit $8080` trick byte — d
 not touch). All five original pockets are consumed; further bank-3 space must
 come from Silversurfer item 2 (§5.1) or the reclaimed pocket's remaining ~280 B.
 
-### Banks 4-7 — 174 B total, all tails of HDN reserve pockets
+**Step 31 (2026-07-21) new pocket:** dropping `#8/#9/#s` from `hd_setdev`
+(`hd_local`→`hd_bad`, short-circuits to a stock `?SYNTAX ERROR`) and from
+`hd_norm_cur` (removed the three now-dead `cmp #$38/#$39/#$53` checks) shrank
+the code inside the `$998B-$9E9C` shell reserve by a measured 15 B (confirmed
+via `.sym`: `kw_tab` moved from `$9E88`→`$9E79`), opening a new free tail at
+**$9E8C-$9E9D (17 B)** — up from ~2 B before the change, previously too small
+to itemize. `hd_nc_ext` (the separate `$97xx` annex, U/V two-compare → U/V/W
+range-check) stayed byte-identical (`hd_nce_ok` still at $97FD both before and
+after) — no yield there, as expected from a same-size compaction. Net bank-3
+gain this step: +15 B (headline table's "~29 B" step-31 estimate was high by
+~14 B; trust the `.sym`-measured 15).
+
+### Banks 4-7 — 276 B total, all tails of HDN reserve pockets
 | Bank | Ranges | Bytes |
 |---|---|---:|
-| 4 | $9E65-$9E9D (56) + $9FEA-$A000 (22) | 78 |
+| 4 | $9E12-$9E9D (139, was 56 -- step 31 removed the dead `b4_curdev`/`b4_is_htf`/`b4_prnsup`/`b4_nsupmsg` IEC branch code, measured via `b4_cd_uv`'s `rts` ending at $9E11) + $9FEA-$A000 (22) | 161 |
 | 5 | $80DA-$8100 (38, was 2 -- step 32 moved rf_read's DOS_CMD_READ_DATA command assembly to bank3, step 34 additionally replaced the two 8-bit-bounded DATA_AV waits with a single state-aware bank3 call) + $9FFC-$A000 (4) | ~42 |
-| 6 | $80E2-$8100 (30) + $9E8D-$9E9D (16) + $9FF8-$A000 (8) | 54 |
+| 6 | $80EE-$8100 (18, was 30 -- step 31 relocated `b6_ac_lets`/`b6_ac_off` here from the $9F58 region) + $9E91-$9E9D (12, was 16 -- `#w`'s extra `cmp`/`beq` in `b6_ctx` cost 4 B) + $9FF9-$A000 (7, was 8 -- the relocated tables freed 10 B but the new "/USB0/HOME" string cost 11 B, net -1) | 37 |
 | 7 | $80F9-$8100 (7) + $9E88-$9E9D (21) + $9FF8-$A000 (8) | 36 |
 
 Everything else in banks 4-7 is the opaque TMP+REU pre-linked payload
@@ -163,9 +182,13 @@ the copy boundary with tools/dis.py before trusting the 420-B figure.**
   (entangled, ~10 B, don't bother initially).
 - Pinned addresses that must never move (hardcoded cross-bank):
   bank2 `hondani_err`=$9B2E, `cs_install`=$9C41, `console_switch`=$9CB7;
-  bank3 leaf helpers B3_IDLE=$9DBB/B3_PUSH=$9B20/B3_FIN=$9B6A/B3_DOS1=$9DCC/
-  `b3_dos1_read`=$8114 (step 32, hardcoded as `B3_DOS1_READ` in bank05.asm)/
-  `b3_wait_pkt`=$812B (step 34, hardcoded as `B3_WAIT_PKT` in bank05.asm);
+  bank3 leaf helpers B3_IDLE=$9DAC/B3_PUSH=$9B1D/B3_WDAV=$9B52/B3_FIN=$9B67/B3_DOS1=$9DBD
+  (all re-frozen 2026-07-21, step 31 — the bank3 shell reserve shrank ~15 B when
+  `#8/#9/#s` were dropped, shifting every leaf-helper label; old values were
+  B3_IDLE=$9DBB/B3_PUSH=$9B20/B3_WDAV=$9B55/B3_FIN=$9B6A/B3_DOS1=$9DCC — see §7)/
+  `b3_dos1_read`=$8114 (step 32, hardcoded as `B3_DOS1_READ` in bank05.asm, UNCHANGED
+  by step 31 — that $80F8-$8241 pocket was not touched)/
+  `b3_wait_pkt`=$812B (step 34, hardcoded as `B3_WAIT_PKT` in bank05.asm, UNCHANGED);
   bank4 `b4_disp`=$9C00; bank5 `rf_loader`=$804E, `b5_disp`=$9E00;
   bank6 `b6_disp`=$9E00; bank7 `bb_main`=$8023; bank3 $8080 (`bit $8080` trick).
 
@@ -242,3 +265,12 @@ tables; removal shifts nothing big and risks the must-keep wedge dispatch.
 When a pocket is consumed or a removal lands: update §1 totals, the bank's §2
 table, and strike the candidate in §5. Keep pinned-address list in §4 current —
 it is the contract every removal must respect.
+
+**2026-07-21 (step 31):** `#8`/`#9`/`#s` IEC device commands removed from the
+shell (`hd_setdev`/`hd_norm_cur`, bank 3); bank 4's dead IEC branch code removed
+(`b4_curdev`'s 8/9/S checks, `b4_is_htf`, `b4_prnsup`, `b4_nsupmsg` — measured
+83 B reclaimed, not the ~87 B originally estimated); `#w` (`/USB0/HOME`) added
+across banks 3/4/6, which cost bank 6 a net 17 B (index tables relocated into
+the `$8023` pocket, offset by the new path string). Bank 3's leaf helpers
+re-frozen (see §4) — measured gain there was 15 B, not the ~29 B estimated.
+See §2 bank-3/4/6 entries for the full before/after byte accounting.

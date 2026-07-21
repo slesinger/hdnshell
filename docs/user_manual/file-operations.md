@@ -4,7 +4,7 @@ Commands for creating directories, copying files, and moving raw memory blocks. 
 
 ## Creating Directories
 
-`mkdir <name>` — Create a directory in the current location. Only supported on the Ultimate filesystem (`t`/`f`/`h`/`u`/`v`). A relative `<name>` is created inside the current directory; an absolute `/path/name` works too.
+`mkdir <name>` — Create a directory in the current location. Only supported on the Ultimate filesystem (`t`/`f`/`h`/`u`/`v`/`w`). A relative `<name>` is created inside the current directory; an absolute `/path/name` works too.
 
 ## Copying and Moving Files (`cp` / `mv`)
 
@@ -12,7 +12,7 @@ Commands for creating directories, copying files, and moving raw memory blocks. 
 
 Each of `<src>`/`<dst>` is one of:
 
-- **A bare path** — resolves against whichever device you're currently on. An *absolute* path (`/temp/game.prg`) is always the Ultimate DOS filesystem (`t`/`f`/`h`/`u`/`v` are all the *same* physical drive, just different starting directories, so there's no per-letter prefix), from any device. A *relative* path (`game.prg`, `../tools`) resolves against your current directory on the Ultimate filesystem while you're on `t`/`f`/`h`/`u`/`v`; typed while you're on `#n` it resolves against your current *network-drive* directory instead (the same as writing `n:game.prg`); typed while you're on `#c`, actively browsing a release, it's understood as a file from that release (the same as writing `c:game.prg` — see below). In each case that's simply the one live "current directory" a bare relative path can mean on the device you're actually on.
+- **A bare path** — resolves against whichever device you're currently on. An *absolute* path (`/temp/game.prg`) is always the Ultimate DOS filesystem (`t`/`f`/`h`/`u`/`v`/`w` are all the *same* physical drive, just different starting directories, so there's no per-letter prefix), from any device. A *relative* path (`game.prg`, `../tools`) resolves against your current directory on the Ultimate filesystem while you're on `t`/`f`/`h`/`u`/`v`/`w`; typed while you're on `#n` it resolves against your current *network-drive* directory instead (the same as writing `n:game.prg`); typed while you're on `#c`, actively browsing a release, it's understood as a file from that release (the same as writing `c:game.prg` — see below). In each case that's simply the one live "current directory" a bare relative path can mean on the device you're actually on.
 - **`n:<path>`** — the network drive. `n:` alone means the current network-drive directory; `n:/path` is root-relative *within* the network drive (not the real server filesystem); `n:path` is relative to the current network-drive directory.
 - **`c:<pattern>`** — CSDB, **source only**. Reuses the release/zip browsing you last did with `#c` (see [CSDB](csdb.md)) regardless of which device you're on right now, and uploads the matched file(s) to `<dst>` instead of always landing in `/temp`. `c:` cannot be a destination (CSDB is read-only), and `mv` cannot use it as a source (use `cp`). The prefix is only *required* once you've switched away from `#c` and still want to pull from that release — while `#c` is your current device, a bare filename works the same way (see above).
 - **`8:`/`9:`/`s:`** — not supported; there is no server-side session to the real IEC drives.
@@ -73,7 +73,7 @@ To save or restore a block of memory (not a whole file that's already on a devic
 
 `del` operates on whichever drive you are currently on:
 
-- On `t`/`f`/`h`/`u`/`v` (Ultimate storage): deletes on the Ultimate filesystem.
+- On `t`/`f`/`h`/`u`/`v`/`w` (Ultimate storage): deletes on the Ultimate filesystem.
 - On `n` (network drive): deletes within the current network-drive directory (sandboxed to the server workspace).
 
 **There is no confirmation prompt** — a matching file is deleted immediately, so double-check your pattern. `del` reports how many files it removed (`OK: deleted 3 file(s)`), or `?NOTHING MATCHED` when the pattern matches nothing. Deleting files requires the HDN Server to be running. On IEC-only drives (`8`/`9`/`s`, no server session), use the Retro Replay cartridge's own BASIC `DELETE` command or the drive command channel (`@s:name`) instead. You can also delete via the web UI's [File Manager](file-manager.md).
@@ -97,7 +97,7 @@ MODIFIED 2026-07-14 18:22:03
 
 Like `del`, `file` operates on whichever drive you are currently on:
 
-- On `t`/`f`/`h`/`u`/`v` (Ultimate storage): reports on the Ultimate filesystem.
+- On `t`/`f`/`h`/`u`/`v`/`w` (Ultimate storage): reports on the Ultimate filesystem.
 - On `n` (network drive): reports within the current network-drive directory (sandboxed to the server workspace).
 - Not supported on `c` (CSDB), or on `8`/`9`/`s` (no server session).
 

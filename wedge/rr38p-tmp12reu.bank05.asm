@@ -82,9 +82,9 @@ l1_text:                        // "**** COMMODORE 64 SHELL V1 ****" in C64 scre
 // Shared bank5 constants (bank3 frozen leaf helpers + the bank5->bank3 trampoline).
 // Defined here (ahead of rf_loader at $804E) so both the run-prg loader and the
 // b5_disp/mnt region below can reference them.
-.const B3_IDLE  = $9dbb     // bank3 uci_idle_kick (frozen)
-.const B3_PUSH  = $9b20     // bank3 hsh_push (frozen)
-.const B3_FIN   = $9b6a     // bank3 hsh_fin (frozen)
+.const B3_IDLE  = $9dac     // bank3 uci_idle_kick (frozen) [step-31 re-frozen]
+.const B3_PUSH  = $9b1d     // bank3 hsh_push (frozen) [step-31 re-frozen]
+.const B3_FIN   = $9b67     // bank3 hsh_fin (frozen) [step-31 re-frozen]
 .const B3_DOS1_READ = $8114 // bank3 b3_dos1_read: full READ_DATA cmd ($01 $04 $FF $FF) + push (step 32, frozen)
 .const B3_WAIT_PKT  = $812b // bank3 b3_wait_pkt: state-aware packet wait (step 34, frozen)
 .const B5C3_RUN = $0386     // bank5->bank3 RAM trampoline (shares b4c3's $0386 slot)
