@@ -25,6 +25,11 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_SHELL_TIMEOUT_SECONDS = 60
 MAX_SHELL_OUTPUT_LINES = 200
+# Compiler binary name is platform-specific (oscar64.exe on Windows).
+OSCAR_BINARY = "oscar64.exe" if os.name == "nt" else "oscar64"
+# Shell used by the run_shell_command tool: bash on POSIX, the OS default
+# (cmd.exe via COMSPEC) on Windows. None => subprocess picks the platform shell.
+SHELL_EXECUTABLE = None if os.name == "nt" else "/bin/bash"
 PROJECT_NAME_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 
 _WRITE_OR_DESTRUCTIVE_PATTERNS = [
@@ -589,7 +594,7 @@ def compile_code(program_name: str) -> str:
         return "Error: program_name must not be empty."
 
     oscar_dir = _resolve_oscar_dir(require_compiler=True)
-    compiler = os.path.join(oscar_dir, "bin", "oscar64")
+    compiler = os.path.join(oscar_dir, "bin", OSCAR_BINARY)
     source_file = os.path.join("projects", program_name, f"{program_name}.c")
 
     if not os.path.isfile(compiler):
@@ -850,7 +855,7 @@ def _resolve_oscar_dir(
 
     if require_compiler:
         for base in candidates:
-            if os.path.isfile(os.path.join(base, "bin", "oscar64")):
+            if os.path.isfile(os.path.join(base, "bin", OSCAR_BINARY)):
                 return base
 
     if prefer_workspace:
@@ -1261,7 +1266,7 @@ def compile_project(working_dir: str, main_file: str = "") -> str:
         return "Error: working directory does not exist."
 
     oscar_dir = _resolve_oscar_dir(require_compiler=True)
-    compiler = os.path.join(oscar_dir, "bin", "oscar64")
+    compiler = os.path.join(oscar_dir, "bin", OSCAR_BINARY)
     if not os.path.isfile(compiler):
         print(f"Error: oscar64 compiler not found at {compiler}")
         return f"Error: compiler not found at {compiler}"
@@ -1503,7 +1508,7 @@ def run_shell_command(
             cmd,
             cwd=resolved_cwd,
             shell=True,
-            executable="/bin/bash",
+            executable=SHELL_EXECUTABLE,
             capture_output=True,
             text=True,
             timeout=timeout_seconds,

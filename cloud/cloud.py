@@ -368,7 +368,9 @@ def ensure_rom():
         return jsonify({"error": "No C64 IP found. Run scan first."}), 400
 
     try:
-        cart_path, asset_name = download_latest_cartridge("/tmp/hdnshell")
+        cart_path, asset_name = download_latest_cartridge(
+            os.path.join(tempfile.gettempdir(), "hdnshell")
+        )
         # Download hdnsh.cfg from GitHub master branch alongside the cartridge
         download_latest_cfg(os.path.dirname(cart_path))
 

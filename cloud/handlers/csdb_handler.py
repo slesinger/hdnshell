@@ -11,6 +11,7 @@ import zipfile
 import fnmatch
 import ftplib
 import xml.etree.ElementTree as ET
+import tempfile
 from pathlib import Path
 from typing import Optional, List
 from pydantic import BaseModel
@@ -277,7 +278,7 @@ class CSDBHandler(BaseHandler):
             return ["cp can only be used within a release."], []
 
         output = []
-        tmp_dir = Path("/tmp/hdnshell")
+        tmp_dir = Path(tempfile.gettempdir()) / "hdnshell"
         tmp_dir.mkdir(exist_ok=True)
 
         if state.get("zip_id") and state.get("zip_files"):
@@ -383,7 +384,7 @@ class CSDBHandler(BaseHandler):
     def _cd_into_zip(self, file_id: int, session_id: int) -> str:
         """Download and extract a zip file, listing its contents."""
         state = get_session_state_copy(session_id)
-        tmp_dir = Path("/tmp/hdnshell")
+        tmp_dir = Path(tempfile.gettempdir()) / "hdnshell"
         tmp_dir.mkdir(exist_ok=True)
         zip_path = tmp_dir / f"{file_id}.zip"
 

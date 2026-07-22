@@ -1,0 +1,69 @@
+# -*- mode: python ; coding: utf-8 -*-
+# Windows build. Mirrors hdnsh-server-linux.spec; keep the two in sync.
+# The `datas` entries below are what pack the coding_agent assets into the
+# one-file bundle. Without them, code_chat_handler._resolve_asset_root() aborts
+# on import with "Could not locate coding_agent assets".
+
+a = Analysis(
+    ['cloud.py'],
+    pathex=['server-apps', 'handlers'],
+    binaries=[],
+    datas=[
+        ('static', 'static'),
+        ('../docs/user_manual/*.md', 'docs/user_manual'),
+        ('./oscar/bin/oscar64.exe', 'oscar/bin'),
+        ('./oscar/include', 'oscar/include'),
+        ('./oscar/docs/C_0*.md', 'oscar/docs'),
+        ('./server-apps/coding_agent/prompts/*.md', 'server-apps/coding_agent/prompts'),
+        ('./server-apps/coding_agent/instructions/*.md', 'server-apps/coding_agent/instructions'),
+        ('./server-apps/coding_agent/skills/*.md', 'server-apps/coding_agent/skills'),
+    ],
+    hiddenimports=[
+        'code_chat_console',
+        'coding_agent_console',
+        'file_editor_console',
+        'rss_reader',
+        'telegram_chat',
+        'web_browser',
+        'wiki_browser',
+        'sdk.command_handler',
+        'sdk.shared_state',
+        'sdk.console_manager',
+        'chat_handler',
+        'help_handler',
+        'tutorial_handler',
+        'python_eval_handler',
+        'ultimate_handler',
+        'csdb_handler',
+        'netdrive_handler',
+        'copymove_handler',
+    ],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    noarchive=False,
+    optimize=0,
+)
+pyz = PYZ(a.pure)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.datas,
+    [],
+    name='hdnsh-server-win',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=True,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+)
