@@ -21,6 +21,28 @@ def get_primary_ip() -> str:
     return ip
 
 
+def get_local_ip_towards(host: str) -> str:
+    """Return the local IPv4 the OS would use to reach *host*.
+
+    This is the server's address on the same network path as the C64 (i.e. the
+    IP the C64 would see the HDN Server as), which is what must be baked into the
+    cartridge. Consulting the route to the C64 is more reliable than
+    get_primary_ip() on multi-homed hosts, where the default route may point at
+    an interface the C64 cannot reach. Falls back to get_primary_ip() on error.
+    """
+    if not host:
+        return get_primary_ip()
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # UDP connect just fixes the route/source address; no packets are sent.
+        s.connect((host, DMA_SERVICE_PORT))
+        return s.getsockname()[0]
+    except OSError:
+        return get_primary_ip()
+    finally:
+        s.close()
+
+
 # Get the network range from the IP and netmask
 
 

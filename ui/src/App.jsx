@@ -141,16 +141,17 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [feedback]);
 
-  // Enable Shell = start the HDN Shell RR cartridge (run_crt). This resets the
-  // machine with the cartridge active but does not persist in the Ultimate's
-  // config, so Disable Shell simply resets back to stock BASIC.
+  // Enable Shell = insert the HDN Shell RR cartridge into the C64U slot by
+  // persistently setting the Ultimate's "Cartridge" config item, then resetting
+  // the machine. The slot stays populated across reset/reboot; Disable Shell
+  // empties the slot (Cartridge = None) the same way.
   const handleCartRun = async () => {
     setCartActionLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/c64/cart/run`, { method: "PUT" });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload?.error || "Failed to start cartridge");
-      setFeedback({ type: "success", message: "Cartridge started." });
+      if (!response.ok) throw new Error(payload?.error || "Failed to insert cartridge");
+      setFeedback({ type: "success", message: "Cartridge inserted." });
       window.dispatchEvent(new CustomEvent("refreshC64Status"));
     } catch (err) {
       setFeedback({ type: "danger", message: `Failed to enable shell: ${err.message}` });
@@ -164,8 +165,8 @@ export default function App() {
     try {
       const response = await fetch(`${API_BASE_URL}/c64/cart/stop`, { method: "PUT" });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload?.error || "Failed to reset to BASIC");
-      setFeedback({ type: "success", message: "Shell disabled." });
+      if (!response.ok) throw new Error(payload?.error || "Failed to empty cartridge slot");
+      setFeedback({ type: "success", message: "Cartridge slot emptied." });
       window.dispatchEvent(new CustomEvent("refreshC64Status"));
     } catch (err) {
       setFeedback({ type: "danger", message: `Failed to disable shell: ${err.message}` });
@@ -245,8 +246,8 @@ export default function App() {
     }
   };
 
-  // run_crt is non-persistent so there is no cartridge-active state to query;
-  // the cartridge controls are available whenever the C64U is connected.
+  // The cartridge slot is set in the Ultimate config, so both controls are
+  // available whenever the C64U is connected.
   const enableButtonDisabled = !connected || cartActionLoading;
   const disableButtonDisabled = !connected || cartActionLoading;
   const machineMenuDisabled = !connected;

@@ -481,6 +481,13 @@ b3wp_ok:
     clc
     rts
 .errorif (* > $8241), "step-34 b3_dos1_read/b3_wait_pkt overran the kept $8241 monitor header"
+// Relocated server-host string (was inline before hd_fold with no room to patch a
+// full IPv4). It lives in this free reserve; the .fill below zero-pads it, giving
+// a null-terminated 16-byte slot the Download&Update IP patcher can rewrite --
+// mirroring hn_ip in bank02. Referenced symbolically via `lda hsh_ip,x`.
+hsh_ip:
+    .byte $31, $39, $32, $2E, $31, $36, $38, $2E, $31, $2E, $32, $00    // "192.168.1.2",0
+.errorif (* + 4 > $8241), "hsh_ip left no room for a 16-byte IP slot before $8241"
     .fill $8241 - *, $00   // remainder of the reclaimed SS pocket (free bank3 reserve)
 .errorif (* != $8241), "step-31 fill did not land on $8241 (monitor header)"
 b03_8241:
@@ -3413,8 +3420,11 @@ hsh_fbad:
     sec
     rts
 // ---- data -------------------------------------------------------------------
-hsh_ip:
-    .byte $31, $39, $32, $2E, $31, $36, $38, $2E, $31, $2E, $32, $00    // "192.168.1.2",0
+// hsh_ip was here, wedged directly against hd_fold with no room to grow. It has
+// been relocated into the free $8241 reserve (search "hsh_ip:" below) so the
+// Download&Update IP patcher gets a full 16-byte slot. 12 zero bytes are kept
+// here so hd_fold and everything after stay byte-exact.
+    .fill $0C, $00         // (was: hsh_ip "192.168.1.2",0)
 // ---- step 12 helpers --------------------------------------------------------
 // hd_fold: normalize the device letter in A to uppercase ($41-$5A). Accepts
 // lowercase ($61-$7A -> AND $DF) and shifted PETSCII ($C1-$DA -> AND $7F); digits

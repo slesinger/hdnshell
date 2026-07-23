@@ -17,7 +17,7 @@ import json
 import re
 import posixpath
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote, urlparse, quote
 from version import __version__
 from logging_utils import configure_application_logging
 from cloud_server import C64Server
@@ -163,6 +163,25 @@ CARTRIDGE_FILENAME = "hdn-rr38p-tmp12reu.crt"
 CARTRIDGE_DIR = "/Flash/carts"
 CARTRIDGE_PATH = f"{CARTRIDGE_DIR}/{CARTRIDGE_FILENAME}"
 
+# Ultimate configuration that controls the physical cartridge slot. Setting the
+# "Cartridge" item to the HDN Shell .crt inserts it into the slot; setting it to
+# "None" leaves the slot empty. Unlike the transient run_crt path, this is a
+# persistent config change, so the choice survives a machine reset/reboot.
+CARTRIDGE_CONFIG_CATEGORY = "C64 and Cartridge Settings"
+CARTRIDGE_CONFIG_ITEM = "Cartridge"
+CARTRIDGE_CONFIG_EMPTY = "None"
+
+
+def set_ultimate_config(host: str, category: str, item: str, value: str) -> None:
+    """Set a single Ultimate configuration item via its REST API.
+
+    Path segments (category/item) may contain spaces, so they are URL-encoded;
+    the value is passed as a query parameter and encoded by requests.
+    """
+    url = f"http://{host}/v1/configs/{quote(category)}/{quote(item)}"
+    response = requests.put(url, params={"value": value}, timeout=5)
+    response.raise_for_status()
+
 
 def check_ftp_files(host):
     ftp_file_service_enabled = False
@@ -293,19 +312,23 @@ def download_latest_cfg(target_dir: str) -> str:
     return local_path
 
 
-# Placeholder IP compiled into the cartridge (see wedge/rr38p-tmp12reu.bank05.asm
-# net_test_host label — "192.168.1.2\0" followed by zero-fill up to the jump
-# table, so a 16-byte slot fits any dotted-decimal IPv4 address).
+# Placeholder IP compiled into the cartridge. The host string is embedded in more
+# than one bank -- bank02 `hn_ip` (chat/command connect) and bank03 `hsh_ip` (the
+# `status` reachability probe) -- each as "192.168.1.2\0" padded with zeros to a
+# 16-byte slot, so ALL of them must be patched or one code path keeps a stale IP.
 _ROM_IP_PLACEHOLDER = b"192.168.1.2"
 _ROM_IP_SLOT_SIZE = 16  # total bytes available for IP + null terminator
 
 
 def patch_server_ip(rom_path: str, server_ip: str) -> None:
-    """Replace the placeholder IP in the ROM binary with *server_ip*.
+    """Replace every placeholder server-IP slot in the ROM with *server_ip*.
 
-    The replacement is done byte-by-byte within a fixed-size slot so the
-    binary size never changes.  The new IP string is null-terminated and the
-    remaining bytes in the slot are zeroed out.
+    A valid slot is the placeholder string followed by zero-padding out to
+    ``_ROM_IP_SLOT_SIZE`` bytes; the write stays inside that window so the binary
+    size never changes. Occurrences that are NOT a full null-padded slot (a copy
+    wedged against code, or a coincidental byte match) are skipped rather than
+    corrupted -- so this is safe even against a cartridge whose banks don't all
+    reserve the slot yet.
     """
     ip_bytes = server_ip.encode("ascii")
     if len(ip_bytes) + 1 > _ROM_IP_SLOT_SIZE:
@@ -315,27 +338,62 @@ def patch_server_ip(rom_path: str, server_ip: str) -> None:
 
     with open(rom_path, "rb") as f:
         data = bytearray(f.read())
-    offset = data.find(_ROM_IP_PLACEHOLDER)
-    if offset == -1:
-        raise RuntimeError(
-            f"Placeholder IP {_ROM_IP_PLACEHOLDER!r} not found in {rom_path}"
-        )
 
-    # Build padded replacement: IP + 0x00 terminator + zero-fill rest of slot
     replacement = ip_bytes + b"\x00" * (_ROM_IP_SLOT_SIZE - len(ip_bytes))
-    data[offset : offset + _ROM_IP_SLOT_SIZE] = replacement
+    pad_after_placeholder = b"\x00" * (_ROM_IP_SLOT_SIZE - len(_ROM_IP_PLACEHOLDER))
+
+    patched: list[int] = []
+    skipped: list[int] = []
+    start = 0
+    while True:
+        offset = data.find(_ROM_IP_PLACEHOLDER, start)
+        if offset == -1:
+            break
+        start = offset + 1
+        slot = data[offset : offset + _ROM_IP_SLOT_SIZE]
+        # Only patch a genuine null-padded 16-byte slot; anything else (e.g. the
+        # placeholder immediately followed by opcodes) is left untouched.
+        if slot[len(_ROM_IP_PLACEHOLDER):] == pad_after_placeholder:
+            data[offset : offset + _ROM_IP_SLOT_SIZE] = replacement
+            patched.append(offset)
+        else:
+            skipped.append(offset)
+
+    if not patched:
+        raise RuntimeError(
+            f"No patchable {_ROM_IP_PLACEHOLDER!r} slot found in {rom_path}"
+        )
 
     with open(rom_path, "wb") as f:
         f.write(data)
+
     logger.info(
-        "Patched ROM IP: %s -> %s (at offset 0x%04X)",
+        "Patched ROM IP %s -> %s in %d slot(s): %s",
         _ROM_IP_PLACEHOLDER.decode(),
         server_ip,
-        offset,
+        len(patched),
+        ", ".join(f"0x{o:04X}" for o in patched),
     )
+    if skipped:
+        logger.warning(
+            "Placeholder IP found without a 16-byte slot at %s (left unpatched -- "
+            "cartridge may use a stale IP there). Rebuild the cartridge so every "
+            "bank reserves the slot.",
+            ", ".join(f"0x{o:04X}" for o in skipped),
+        )
 
 
 def upload_cartridge_via_ftp(host: str, cart_path: str) -> None:
+    """Upload the cartridge image and its hdnsh.cfg into the cart folder.
+
+    Both files (the .crt and the sibling hdnsh.cfg) are required and are stored
+    together in /Flash/carts so the cartridge and its recommended Ultimate
+    config live in the same "cart folder".
+    """
+    cfg_path = os.path.join(os.path.dirname(cart_path), "hdnsh.cfg")
+    if not os.path.exists(cfg_path):
+        raise RuntimeError(f"hdnsh.cfg missing next to cartridge ({cfg_path})")
+
     with ftplib.FTP() as ftp:
         ftp.connect(host, 21, timeout=5)
         ftp.login()
@@ -343,18 +401,25 @@ def upload_cartridge_via_ftp(host: str, cart_path: str) -> None:
         # Upload the cartridge image
         with open(cart_path, "rb") as f:
             ftp.storbinary(f"STOR {CARTRIDGE_FILENAME}", f)
-        # If hdnsh.cfg exists in the same directory as cart_path, upload it too
-        cfg_path = os.path.join(os.path.dirname(cart_path), "hdnsh.cfg")
-        if os.path.exists(cfg_path):
-            with open(cfg_path, "rb") as f:
-                ftp.storbinary("STOR hdnsh.cfg", f)
+        # Upload the companion config alongside it
+        with open(cfg_path, "rb") as f:
+            ftp.storbinary("STOR hdnsh.cfg", f)
 
 
 @app.route("/settings/server_ip_detect", methods=["GET"])
 def server_ip_detect():
-    """Return the server's primary LAN IP address."""
+    """Return the server's LAN IP as the C64 would reach it.
+
+    Routes toward the known C64 when one has been scanned (matching what gets
+    baked into the cartridge); otherwise falls back to the primary LAN IP.
+    """
     try:
-        ip = net_utils.get_primary_ip()
+        last_c64_ip = read_last_c64_ip()
+        ip = (
+            net_utils.get_local_ip_towards(last_c64_ip)
+            if last_c64_ip
+            else net_utils.get_primary_ip()
+        )
         return jsonify({"ip": ip})
     except Exception as exc:
         logger.exception("Failed to detect server IP")
@@ -374,24 +439,35 @@ def ensure_rom():
         # Download hdnsh.cfg from GitHub master branch alongside the cartridge
         download_latest_cfg(os.path.dirname(cart_path))
 
-        # Determine server IP to patch into the cartridge
+        # Determine the server IP to bake into the cartridge so the C64 knows
+        # where to reach the HDN Server. Prefer the value configured on the
+        # Settings page; otherwise autodetect the backend's IP on the route
+        # toward this C64 (the address the C64 would see the server as).
         cfg = read_config()
         server_ip = cfg.get("server_ip", "").strip()
         if not server_ip:
-            server_ip = net_utils.get_primary_ip()
-        if server_ip == "127.0.0.1":
+            server_ip = net_utils.get_local_ip_towards(last_c64_ip)
+        if not server_ip or server_ip.startswith("127."):
             return (
                 jsonify(
                     {
-                        "error": "Server IP resolved to 127.0.0.1 (localhost). "
-                        "Configure a real LAN IP in Settings."
+                        "error": f"Server IP resolved to '{server_ip or 'empty'}' "
+                        "(localhost/invalid). Configure a real LAN IP in Settings."
                     }
                 ),
                 400,
             )
 
+        # Patch the IP into the freshly downloaded .crt immediately before upload
+        # so the binary that lands on the C64 always points at this server.
         patch_server_ip(cart_path, server_ip)
         upload_cartridge_via_ftp(last_c64_ip, cart_path)
+        logger.info(
+            "Cartridge patched with server IP %s and uploaded to %s%s",
+            server_ip,
+            last_c64_ip,
+            CARTRIDGE_DIR,
+        )
         return jsonify(
             {
                 "status": "ok",
@@ -558,40 +634,54 @@ def self_update():
 
 @app.route("/c64/cart/run", methods=["PUT"])
 def c64_cart_run():
-    """Enable the HDN Shell: start the cartridge from /Flash/carts.
+    """Enable the HDN Shell: insert the cartridge into the C64U slot.
 
-    Uses the Ultimate's run_crt path (SOCKET_CMD_RUN_CRT), which resets the
-    machine with the cartridge active. It does not alter the Ultimate's
-    configuration, so a plain reset/reboot returns to stock BASIC.
+    Persistently points the Ultimate's "Cartridge" config item at the HDN Shell
+    .crt in /Flash/carts, then resets the machine so it boots with the cartridge
+    active. Because the slot is set in configuration (not the transient run_crt
+    path), it stays populated across reset/reboot until explicitly disabled.
     """
     last_c64_ip = read_last_c64_ip()
     if not last_c64_ip:
         return jsonify({"error": "No C64 IP found. Run scan first."}), 400
     try:
-        _send_tcp_cmd(last_c64_ip, SOCKET_CMD_RUN_CRT, CARTRIDGE_PATH.encode())
+        set_ultimate_config(
+            last_c64_ip,
+            CARTRIDGE_CONFIG_CATEGORY,
+            CARTRIDGE_CONFIG_ITEM,
+            CARTRIDGE_FILENAME,
+        )
+        _send_tcp_cmd(last_c64_ip, SOCKET_CMD_RESET)
         return jsonify(
-            {"status": "ok", "message": f"Started cartridge {CARTRIDGE_FILENAME}"}
+            {"status": "ok", "message": f"Inserted cartridge {CARTRIDGE_FILENAME}"}
         )
     except Exception as exc:
-        logger.exception("Failed to run cartridge")
+        logger.exception("Failed to insert cartridge")
         return jsonify({"error": str(exc)}), 502
 
 
 @app.route("/c64/cart/stop", methods=["PUT"])
 def c64_cart_stop():
-    """Disable the HDN Shell: reset the machine back to stock BASIC.
+    """Disable the HDN Shell: empty the C64U cartridge slot.
 
-    run_crt does not persist in the Ultimate's configuration, so a reset is
-    enough to drop the cartridge and return to the plain C64.
+    Persistently sets the Ultimate's "Cartridge" config item to "None" and
+    resets the machine so it boots as a plain C64. The empty slot survives
+    reset/reboot until the cartridge is enabled again.
     """
     last_c64_ip = read_last_c64_ip()
     if not last_c64_ip:
         return jsonify({"error": "No C64 IP found. Run scan first."}), 400
     try:
+        set_ultimate_config(
+            last_c64_ip,
+            CARTRIDGE_CONFIG_CATEGORY,
+            CARTRIDGE_CONFIG_ITEM,
+            CARTRIDGE_CONFIG_EMPTY,
+        )
         _send_tcp_cmd(last_c64_ip, SOCKET_CMD_RESET)
-        return jsonify({"status": "ok", "message": "Reset to stock BASIC"})
+        return jsonify({"status": "ok", "message": "Emptied cartridge slot"})
     except Exception as exc:
-        logger.exception("Failed to stop cartridge")
+        logger.exception("Failed to empty cartridge slot")
         return jsonify({"error": str(exc)}), 502
 
 
@@ -2346,11 +2436,12 @@ def files_run():
                 )
 
             try:
-                url = f"http://{c64_ip}/v1/configs/C64%20and%20Cartridge%20Settings/Basic%20ROM"
-                response = requests.put(
-                    url, params={"value": Path(path).name}, timeout=5
+                set_ultimate_config(
+                    c64_ip,
+                    CARTRIDGE_CONFIG_CATEGORY,
+                    "Basic ROM",
+                    Path(path).name,
                 )
-                response.raise_for_status()
                 return jsonify(
                     {"status": "ok", "message": f"Set {Path(path).name} as BASIC ROM"}
                 )
