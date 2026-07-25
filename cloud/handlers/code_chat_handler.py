@@ -3,6 +3,7 @@ import logging
 import re
 import time
 import sys
+from collections import deque
 from sdk import BaseHandler
 from logging_utils import configure_application_logging
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -134,15 +135,29 @@ class _InvokeGuardrailsCallback(BaseCallbackHandler):
     """Callback-based guardrails for a single agent invoke."""
 
     def __init__(
-        self, max_steps: int, max_wall_clock_seconds: float, max_same_tool_repeat: int
+        self,
+        soft_steps: int,
+        hard_steps: int,
+        max_wall_clock_seconds: float,
+        max_same_tool_repeat: int,
+        loop_window: int,
+        loop_min_distinct: int,
+        progress_min_distinct: int,
     ):
-        self.max_steps = max_steps
+        # Soft budget: a run may exceed it only while it looks productive.
+        self.soft_steps = soft_steps
+        # Hard ceiling: never exceeded, regardless of progress.
+        self.hard_steps = hard_steps
         self.max_wall_clock_seconds = max_wall_clock_seconds
         self.max_same_tool_repeat = max_same_tool_repeat
+        self.loop_window = loop_window
+        self.loop_min_distinct = loop_min_distinct
+        self.progress_min_distinct = progress_min_distinct
         self.started_at = time.monotonic()
         self.tool_steps = 0
         self._last_tool_signature = ""
         self._same_tool_repeat_count = 0
+        self._recent_signatures = deque(maxlen=loop_window)
 
     def _elapsed(self) -> float:
         return time.monotonic() - self.started_at
@@ -165,11 +180,6 @@ class _InvokeGuardrailsCallback(BaseCallbackHandler):
         self._check_deadline("tool_start")
 
         self.tool_steps += 1
-        if self.tool_steps > self.max_steps:
-            raise _AgentGuardrailStop(
-                "max_steps",
-                f"tool_steps={self.tool_steps}, limit={self.max_steps}",
-            )
 
         tool_name = "<unknown_tool>"
         if isinstance(serialized, dict):
@@ -182,6 +192,11 @@ class _InvokeGuardrailsCallback(BaseCallbackHandler):
             self._last_tool_signature = signature
             self._same_tool_repeat_count = 1
 
+        self._recent_signatures.append(signature)
+        distinct_recent = len(set(self._recent_signatures))
+        window_full = len(self._recent_signatures) >= self.loop_window
+
+        # Fast stop: the same call byte-for-byte, N times in a row.
         if self._same_tool_repeat_count >= self.max_same_tool_repeat:
             raise _AgentGuardrailStop(
                 "no_progress",
@@ -190,6 +205,40 @@ class _InvokeGuardrailsCallback(BaseCallbackHandler):
                     f"threshold={self.max_same_tool_repeat}"
                 ),
             )
+
+        # Loop stop: a full window with very few distinct signatures means the
+        # agent is oscillating / retrying without making progress (A/B/A/B, etc).
+        if window_full and distinct_recent <= self.loop_min_distinct:
+            raise _AgentGuardrailStop(
+                "no_progress",
+                (
+                    f"distinct_recent={distinct_recent} over last "
+                    f"{len(self._recent_signatures)} calls, "
+                    f"threshold={self.loop_min_distinct}"
+                ),
+            )
+
+        # Absolute ceiling — never crossed.
+        if self.tool_steps > self.hard_steps:
+            raise _AgentGuardrailStop(
+                "max_steps",
+                f"tool_steps={self.tool_steps}, hard_limit={self.hard_steps}",
+            )
+
+        # Soft budget — a productive run (varied recent tool calls) is allowed
+        # to spend steps beyond it, up to the hard ceiling. An unproductive run
+        # is stopped at the soft budget.
+        if self.tool_steps > self.soft_steps:
+            productive = window_full and distinct_recent >= self.progress_min_distinct
+            if not productive:
+                raise _AgentGuardrailStop(
+                    "max_steps",
+                    (
+                        f"tool_steps={self.tool_steps}, soft_limit={self.soft_steps}, "
+                        f"distinct_recent={distinct_recent} "
+                        f"(< {self.progress_min_distinct}, not extending)"
+                    ),
+                )
 
 
 class _StatusCallback(BaseCallbackHandler):
@@ -405,9 +454,22 @@ class CodeChatHandler:
 class CodeChatAgent:
 
     _instances = {}
+    # Soft step budget for a single invoke. Productive runs (see progress
+    # detection below) are allowed to extend up to MAX_AGENT_STEPS_HARD_CAP.
     MAX_AGENT_STEPS_PER_INVOKE = 20
+    # Absolute ceiling. Also passed to LangGraph as recursion_limit so the
+    # graph itself does not cut off a run the guardrail still considers productive.
+    MAX_AGENT_STEPS_HARD_CAP = 40
     MAX_AGENT_WALL_CLOCK_SECONDS = 90.0
     MAX_SAME_TOOL_REPEAT = 4
+    # Sliding-window loop detection over recent tool-call signatures.
+    LOOP_WINDOW = 6
+    # Stuck in a loop: <= this many distinct signatures across a full window
+    # (catches A/B/A/B oscillation and near-identical retries, not just exact repeats).
+    LOOP_MIN_DISTINCT = 2
+    # Productive: >= this many distinct signatures across a full window. Only a
+    # productive run is allowed to spend steps beyond MAX_AGENT_STEPS_PER_INVOKE.
+    PROGRESS_MIN_DISTINCT = 4
 
     def __init__(self):
         self.project_name = "untitled"
@@ -771,9 +833,13 @@ class CodeChatAgent:
             self.messages.append(HumanMessage(content=query))
 
             guardrails = _InvokeGuardrailsCallback(
-                max_steps=self.max_agent_steps_per_invoke,
+                soft_steps=self.max_agent_steps_per_invoke,
+                hard_steps=self.MAX_AGENT_STEPS_HARD_CAP,
                 max_wall_clock_seconds=self.MAX_AGENT_WALL_CLOCK_SECONDS,
                 max_same_tool_repeat=self.MAX_SAME_TOOL_REPEAT,
+                loop_window=self.LOOP_WINDOW,
+                loop_min_distinct=self.LOOP_MIN_DISTINCT,
+                progress_min_distinct=self.PROGRESS_MIN_DISTINCT,
             )
             callbacks = [guardrails]
             if self._status_callback is not None:
@@ -785,11 +851,16 @@ class CodeChatAgent:
                 system_prompt=base_prompt,
             )
             try:
+                # The guardrail (tool-step accounting) is the real governor now.
+                # LangGraph's recursion_limit counts graph super-steps (~2 per
+                # tool iteration: model node + tool node), so give it enough
+                # headroom to reach the hard tool-step ceiling before it trips.
+                recursion_limit = 2 * self.MAX_AGENT_STEPS_HARD_CAP + 2
                 result = agent.invoke(
                     {"messages": self.messages},
                     config={
                         "callbacks": callbacks,
-                        "recursion_limit": self.max_agent_steps_per_invoke,
+                        "recursion_limit": recursion_limit,
                     },
                 )
             except _AgentGuardrailStop as stop:
