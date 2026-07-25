@@ -4,8 +4,25 @@ Network helper utilities for communicating with Ultimate64 via TCP DMA service.
 
 import socket
 import os
+import threading
 
 DMA_SERVICE_PORT = 64
+
+# Serialize *all* access to the Ultimate64 port-64 DMA/socket service.
+#
+# The screen is DMA-pushed to the C64 by several concurrent threads with no
+# coordination: the inbound command thread (keypress/scroll echo), the coding
+# agent worker thread (one push per LLM status tick and per tool start/end),
+# and the ~1 s refresh Timer while the agent is thinking. Each push opens two
+# fresh TCP connections to port 64. Without this lock those connections overlap,
+# and the Ultimate64 firmware's socket service -- built for occasional one-shot
+# commands, not a high-rate streaming display -- wedges its whole network stack:
+# the push RSTs ("Connection reset by peer"), the C64 can no longer reach the
+# server ("server: down"), C=+RESTORE->menu and REST power-off stop responding,
+# and only a physical power-cycle recovers. Serializing every command so they
+# never overlap removes the trigger. See TODO.md (Step 3) for the follow-up idea
+# of reusing a single persistent socket / one connection per frame.
+_send_lock = threading.Lock()
 
 # DMA Service Commands
 SOCKET_CMD_DMA = 0x01  # DMA command
@@ -50,14 +67,19 @@ def read_last_c64_ip() -> str:
 
 
 def _send_tcp_cmd(host: str, cmd: int, payload: bytes = b"") -> None:
-    """Send a single DMA-service command to Ultimate64 on port 64."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.settimeout(5)
-        s.connect((host, 64))
-        s.sendall((0xFF00 | cmd).to_bytes(2, "little"))
-        s.sendall(len(payload).to_bytes(2, "little"))
-        if payload:
-            s.sendall(payload)
+    """Send a single DMA-service command to Ultimate64 on port 64.
+
+    Held under `_send_lock` so concurrent threads never open overlapping
+    connections to the port-64 service (see the lock definition above).
+    """
+    with _send_lock:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(5)
+            s.connect((host, 64))
+            s.sendall((0xFF00 | cmd).to_bytes(2, "little"))
+            s.sendall(len(payload).to_bytes(2, "little"))
+            if payload:
+                s.sendall(payload)
 
 
 def send_dmawrite(host: str, prg_data: bytes) -> None:
