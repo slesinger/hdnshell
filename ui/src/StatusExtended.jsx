@@ -9,6 +9,9 @@ const normalizeStatus = (payload) => ({
   web_remote_control_enabled: Boolean(payload?.web_remote_control_enabled),
   cartridge_present: Boolean(payload?.cartridge_present),
   "hdnsh.cfg_present": Boolean(payload?.["hdnsh.cfg_present"]),
+  server_is_windows: Boolean(payload?.server_is_windows),
+  server_git_bash_ok: Boolean(payload?.server_git_bash_ok),
+  git_bash_download_url: payload?.git_bash_download_url || "https://git-scm.com/download/win",
 });
 
 const EMPTY_STATUS = {
@@ -17,7 +20,10 @@ const EMPTY_STATUS = {
   ftp_file_service_enabled: false,
   web_remote_control_enabled: false,
   cartridge_present: false,
-  "hdnsh.cfg_present": false
+  "hdnsh.cfg_present": false,
+  server_is_windows: false,
+  server_git_bash_ok: true,
+  git_bash_download_url: "https://git-scm.com/download/win"
 };
 
 export default function StatusExtended({ lastC64Ip }) {
@@ -193,6 +199,41 @@ export default function StatusExtended({ lastC64Ip }) {
           </div>
         </div>
       )}
+
+      {!loading && !error && status.server_is_windows ? (
+        <div className="mt-3">
+          <div className="border rounded-4 p-3 h-100">
+            <h3 className="h6">Server requirement &mdash; Git for Windows</h3>
+            <ul className="list-unstyled mb-0">
+              <li className="d-flex align-items-center gap-2">
+                <span
+                  className={`status-dot ${
+                    status.server_git_bash_ok ? "ok" : "danger"
+                  }`}
+                />
+                <span>
+                  {status.server_git_bash_ok ? (
+                    "Git for Windows detected"
+                  ) : (
+                    <>
+                      Not found &mdash; the coding agent's shell tools need
+                      Git for Windows'{" "}
+                      <a
+                        href={status.git_bash_download_url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        bash.exe
+                      </a>{" "}
+                      to run. Install it, then restart the HDN Server.
+                    </>
+                  )}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      ) : null}
 
       {!hasIp ? (
         <div className="mt-4">

@@ -19,12 +19,17 @@ was used, `~` where estimated.
 | 0 | 385 | 393 | 702 high-conf + ~420 med-low | 0 |
 | 1 | 16 (inside HDN pocket) | 16 | ~7 (entangled) | ~90-150 printer (entangled) |
 | 2 | 102 | 140 | 0 | 0 (FUNPAINT viewer ~460 optional) |
-| 3 | ~251 | ~257 | — (resolved, see §3) | ~90 SS boot-detect (§5.1 item 2, remaining) |
+| 3 | ~133 | ~139 | — (resolved, see §3) | ~90 SS boot-detect (§5.1 item 2, remaining) |
 | 4 | 161 | 161 | 3 | 0 |
 | 5 | ~42 | ~42 | 3 | flash util: 0 cleanly recoverable |
 | 6 | 37 | 37 | 3 | 0 |
 | 7 | 36 | 36 | 3 | 0 |
-| **Σ** | **~772** | **~824** | **~1140 pending verification** | **~535 approved-category + optionals** |
+| **Σ** | **~654** | **~706** | **~1140 pending verification** | **~535 approved-category + optionals** |
+
+Step 35 (2026-07-23) delta folded into the totals above: bank 3 -118 B (`help`
+keyword: `ckm_help` dispatch + kw_tab entry ate 16 of the shell reserve's 17 B
+tail; `do_help` + its fallback text ate ~102 B of the reclaimed SS pocket).
+See §2 bank-3 entry and conversion_log3.md step 35.
 
 Step 31 (2026-07-21) deltas folded into the totals above: bank 3 +15 B (shell-reserve
 tail freed by dropping `#8/#9/#s`), bank 4 +83 B (dead IEC-branch cleanup), bank 6
@@ -86,15 +91,19 @@ fully packed (DOS wedge, ML monitor, TASS/TMP launcher, F-key macros, HDN hook).
 | $9E8F-$9E9D | 14 | b | stock zeros |
 | $9EF5-$9EFF | 10 | b | stock zeros |
 
-### Bank 3 — ~251 B usable
+### Bank 3 — ~133 B usable
 Reclaimed Silversurfer pocket $80F8-$8241 (§5.1): step 31's `hsh_putc`, step
-32's `b3_dos1_read`, and step 34's `b3_wait_pkt` now occupy $80F8-$8155
-(93 B), leaving 236 B free at $8155-$8241 (`.errorif`-guarded, kept: $8241
-`jmp` + ML monitor register header).
+32's `b3_dos1_read`, step 34's `b3_wait_pkt`, and step 35's `do_help`
+(+ its fallback text) now occupy $80F8-$81C3 (~203 B), leaving ~126 B free at
+$81C3-$8241 (`.errorif`-guarded, kept: $8241 `jmp` + ML monitor register
+header).
 Plus the original 14 B at $9FF2-$9FFF (class b) and 6 B of 2-byte slack scraps
 pinned inside full HDN annexes ($807F preserves the `bit $8080` trick byte — do
 not touch). All five original pockets are consumed; further bank-3 space must
-come from Silversurfer item 2 (§5.1) or the reclaimed pocket's remaining ~280 B.
+come from Silversurfer item 2 (§5.1) or the reclaimed pocket's remaining ~126 B.
+The separate `$998B-$9E9D` shell reserve is now down to **1 B free** (step 35
+ate 16 of its 17 B tail) — essentially saturated; any future keyword there
+needs a same-size swap, not an addition.
 
 **Step 31 (2026-07-21) new pocket:** dropping `#8/#9/#s` from `hd_setdev`
 (`hd_local`→`hd_bad`, short-circuits to a stock `?SYNTAX ERROR`) and from
@@ -107,6 +116,15 @@ range-check) stayed byte-identical (`hd_nce_ok` still at $97FD both before and
 after) — no yield there, as expected from a same-size compaction. Net bank-3
 gain this step: +15 B (headline table's "~29 B" step-31 estimate was high by
 ~14 B; trust the `.sym`-measured 15).
+
+**Step 35 (2026-07-23):** consumed almost all of that 17 B tail adding the
+`help` keyword (`ckm_help` dispatch block, 12 B) + its `"HELP"` kw_tab entry
+(4 B) -- `kw_tab` moved $9E79→$9E85, ending at $9E9C, **1 B free** remains in
+the shell reserve (down from 17). Separately, `do_help` (the hsh_body-wrapper
+handler itself, ~102 B incl. its fallback text) was placed in the reclaimed SS
+pocket ahead of `hsh_ip` ($8155), which had ~223 B free there -- now ~121 B
+free at that spot (`do_help`+`dh_txt` end at ~$81C3, up to the kept $8241
+monitor header). See conversion_log3.md step 35.
 
 ### Banks 4-7 — 276 B total, all tails of HDN reserve pockets
 | Bank | Ranges | Bytes |

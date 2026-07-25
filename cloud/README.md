@@ -66,6 +66,17 @@ python cloud.py            # TCP on 6464, web UI on http://localhost:8064
 python cloud.py --debug    # verbose logging
 ```
 
+**Windows only: [Git for Windows](https://git-scm.com/download/win) is a hard
+requirement**, not just for the git tool. The coding agent's shell tool and the
+file editor's embedded console both run real POSIX commands (`ls`, `cat`, `mv`,
+`cp`, `rm`, `grep`, `sed`, `find`, ...), which don't exist in cmd.exe — on
+Windows they always run through Git for Windows' bundled `bash.exe`
+(`sdk/platform_shell.py` locates it via `PATH` or the standard install
+location). There is no cmd.exe fallback: if it's missing, those tools return a
+clear error instead of failing on unrecognized commands, and the web UI's home
+page flags it under the C64 Ultimate Setup Status section with a download
+link.
+
 Optional environment for AI features: an OpenAI-compatible endpoint/key
 (configure via the web UI Settings page or `hdnsh.cfg`); `SERPAPI_API_KEY` for
 web search.
@@ -97,12 +108,25 @@ See `docs/user_manual/api-sdk.md` for the SDK reference.
 
 ## Release build
 
-PyInstaller single-file binaries per OS (see `Makefile` and
-`hdnsh-server-linux.spec`); output lands in `dist/`. The release also ships the
+PyInstaller single-file binaries, one per OS, each built by running
+`pyinstaller` with the matching spec file **on that OS**:
+`hdnsh-server-linux.spec`, `hdnsh-server-win.spec`, `hdnsh-server-mac.spec`.
+Output lands in `dist/`. The GitHub release must carry all three assets
+(`hdnsh-server-linux`, `hdnsh-server-win.exe`, `hdnsh-server-mac`) named
+exactly as such — `self_update()` in `cloud.py` looks up the asset by that
+exact name for the platform it's running on. The release also ships the
 cartridge image `wedge/hdn-rr38p-tmp12reu.crt` — the web UI's
 "Download & update" button fetches both from the latest GitHub release and
 patches the server IP into the cartridge before uploading it to the C64U over
 FTP.
+
+The macOS build needs a macOS build of the `oscar64` compiler at
+`oscar/bin/oscar64-mac` (named distinctly from `oscar/bin/oscar64-linux`
+since a Mach-O and an ELF binary can't share one filename in the repo; no
+prebuilt macOS binary is published upstream — it has to be compiled from
+https://github.com/drmortalwombat/oscar64 source on a Mac first). Playwright
+(used by the web/wiki browser console apps) also needs its
+browser downloaded per machine after install: `playwright install chromium`.
 
 ## Security notes
 

@@ -190,6 +190,8 @@ Press **F7** to enter the embedded shell.  Commands are executed server-side (th
 
 This makes it easy to run `git`, `cp`, `grep`, or any other server-side tool without leaving the editor.
 
+> **Windows:** these are POSIX commands, so the console runs them through [Git for Windows](https://git-scm.com/download/win)' `bash.exe` — there's no cmd.exe fallback. If it isn't installed, the console prints an error with a download link instead of running the command.
+
 ---
 
 ## Status Bar Reference

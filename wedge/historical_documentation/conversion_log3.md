@@ -3481,3 +3481,48 @@ if the fix still stops at exactly the same 4096-byte boundary but now exits clea
 went idle rather than stalling), that would instead point at a firmware-side per-command transfer cap
 requiring reissued READ_DATA commands -- a different, small follow-up fix, not expected but worth
 noting if seen.
+
+## Step 35 — 'help' keyword: offline-friendly fallback when the server doesn't answer (built+byte-verified, awaiting HW test)
+
+**Ask (Honza):** typing `help` already round-trips to the server today (it's just an unrecognized
+line, forwarded via `hsh_body` like any chat text -- the server's `HelpHandler` answers it when
+reachable, see `cloud/test_handlers.py`). But if the server is down/unreachable, that forward fails
+and falls through to a bare `?SYNTAX ERROR`, which doesn't tell the user anything useful. Honza wants
+`help` to print a local fallback in that case -- the two-line "downloader server" pointer -- while
+staying byte-identical in behavior when the server IS up.
+
+**Fix:** added `HELP` as a fifth exact-match keyword alongside `TIME`/`MENU`/`STATUS`/`RESET` in the
+`hsh_ck_more`/`ckm_reset` chain (`kw_tab` offset 19 = `$13`, bank3). Unlike those four (all pure-local,
+never touch the network), `HELP`'s handler (`do_help`, new, in the reclaimed SS pocket at $8161) is
+a thin wrapper around the EXISTING `hsh_body` chat-forward -- it `jsr`s it instead of the usual tail
+`jmp`, so a reachable server gets the exact same connect/write/read round trip as any unmatched line
+and prints its own reply exactly as before (`hsh_body` prints inline; `do_help` doesn't touch that
+path). Only on `hsh_body` returning C=1 (connect refused, no UCI, or the read/retry path gave up --
+the same failure path that used to produce `?SYNTAX ERROR`) does `do_help` print a local 2-line
+message ("DOWNLOAD SERVER FROM: HTTPS://HDN.SH" / "AND INSTALL ON PC/MAC") and return handled (C=0),
+so offline users get an actionable pointer instead of a bare error. No server-side change needed --
+`cloud/`'s help handler already exists and is unmodified by this step. (Text revised once, same
+session, from an earlier GitHub-releases-URL wording to the shorter `hdn.sh` pointer -- Honza's
+call; same byte slots, no further address shift.)
+
+**Byte budget:** the bank3 shell reserve ($998B-$9E9D, pinned) had exactly 17 B free after step 31
+(`kw_tab` at $9E79). The new `ckm_help` dispatch block (match+branch+tail-jmp, 12 B) plus the 4-byte
+`"HELP"` keyword text used 16 of those 17 B -- `kw_tab` moved to $9E85, ending at $9E9C, **1 B to
+spare**. `do_help` itself (the hsh_body wrapper + fallback-text print loop + the two-line message,
+~102 B total) lives in the much larger reclaimed Silversurfer pocket (`hsh_ip` at $8155, 223 B free
+after it up to the kept $8241 monitor header) -- plenty of room there, no pressure.
+
+**Byte-verify:** only bank3 changed (`git diff --stat`); banks 0,1,2,4,5,6,7 `.sym` files byte-for-byte
+identical before/after (diffed all 7). Build clean, both `.errorif` guards (`$9E9D` shell-reserve pin,
+`$8241` monitor-header pin) held. New addresses: `ckm_help`=$9E60, `do_help`=$8161, `dh_txt`=$817A,
+`kw_tab` moved $9E79->$9E85 (bank03). (A leading CR was added before the fallback text, matching
+`hsh_body`'s own leading-CR convention on a printed reply -- 2 B, absorbed by the SS pocket, no
+further shift to `kw_tab`/`ckm_help`.)
+
+**Not yet HW-tested.** (1) SERVER UP: `help` -> should print the server's real help reply, identical
+to before this change (regression check on the existing behavior). (2) SERVER DOWN (stop the cloud
+server, or point `hsh_ip` at an unreachable host): `help` -> should print "DOWNLOAD SERVER FROM:
+HTTPS://HDN.SH" + "AND INSTALL ON PC/MAC", NOT `?SYNTAX ERROR`. (3) REGRESSION:
+`status`/`time`/`menu`/`reset` unaffected (same chain, checked after `help` now); `#`/`#h` etc.;
+`mnt`/`umnt`; run-by-name + `/flash/bin` fallback; chat/AI (`i:`/`m:`/`tutorials`) both server-up and
+server-down; ML monitor `R` header (confirms $8241 still intact); TASS/TMP; stock RR sweep.

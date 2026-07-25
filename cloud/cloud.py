@@ -44,6 +44,7 @@ from sdk.config_manager import (
     apply_env_overrides,
 )
 from sdk.cloud_config_template import CONFIG_DEFAULTS
+from sdk.platform_shell import IS_WINDOWS, find_windows_bash, GIT_BASH_DOWNLOAD_URL
 from llm_factory import test_llm_completion
 from handlers.csdb_handler import CSDBHandler
 
@@ -235,6 +236,9 @@ def c64_status_extended():
             "web_remote_control_enabled": web_remote_control_enabled,
             "cartridge_present": cartridge_present,
             "hdnsh.cfg_present": hdnsh_cfg_present,
+            "server_is_windows": IS_WINDOWS,
+            "server_git_bash_ok": (not IS_WINDOWS) or (find_windows_bash() is not None),
+            "git_bash_download_url": GIT_BASH_DOWNLOAD_URL,
         }
     )
 
@@ -522,11 +526,15 @@ def version_check():
 @app.route("/settings/self_update", methods=["POST"])
 def self_update():
     """Download the latest server binary from GitHub and replace + restart this process."""
-    system = platform.system().lower()  # 'linux' or 'windows'
-    if system not in ("linux", "windows"):
+    system = platform.system().lower()  # 'linux', 'darwin', or 'windows'
+    if system not in ("linux", "darwin", "windows"):
         return jsonify({"error": f"Unsupported platform: {system}"}), 400
 
-    asset_name = "hdnsh-server-linux" if system == "linux" else "hdnsh-server-win.exe"
+    asset_name = {
+        "linux": "hdnsh-server-linux",
+        "darwin": "hdnsh-server-mac",
+        "windows": "hdnsh-server-win.exe",
+    }[system]
 
     try:
         release = _fetch_latest_github_release()
@@ -544,7 +552,7 @@ def self_update():
 
         download_url = chosen_asset["browser_download_url"]
         tmp_path = os.path.join(
-            "/tmp" if system == "linux" else os.environ.get("TEMP", "/tmp"),
+            tempfile.gettempdir(),
             asset_name + ".new",
         )
 
@@ -562,7 +570,7 @@ def self_update():
             else os.path.abspath(sys.argv[0])
         )
 
-        if system == "linux":
+        if system in ("linux", "darwin"):
             # Make the download executable
             os.chmod(
                 tmp_path,
@@ -2520,10 +2528,16 @@ def files_progress(operation_id: str):
 
 def get_external_ips():
     ips = []
-    for iface in socket.getaddrinfo(host=socket.gethostname(), port=None):
-        ip = str(iface[4][0])
-        if not ip.startswith("127.") and ":" not in ip:
-            ips.append(ip)
+    try:
+        # gethostname() can fail to resolve via getaddrinfo (e.g. macOS's
+        # .local mDNS hostname isn't always resolvable through plain DNS),
+        # so this must not be allowed to crash server startup.
+        for iface in socket.getaddrinfo(host=socket.gethostname(), port=None):
+            ip = str(iface[4][0])
+            if not ip.startswith("127.") and ":" not in ip:
+                ips.append(ip)
+    except OSError:
+        pass
     # Also try to get the primary outbound IP
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

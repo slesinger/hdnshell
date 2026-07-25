@@ -55,6 +55,7 @@ In all modes, the agent is tuned for Oscar64 and C64 work:
 - Knows the project's own **TUIkit** text-UI library for building interactive apps.
 - Keeps sprite image index checks aligned with Oscar64 conventions.
 - Can use **git** (when installed on the server) to inspect history and commit working milestones. Network operations (push/pull/fetch) are blocked unless you explicitly ask to sync a remote.
+- Can run server-side shell commands (`ls`, `cp`, `mv`, `rm`, `grep`, ...) scoped to the project workspace. On Windows this requires [Git for Windows](https://git-scm.com/download/win) — there is no cmd.exe fallback, so without it the agent's shell commands return an install-pointer error instead of running.
 - Supports focused skills that bias the agent toward specific workflows.
 
 ### Built-in skills

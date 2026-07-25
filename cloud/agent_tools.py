@@ -20,21 +20,46 @@ import threading
 from langchain_core.tools import Tool
 from langchain_community.utilities import SerpAPIWrapper
 from workspace_init import WORKSPACE_DIR
+from sdk.platform_shell import IS_WINDOWS, WINDOWS_BASH, GIT_BASH_DOWNLOAD_URL
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_SHELL_TIMEOUT_SECONDS = 60
 MAX_SHELL_OUTPUT_LINES = 200
-# Compiler binary name is platform-specific (oscar64.exe on Windows).
-OSCAR_BINARY = "oscar64.exe" if os.name == "nt" else "oscar64"
-# Shell used by the run_shell_command tool: bash on POSIX, the OS default
-# (cmd.exe via COMSPEC) on Windows. None => subprocess picks the platform shell.
-SHELL_EXECUTABLE = None if os.name == "nt" else "/bin/bash"
+# Compiler binary name is platform-specific: Linux and macOS builds ship
+# distinct binaries under the same oscar/bin/ directory (oscar64-linux,
+# oscar64-mac) since Mach-O and ELF can't share one filename in the repo.
+if os.name == "nt":
+    OSCAR_BINARY = "oscar64.exe"
+elif sys.platform == "darwin":
+    OSCAR_BINARY = "oscar64-mac"
+else:
+    OSCAR_BINARY = "oscar64-linux"
+# Shell used by the run_shell_command tool. Commands the model reaches for
+# (ls, cat, mv, cp, rm, grep, sed, find, ...) are POSIX coreutils and do not
+# exist in cmd.exe, so on Windows this requires Git for Windows' bash.exe
+# (WINDOWS_BASH, resolved in sdk.platform_shell) -- there is no cmd.exe
+# fallback; run_shell_command errors out with an install pointer if it's
+# missing rather than silently trying (and failing on) cmd.exe.
+#
+# NOTE: WINDOWS_BASH must be invoked as an explicit argv (shell=False), not
+# via shell=True + executable=<path>. That override is documented as
+# POSIX-only behavior ("If shell is True, on POSIX the executable argument
+# specifies a replacement shell for the default /bin/sh") -- on Windows,
+# shell=True is always COMSPEC (cmd.exe) regardless of executable=, so
+# pointing it at bash.exe while keeping shell=True silently does not work.
+SHELL_EXECUTABLE = "/bin/bash"
 PROJECT_NAME_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 
 _WRITE_OR_DESTRUCTIVE_PATTERNS = [
     re.compile(
         r"(^|[;&|]\s*)(rm|mv|cp|dd|mkfs|fdisk|parted|wipefs|truncate|touch|mkdir|rmdir)\b",
+        re.IGNORECASE,
+    ),
+    # cmd.exe-native equivalents, in case a command explicitly shells out to
+    # cmd.exe from within Git Bash (e.g. `cmd /c del ...`).
+    re.compile(
+        r"(^|[;&|]\s*)(del|erase|rd|move|copy|ren|rename|format|diskpart|attrib)\b",
         re.IGNORECASE,
     ),
     re.compile(r"(^|[;&|]\s*)(sed|perl)\s+-i\b", re.IGNORECASE),
@@ -1440,7 +1465,7 @@ def _is_write_or_destructive_command(command: str) -> bool:
     stripped = (command or "").strip()
     if not stripped:
         return False
-    if re.search(r"(^|[;&|]\\s*)sudo\\b", stripped, re.IGNORECASE):
+    if re.search(r"(^|[;&|]\s*)sudo\b", stripped, re.IGNORECASE):
         return True
     for pattern in _WRITE_OR_DESTRUCTIVE_PATTERNS:
         if pattern.search(stripped):
@@ -1503,16 +1528,36 @@ def run_shell_command(
             "if you intentionally need write access."
         )
 
-    try:
-        result = subprocess.run(
-            cmd,
-            cwd=resolved_cwd,
-            shell=True,
-            executable=SHELL_EXECUTABLE,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
+    if IS_WINDOWS and not WINDOWS_BASH:
+        return (
+            "Error: Git for Windows (bash.exe) is required to run shell commands "
+            f"on Windows but was not found. Install it from {GIT_BASH_DOWNLOAD_URL} "
+            "and retry."
         )
+
+    try:
+        if IS_WINDOWS:
+            # Invoke bash directly as argv[0] (shell=False): shell=True's
+            # executable= override is not honored on Windows, see comment
+            # above SHELL_EXECUTABLE's definition.
+            result = subprocess.run(
+                [WINDOWS_BASH, "-c", cmd],
+                cwd=resolved_cwd,
+                shell=False,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+            )
+        else:
+            result = subprocess.run(
+                cmd,
+                cwd=resolved_cwd,
+                shell=True,
+                executable=SHELL_EXECUTABLE,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+            )
         combined = "\n".join(
             part for part in [result.stdout, result.stderr] if part
         ).strip()

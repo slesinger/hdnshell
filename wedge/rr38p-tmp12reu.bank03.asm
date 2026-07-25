@@ -488,6 +488,34 @@ b3wp_ok:
 hsh_ip:
     .byte $31, $39, $32, $2E, $31, $36, $38, $2E, $31, $2E, $32, $00    // "192.168.1.2",0
 .errorif (* + 4 > $8241), "hsh_ip left no room for a 16-byte IP slot before $8241"
+// do_help: 'help' keyword handler (dispatched from ckm_help). Reuses hsh_body
+// unchanged -- exact same connect/write/read round trip as any unrecognized
+// chat line -- so a reachable server answers 'help' normally (its own reply
+// text, printed by hsh_body itself). Only on failure (hsh_body's C=1: connect
+// refused, no UCI, or the read/retry path gave up) do we print a local
+// fallback pointing at the HDN Server download page, instead of leaving the
+// caller to fall through to a bare ?SYNTAX ERROR. Always returns handled (C=0).
+do_help:
+    jsr hsh_body
+    bcc dh_done            // server answered -> hsh_body already printed it
+    lda #$0d               // CR before the fallback text (matches hsh_body's own
+    jsr $ffd2              // leading-CR convention for a printed reply)
+    ldx #$00
+dh_pl:
+    lda dh_txt,x
+    beq dh_done
+    jsr $ffd2
+    inx
+    bne dh_pl
+dh_done:
+    clc                    // handled either way -- no stock ?SYNTAX ERROR
+    rts
+dh_txt:
+    .byte $44, $4F, $57, $4E, $4C, $4F, $41, $44, $20, $53, $45, $52, $56, $45, $52, $20, $46, $52, $4F, $4D, $3A, $20, $48, $54, $54, $50, $53, $3A, $2F, $2F, $48, $44, $4E, $2E, $53, $48, $0D
+                           // "DOWNLOAD SERVER FROM: HTTPS://HDN.SH",CR
+    .byte $41, $4E, $44, $20, $49, $4E, $53, $54, $41, $4C, $4C, $20, $4F, $4E, $20, $50, $43, $2F, $4D, $41, $43, $0D, $00
+                           // "AND INSTALL ON PC/MAC",CR,0
+.errorif (* > $8241), "do_help overran the kept $8241 monitor header"
     .fill $8241 - *, $00   // remainder of the reclaimed SS pocket (free bank3 reserve)
 .errorif (* != $8241), "step-31 fill did not land on $8241 (monitor header)"
 b03_8241:
@@ -3808,8 +3836,19 @@ ckm_reset:
     lda #$0e               // kw_reset offset
     ldy #$05
     jsr cmd_match
-    bne ckm_none
+    bne ckm_help
     jmp do_reset           // reboots -- never returns
+// 'help' -- forward to the server like any chat line (do_help calls hsh_body), but
+// if the server is unreachable/no-reply (hsh_body returns C=1), print a local
+// fallback instead of letting it fall through to a bare ?SYNTAX ERROR. If the
+// server IS up, hsh_body already printed its real reply -- same as today's
+// unmatched-command chat forward, just with a graceful offline fallback.
+ckm_help:
+    lda #$13               // kw_help offset (19, right after RESET's 14+5)
+    ldy #$04
+    jsr cmd_match
+    bne ckm_none
+    jmp do_help            // tail: do_help ends with clc/rts itself (handled)
 ckm_none:
     jmp hsh_ck_b5          // step 17-pre: try bank5 (mnt/umnt), then bank4, then chat/AI
 // 'reset' -- RR clean cold-boot. Bank0 holds the RR boot code (CBM80 autostart at
@@ -3836,6 +3875,7 @@ kw_tab:
     .byte $4D, $45, $4E, $55              // "MENU"   (offset 4)
     .byte $53, $54, $41, $54, $55, $53    // "STATUS" (offset 8)
     .byte $52, $45, $53, $45, $54         // "RESET"  (offset 14 = $0E)
+    .byte $48, $45, $4C, $50              // "HELP"   (offset 19 = $13)
 .errorif (* > $9E9D), "step-11b hsh module overran the bank3 reserve ($9E9D)"
     .fill $9E9D - *, $00   // pad the rest of the reserve; real bank3 data at $9E9D
 .errorif (* != $9E9D), "bank3 reserve fill did not land on $9E9D"

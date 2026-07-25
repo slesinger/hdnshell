@@ -1,5 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
-
+# macOS build. Mirrors hdnsh-server-linux.spec; keep the three specs in sync.
+# Must be built with PyInstaller running on macOS. Requires a macOS build of
+# the oscar64 compiler at ./oscar/bin/oscar64-mac (named distinctly from the
+# Linux oscar64-linux binary since Mach-O and ELF can't share one filename in
+# the repo) - upstream oscar64 does not publish a macOS release, so this has
+# to be compiled from https://github.com/drmortalwombat/oscar64 source on a
+# Mac first and dropped into oscar/bin/ before running this spec.
+# UPX is disabled here (unlike the Linux spec) because UPX's Mach-O support is
+# unreliable and can make Gatekeeper reject the resulting binary.
 
 a = Analysis(
     ['cloud.py'],
@@ -8,7 +16,7 @@ a = Analysis(
     datas=[
         ('static', 'static'),
         ('../docs/user_manual/*.md', 'docs/user_manual'),
-        ('./oscar/bin/oscar64-linux', 'oscar/bin'),
+        ('./oscar/bin/oscar64-mac', 'oscar/bin'),
         ('./oscar/include', 'oscar/include'),
         ('./oscar/docs/C_0*.md', 'oscar/docs'),
         ('./server-apps/coding_agent/prompts/*.md', 'server-apps/coding_agent/prompts'),
@@ -50,11 +58,11 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='hdnsh-server-linux',
+    name='hdnsh-server-mac',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=True,

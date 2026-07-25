@@ -26,8 +26,31 @@ from sdk.server_console import (
 from sdk.generate_pet_asc_table import Petscii
 from sdk.shared_state import get_clipboard, set_clipboard
 from workspace_init import WORKSPACE_DIR
+from sdk.platform_shell import IS_WINDOWS, WINDOWS_BASH, GIT_BASH_DOWNLOAD_URL
 
 logger = logging.getLogger(__name__)
+
+# Compiler binary name is platform-specific: Linux and macOS builds ship
+# distinct binaries under the same oscar/bin/ directory (oscar64-linux,
+# oscar64-mac) since Mach-O and ELF can't share one filename in the repo.
+if os.name == "nt":
+    OSCAR_BINARY = "oscar64.exe"
+elif sys.platform == "darwin":
+    OSCAR_BINARY = "oscar64-mac"
+else:
+    OSCAR_BINARY = "oscar64-linux"
+# Shell for the embedded console. Commands typed here (ls, cat, mv, cp, rm,
+# grep, ...) are POSIX coreutils and don't exist in cmd.exe, so on Windows this
+# requires Git for Windows' bash.exe (WINDOWS_BASH, resolved in
+# sdk.platform_shell) -- there is no cmd.exe fallback; the console prints an
+# install pointer if it's missing rather than silently trying (and failing on)
+# cmd.exe.
+#
+# NOTE: WINDOWS_BASH must be invoked as an explicit argv (shell=False), not
+# shell=True + executable=<path> -- that override is POSIX-only behavior per
+# the Python docs; on Windows shell=True always means COMSPEC (cmd.exe)
+# regardless of executable=.
+SHELL_EXECUTABLE = "/bin/bash"
 
 # ── Colour palette (C64 colour nybbles) ─────────────────────────────
 COL_MENU_BG = 0  # black  (text on menu bar)
@@ -1204,15 +1227,35 @@ class FileEditorConsole(ServerConsole):
             self.console_scroll = max(0, len(self.console_lines) - EDIT_ROWS)
             return
 
-        try:
-            result = subprocess.run(
-                cmd,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=10,
-                cwd=self.browser_cwd,
+        if IS_WINDOWS and not WINDOWS_BASH:
+            self.console_lines.append(
+                "error: Git for Windows (bash.exe) is required and was not found."
             )
+            self.console_lines.append(f"install it from {GIT_BASH_DOWNLOAD_URL}")
+            self.console_lines.append("$ ")
+            self.console_scroll = max(0, len(self.console_lines) - EDIT_ROWS)
+            return
+
+        try:
+            if IS_WINDOWS:
+                result = subprocess.run(
+                    [WINDOWS_BASH, "-c", cmd],
+                    shell=False,
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                    cwd=self.browser_cwd,
+                )
+            else:
+                result = subprocess.run(
+                    cmd,
+                    shell=True,
+                    executable=SHELL_EXECUTABLE,
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                    cwd=self.browser_cwd,
+                )
             output = result.stdout + result.stderr
             for line in output.split("\n"):
                 self.console_lines.append(line)
@@ -1281,7 +1324,7 @@ class FileEditorConsole(ServerConsole):
         d.save()
 
         oscar_dir = self._oscar_dir()
-        compiler = os.path.join(oscar_dir, "bin", "oscar64")
+        compiler = os.path.join(oscar_dir, "bin", OSCAR_BINARY)
         include_dir = os.path.join(
             self._workspace_dir(), "oscar", "include"
         )  # current dir is supposed to be the workspace
