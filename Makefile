@@ -42,8 +42,12 @@ clean:
 
 
 # Cartridge (current product) — reassemble the RR wedge banks and package the .crt
+# CART_VERSION is baked into the .crt's cartridge-name header field so the server
+# can show which release is flashed. Empty here -> build.sh falls back to the exact
+# git tag on HEAD (or "dev" when untagged). `release` overrides it with $(VERSION).
+CART_VERSION ?=
 build-crt:
-	$(WEDGE_DIR)/build.sh
+	CART_VERSION="$(CART_VERSION)" $(WEDGE_DIR)/build.sh
 
 # BASIC ROM v1 (discontinued) — kept only for the legacy VICE/C64U run targets below
 build-basic-legacy:
@@ -143,9 +147,12 @@ package-mac:
 	$(MAKE) copy-to-release
 
 
-# Full build: linux server + copy to release.
-# The cartridge (.crt) is built separately via `make build-crt` and published by hand.
-release: package-linux copy-to-release
+# Full build: linux server + versioned cartridge, then copy everything to release/.
+# build-crt runs with CART_VERSION=$(VERSION) so the .crt header matches the release
+# regardless of whether the git tag has been created yet (github-release tags later).
+release: package-linux
+	$(MAKE) build-crt CART_VERSION=$(VERSION)
+	$(MAKE) copy-to-release
 
 
 # Create a git tag, build everything, and publish a GitHub release with all assets in release/
