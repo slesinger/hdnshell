@@ -34,7 +34,6 @@ from sdk.network_helper import (
     send_c64_keyboard_input,
     SOCKET_CMD_RUN_IMG,
     SOCKET_CMD_RUN_CRT,
-    SOCKET_CMD_RESET,
 )
 from sdk.config_manager import (
     read_config,
@@ -181,6 +180,31 @@ def set_ultimate_config(host: str, category: str, item: str, value: str) -> None
     """
     url = f"http://{host}/v1/configs/{quote(category)}/{quote(item)}"
     response = requests.put(url, params={"value": value}, timeout=5)
+    response.raise_for_status()
+
+
+def save_ultimate_config_to_flash(host: str) -> None:
+    """Persist the Ultimate's current configuration to non-volatile memory.
+
+    A plain PUT to a config item only changes the *current* (in-memory) config.
+    The machine re-initializes the cartridge configuration from flash on reboot,
+    so a cartridge-slot change must be committed to flash before rebooting, or it
+    would be reverted to the previously saved value.
+    """
+    url = f"http://{host}/v1/configs:save_to_flash"
+    response = requests.put(url, timeout=5)
+    response.raise_for_status()
+
+
+def reboot_ultimate(host: str) -> None:
+    """Restart the machine so it re-initializes the cartridge configuration.
+
+    Unlike a plain reset (which does not touch the cartridge banking), a reboot
+    re-initializes the cartridge configuration and then resets, which is what
+    actually maps/unmaps the HDN Shell cartridge into the C64 bus.
+    """
+    url = f"http://{host}/v1/machine:reboot"
+    response = requests.put(url, timeout=5)
     response.raise_for_status()
 
 
@@ -645,9 +669,11 @@ def c64_cart_run():
     """Enable the HDN Shell: insert the cartridge into the C64U slot.
 
     Persistently points the Ultimate's "Cartridge" config item at the HDN Shell
-    .crt in /Flash/carts, then resets the machine so it boots with the cartridge
-    active. Because the slot is set in configuration (not the transient run_crt
-    path), it stays populated across reset/reboot until explicitly disabled.
+    .crt in /Flash/carts, saves the config to flash, then reboots the machine so
+    it re-initializes the cartridge configuration and boots with the cartridge
+    active. A plain reset would not remap the cartridge, and rebooting without a
+    flash save would revert to the previously saved slot; the slot stays
+    populated across reset/reboot/power-cycle until explicitly disabled.
     """
     last_c64_ip = read_last_c64_ip()
     if not last_c64_ip:
@@ -659,7 +685,8 @@ def c64_cart_run():
             CARTRIDGE_CONFIG_ITEM,
             CARTRIDGE_FILENAME,
         )
-        _send_tcp_cmd(last_c64_ip, SOCKET_CMD_RESET)
+        save_ultimate_config_to_flash(last_c64_ip)
+        reboot_ultimate(last_c64_ip)
         return jsonify(
             {"status": "ok", "message": f"Inserted cartridge {CARTRIDGE_FILENAME}"}
         )
@@ -672,9 +699,12 @@ def c64_cart_run():
 def c64_cart_stop():
     """Disable the HDN Shell: empty the C64U cartridge slot.
 
-    Persistently sets the Ultimate's "Cartridge" config item to "None" and
-    resets the machine so it boots as a plain C64. The empty slot survives
-    reset/reboot until the cartridge is enabled again.
+    Persistently sets the Ultimate's "Cartridge" config item to "None", saves the
+    config to flash, then reboots so the machine re-initializes the cartridge
+    configuration and boots as a plain C64. A plain reset would not unmap the
+    cartridge, and rebooting without a flash save would revert to the previously
+    saved slot; the empty slot survives reset/reboot/power-cycle until the
+    cartridge is enabled again.
     """
     last_c64_ip = read_last_c64_ip()
     if not last_c64_ip:
@@ -686,7 +716,8 @@ def c64_cart_stop():
             CARTRIDGE_CONFIG_ITEM,
             CARTRIDGE_CONFIG_EMPTY,
         )
-        _send_tcp_cmd(last_c64_ip, SOCKET_CMD_RESET)
+        save_ultimate_config_to_flash(last_c64_ip)
+        reboot_ultimate(last_c64_ip)
         return jsonify({"status": "ok", "message": "Emptied cartridge slot"})
     except Exception as exc:
         logger.exception("Failed to empty cartridge slot")
