@@ -488,6 +488,10 @@ b3wp_ok:
 hsh_ip:
     .byte $31, $39, $32, $2E, $31, $36, $38, $2E, $31, $2E, $32, $00    // "192.168.1.2",0
 .errorif (* + 4 > $8241), "hsh_ip left no room for a 16-byte IP slot before $8241"
+    .fill 4, $00           // pad the 12 bytes above out to the full 16-byte slot --
+                           // without this the patcher sees do_help's opcodes right
+                           // after the terminator, rejects the match as "not a slot"
+                           // and `status` keeps echoing the placeholder IP
 // do_help: 'help' keyword handler (dispatched from ckm_help). Reuses hsh_body
 // unchanged -- exact same connect/write/read round trip as any unrecognized
 // chat line -- so a reachable server answers 'help' normally (its own reply
