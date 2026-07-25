@@ -8,6 +8,7 @@ const normalizeStatus = (payload) => ({
   ftp_file_service_enabled: Boolean(payload?.ftp_file_service_enabled),
   web_remote_control_enabled: Boolean(payload?.web_remote_control_enabled),
   cartridge_present: Boolean(payload?.cartridge_present),
+  cartridge_version: payload?.cartridge_version || null,
   "hdnsh.cfg_present": Boolean(payload?.["hdnsh.cfg_present"]),
   server_is_windows: Boolean(payload?.server_is_windows),
   server_git_bash_ok: Boolean(payload?.server_git_bash_ok),
@@ -20,6 +21,7 @@ const EMPTY_STATUS = {
   ftp_file_service_enabled: false,
   web_remote_control_enabled: false,
   cartridge_present: false,
+  cartridge_version: null,
   "hdnsh.cfg_present": false,
   server_is_windows: false,
   server_git_bash_ok: true,
@@ -173,7 +175,14 @@ export default function StatusExtended({ lastC64Ip }) {
                         status.cartridge_present ? "ok" : "danger"
                       }`}
                     />
-                    <span>hdn-rr38p-tmp12reu.crt</span>
+                    <span>
+                      hdn-rr38p-tmp12reu.crt{" "}
+                      <span className="text-muted small">
+                        {status.cartridge_version
+                          ? `v${status.cartridge_version}`
+                          : "version unknown"}
+                      </span>
+                    </span>
                   </li>
                   <li className="d-flex align-items-center gap-2">
                     <span

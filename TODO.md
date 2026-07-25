@@ -18,16 +18,8 @@ zatuhava to a musi se rucne vypnout c64u  + log
     persistent keep-alive socket to port 64, or send screen+color as a
     single connection per frame instead of two (needs verifying the
     Ultimate accepts multiple commands per connection).
-  NOTE: Step 2 (throttle/coalesce pushes) rejected -- pushes must stay
-    interactive (SSH-like), one reaction per push.
 
 
-code agent:
-use 2 space instead of 4 for formatting.
-recursion limit is set to 20. It can be limiting if the coding is in a good progress but it is more than enough if the agent is stuck in a loop. Can you detect it?
-
-
-HDN arming should also switch the font to lower case
 
 
 verze crt
@@ -35,10 +27,7 @@ verze crt
 ------
 QUEUE
 
-Version 1.0.0 UPLOADED on GIHUB
-The UI also allows to easily enable/dasable the ROM/cartridge. The UI button Download&Update must work with the crt and cfg in the cart filder. Adjust the procedure.
-Server UI has Enable and Disable buttons who need to influence if HDN shell cartridge is inserted or is empty slot. Previously these buttons worked but instead of manipulating cartridge slot, it was manipulating BASIC ROM.
-Ask me any questions before you proceed to ensure you understand the task well.
+
 
 
 

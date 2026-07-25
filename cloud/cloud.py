@@ -171,6 +171,62 @@ CARTRIDGE_CONFIG_CATEGORY = "C64 and Cartridge Settings"
 CARTRIDGE_CONFIG_ITEM = "Cartridge"
 CARTRIDGE_CONFIG_EMPTY = "None"
 
+# The .crt container header carries a 32-byte cartridge-name field at offset 0x20.
+# build.sh stamps it as "HDNSH RR v<tag>" (or "HDNSH RR dev" for untagged builds).
+# The field is part of the container, not the banks mapped into the C64, so reading
+# it costs no cartridge memory. We read it from the exact .crt we flash and cache
+# the value; it only changes when a new cartridge is flashed (Download & update).
+_CART_NAME_OFFSET = 0x20
+_CART_NAME_FIELD_SIZE = 32
+_CART_VERSION_PREFIX = "HDNSH RR v"
+
+
+def read_cartridge_version_from_crt(cart_path: str) -> str | None:
+    """Return the version baked into a .crt's cartridge-name header field.
+
+    Reads the "HDNSH RR v<tag>" name field and returns "<tag>" (e.g. "1.2.3").
+    Returns None for a file that can't be read or an unversioned/dev cartridge.
+    """
+    try:
+        with open(cart_path, "rb") as f:
+            header = f.read(_CART_NAME_OFFSET + _CART_NAME_FIELD_SIZE)
+    except OSError as e:
+        logger.warning("Could not read cartridge header from %s: %s", cart_path, e)
+        return None
+    field = header[_CART_NAME_OFFSET : _CART_NAME_OFFSET + _CART_NAME_FIELD_SIZE]
+    name = field.split(b"\x00", 1)[0].decode("ascii", "ignore").strip()
+    if name.startswith(_CART_VERSION_PREFIX):
+        version = name[len(_CART_VERSION_PREFIX) :].strip()
+        return version or None
+    return None
+
+
+def _device_state_path() -> str:
+    """Small JSON file (next to the config) holding cached device-side state."""
+    return os.path.join(
+        os.path.dirname(get_workspace_config_path()), "device_state.json"
+    )
+
+
+def read_cached_cartridge_version() -> str | None:
+    """Return the last cartridge version flashed via this server, or None."""
+    try:
+        with open(_device_state_path(), "r", encoding="utf-8") as f:
+            return (json.load(f) or {}).get("cartridge_version") or None
+    except (OSError, ValueError):
+        return None
+
+
+def write_cached_cartridge_version(version: str | None) -> None:
+    """Persist the cartridge version so the home page can show it after restart."""
+    path = _device_state_path()
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({"cartridge_version": version}, f)
+    except OSError as e:
+        logger.warning("Could not persist cartridge version: %s", e)
+
 
 def set_ultimate_config(host: str, category: str, item: str, value: str) -> None:
     """Set a single Ultimate configuration item via its REST API.
@@ -259,6 +315,7 @@ def c64_status_extended():
             "ftp_file_service_enabled": ftp_file_service_enabled,
             "web_remote_control_enabled": web_remote_control_enabled,
             "cartridge_present": cartridge_present,
+            "cartridge_version": read_cached_cartridge_version(),
             "hdnsh.cfg_present": hdnsh_cfg_present,
             "server_is_windows": IS_WINDOWS,
             "server_git_bash_ok": (not IS_WINDOWS) or (find_windows_bash() is not None),
@@ -490,8 +547,13 @@ def ensure_rom():
         # so the binary that lands on the C64 always points at this server.
         patch_server_ip(cart_path, server_ip)
         upload_cartridge_via_ftp(last_c64_ip, cart_path)
+        # The .crt we just flashed *is* what's now on the device, so read its baked
+        # version straight from it and cache it (refreshed only on Download & update).
+        cart_version = read_cartridge_version_from_crt(cart_path)
+        write_cached_cartridge_version(cart_version)
         logger.info(
-            "Cartridge patched with server IP %s and uploaded to %s%s",
+            "Cartridge %s patched with server IP %s and uploaded to %s%s",
+            f"v{cart_version}" if cart_version else "(unversioned)",
             server_ip,
             last_c64_ip,
             CARTRIDGE_DIR,
@@ -499,6 +561,7 @@ def ensure_rom():
         return jsonify(
             {
                 "status": "ok",
+                "cartridge_version": cart_version,
                 "message": f"Uploaded {asset_name} (server IP {server_ip}) and hdnsh.cfg to ftp://{last_c64_ip}{CARTRIDGE_DIR}",
             }
         )

@@ -8,6 +8,21 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT="$DIR/build"
 mkdir -p "$OUT"
 
+# Version stamped into the .crt cartridge-name header field (offset $20, 32 bytes).
+# That field lives in the .crt container, NOT in the banks mapped into the C64, so
+# it costs zero cartridge/C64 memory. The HDN Server reads it back to show which
+# release is flashed. Prefer an explicit CART_VERSION (passed by `make` at release),
+# else the exact git tag on HEAD; an untagged dev build stays "dev" (-> "unknown" in
+# the UI), which is itself the "you flashed an unpublished build" signal.
+VER="${CART_VERSION:-$(git -C "$DIR" describe --tags --exact-match 2>/dev/null || true)}"
+VER="${VER#v}"; VER="${VER#V}"
+if [ -n "$VER" ]; then
+    CART_NAME="HDNSH RR v$VER"
+else
+    CART_NAME="HDNSH RR dev"
+fi
+echo "Cartridge name field: $CART_NAME"
+
 BANKS=()
 for n in 0 1 2 3 4 5 6 7; do
     nn=$(printf "%02d" "$n")
@@ -26,7 +41,7 @@ echo "Built: $OUT/rr38p-tmp12reu.rebuilt.bin"
 # Package as a Retro Replay .crt (VICE cartconv, cart type 36/"rr") for flashing on Ultimate64/C64U.
 CARTCONV="${CARTCONV:-cartconv}"
 "$CARTCONV" -t rr -i "$OUT/rr38p-tmp12reu.rebuilt.bin" -o "$OUT/hdn-rr38p-tmp12reu.crt" \
-    -n "CYBERPUNX RETRO REPLAY" >/dev/null
+    -n "$CART_NAME" >/dev/null
 echo "Built: $OUT/hdn-rr38p-tmp12reu.crt"
 
 # Deploy to BOTH flashable names in wedge/ -- a stale copy under either name
