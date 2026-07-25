@@ -16,7 +16,6 @@ import os
 import re
 import threading
 import time
-import unicodedata
 from typing import Optional, List
 
 import feedparser
@@ -28,7 +27,8 @@ from sdk.server_console import (
     SCREEN_COLS,
     SCREEN_ROWS,
     SCREEN_SIZE,
-    ascii_to_screencode,
+    char_to_screencode as _char_to_screencode,
+    transliterate,
 )
 from sdk.generate_pet_asc_table import Petscii
 from sdk.shared_state import set_clipboard
@@ -239,24 +239,9 @@ def _strip_html(text: str) -> str:
     text = _WS_RE.sub(" ", text)
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     text = _NL_RE.sub("\n\n", text)
-    return text.strip()
-
-
-# =====================================================================
-#  Helper: character to C64 screen code (with Unicode normalisation)
-# =====================================================================
-
-
-def _char_to_screencode(ch: str) -> int:
-    code = ord(ch)
-    if 32 <= code < 127:
-        return ascii_to_screencode(code)
-    normalized = unicodedata.normalize("NFKD", ch)
-    for c in normalized:
-        c_code = ord(c)
-        if 32 <= c_code < 127:
-            return ascii_to_screencode(c_code)
-    return SC_SPACE
+    # Gracefully transliterate to ASCII (ß→ss, ä→ae, curly quotes, …) so
+    # article bodies and summaries render on the 40-column display.
+    return transliterate(text.strip())
 
 
 # =====================================================================
@@ -828,7 +813,9 @@ class RSSReaderConsole(ServerConsole):
                 continue
             try:
                 parsed = feedparser.parse(url)
-                feed_title = feed_info.get("title", "") or parsed.feed.get("title", url)
+                feed_title = transliterate(
+                    feed_info.get("title", "") or parsed.feed.get("title", url)
+                )
                 # Update stored title if empty
                 if not feed_info.get("title"):
                     feed_info["title"] = feed_title
@@ -860,7 +847,7 @@ class RSSReaderConsole(ServerConsole):
 
                     articles.append(
                         {
-                            "title": entry.get("title", "(no title)"),
+                            "title": transliterate(entry.get("title", "(no title)")),
                             "summary": summary,
                             "link": link,
                             "published": pub_str,

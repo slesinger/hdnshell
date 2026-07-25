@@ -26,7 +26,8 @@ from sdk.server_console import (
     SCREEN_COLS,
     SCREEN_ROWS,
     SCREEN_SIZE,
-    ascii_to_screencode,
+    char_to_screencode,
+    transliterate,
 )
 from sdk.generate_pet_asc_table import Petscii
 
@@ -448,12 +449,12 @@ class _TelethonWorker:
             result = []
             tz = timezone(timedelta(minutes=tz_offset_minutes))
             for d in dialogs:
-                name = d.name or "Unknown"
+                name = transliterate(d.name or "Unknown")
                 is_group = not isinstance(d.entity, User) if d.entity else False
                 last_msg = ""
                 ts = ""
                 if d.message:
-                    last_msg = d.message.message or ""
+                    last_msg = transliterate(d.message.message or "")
                     if d.message.media and not last_msg:
                         last_msg = _media_placeholder(d.message)
                     if d.message.date:
@@ -494,7 +495,8 @@ class _TelethonWorker:
                         sender_name = m.sender.title or ""
                     else:
                         sender_name = str(m.sender_id or "")
-                text = m.message or ""
+                sender_name = transliterate(sender_name)
+                text = transliterate(m.message or "")
                 if m.media and not text:
                     text = _media_placeholder(m)
                 ts = ""
@@ -558,9 +560,9 @@ class _TelethonWorker:
                 contacts.append(
                     ContactEntry(
                         id=u.id,
-                        name=name[:30],
+                        name=transliterate(name)[:30],
                         phone=getattr(u, "phone", "") or "",
-                        username=getattr(u, "username", "") or "",
+                        username=transliterate(getattr(u, "username", "") or ""),
                     )
                 )
             contacts.sort(key=lambda c: c.name.lower())
@@ -2356,7 +2358,13 @@ class TelegramChatConsole(ServerConsole):
             self.color[pos] = COL_INPUT_FG
 
     def _put_text(self, row: int, col: int, text: str, fg: int, reverse: bool = False):
-        """Write ASCII text to screen buffer at (row, col) with colour."""
+        """Write text to screen buffer at (row, col) with colour.
+
+        Telegram-sourced strings are transliterated to ASCII at ingestion
+        (see the worker's _do_get_* methods); ``char_to_screencode`` here is a
+        safety net that gracefully degrades any residual non-ASCII character
+        (e.g. from static UI strings) to its base glyph instead of a blank.
+        """
         for i, ch in enumerate(text):
             c = col + i
             if c >= SCREEN_COLS or c < 0:
@@ -2364,7 +2372,7 @@ class TelegramChatConsole(ServerConsole):
             if row < 0 or row >= SCREEN_ROWS:
                 return
             pos = row * SCREEN_COLS + c
-            sc = ascii_to_screencode(ord(ch))
+            sc = char_to_screencode(ch)
             if reverse:
                 sc |= SC_REVERSE_BIT
             self.screen[pos] = sc
@@ -2407,11 +2415,14 @@ class TelegramChatConsole(ServerConsole):
                         sender_name = title
             if not sender_name:
                 sender_name = self._chat_name_by_id(chat_id)
+            sender_name = transliterate(sender_name)
             # Build preview text (strip newlines, truncate).
             preview = ""
             if msg:
                 raw_text = getattr(msg, "message", "") or ""
-                preview = raw_text.replace("\n", " ").replace("\r", "").strip()
+                preview = transliterate(
+                    raw_text.replace("\n", " ").replace("\r", "").strip()
+                )
             if not preview and msg:
                 # Media-only message — use a placeholder.
                 preview = "[media]"

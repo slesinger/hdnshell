@@ -16,7 +16,12 @@ import time
 from typing import Optional
 
 # Import PETSCII conversion functions from sdk.petscii
-from .petscii import ascii_to_screencode, petscii_to_screencode
+from .petscii import (
+    ascii_to_screencode,
+    petscii_to_screencode,
+    char_to_screencode,
+    transliterate,
+)
 
 # Toast box painter (geometry/colors) lives in sdk.toaster, shared with the
 # tutorials coach overlay (tutorials.session.TutorialSession). The

@@ -18,7 +18,6 @@ import os
 import queue
 import re
 import threading
-import unicodedata
 from dataclasses import dataclass, field
 from typing import Optional, List, Tuple
 from urllib.parse import urljoin
@@ -30,6 +29,8 @@ from sdk.server_console import (
     SCREEN_ROWS,
     SCREEN_SIZE,
     ascii_to_screencode,
+    char_to_screencode as _char_to_screencode,
+    transliterate,
 )
 from sdk.generate_pet_asc_table import Petscii
 from sdk.text_utils import word_wrap
@@ -1185,7 +1186,7 @@ class WebBrowserConsole(ServerConsole):
                 page_data = self._fetch_search_results(url[len("search:") :])
             else:
                 page_data = self._fetch_page(url)
-            tab.title = page_data.get("title", url)[:20] or url[:20]
+            tab.title = transliterate(page_data.get("title", url))[:20] or url[:20]
             tab.bg_color = self._css_bg_to_c64_color(
                 page_data.get("bg_color", "#ffffff")
             )
@@ -1478,9 +1479,11 @@ class WebBrowserConsole(ServerConsole):
         # Process elements
         for elem in elements:
             tag = elem.get("tag", "")
-            text = elem.get("text", "")
+            # Gracefully transliterate all human-readable text up front so
+            # word-wrap and column math run on the final ASCII widths.
+            text = transliterate(elem.get("text", ""))
             href = elem.get("href", "")
-            alt = elem.get("alt", "")
+            alt = transliterate(elem.get("alt", ""))
             list_index = elem.get("list_index", -1)
 
             if tag == "BLOCK_START":
@@ -2119,25 +2122,6 @@ _CSS_NAMED_COLORS = {
     "fuchsia": (255, 0, 255),
     "transparent": (255, 255, 255),
 }
-
-
-def _char_to_screencode(ch: str) -> int:
-    """Convert a single character to C64 screen code.
-
-    ASCII printable characters are passed directly.  Non-ASCII characters are
-    transliterated to their closest ASCII base character via NFKD normalisation
-    (e.g. á→a, č→c, ü→u).  If no ASCII base can be found the space code is
-    returned.
-    """
-    code = ord(ch)
-    if 32 <= code < 127:
-        return ascii_to_screencode(code)
-    normalized = unicodedata.normalize("NFKD", ch)
-    for c in normalized:
-        c_code = ord(c)
-        if 32 <= c_code < 127:
-            return ascii_to_screencode(c_code)
-    return SC_SPACE
 
 
 def _parse_css_color(css: str) -> Tuple[int, int, int]:

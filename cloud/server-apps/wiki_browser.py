@@ -18,7 +18,6 @@ Invoked from C64 by pressing CBM+7.
 import logging
 import re
 import threading
-import unicodedata
 from dataclasses import dataclass, field
 from typing import Optional, List, Tuple
 from urllib.parse import urljoin, urlparse, quote
@@ -29,6 +28,8 @@ from sdk.server_console import (
     SCREEN_ROWS,
     SCREEN_SIZE,
     ascii_to_screencode,
+    char_to_screencode as _char_to_screencode,
+    transliterate,
 )
 from sdk.generate_pet_asc_table import Petscii
 from sdk.text_utils import word_wrap
@@ -1432,6 +1433,7 @@ class WikiBrowserConsole(ServerConsole):
     def _make_text_line(
         self, text: str, fg: int, reverse: bool = False, center: bool = False
     ) -> ContentLine:
+        text = transliterate(text)
         line = ContentLine(
             chars=[SC_SPACE] * SCREEN_COLS,
             colors=[fg] * SCREEN_COLS,
@@ -1463,6 +1465,7 @@ class WikiBrowserConsole(ServerConsole):
         )
 
     def _text_to_lines(self, text: str, fg: int) -> List[ContentLine]:
+        text = transliterate(text)
         lines: List[ContentLine] = []
         for line_str in word_wrap(text, SCREEN_COLS):
             cl = ContentLine(
@@ -1500,18 +1503,3 @@ class WikiBrowserConsole(ServerConsole):
             logger.warning(f"Could not send VIC colours: {e}")
 
 
-# =====================================================================
-#  Character conversion utility
-# =====================================================================
-
-
-def _char_to_screencode(ch: str) -> int:
-    code = ord(ch)
-    if 32 <= code < 127:
-        return ascii_to_screencode(code)
-    normalized = unicodedata.normalize("NFKD", ch)
-    for c in normalized:
-        c_code = ord(c)
-        if 32 <= c_code < 127:
-            return ascii_to_screencode(c_code)
-    return SC_SPACE

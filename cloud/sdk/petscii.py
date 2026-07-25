@@ -19,6 +19,92 @@ from typing import Optional
 # Default values for conversions
 DEFAULT_SCREEN_CODE = 0x20  # Space character
 
+# ── Graceful transliteration map ─────────────────────────────────────
+# Multi-character expansions and punctuation substitutions applied BEFORE
+# NFKD normalization, so Unicode text degrades to readable ASCII on the
+# C64 40-column display instead of being silently dropped.
+#
+# Language conventions covered:
+#   German  — umlauts expand (ä→ae, ö→oe, ü→ue) and ß→ss (NFKD would drop ß).
+#   Spanish — ñ→n and inverted punctuation ¿→? ¡→! (NFKD drops ¿ ¡).
+#   Czech   — handled entirely by the NFKD fall-through (ř→r, š→s, ž→z, …).
+# Common typography (curly quotes, dashes, ellipsis, €) is normalised too,
+# since those characters have no NFKD ASCII form and would otherwise vanish.
+_TRANSLIT_MAP = {
+    # German umlauts / eszett (German ASCII convention)
+    ord("ä"): "ae",
+    ord("ö"): "oe",
+    ord("ü"): "ue",
+    ord("Ä"): "Ae",
+    ord("Ö"): "Oe",
+    ord("Ü"): "Ue",
+    ord("ß"): "ss",
+    ord("ẞ"): "SS",
+    # Spanish enye + inverted punctuation
+    ord("ñ"): "n",
+    ord("Ñ"): "N",
+    ord("¿"): "?",
+    ord("¡"): "!",
+    # Ligatures
+    ord("æ"): "ae",
+    ord("Æ"): "Ae",
+    ord("œ"): "oe",
+    ord("Œ"): "Oe",
+    # Quotes
+    ord("„"): '"',
+    ord("“"): '"',
+    ord("”"): '"',
+    ord("«"): '"',
+    ord("»"): '"',
+    ord("‘"): "'",
+    ord("’"): "'",
+    ord("‚"): "'",
+    # Dashes / ellipsis / bullets
+    ord("–"): "-",
+    ord("—"): "-",
+    ord("―"): "-",
+    ord("…"): "...",
+    ord("•"): "*",
+    ord("·"): ".",
+    # Currency / symbols
+    ord("€"): "EUR",
+    ord("™"): "(tm)",
+    ord("©"): "(c)",
+    ord("®"): "(r)",
+    # Whitespace oddities
+    ord(" "): " ",  # non-breaking space
+    ord("​"): "",  # zero-width space
+}
+
+
+def transliterate(text: str) -> str:
+    """Gracefully transliterate arbitrary Unicode text to ASCII.
+
+    Two stages:
+      1. Explicit substitutions from ``_TRANSLIT_MAP`` (multi-char expansions
+         such as ß→ss and ä→ae, plus punctuation that has no ASCII base).
+      2. NFKD normalization with an ASCII-only fallback, which strips the
+         diacritics from any remaining accented letters (á→a, č→c, ñ→n, …).
+
+    Newlines and other ASCII control characters are preserved.
+
+    Args:
+        text: Any Unicode string.
+
+    Returns:
+        An ASCII-only string. Characters with no sensible ASCII form are
+        dropped (they were unrenderable on the C64 anyway).
+
+    Example:
+        >>> transliterate("Grüße aus Přerov — ¿qué?")
+        'Gruesse aus Prerov - ?que?'
+    """
+    text = text.translate(_TRANSLIT_MAP)
+    return (
+        unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    )
+
+
 # Special ASCII characters that need custom screen code mapping
 _SPECIAL_ASCII = {
     ord("`"): 0x27,  # ` → apostrophe glyph on C64 screen ($27)
@@ -102,12 +188,9 @@ def utf8_to_petscii(text: str) -> bytes:
         b'\\x4c\\x49\\x4e\\x45\\x31\\x0d\\x4c\\x49\\x4e\\x45\\x32'
     """
     # Convert '\n' (LF, 0x0a) to PETSCII newline (CR, 0x0d).
-    # Normalize Unicode (NFKD) to decompose characters with diacritics,
-    # then transliterate to ASCII-only string by encoding to ASCII
-    # with 'ignore' (drops diacritic marks and yields base letters).
-    ascii_text = (
-        unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
-    )
+    # Gracefully transliterate Unicode to ASCII first (ß→ss, ä→ae, curly
+    # quotes → straight, etc.) then map each ASCII byte to PETSCII.
+    ascii_text = transliterate(text)
 
     out_bytes = []
     for c in ascii_text:
@@ -248,13 +331,11 @@ def char_to_screencode(ch: str) -> int:
         >>> char_to_screencode('é')  # Decomposes to 'e'
         (screencode for 'e')
     """
-    # Normalize via NFKD to decompose characters with diacritics
-    normalized = unicodedata.normalize("NFKD", ch)
-    # Take first character of normalized form (base character without diacritics)
-    base_char = normalized[0] if normalized else ch
-
-    # Get ASCII code
-    ascii_code = ord(base_char)
-
-    # Convert to screen code
-    return ascii_to_screencode(ascii_code)
+    # Gracefully transliterate (handles ß→ss, ä→ae, ñ→n, accents, …).
+    # A single input char may expand to several ASCII chars; the screen
+    # cell can only hold one glyph, so we render the first of the expansion
+    # (string-level callers should use transliterate() before laying out
+    # columns to keep multi-char expansions visible).
+    trans = transliterate(ch)
+    base_char = trans[0] if trans else " "
+    return ascii_to_screencode(ord(base_char))
