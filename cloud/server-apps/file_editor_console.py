@@ -450,6 +450,7 @@ class FileEditorConsole(ServerConsole):
                 ("Swap pane", "sh+\x5e"),
                 ("Tabs", "f2"),
                 ("Wrap", "C=+p"),
+                ("Line numbers", "C=+l"),
             ],
             "Search": [
                 ("Find", "C=+f"),
@@ -465,6 +466,8 @@ class FileEditorConsole(ServerConsole):
                 ("keys", "f8"),
             ],
         }
+        # View state
+        self.show_line_numbers: bool = True
         # Find/replace state
         self.find_pattern: str = ""
         self.replace_text: str = ""
@@ -704,6 +707,8 @@ class FileEditorConsole(ServerConsole):
             d.insert_text_at_cursor("{")
         elif key == KEY_CBM_W:  # CBM+W → insert }
             d.insert_text_at_cursor("}")
+        elif key == KEY_CBM_AT:  # CBM+@ → insert _ (underscore)
+            d.insert_text_at_cursor("_")
         elif key == KEY_CBM_POUND:  # CBM+£ → insert ~
             d.insert_text_at_cursor("~")
         elif key == KEY_SHIFT_CBM_MINUS:  # SHIFT+CBM+- → insert |
@@ -713,6 +718,8 @@ class FileEditorConsole(ServerConsole):
             self.status_msg = "wrap ON" if self.word_wrap else "wrap OFF"
             if self.word_wrap:
                 self.doc.scroll_x = 0
+        elif key == KEY_CBM_L:  # CBM+L → toggle line-number gutter
+            self._toggle_line_numbers()
 
         # ─ ESC / RUN-STOP → open menu ─
         elif key == KEY_RUNSTOP_ESC_CTRLC:
@@ -831,6 +838,8 @@ class FileEditorConsole(ServerConsole):
             self.status_msg = "wrap ON" if self.word_wrap else "wrap OFF"
             if self.word_wrap:
                 self.doc.scroll_x = 0
+        elif label == "Line numbers":
+            self._toggle_line_numbers()
         elif label == "Find":
             self._start_input("find: ", "_cb_find")
         elif label == "Find next":
@@ -998,6 +1007,12 @@ class FileEditorConsole(ServerConsole):
         cb = get_clipboard(self.session_id)
         if cb:
             d.insert_text_at_cursor(cb)
+
+    def _toggle_line_numbers(self):
+        self.show_line_numbers = not self.show_line_numbers
+        self.status_msg = (
+            "line numbers ON" if self.show_line_numbers else "line numbers OFF"
+        )
 
     def _cmd_delete_line(self, d: Document):
         if d.line_count > 1:
@@ -1570,7 +1585,8 @@ class FileEditorConsole(ServerConsole):
     ):
         """Render a document into screen rows [top_row..bottom_row]."""
         visible_rows = bottom_row - top_row + 1
-        text_cols = pane_cols - LINE_NUM_WIDTH
+        gutter_w = LINE_NUM_WIDTH if self.show_line_numbers else 0
+        text_cols = pane_cols - gutter_w
         if text_cols < 1:
             text_cols = 1
 
@@ -1602,7 +1618,7 @@ class FileEditorConsole(ServerConsole):
             # Line number
             lnum_str = f"{line_idx + 1:4d} "
             for ci, ch in enumerate(lnum_str):
-                if ci < LINE_NUM_WIDTH and col_offset + ci < pane_cols:
+                if ci < gutter_w and col_offset + ci < pane_cols:
                     pos = screen_row * SCREEN_COLS + col_offset + ci
                     self.screen[pos] = ascii_to_screencode(ord(ch))
                     self.color[pos] = COL_LINENO_FG
@@ -1611,7 +1627,7 @@ class FileEditorConsole(ServerConsole):
             line = doc.lines[line_idx]
             for ci in range(text_cols):
                 char_idx = doc.scroll_x + ci
-                scol = col_offset + LINE_NUM_WIDTH + ci
+                scol = col_offset + gutter_w + ci
                 if scol >= col_offset + pane_cols:
                     break
                 pos = screen_row * SCREEN_COLS + scol
@@ -1645,7 +1661,7 @@ class FileEditorConsole(ServerConsole):
             if show_cursor and line_idx == doc.cursor_y:
                 cx_screen = doc.cursor_x - doc.scroll_x
                 if 0 <= cx_screen < text_cols:
-                    scol = col_offset + LINE_NUM_WIDTH + cx_screen
+                    scol = col_offset + gutter_w + cx_screen
                     pos = screen_row * SCREEN_COLS + scol
                     self.color[pos] = COL_CURSOR_FG
                     # Show cursor as reverse character
@@ -1666,6 +1682,7 @@ class FileEditorConsole(ServerConsole):
         sel_end,
     ):
         """Render document with word-wrap into screen rows."""
+        gutter_w = LINE_NUM_WIDTH if self.show_line_numbers else 0
         screen_row = top_row
         line_idx = doc.scroll_y
 
@@ -1685,7 +1702,7 @@ class FileEditorConsole(ServerConsole):
                 else:
                     lnum_str = "     "  # blank gutter for continuation
                 for ci, ch in enumerate(lnum_str):
-                    if ci < LINE_NUM_WIDTH and col_offset + ci < pane_cols:
+                    if ci < gutter_w and col_offset + ci < pane_cols:
                         pos = screen_row * SCREEN_COLS + col_offset + ci
                         self.screen[pos] = ascii_to_screencode(ord(ch))
                         self.color[pos] = COL_LINENO_FG
@@ -1693,7 +1710,7 @@ class FileEditorConsole(ServerConsole):
                 # Text content for this chunk
                 for ci in range(text_cols):
                     char_idx = chunk_start + ci
-                    scol = col_offset + LINE_NUM_WIDTH + ci
+                    scol = col_offset + gutter_w + ci
                     if scol >= col_offset + pane_cols:
                         break
                     pos = screen_row * SCREEN_COLS + scol
@@ -1723,7 +1740,7 @@ class FileEditorConsole(ServerConsole):
                 if show_cursor and line_idx == doc.cursor_y:
                     if chunk_start <= doc.cursor_x < chunk_start + text_cols:
                         cx_screen = doc.cursor_x - chunk_start
-                        scol = col_offset + LINE_NUM_WIDTH + cx_screen
+                        scol = col_offset + gutter_w + cx_screen
                         pos = screen_row * SCREEN_COLS + scol
                         self.color[pos] = COL_CURSOR_FG
                         if pos < SCREEN_SIZE:
