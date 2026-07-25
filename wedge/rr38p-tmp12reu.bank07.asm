@@ -103,8 +103,10 @@ bb_pr2:
     inx
     bne bb_pr2
 bb_done:
+    jsr font_lc               // HDN: bump banner screen codes + select lowercase charset.
+                              //   Runs BEFORE bb_arm so cs_install's arm-time $D018 flip
+                              //   lands on already-bumped text (no lowercase banner flash).
     jsr bb_arm                // AA2 boot-arm (bb_arm lives in the roomy $9E00 pocket)
-    jsr font_lc               // HDN: select lowercase charset, keep boot text uppercase
     rts
 msg_reu:
     .byte $4D, $20, $52, $45, $55, $20, $00                    // "M REU " NUL
@@ -730,8 +732,10 @@ ba_tramp:
 ba_tramp_end:
 // ---- font_lc: select lowercase/mixed charset, keep boot text looking uppercase --
 // Called by bb_done (same-bank jsr) once per cold boot, after the banner + REU/RR
-// line are on screen (IRQ off under the RR cold-start sei; bb_arm's trampoline left
-// bank7 mapped). The C64 font is a single global VIC setting, so flipping $D018 to
+// line are on screen (IRQ off under the RR cold-start sei; bank7 is mapped from the
+// preceding bb_pr2 print loop). Runs BEFORE bb_arm now so the arm-time cs_install
+// $D018 flip lands on already-bumped codes. The C64 font is a single global VIC
+// setting, so flipping $D018 to
 // the lowercase/mixed charset would re-render the already-printed uppercase boot
 // text as lowercase. To prevent that, first bump every uppercase-letter screen code
 // ($01-$1A) in the top two screen pages ($0400-$05FF, well clear of the sprite

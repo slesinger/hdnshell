@@ -3983,6 +3983,15 @@ csi_arm:
     sta $03ee              // clear the one-shot press latch
     sta $03ef              // w_console = 0 (local); HONDANI only runs at the
                            //   BASIC prompt, so we are always local here
+    // Arm-time font switch: select the lowercase/mixed charset so re-typing HDN
+    // (e.g. after a program left the display in uppercase) restores it. Idempotent
+    // -- ORs only the charset bit, screen-base bits preserved. On the cold-boot arm
+    // path font_lc runs FIRST (see bb_done), so the banner is already screen-code
+    // bumped and this flip is a visual no-op there. Grows into the .fill padding
+    // below, so console_switch stays pinned at $9CB7.
+    lda $d018
+    ora #$02               // bit 1 -> charset base $1800 (lowercase/mixed)
+    sta $d018
     rts
 
 // The CINV stub template used to live here (right after cs_install). It moved
