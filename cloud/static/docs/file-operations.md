@@ -34,6 +34,8 @@ cp game.d64 /temp     copy a file straight from the release to /temp, same name
 cp *.d64 n:downloads  copy every .d64 in the release into the network drive's downloads dir
 ```
 
+A filename containing a space must be wrapped in `"..."` (e.g. `cp "funk paint 0.46c" /temp/`) — the quotes are stripped and everything between them is treated as one argument; without them, the space would be read as separating two more arguments.
+
 The destination follows the usual `cp`/`mv` convention: if it's an existing directory, the file lands inside it under its original name; otherwise the destination path is the exact new name/location.
 
 A wildcard (`*`/`?`) source requires an existing directory as the destination — matching several files into one filename is ambiguous and rejected. Matching a single named source is case-insensitive as a fallback (an exact-case match always wins first, same as `del`/`file`); the destination name you type is always used exactly as typed, never case-folded.
