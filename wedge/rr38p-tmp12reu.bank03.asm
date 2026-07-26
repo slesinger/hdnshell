@@ -454,32 +454,38 @@ b3_dos1_read:
     jsr hsh_push            // push the command (was: tail-call/jmp)
     bcs b3wp_no             // push failed -> C=1 (reuses the sec/rts below)
 b3_wait_pkt:                // ALSO reached directly (inter-packet wait) via B3_WAIT_PKT
+    // FIX (step 35): match the vendor reference driver (ultimate_lib.c / u-shell.c),
+    // whose file-read loop terminates on DATA_AV alone. The old step-34 loop read
+    // $df1c FOUR separate times per pass and also tested state==idle (and #$30 / beq):
+    // a LIVE state machine sampled across four reads can transiently show idle during
+    // the inter-packet accept->fetch transition, which was misread as end-of-transfer.
+    // That truncated multi-packet loads intermittently (timing-dependent); single-packet
+    // files never hit an inter-packet transition, so they always worked. Now ONE coherent
+    // snapshot per pass, decided on DATA_AV (more) then STAT_AV (done) only -- no state
+    // sampling, no cross-read race.
     ldx #$00
     ldy #$00
 b3wp:
-    lda $df1c
-    and #$02               // accept handshake from the last packet still pending?
-    bne b3wp_n              //   not synced yet -> keep waiting
-    lda $df1c
-    and #$80               // DATA_AV?
-    bne b3wp_ok             //   next packet ready
-    lda $df1c
-    and #$40               // STAT_AV with no data pending?
-    bne b3wp_no              //   end of data, status waiting -> done
-    lda $df1c
-    and #$30               // state 00 = idle?
-    beq b3wp_no              //   command fully complete -> done
-b3wp_n:
-    inx
+    lda $df1c              // single coherent snapshot of the status register
+    asl                    // DATA_AV (bit7) -> C
+    bcs b3wp_ok            //   next packet ready -> drain it
+    asl                    // STAT_AV (bit6) -> C
+    bcs b3wp_no            //   status waiting, no data pending -> transfer complete
+    inx                    // else still busy (accept in flight / SD cluster-fetch stall)
     bne b3wp
     iny
-    bne b3wp                // ~64K polls (seconds) -> escape, never in normal op
+    bne b3wp                // ~64K-poll (~1s) safety escape -> treat as done (no hang)
 b3wp_no:
     sec
     rts
 b3wp_ok:
     clc
     rts
+    // step 35 shrank b3_wait_pkt by 19 bytes; pad back to its original $8155 end so
+    // hsh_ip/do_help keep their addresses -> zero downstream shift, surgical diff.
+.errorif (* > $8155), "b3_wait_pkt overran its original $8155 end -- downstream would shift"
+    .fill $8155 - *, $00
+.errorif (* != $8155), "step-35 pad did not restore hsh_ip to $8155"
 .errorif (* > $8241), "step-34 b3_dos1_read/b3_wait_pkt overran the kept $8241 monitor header"
 // Relocated server-host string (was inline before hd_fold with no room to patch a
 // full IPv4). It lives in this free reserve; the .fill below zero-pads it, giving

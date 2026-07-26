@@ -22,10 +22,13 @@ zatuhava to a musi se rucne vypnout c64u  + log
 
 
 
-verze crt
+
 
 ------
 QUEUE
+
+
+Running a prg by typing a name of the prg file only works if the letters are lowercase. POUZIJ medlika jako ukazku
 
 
 
