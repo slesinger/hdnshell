@@ -88,6 +88,7 @@ The `mnt` command can mount disk images (D64/D71/D81) to a drive 8 or 9. This al
 - `mnt myimage.d64 9` — Mount to drive 9 instead of 8 (automatically enables the Ultimate's second drive if it was off)
 - `mnt mydir/myimage.d64` — Mount image in subdirectory
 - `mnt /mydir/myimage.d64` — Mount image absolute from root
+- `mnt my image.d64` — Mount an image whose name contains spaces: unlike `cp`/`mv`, **do not** wrap the path in quotes — `mnt` takes everything after `mnt ` as the path verbatim (only checking the very end for a trailing ` 8`/` 9` device number), so quotes would become literal characters in the path and the mount would silently fail. `mnt`/`umnt` report no error either way (`ready.` even if nothing mounted), so a mount that doesn't seem to have taken effect is usually a mistyped/quoted path — check with `pwd` after switching device, or retype without quotes.
 - `umnt` — Unmount the disk image on drive 8 (return to SD card directory)
 - `umnt 9` — Unmount the disk image on drive 9
 
