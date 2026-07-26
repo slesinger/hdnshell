@@ -1581,7 +1581,40 @@ def _ftp_list_directory(ftp: ftplib.FTP, path: str) -> list:
 
 
 def _ftp_is_directory(ftp: ftplib.FTP, path: str) -> bool:
-    """Return True if *path* is a directory on the FTP server."""
+    """Return True if *path* is a directory on the FTP server.
+
+    The entry's type is taken from its parent directory's MLSD listing, which
+    is authoritative. This matters on the Ultimate64/C64U FTP server, whose
+    CWD command happily descends *into* a disk image (.d64/.d71/.d81/.dnp) to
+    browse the files inside it -- so the naive "does CWD succeed?" probe wrongly
+    reports every disk image as a directory. Delete then routes it to the
+    recursive-directory path (RMD) and the C64U answers "550 Requested action
+    not taken." MLSD reports disk images as type=file (hardware-verified), so
+    trust it. Fall back to the CWD probe only when MLSD is unavailable (a
+    non-Ultimate server) or the entry can't be located in its parent listing.
+    """
+    normalized = posixpath.normpath(path)
+    parent = posixpath.dirname(normalized) or "/"
+    name = posixpath.basename(normalized)
+    if name:
+        try:
+            entries = list(ftp.mlsd(parent))
+        except ftplib.all_errors:
+            entries = None
+        if entries is not None:
+            for entry_name, facts in entries:
+                if entry_name == name:
+                    return facts.get("type") == "dir"
+            # exact name absent: retry case-insensitively -- listings show the
+            # real case but a caller may hand back a differently-cased name.
+            lowered = name.lower()
+            for entry_name, facts in entries:
+                if entry_name.lower() == lowered:
+                    return facts.get("type") == "dir"
+
+    # Fallback for servers without MLSD. NOTE: on the Ultimate this misdetects
+    # disk images as directories, which is exactly the bug the MLSD path above
+    # avoids -- so this runs only when MLSD genuinely isn't available.
     try:
         current = ftp.pwd()
     except ftplib.all_errors:

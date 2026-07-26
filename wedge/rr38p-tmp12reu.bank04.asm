@@ -616,6 +616,8 @@ bank04_data_80B4:
 // $A000-$CEFF and clear of bank3 (<=$cf62) / bank4 (<=$cf48) UCI scratch):
 .const B4_PATLEN = $cf49    // filter pattern length (0 = bare dir/ll, no filter)
 .const B4_BUFLEN = $cf4a    // current READ_DIR entry name length in B4_BUF
+.const B4_ENTST  = $cf4b    // 1 = next READ_DIR byte is this packet's attribute byte
+                             //     (discard it); 0 = buffering the filename (16b-4)
 .const B4_BUF    = $cf80    // buffered entry name (B4_BUFMAX bytes)
 .const B4_BUFMAX = 80
 .const B4_PAT    = $cfd0    // folded filter pattern (B4_PATMAX bytes)
@@ -794,6 +796,8 @@ b4_do_dir:
     jsr b4_open_dir        // DOS OPEN_DIR ($13) on the current dir (silent)
     lda #$00
     sta B4_BUFLEN          // 16b-2: start with an empty entry-name buffer
+    lda #$01
+    sta B4_ENTST           // 16b-3: first byte of the stream is an attribute byte
     jsr b4_read_dir_stream // DOS READ_DIR ($14): stream ALL packets (16a-fix, $9F58)
     clc
     rts
@@ -860,10 +864,24 @@ b4_cderr:
 // SIMPLEST case-INSENSITIVE prefix match (Honza 2026-07-11: exact-case display not
 // required). At parse time b4_setpat folds the pattern to uppercase into B4_PAT,
 // dropping leading spaces and a trailing '*' (prefix wildcard). During READ_DIR
-// streaming b4_emit buffers each entry's name (bytes >=$21) into B4_BUF; on the
-// next marker (byte <=$20 = entry separator) b4_flush prints the name + CR only if
-// its folded prefix matches B4_PAT -- or unconditionally when B4_PATLEN==0 (bare
-// "dir"/"ll", no filter). c/n still filter server-side (handled in bank3).
+// streaming b4_emit buffers each entry's name into B4_BUF; on the next marker
+// b4_flush prints the name + CR only if its folded prefix matches B4_PAT -- or
+// unconditionally when B4_PATLEN==0 (bare "dir"/"ll", no filter). c/n still filter
+// server-side (handled in bank3).
+// 16b-4 (2026-07-26): per docs/development/ultimate_dos-1.1.md 2.15, READ_DIR
+// streams "one data packet per entry", each packet "1 attribute byte followed by
+// the filename". HW-confirmed on real hardware (standalone diag PRG, /flash/test):
+// the firmware DOES frame one entry per DATA_AV period -- DATA_AV drops after each
+// entry and re-rises for the next only AFTER the packet is accepted and a short
+// settling delay. So the correct reader drains one packet == one entry, flushes it
+// (b4_rds_acc), then accepts and waits for DATA_AV (next entry) OR STAT_AV (done)
+// before continuing (b4_rds_chk). Given that framing, byte 0 of each packet is the
+// attribute and the rest is the filename verbatim -- embedded $20 spaces are no
+// longer ambiguous, because entry boundaries are the packet boundaries, not
+// anything in the byte stream. (The earlier byte<=$20 / extension-close-out
+// heuristics -- which mis-joined a directory immediately followed by a file, e.g.
+// "MEDLICEK" + "AMICA.PRG" -- are gone.) b4_emit just discards the attribute byte
+// and buffers the name; b4_flush prints it (prefix-filtered) at the packet end.
 // -----------------------------------------------------------------------------
 // b4_setpat: X = index in $02a7 of the first pattern candidate (after token+space).
 b4_setpat:
@@ -888,20 +906,28 @@ b4_sp_lp:
 b4_sp_end:
     sty B4_PATLEN          // Y = pattern length (0 => e.g. "dir  " -> no filter)
     jmp b4_do_dir
-// b4_emit: called per READ_DIR data byte (A=byte). name char (>=$21) -> buffer;
-// marker (<=$20 = entry separator) -> flush the buffered entry. Clobbers A,X.
+// b4_emit: called per READ_DIR data byte (A = byte) while draining ONE packet.
+// 16b-4: each packet is exactly one directory entry (docs 2.15, HW-confirmed via
+// per-entry DATA_AV framing) -> byte 0 of the packet is the attribute (discarded,
+// B4_ENTST=1), every following byte is a filename char buffered VERBATIM into
+// B4_BUF -- including embedded $20 spaces, now unambiguous because entry boundaries
+// are the packet boundaries (b4_rds_acc), not anything in the byte stream.
+// b4_rds_acc flushes the entry and re-arms B4_ENTST=1 for the next packet.
+// Clobbers X; A is preserved on the buffer path.
 b4_emit:
-    cmp #$21
-    bcc b4_emit_mark       // <=$20 -> end of this entry
+    ldx B4_ENTST
+    bne b4_em_attr         // ENTST=1 -> this byte is the packet's attribute, discard
     ldx B4_BUFLEN
     cpx #B4_BUFMAX
-    bcs b4_emit_rts        // buffer full -> drop extra chars (still consumed)
+    bcs b4_em_rts          // buffer full -> drop extra chars (still consumed)
     sta B4_BUF,x
     inc B4_BUFLEN
-b4_emit_rts:
+b4_em_rts:
     rts
-b4_emit_mark:
-    jmp b4_flush           // print entry if it matches, reset buffer (tail-return)
+b4_em_attr:
+    lda #$00
+    sta B4_ENTST           // attribute consumed -> collect the filename next
+    rts
 // b4_flush: print the buffered name + CR iff (no filter) or (folded prefix match),
 // then always reset B4_BUFLEN. Empty buffer -> nothing. Clobbers A,Y.
 b4_flush:
@@ -1069,9 +1095,12 @@ b4_rds_rd:                 // inner: drain the current packet
     and #$80               // DATA_AV?
     beq b4_rds_acc         // packet fully drained -> accept it
     lda $df1e              // read one data byte
-    jsr b4_emit            // 16b-2: buffer name char, or flush the entry on a
-    jmp b4_rds_rd          //   marker (<=$20). Prints per-entry, prefix-filtered.
-b4_rds_acc:                // accept this packet, then handshake, then check next
+    jsr b4_emit            // 16b-3: skip the attribute byte, buffer name chars,
+    jmp b4_rds_rd          //   flush on CR. Prints per-entry, prefix-filtered.
+b4_rds_acc:                // packet fully drained = this entry is complete
+    jsr b4_flush           // 16b-4: print/filter THIS entry (packet == entry), reset buf
+    lda #$01
+    sta B4_ENTST           // next packet's first byte is its attribute -> discard it
     lda $df1c
     ora #$02               // DATA_ACC -> release the next packet
     sta $df1c
@@ -1079,19 +1108,27 @@ b4_rds_acc:                // accept this packet, then handshake, then check nex
     sty $cf26
 b4_rds_ak:
     lda $df1c
-    and #$02               // wait (bounded) for the ack to clear = sync point
+    and #$02               // wait (bounded) for the ack to clear = handshake sync
     beq b4_rds_chk
     iny
     bne b4_rds_ak
     inc $cf26
     bne b4_rds_ak
     jmp b4_rds_fin         // ack stuck -> finish (bounded, no hang)
-b4_rds_chk:
-    lda $df1c
-    and #$80               // another packet ready now? (reliable post-handshake)
-    bne b4_rds_rd          // yes -> drain it
-b4_rds_fin:
-    jsr b4_flush           // 16b-2: flush the LAST buffered entry (no trailing marker)
+b4_rds_chk:                // 16b-4: after accept, the next packet's DATA_AV takes a
+    ldy #$00               // moment to rise -> wait for DATA_AV (next entry) OR STAT_AV
+    sty $cf26              // (listing finished); a lone post-ack DATA_AV test truncates
+b4_rds_cw:                 // after entry 1 (proven on HW).
+    lda $df1c              // bit7 (DATA_AV) sets N directly -> bmi, no extra AND
+    bmi b4_rds_rd          // DATA_AV -> next entry ready
+    and #$40               // STAT_AV -> directory finished
+    bne b4_rds_fin
+    iny
+    bne b4_rds_cw
+    inc $cf26
+    bne b4_rds_cw          // bounded ~64K -> never hangs; falls through to fin
+b4_rds_fin:                // 16b-4: every entry already flushed at b4_rds_acc (packet
+                           // == entry), so the buffer is always empty here -> no flush.
     ldx #<B3_FIN
     ldy #>B3_FIN
     jsr B4C3_RUN            // drain any trailing status + accept -> UCI back to idle

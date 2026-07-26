@@ -183,6 +183,7 @@ def create_project_scaffold(project_name: str) -> tuple[str, list[str]]:
     with open(c_path, "w", encoding="utf-8") as f:
         f.write(
             "#include <stdio.h>\n\n"
+            "#define ASM __asm\n\n"
             "int main(void)\n"
             "{\n"
             f'    printf("{name}\\n");\n'

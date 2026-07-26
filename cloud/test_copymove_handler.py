@@ -32,6 +32,7 @@ from copymove_handler import (
     CopyMoveHandler,
     _classify,
     _resolve_workspace_path,
+    _tokenize,
 )
 from request_dispatcher import RequestDispatcher
 from sdk import BaseHandler
@@ -177,6 +178,25 @@ class TestCanHandle:
         assert not CopyMoveHandler().can_handle("ll")
         assert not CopyMoveHandler().can_handle("del a")
 
+    def test_quoted_source_with_space_claimed_as_two_args(self):
+        # "funk paint.prg" /temp/ -- 4 whitespace-split words but only 2
+        # logical arguments once the quoted run is treated as one token.
+        assert CopyMoveHandler().can_handle('cp "funk paint.prg" /temp/')
+
+
+class TestTokenize:
+    def test_plain_tokens(self):
+        assert _tokenize("cp a b") == ["cp", "a", "b"]
+
+    def test_quoted_token_keeps_internal_space(self):
+        assert _tokenize('cp "funk paint.prg" /temp/') == ["cp", "funk paint.prg", "/temp/"]
+
+    def test_quotes_are_stripped(self):
+        assert _tokenize('cp "a" "b"') == ["cp", "a", "b"]
+
+    def test_empty_quoted_token(self):
+        assert _tokenize('cp "" b') == ["cp", "", "b"]
+
 
 class TestPathGrammar:
     def test_classify_bare_is_uci(self):
@@ -280,6 +300,36 @@ class TestUciToUci:
 
         assert resp == "OK: copied 1 file(s)"
         assert ("/temp/greet.prg", b"1234567890") in ftp.stor_calls
+
+    def test_quoted_filename_with_space_copies(self, monkeypatch):
+        ftp = FakeFTP()
+        ftp.seed_file("/sd/home/funk paint 0.46c", b"data")
+        ftp.seed_dir("/temp")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(521, "/sd/home")
+        resp = handler.handle('cp "funk paint 0.46c" /temp', 521)
+
+        assert resp == "OK: copied 1 file(s)"
+        assert ("/temp/funk paint 0.46c", b"data") in ftp.stor_calls
+
+    def test_quoted_filename_with_space_copies_dest_trailing_slash(self, monkeypatch):
+        # Same as test_quoted_filename_with_space_copies, but the destination
+        # is typed with a trailing slash ("/temp/") -- must resolve exactly
+        # like "/temp" (dir-detection was previously silently breaking here,
+        # storing the file to a literal empty-basename path instead).
+        ftp = FakeFTP()
+        ftp.seed_file("/sd/home/funk paint 0.46c", b"data")
+        ftp.seed_dir("/temp")
+        monkeypatch.setattr(ftplib, "FTP", lambda *a, **k: ftp)
+
+        handler = CopyMoveHandler()
+        _uci_session(522, "/sd/home")
+        resp = handler.handle('cp "funk paint 0.46c" /temp/', 522)
+
+        assert resp == "OK: copied 1 file(s)"
+        assert ("/temp/funk paint 0.46c", b"data") in ftp.stor_calls
 
     def test_case_fold_fallback_on_source(self, monkeypatch):
         ftp = FakeFTP()

@@ -4,6 +4,8 @@
 
 HDN Shell RR turns a Retro Replay cartridge on your C64 Ultimate into an AI-enabled, network-connected shell that lives *alongside* BASIC. You keep typing at the familiar `READY.` prompt: recognized shell commands run instantly in the cartridge, and anything BASIC doesn't understand is forwarded to the **HDN Server** — a companion app you run on your own PC or Mac — for AI chat, manual search, CSDB scene access, virtual console apps, and an AI coding agent that can see the screen, press keys, and inject compiled programs into the real machine.
 
+Disassembled source code of the CyberpunX Retro Replay 3.8p cartridge contributes to historical preservation, educational analysis, and hardware maintenance of obsolete 8-bit systems. This repository honors the lineage of the original Retro Replay hardware created by Individual Computers, the community software enhancements by CyberpunX, and the foundational Action Replay concepts originally developed by Datel.
+
 > An earlier version of HDN Shell replaced the BASIC ROM entirely. That approach is now outdated and kept only as a [legacy alternative installation](docs/user_manual/installation_alternative.md).
 
 ---

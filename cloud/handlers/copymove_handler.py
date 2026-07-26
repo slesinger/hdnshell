@@ -47,6 +47,7 @@ import io
 import logging
 import os
 import posixpath
+import re
 import shutil
 
 from sdk import BaseHandler, get_session_state_copy, WORKSPACE_DIR
@@ -64,6 +65,18 @@ _ACCESS_DENIED = "?ACCESS DENIED - outside workspace"
 _GLOB_DEST_USAGE = "?USAGE: wildcard source requires an existing directory destination"
 
 _PREFIX_LETTERS = {"n": "n", "c": "c", "8": "iec", "9": "iec", "s": "iec"}
+
+
+_TOKEN_RE = re.compile(r'"([^"]*)"|(\S+)')
+
+
+def _tokenize(text: str) -> list:
+    """Whitespace-split, except a "-quoted run is kept as one token (quotes
+    stripped) so a filename containing spaces can be passed as a single
+    argument -- e.g. `cp "funk paint.prg" /temp/`. No backslash-escaping:
+    C64 filenames have no such convention, so a backslash is just a literal
+    character like any other."""
+    return [m.group(1) if m.group(1) is not None else m.group(2) for m in _TOKEN_RE.finditer(text.strip())]
 
 
 def _has_glob(name: str) -> bool:
@@ -245,7 +258,7 @@ class CopyMoveHandler(BaseHandler):
         return self._csdb
 
     def can_handle(self, text: str, session_id: int = 0) -> bool:
-        parts = text.strip().split()
+        parts = _tokenize(text)
         if not parts:
             return False
         cmd = parts[0].lower()
@@ -258,7 +271,7 @@ class CopyMoveHandler(BaseHandler):
         return False
 
     def handle(self, text: str, session_id: int = 0) -> str:
-        parts = text.strip().split()
+        parts = _tokenize(text)
         cmd = parts[0].lower() if parts else ""
         is_move = cmd == "mv"
         usage = _MV_USAGE if is_move else _CP_USAGE

@@ -91,7 +91,11 @@ def resolve_uci_abspath(path: str, session_id: int):
     caller keeps the old absolute-path-required behaviour.
     """
     if path.startswith("/"):
-        return path
+        # normalise here too -- a trailing slash ("/temp/") must resolve the
+        # same as "/temp", otherwise posixpath.basename() sees an empty
+        # final component and every dest-is-directory check downstream
+        # (cp/mv, and anything else calling this) silently misses.
+        return posixpath.normpath(path)
     state = get_session_state_copy(session_id)
     cwd = state.get("dos_cwd")
     if not cwd or not cwd.startswith("/"):
