@@ -3818,10 +3818,10 @@ cvr_live:
     cmp #$06               // both C= and CTRL held?
     bne cvr_clear
     lda $cb                // SFDX: matrix code of the key currently down
-    ldx #$09               // scan the 1..7 + F5/F7 table ($03F0) from the top down
+    ldx #$0a               // scan the 1..8 + F5/F7 table ($03F0) from the top down
 cvr_chk:
     dex                    // ran past index 0 => no digit matched: drop the chord
-    bmi cvr_clear          //   (C=+CTRL held on a non-1..7 key, e.g. $CB=$40 as the
+    bmi cvr_clear          //   (C=+CTRL held on a non-1..8 key, e.g. $CB=$40 as the
                            //   return combo releases) and chain, WITHOUT calling
                            //   console_switch. The old "beq/dex/bpl -> fall into
                            //   cvr_match with X=$FF" path called console_switch with
@@ -3830,7 +3830,7 @@ cvr_chk:
                            //   0x01") -> trapped in cs_modal = the intermittent
                            //   "local console won't type / cursor dead" bug. Same
                            //   size as the old loop, so the stub stays 71 bytes.
-    cmp $03f0,x            // one of the 1..7 keys?
+    cmp $03f0,x            // one of the 1..8 keys?
     bne cvr_chk
 cvr_match:
     lda $03ee              // already acted on this press?
@@ -3839,7 +3839,7 @@ cvr_match:
     sta $03ee              // latch (one action per press)
     lda #$10               // page in bank2 (same value the HONDANI gate uses)
     sta $de00
-    jsr csw_guard          // scrollback-aware entry (X=7/8 -> scroll; else console)
+    jsr csw_guard          // scrollback-aware entry (X=8/9 -> scroll; else console)
     lda #$08               // restore bank1 with a CONSTANT (stock $DEE3 value)
     sta $de00
     jmp ($03ec)
@@ -3847,21 +3847,26 @@ cvr_match:
 cinv_tmpl_end:
 .errorif ($03a0 + (cinv_tmpl_end - cinv_tmpl)) > $03e7, "CINV stub overruns $03E7"
 cvr_digits:
-    .byte 56, 59, 8, 11, 16, 19, 24    // SFDX matrix codes for keys 1..7 -> $03F0
-    .byte 6, 3                          // SFDX F5 (idx7=scroll prev), F7 (idx8=scroll next) -> $03F7/$03F8
+    // 16-fix (WhatsApp console): extended from 7 to 8 digit slots so
+    // C=+CTRL+8 reaches console 8 (WhatsApp) the same way 2..7 already
+    // reach their consoles. NOT hardware-tested yet -- see conversion_log
+    // for the hard-won byte-tightness of this pocket; verify on real
+    // hardware (not VICE) before relying on this chord.
+    .byte 56, 59, 8, 11, 16, 19, 24, 27 // SFDX matrix codes for keys 1..8 -> $03F0
+    .byte 6, 3                          // SFDX F5 (idx8=scroll prev), F7 (idx9=scroll next) -> $03F8/$03F9
 
 // csw_guard -- new console_switch entry point (the CINV RAM stub's cvr_match now
 // `jsr csw_guard` instead of `jsr console_switch`). Lives in this roomy reclaimed
 // pocket ($9BA9..$9C40, ~150 B) so the byte-tight $9CB7..$9E80 console_switch
-// segment stays byte-identical. X = matched table index 0..8. Index 0..6 =
-// C=+CTRL+1..7 -> unchanged console path (jmp console_switch). Index 7/8 =
+// segment stays byte-identical. X = matched table index 0..9. Index 0..7 =
+// C=+CTRL+1..8 -> unchanged console path (jmp console_switch). Index 8/9 =
 // C=+CTRL+F5/F7 -> scrollback (csw_scroll).
 csw_guard:
-    cpx #$07
-    bcs csw_scroll         // X=7 (C=+CTRL+F5=prev) / X=8 (C=+CTRL+F7=next)
-    jmp console_switch     // X=0..6: stock console-switch behaviour, unchanged
-// csw_scroll -- scrollback viewer (step 3). Entered from csw_guard with X=7
-// (C=+CTRL+F5 = page older) or X=8 (C=+CTRL+F7 = page newer), IRQ masked, bank2
+    cpx #$08
+    bcs csw_scroll         // X=8 (C=+CTRL+F5=prev) / X=9 (C=+CTRL+F7=next)
+    jmp console_switch     // X=0..7: stock console-switch behaviour, unchanged
+// csw_scroll -- scrollback viewer (step 3). Entered from csw_guard with X=8
+// (C=+CTRL+F5 = page older) or X=9 (C=+CTRL+F7 = page newer), IRQ masked, bank2
 // mapped. Reuses the console-switch DMA machinery: scr_save snapshots the live
 // screen server-side (and, per command_handler.SAVE_SCREEN, captures it into the
 // .history transcript), then paging sends console-0 sub-commands $04 (PREV) / $05
@@ -3869,11 +3874,11 @@ csw_guard:
 // Exit repaints the live screen (scr_restore, which also resets the server-side
 // page cursor). View-only: no keys are forwarded to BASIC. If scr_save fails
 // (server unreachable) we abort untouched and stay local.
-//   Page command from the entry key: cmd = X - 3  (X=7->$04 PREV, X=8->$05 NEXT).
+//   Page command from the entry key: cmd = X - 4  (X=8->$04 PREV, X=9->$05 NEXT).
 csw_scroll:
     txa
     sec
-    sbc #$03               // X=7 -> $04 (PREV), X=8 -> $05 (NEXT)
+    sbc #$04               // X=8 -> $04 (PREV), X=9 -> $05 (NEXT)
     pha                    // stash the initial page cmd across scr_save (clobbers X/A)
     jsr scr_save           // snapshot live screen + server-side history capture; blocks on ack
     pla                    // recover cmd (PLA leaves scr_save's carry intact)
@@ -3932,13 +3937,13 @@ sb_next:
 .errorif (* != $9C41), "cinv_tmpl/pocket overran cs_install (pinned $9C41)"
 
 // ===========================================================================
-// Step 10a -- console-switch keyboard hook (detect C=+CTRL+1..7 -> border)
+// Step 10a -- console-switch keyboard hook (detect C=+CTRL+1..8 -> border)
 // ===========================================================================
 // cs_install copies the CINV IRQ stub (cinv_tmpl, below) into RAM at $03A0
 // and points the KERNAL IRQ vector $0314 at it. It is called from the top of
 // hondani_net (under that routine's sei), so typing HONDANI arms the hook.
 // NO bank1 change -- bank1 stays FROZEN. This step does NOT switch consoles
-// or touch the network: the stub only writes the pressed digit (1..7) to the
+// or touch the network: the stub only writes the pressed digit (1..8) to the
 // border ($D020) as a visible detection marker, one action per press via the
 // $03EE latch, then chains to the original IRQ handler. Per-line self-heal
 // and RUN/LOAD-disarm (which need bank1 work) are a later step.
@@ -3948,7 +3953,7 @@ sb_next:
 //   $03A0-$03E6  CINV stub (self-disarms in program mode; cinv_tmpl above)
 //   $03EC/$03ED  saved original $0314 vector (never our own -- see guard)
 //   $03EE        one-shot press latch
-//   $03F0-$03F6  digit table (copied out of the stub so the self-disarm fits)
+//   $03F0-$03F9  digit table (copied out of the stub so the self-disarm fits)
 // ---------------------------------------------------------------------------
 cs_install:
     ldx #cinv_tmpl_end - cinv_tmpl - 1
@@ -3957,7 +3962,7 @@ csi_copy:
     sta $03a0,x
     dex
     bpl csi_copy
-    ldx #$08               // copy the 9-byte digit+F5/F7 table out to $03F0 (16-fix:
+    ldx #$09               // copy the 10-byte digit+F5/F7 table out to $03F0 (16-fix:
 csi_dcopy:                 //   it no longer fits inside the stub after the
     lda cvr_digits,x       //   self-disarm prefix, so it lives at $03F0)
     sta $03f0,x
@@ -4005,11 +4010,11 @@ csi_arm:
 // Step 10c -- real console switch (view/navigate; NO key forwarding yet)
 // ===========================================================================
 // console_switch is reached from the CINV RAM stub across the IRQ bank switch,
-// X = digit index 0..6, IRQ masked, bank2 mapped. It only runs at "top level"
+// X = digit index 0..7, IRQ masked, bank2 mapped. It only runs at "top level"
 // (from local) because while a server console is active we sit inside cs_modal
 // (still inside this same IRQ), so no fresh IRQ dispatches the stub.
 //
-// C=+CTRL+1 (X=0) at local: nothing. C=+CTRL+2..7 (X=1..6): snapshot the local
+// C=+CTRL+1 (X=0) at local: nothing. C=+CTRL+2..8 (X=1..7): snapshot the local
 // screen server-side (scr_save), select the target console, ask the server to
 // DMA-paint it (scr_get), then enter cs_modal -- a blocking loop (BASIC paused,
 // TI$ frozen) that scans the keyboard itself and, on another C=+CTRL+digit,
@@ -4019,8 +4024,9 @@ csi_arm:
 // that is 10d.
 //
 // Console id = digit (2..7 => File Editor, Coding Agent, Web, Telegram, RSS,
-// Wiki); local = console 0. w_console ($03EF) holds the wire high-nibble
-// (digit<<4 = $20..$70) or $00 for local. Wire byte = console_nibble | cmd_id.
+// Wiki; 8 => WhatsApp, 16-fix NOT hardware-tested yet); local = console 0.
+// w_console ($03EF) holds the wire high-nibble (digit<<4 = $20..$80) or $00
+// for local. Wire byte = console_nibble | cmd_id.
 // ---------------------------------------------------------------------------
 console_switch:
     cpx #$00
@@ -4063,7 +4069,7 @@ cs_modal:
     cmp #$06               // C=+CTRL held?
     bne cm_keys            // no -> forward whatever the user typed
     lda $cb                // SFDX
-    ldx #$06
+    ldx #$07
 cm_chk:
     cmp cs_digits,x
     beq cm_match
@@ -4132,7 +4138,8 @@ cs_vsync:
     rts
 
 cs_digits:
-    .byte 56, 59, 8, 11, 16, 19, 24    // SFDX matrix codes for keys 1..7
+    // 16-fix (WhatsApp console): extended to 8 slots alongside cvr_digits above.
+    .byte 56, 59, 8, 11, 16, 19, 24, 27 // SFDX matrix codes for keys 1..8
 
 // --- server screen commands -------------------------------------------------
 // Each command opens its own TCP connection (the server threads per connection,

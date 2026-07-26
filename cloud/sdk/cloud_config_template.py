@@ -66,6 +66,8 @@ CONFIG_DEFAULTS = {
     "TELEGRAM_API_HASH": "",
     "TELEGRAM_PHONE": "",
     "TIMEZONE": "UTC",
+    # ── WhatsApp ──
+    "WHATSAPP_PHONE": "",
     # ── RSS Reader ──
     "rss_max_articles": "100",
     "rss_refresh_minutes": "5",

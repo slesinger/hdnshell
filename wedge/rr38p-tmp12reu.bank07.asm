@@ -701,7 +701,7 @@ uw_ok:
     rts
 // ---- AA2 boot-arm (auto-arming step 2, conversion_log3.md §33) ---------------
 // Called by bb_done (same-bank jsr) at cold boot, once the boot line is printed.
-// Installs the CINV console-switch hook so C=+CTRL+1..7 works at the very first
+// Installs the CINV console-switch hook so C=+CTRL+1..8 works at the very first
 // READY without typing HDN. cs_install lives in bank2 ($9C41); reach it with a
 // private RAM trampoline (the same proven cold-boot cross-bank pattern the banner
 // just used), healed into the IDLE call_bank3 slot $0360 -- NOT the $0378 outer

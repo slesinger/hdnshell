@@ -15,6 +15,7 @@
     { "slug": "server-file-editor",       "title": "File Editor",          "level": 2 },
     { "slug": "web-browser",              "title": "Web Browser",          "level": 2 },
     { "slug": "telegram-chat",            "title": "Telegram Chat",        "level": 2 },
+    { "slug": "whatsapp-chat",            "title": "WhatsApp Chat",        "level": 2 },
     { "slug": "rss-reader",               "title": "RSS Reader",           "level": 2 },
     { "slug": "wikipedia-browser",        "title": "Wikipedia Browser",    "level": 2 },
     { "slug": "programming",              "title": "Programming" },

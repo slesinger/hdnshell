@@ -41,6 +41,10 @@ mcp
 # Telegram client
 telethon>=1.36.0
 
+# WhatsApp client (unofficial, whatsmeow bindings -- see docs/user_manual/whatsapp-chat.md
+# for the account-ban-risk note before enabling this console)
+neonize>=0.4.0
+
 # RSS/Atom feed parser
 feedparser>=6.0.0
 

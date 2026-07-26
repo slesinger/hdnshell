@@ -29,6 +29,7 @@ CodingAgentConsole = importlib.import_module("coding_agent_console").CodingAgent
 FileEditorConsole = importlib.import_module("file_editor_console").FileEditorConsole
 TelegramChatConsole = importlib.import_module("telegram_chat").TelegramChatConsole
 WebBrowserConsole = importlib.import_module("web_browser").WebBrowserConsole
+WhatsAppChatConsole = importlib.import_module("whatsapp_chat").WhatsAppChatConsole
 RSSReaderConsole = importlib.import_module("rss_reader").RSSReaderConsole
 WikiBrowserConsole = importlib.import_module("wiki_browser").WikiBrowserConsole
 
@@ -72,6 +73,7 @@ class C64Server:
         mgr.register_factory(5, TelegramChatConsole)  # Console 5 → Telegram Chat
         mgr.register_factory(6, RSSReaderConsole)  # Console 6 → RSS Reader
         mgr.register_factory(7, WikiBrowserConsole)  # Console 7 → Wikipedia Browser
+        mgr.register_factory(8, WhatsAppChatConsole)  # Console 8 → WhatsApp Chat
         mgr.register_factory(10, CodeChatConsole)  # C=+0 → Vibe Coding AI Chat
 
     def start(self):
