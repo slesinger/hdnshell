@@ -272,6 +272,9 @@ class _TelethonWorker:
         self._connected = False
         # Event queue for real-time Telegram updates (Phase B: event-driven)
         self._update_queue: queue.Queue = queue.Queue()
+        # TG-DIAG: liveness counters for the Telethon update stream
+        self._raw_update_count = 0
+        self._last_raw_hb = 0.0
         self._thread = threading.Thread(
             target=self._run, name="telethon-worker", daemon=True
         )
@@ -544,6 +547,22 @@ class _TelethonWorker:
         except Exception as e:
             return f"error:{e}"
 
+    async def _do_cancel_typing(self, chat_id: int = 0) -> str:
+        """Notify Telegram that the user stopped composing in a chat."""
+        if not self._connected or not chat_id:
+            return "error:Not connected or missing chat"
+        try:
+            from telethon.tl.functions.messages import SetTypingRequest
+            from telethon.tl.types import SendMessageCancelAction
+
+            peer = await self._client.get_input_entity(chat_id)
+            await self._client(
+                SetTypingRequest(peer=peer, action=SendMessageCancelAction())
+            )
+            return "ok"
+        except Exception as e:
+            return f"error:{e}"
+
     async def _do_get_contacts(self) -> List[ContactEntry]:
         """Fetch the user's contact list."""
         if not self._connected:
@@ -639,6 +658,11 @@ class _TelethonWorker:
             async def on_new_message(event):
                 """Queue incoming messages."""
                 try:
+                    logger.info(
+                        "TG-DIAG worker: RECV new_message chat_id=%s out=%s",
+                        event.chat_id,
+                        getattr(event.message, "out", None),
+                    )
                     self._update_queue.put_nowait(
                         {
                             "type": "new_message",
@@ -647,7 +671,7 @@ class _TelethonWorker:
                         }
                     )
                 except queue.Full:
-                    logger.debug("Update queue full, dropping message event")
+                    logger.warning("TG-DIAG worker: update queue full, dropped new_message")
 
             @self._client.on(events.MessageEdited())
             async def on_message_edited(event):
@@ -671,6 +695,11 @@ class _TelethonWorker:
                     action_obj = getattr(event, "action", None)
                     if action_obj is not None:
                         action_name = type(action_obj).__name__
+                    logger.info(
+                        "TG-DIAG worker: RECV chat_action chat_id=%s action=%s",
+                        event.chat_id,
+                        action_name or "?",
+                    )
                     self._update_queue.put_nowait(
                         {
                             "type": "chat_action",
@@ -679,13 +708,28 @@ class _TelethonWorker:
                         }
                     )
                 except queue.Full:
-                    logger.debug("Update queue full, dropping chat action")
+                    logger.warning("TG-DIAG worker: update queue full, dropped chat_action")
 
             @self._client.on(events.Raw)
             async def on_raw_update(event):
                 """Queue low-level typing updates used by Telegram clients."""
                 try:
                     update = getattr(event, "update", None) or event
+
+                    # TG-DIAG: heartbeat proving Telethon's update stream is
+                    # alive on this platform. Raw updates fire often, so log a
+                    # summary at most once every 15s instead of per-update.
+                    self._raw_update_count += 1
+                    now = time.monotonic()
+                    if now - self._last_raw_hb >= 15.0:
+                        self._last_raw_hb = now
+                        logger.info(
+                            "TG-DIAG worker: telethon update stream alive, "
+                            "raw_updates=%d last=%s",
+                            self._raw_update_count,
+                            type(update).__name__,
+                        )
+
                     chat_id = None
                     action_name = ""
 
@@ -712,6 +756,11 @@ class _TelethonWorker:
                         )
 
                     if chat_id is not None:
+                        logger.info(
+                            "TG-DIAG worker: RECV typing chat_id=%s action=%s",
+                            chat_id,
+                            action_name or "?",
+                        )
                         self._update_queue.put_nowait(
                             {
                                 "type": "typing",
@@ -720,13 +769,13 @@ class _TelethonWorker:
                             }
                         )
                 except queue.Full:
-                    logger.debug("Update queue full, dropping typing update")
+                    logger.warning("TG-DIAG worker: update queue full, dropped typing")
                 except Exception as e:
                     logger.debug("raw typing update parse failed: %s", e)
 
-            logger.debug("Telethon event handlers registered")
+            logger.info("TG-DIAG worker: telethon event handlers registered")
         except Exception as e:
-            logger.warning("Failed to register Telethon event handlers: %s", e)
+            logger.warning("TG-DIAG worker: failed to register event handlers: %s", e)
 
     @staticmethod
     def _get_session_path() -> str:
@@ -1665,16 +1714,31 @@ class TelegramChatConsole(ServerConsole):
         When console is active and in relevant mode, push screen immediately
         instead of waiting for polling interval. Runs until _event_stop is set.
         """
+        last_hb = 0.0
         while not self._event_stop.wait(timeout=0.5):
             try:
+                # TG-DIAG: heartbeat proving this consumer thread is alive.
+                now = time.monotonic()
+                if now - last_hb >= 15.0:
+                    last_hb = now
+                    logger.info(
+                        "TG-DIAG console: bg_event_loop alive connected=%s mode=%s",
+                        self.worker.connected,
+                        self.mode,
+                    )
+
                 updates = self.worker.get_pending_updates()
                 if not updates:
                     continue
 
+                logger.info(
+                    "TG-DIAG console: bg_event_loop dispatching %d update(s)",
+                    len(updates),
+                )
                 for update in updates:
                     self._process_telegram_event(update)
             except Exception as e:
-                logger.debug("Event loop error: %s", e)
+                logger.warning("TG-DIAG console: bg_event_loop error: %s", e)
 
     def _process_telegram_event(self, event: dict):
         """Process a single Telegram event: update state and push to C64 if active (Phase B).
@@ -1700,6 +1764,16 @@ class TelegramChatConsole(ServerConsole):
             mgr = ConsoleManager.instance()
             active_console_id = mgr._active.get(self.session_id)
             is_active = active_console_id == self.console_id
+
+            logger.info(
+                "TG-DIAG console: process type=%s chat_id=%s is_active=%s "
+                "mode=%s current_chat=%s",
+                event_type,
+                event_chat_id,
+                is_active,
+                self.mode,
+                self.current_chat_id,
+            )
 
             if event_type == "new_message":
                 # New message arrived: refresh if viewing that chat or chat list
@@ -1787,10 +1861,18 @@ class TelegramChatConsole(ServerConsole):
             # Always re-render and conditionally push if active
             self._full_render()
             if is_active:
+                logger.info(
+                    "TG-DIAG console: pushing screen after %s event", event_type
+                )
                 try:
                     self._push_screen()
                 except Exception:
-                    logger.debug("Event: screen push failed", exc_info=True)
+                    logger.warning("TG-DIAG console: event screen push failed", exc_info=True)
+            else:
+                logger.info(
+                    "TG-DIAG console: NOT pushing (console inactive) for %s event",
+                    event_type,
+                )
 
     # =================================================================
     #  INPUT HELPERS
@@ -2455,10 +2537,13 @@ class TelegramChatConsole(ServerConsole):
             send_screen_data(
                 self.get_screen_data(),
                 self.get_color_data(),
-                session_id=self.session_id,
             )
+            logger.info("TG-DIAG console: push_screen OK (DMA sent to C64)")
         except Exception:
-            logger.debug("Screen push failed (no C64 connected?)", exc_info=True)
+            logger.warning(
+                "TG-DIAG console: push_screen FAILED (no C64 connected?)",
+                exc_info=True,
+            )
 
     def _send_vic_colors(self, border: int, background: int):
         """DMA-write border ($D020) and background ($D021) colours to C64."""
@@ -2468,7 +2553,6 @@ class TelegramChatConsole(ServerConsole):
             send_vic_colors(
                 border & 0x0F,
                 background & 0x0F,
-                session_id=self.session_id,
             )
         except Exception as e:
             logger.warning("Could not send VIC colours: %s", e)
