@@ -4023,8 +4023,11 @@ csi_arm:
 // (digit<<4 = $20..$70) or $00 for local. Wire byte = console_nibble | cmd_id.
 // ---------------------------------------------------------------------------
 console_switch:
-    cpx #$00
-    beq csw_ret            // C=+CTRL+1 at local: nothing to do
+    // GH #22: C=+CTRL+1 (X=0) is no longer a local no-op -- index 0 now maps
+    // to console nibble (0+1)<<4 = $10 = console 1 = the Launcher. The old
+    // `cpx #$00 / beq csw_ret` early-return was removed here; csw_ret still
+    // exists for the "server unreachable" bail below. (4 freed bytes flow into
+    // the $9E80 trailing fill; console_switch stays pinned at $9CB7.)
     txa                    // target console nibble = (digit index + 1) << 4.
     clc                    //   Compute it NOW, while X still holds the digit
     adc #$01               //   index: scr_save below clobbers X (via the hn_*
@@ -4063,19 +4066,19 @@ cs_modal:
     cmp #$06               // C=+CTRL held?
     bne cm_keys            // no -> forward whatever the user typed
     lda $cb                // SFDX
+    cmp #57                // GH #22: C=+CTRL+<- (left-arrow, matrix 57) -> back
+    beq cm_local           //   to local from any server console (A intact for scan)
     ldx #$06
 cm_chk:
     cmp cs_digits,x
-    beq cm_match
-    dex
-    bpl cm_chk
-    lda #$00               // combo held but not a digit: drop the chord char
+    beq cm_server          // GH #22: matched 1..7 -> switch console; index 0
+    dex                    //   (key '1') now maps to nibble $10 = console 1 =
+    bpl cm_chk             //   Launcher (the old cpx#0 back-to-local case is gone;
+    lda #$00               //   combo held but not a digit: drop the chord char
     sta $c6                //   SCNKEY queued, so it isn't forwarded on release
     beq cs_modal           // (always)
-cm_match:
-    cpx #$00
-    bne cm_server
-    jsr cs_wait_release    // C=+CTRL+1: back to local
+cm_local:                  // reached only via the C=+CTRL+<- branch above)
+    jsr cs_wait_release    // C=+CTRL+<- : back to local
     jsr scr_restore
     lda #$00
     sta $03ef              // w_console = local

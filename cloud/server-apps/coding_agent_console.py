@@ -59,6 +59,7 @@ KEY_DEL_CTRLT = 0x14
 KEY_CRSR_RT_CTRLSEMICOLON = 0x1D
 KEY_SHIFT_COMA = 0x3C  # <  (page up with C=)
 KEY_SHIFT_PERIOD = 0x3E  # >  (page down with C=)
+MOD_COMMODORE = 0x04     # C= modifier (wedge forwards C64 SHFLAG)
 KEY_F1 = 0x85
 KEY_F3 = 0x86
 KEY_F5 = 0x87
@@ -158,6 +159,10 @@ class CodingAgentConsole(ServerConsole):
 
         self._full_render()
 
+    def get_badge(self) -> Optional[str]:
+        """Launcher badge: the agent's activity state."""
+        return "running" if self._thinking else None
+
     # ── Agent access ─────────────────────────────────────────────────
     def _get_agent(self) -> CodeChatAgent:
         if self._agent is None:
@@ -201,9 +206,9 @@ class CodingAgentConsole(ServerConsole):
             self._scroll_up(1)
         elif key == KEY_CRSR_DN_CTRLQ:
             self._scroll_down(1)
-        elif key == KEY_SHIFT_COMA:  # C=+< → page up
+        elif key == KEY_SHIFT_COMA and (mod & MOD_COMMODORE):  # C=+< → page up
             self._scroll_up(self._chat_rows)
-        elif key == KEY_SHIFT_PERIOD:  # C=+> → page down
+        elif key == KEY_SHIFT_PERIOD and (mod & MOD_COMMODORE):  # C=+> → page down
             self._scroll_down(self._chat_rows)
         elif key == KEY_HOME_CTRLS:
             self.scroll_offset = max(0, len(self._rendered_lines) - self._chat_rows)
@@ -278,7 +283,12 @@ class CodingAgentConsole(ServerConsole):
             self.mode = MODE_CHAT
 
     def _key_help(self, key: int, mod: int):
-        if key == KEY_CRSR_DN_CTRLQ:
+        cbm = bool(mod & MOD_COMMODORE)
+        if key == KEY_SHIFT_PERIOD and cbm:
+            self.help_scroll += self._chat_rows
+        elif key == KEY_SHIFT_COMA and cbm:
+            self.help_scroll = max(0, self.help_scroll - self._chat_rows)
+        elif key == KEY_CRSR_DN_CTRLQ:
             self.help_scroll += 1
         elif key == KEY_CRSR_UP:
             if self.help_scroll > 0:

@@ -24,13 +24,15 @@ for _p in (_SERVER_APPS_DIR, _HANDLERS_DIR):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-CodeChatConsole = importlib.import_module("code_chat_console").CodeChatConsole
 CodingAgentConsole = importlib.import_module("coding_agent_console").CodingAgentConsole
 FileEditorConsole = importlib.import_module("file_editor_console").FileEditorConsole
 TelegramChatConsole = importlib.import_module("telegram_chat").TelegramChatConsole
+WhatsAppChatConsole = importlib.import_module("whatsapp_chat").WhatsAppChatConsole
+MailClientConsole = importlib.import_module("mail_client").MailClientConsole
 WebBrowserConsole = importlib.import_module("web_browser").WebBrowserConsole
 RSSReaderConsole = importlib.import_module("rss_reader").RSSReaderConsole
 WikiBrowserConsole = importlib.import_module("wiki_browser").WikiBrowserConsole
+LauncherConsole = importlib.import_module("launcher").LauncherConsole
 
 _cmd = importlib.import_module("sdk.command_handler")
 CommandHandler = _cmd.CommandHandler
@@ -40,6 +42,40 @@ ResponseType = _cmd.ResponseType
 
 update_session_state = importlib.import_module("sdk.shared_state").update_session_state
 ConsoleManager = importlib.import_module("sdk.console_manager").ConsoleManager
+_app_registry = importlib.import_module("sdk.app_registry")
+AppRegistry = _app_registry.AppRegistry
+AppInfo = _app_registry.AppInfo
+LauncherConfig = importlib.import_module("sdk.launcher_config").LauncherConfig
+PINNABLE_SLOTS = importlib.import_module("sdk.launcher_config").PINNABLE_SLOTS
+
+# ---------------------------------------------------------------------------
+# App catalog — the single source of truth for the Launcher (GH #22).
+# Each entry: app-id, title, one-line description, default slot, factory.
+# The default slots reproduce today's fixed C=+CTRL+<digit> layout, so a fresh
+# install's hotbar matches the historical map.
+# ---------------------------------------------------------------------------
+APP_CATALOG = [
+    AppInfo("file_editor", "File Editor", "Edit files in your workspace.", 2, FileEditorConsole),
+    AppInfo("coding_agent", "Coding Agent", "AI coding assistant chat.", 3, CodingAgentConsole),
+    AppInfo("web_browser", "Web Browser", "Browse the web in PETSCII.", 4, WebBrowserConsole),
+    AppInfo("telegram", "Telegram", "Telegram chats and messages.", 5, TelegramChatConsole),
+    AppInfo("rss", "RSS Reader", "Read RSS/Atom news feeds.", 6, RSSReaderConsole),
+    # Mail (issue #23) reachable via the Launcher's RETURN-to-open. The wedge
+    # only wires C=+CTRL+1..7, so slot 8 has no direct chord yet, but the
+    # Launcher (GH #22) provides slot-free access to catalog apps.
+    AppInfo("mail", "Mail", "IMAP/SMTP email client.", 8, MailClientConsole),
+    AppInfo("whatsapp", "WhatsApp", "WhatsApp chats and messages.", 9, WhatsAppChatConsole),
+    AppInfo("wiki", "Wikipedia", "Browse Wikipedia articles.", 7, WikiBrowserConsole),
+]
+
+
+def _populate_registry() -> "AppRegistry":
+    """Register every catalog app with the AppRegistry singleton."""
+    reg = AppRegistry.instance()
+    for info in APP_CATALOG:
+        reg.register(info)
+    return reg
+
 
 # Configure logging
 configure_application_logging()
@@ -63,19 +99,84 @@ class C64Server:
         self.server_socket = None
         self.clients = []
         self.lock = threading.Lock()
+        self.clipboard_sync = None
 
-        # Register custom server-console factories
+        # Shared clipboard (GH #18): one text clipboard across the host
+        # desktop, the local BASIC console and every server app. Configure
+        # the service byte cap and start the (optional) host-clipboard
+        # bridge; a headless host with no backend just leaves the server
+        # clipboard fully functional.
+        self._init_clipboard()
+
+        # Build the console factory map from the app registry + user pins.
+        # Console 1 is always the Launcher; slots 2-7/10 come from config
+        # (defaulting to today's fixed map). An unpinned slot falls through
+        # to a Launcher opened pre-highlighting that empty slot (GH #22).
+        registry = _populate_registry()
+        config = LauncherConfig.load(registry.default_pins())
+
         mgr = ConsoleManager.instance()
-        mgr.register_factory(2, FileEditorConsole)  # Console 2 → File Editor
-        mgr.register_factory(3, CodingAgentConsole)  # Console 3 → Coding Agent Chat
-        mgr.register_factory(4, WebBrowserConsole)  # Console 4 → Web Browser
-        mgr.register_factory(5, TelegramChatConsole)  # Console 5 → Telegram Chat
-        mgr.register_factory(6, RSSReaderConsole)  # Console 6 → RSS Reader
-        mgr.register_factory(7, WikiBrowserConsole)  # Console 7 → Wikipedia Browser
-        mgr.register_factory(10, CodeChatConsole)  # C=+0 → Vibe Coding AI Chat
+        mgr.register_factory(1, LauncherConsole)  # Console 1 → Launcher (always)
+        # Fixed extras: apps whose default slot is NOT a hotbar slot (i.e.
+        # outside PINNABLE_SLOTS, with no C=+CTRL+<digit> chord) keep their
+        # default console as a permanent home, reachable via the Launcher's
+        # RETURN-to-open.
+        for info in APP_CATALOG:
+            if info.default_slot not in PINNABLE_SLOTS:
+                mgr.register_factory(info.default_slot, info.factory)
+        # Hotbar slots come from the user's pins (defaulting to today's map);
+        # an unpinned slot falls through to a Launcher pre-highlighting it.
+        for slot in PINNABLE_SLOTS:
+            app_id = config.pins.get(slot)
+            info = registry.get(app_id) if app_id else None
+            if info is not None:
+                mgr.register_factory(slot, info.factory)
+            else:
+                # Unpinned slot → Launcher (pre-highlights this slot on open).
+                mgr.register_factory(slot, LauncherConsole)
+
+    def _init_clipboard(self):
+        """Configure the ClipboardService and build the host-sync bridge.
+
+        Reads clipboard_* keys from cloud_config. The polling thread is not
+        started here -- ``start()`` does that -- so a test that constructs a
+        C64Server never spawns a background clipboard thread.
+        """
+        try:
+            read_config = importlib.import_module("sdk.config_manager").read_config
+            configure = importlib.import_module(
+                "sdk.clipboard"
+            ).configure_clipboard_service
+            HostClipboardSync = importlib.import_module(
+                "sdk.host_clipboard"
+            ).HostClipboardSync
+
+            cfg = read_config()
+            max_bytes = int(cfg.get("clipboard_max_bytes") or 65536)
+            host_sync = str(cfg.get("clipboard_host_sync", "true")).lower() in (
+                "1",
+                "true",
+                "yes",
+                "on",
+            )
+            poll_ms = int(cfg.get("clipboard_poll_interval_ms") or 500)
+
+            service = configure(max_bytes=max_bytes)
+            self.clipboard_sync = HostClipboardSync(
+                service, enabled=host_sync, poll_interval_ms=poll_ms
+            )
+        except Exception:
+            logger.exception("clipboard initialisation failed; continuing without it")
+            self.clipboard_sync = None
 
     def start(self):
         """Start the server and begin accepting connections"""
+        if self.clipboard_sync is not None:
+            try:
+                self.clipboard_sync.start()
+            except Exception:
+                logger.exception("host clipboard sync failed to start")
+
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind((self.host, self.port))
@@ -241,6 +342,11 @@ class C64Server:
         """Stop the server and close all connections"""
         logger.info("Stopping server...")
         self.running = False
+        if self.clipboard_sync is not None:
+            try:
+                self.clipboard_sync.stop()
+            except Exception:
+                logger.debug("host clipboard sync stop failed", exc_info=True)
         if self.server_socket:
             # This will unblock the accept() call
             self.server_socket.close()

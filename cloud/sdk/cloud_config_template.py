@@ -66,9 +66,30 @@ CONFIG_DEFAULTS = {
     "TELEGRAM_API_HASH": "",
     "TELEGRAM_PHONE": "",
     "TIMEZONE": "UTC",
+    # ── Mail (IMAP/SMTP client, console 8) ──
+    "MAIL_IMAP_HOST": "",
+    "MAIL_IMAP_PORT": "993",
+    "MAIL_SMTP_HOST": "",
+    "MAIL_SMTP_PORT": "587",
+    "MAIL_USER": "",
+    "MAIL_PASS": "",
+    "MAIL_FROM_NAME": "",
+    "MAIL_TLS": "ssl",
+    # ── WhatsApp ──
+    # Phone number (international format, e.g. +1234567890) used to request a
+    # WhatsApp "link with phone number" pairing code. No API credentials are
+    # needed — WhatsApp has no per-app id/hash like Telegram.
+    "WHATSAPP_PHONE": "",
     # ── RSS Reader ──
     "rss_max_articles": "100",
     "rss_refresh_minutes": "5",
+    # ── Clipboard (GH #18) ──
+    # One shared clipboard across the host desktop, the local BASIC console
+    # and every server app. host_sync mirrors the desktop clipboard both
+    # ways; it fails gracefully on headless hosts with no backend.
+    "clipboard_host_sync": "true",
+    "clipboard_max_bytes": "65536",
+    "clipboard_poll_interval_ms": "500",
 }
 
 # Keys whose values should be masked (last 4 chars shown) in API responses.
@@ -89,6 +110,7 @@ SECRET_KEYS = [
     "CSDB_PASSWORD",
     "TELEGRAM_API_ID",
     "TELEGRAM_API_HASH",
+    "MAIL_PASS",
 ]
 
 # Keys that must be pushed into os.environ so SDKs pick them up automatically.

@@ -41,6 +41,10 @@ mcp
 # Telegram client
 telethon>=1.36.0
 
+# WhatsApp client (whatsmeow bindings) — used by the WhatsApp console (GH #20).
+# Ships a compiled shared library; the console degrades gracefully if missing.
+neonize>=0.2.0
+
 # RSS/Atom feed parser
 feedparser>=6.0.0
 

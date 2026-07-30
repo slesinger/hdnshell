@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 
 from .generate_pet_asc_table import Petscii
 from .console_manager import ConsoleManager, MIN_CONSOLE_ID, MAX_CONSOLE_ID
-from .network_helper import send_screen_data
+from .network_helper import send_screen_data, send_vic_colors
 from .scrollback import HistoryStore, render_page
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,37 @@ SERVER_CMD_RESTORE_SCREEN = 0x03
 # semantics (page 0 == the live screen saved by SERVER_CMD_SAVE_SCREEN).
 SERVER_CMD_SCROLLBACK_PREV = 0x04
 SERVER_CMD_SCROLLBACK_NEXT = 0x05
+
+# Clipboard operations (GH #18). A contiguous range reserved AFTER the
+# existing screen/scrollback commands (0x01-0x05) so old cartridge images
+# never collide. See sdk/clipboard.py for the semantics and the user manual
+# (docs/user_manual/clipboard.md) for the on-the-wire contract.
+#
+#   COPY_SCREEN        console 0: extract from the DMA-saved screen;
+#                      consoles 1-10: extract from the app's screen buffer.
+#                      Payload: mode, x0, y0, x1, y1. -> clip-info reply.
+#   COPY_NATIVE        route to the active app's native copy hook (server
+#                      consoles only). -> status(1) [+ clip-info].
+#   CLIPBOARD_INFO     no payload. -> clip-info reply (length/lines/flags,
+#                      never the content itself).
+#   PASTE_TO_APP       route the clipboard UTF-8 text to the app paste hook
+#                      (server consoles only). -> status(1).
+#   LOCAL_PASTE_CHUNK  console 0 only. Payload: offset_hi, offset_lo,
+#                      max_bytes. -> paste-chunk reply (PETSCII, chunked).
+SERVER_CMD_COPY_SCREEN = 0x10
+SERVER_CMD_COPY_NATIVE = 0x11
+SERVER_CMD_CLIPBOARD_INFO = 0x12
+SERVER_CMD_PASTE_TO_APP = 0x13
+SERVER_CMD_LOCAL_PASTE_CHUNK = 0x14
+
+# Paste-to-app status bytes (chosen non-zero so the local-console response
+# path's null-terminator stripping never eats them).
+PASTE_STATUS_ACCEPTED = 0x01
+PASTE_STATUS_REJECTED = 0x02
+
+# clip-info flags byte (kept non-zero for the same null-safety reason).
+CLIP_FLAG_PRESENT = 0x01
+CLIP_FLAG_EMPTY = 0x02
 
 
 class CommandID:
@@ -283,6 +314,14 @@ class CommandHandler:
                 send_screen_data(screen, color)
             else:
                 logger.warning("RESTORE_SCREEN with no saved screen for session")
+            # Reset the local shell to the default C64 palette (border light-blue
+            # $0E, background blue $06). SAVE/RESTORE only snapshot $0400/$D800,
+            # not $D020/$D021, so a server app's colours (e.g. the Launcher's
+            # black background) would otherwise linger into BASIC. GH #22.
+            try:
+                send_vic_colors(14, 6)
+            except Exception:
+                logger.debug("RESTORE_SCREEN vic-colour reset failed", exc_info=True)
             # Returning to the live screen always exits scrollback view.
             update_session_state(session_id, scrollback_page=0)
             return b"00"
@@ -329,8 +368,124 @@ class CommandHandler:
             update_session_state(session_id, scrollback_page=new_page)
             return b"00"
 
+        if data[0] in (
+            SERVER_CMD_COPY_SCREEN,
+            SERVER_CMD_CLIPBOARD_INFO,
+            SERVER_CMD_LOCAL_PASTE_CHUNK,
+        ):
+            return CommandHandler._handle_local_clipboard(data, session_id, state)
+
         logger.warning(f"Unknown local command 0x{data[0]:02X}")
         return None
+
+    @staticmethod
+    def _handle_local_clipboard(
+        data: bytes, session_id: int, state: dict
+    ) -> Optional[bytes]:
+        """Console-0 (local BASIC) clipboard commands (GH #18).
+
+        COPY_SCREEN extracts from the DMA-saved screen buffer (the wedge is
+        expected to SAVE_SCREEN first, exactly like the scrollback flow).
+        CLIPBOARD_INFO reports length/line-count/flags. LOCAL_PASTE_CHUNK
+        serves PETSCII text to the local input in bounded, newline-flattened
+        chunks so the C64 never holds a persistent clipboard copy.
+        """
+        from .clipboard import get_clipboard_service, Selection
+
+        service = get_clipboard_service()
+
+        if data[0] == SERVER_CMD_COPY_SCREEN:
+            if len(data) < 6:
+                logger.warning("COPY_SCREEN payload too short")
+                return None
+            mode, x0, y0, x1, y1 = data[1], data[2], data[3], data[4], data[5]
+            screen = state.get("saved_screen")
+            if not screen:
+                logger.warning("COPY_SCREEN with no saved screen for session")
+                return None
+            meta = service.copy_screen(
+                session_id, screen, Selection(mode, x0, y0, x1, y1), source="local"
+            )
+            logger.info(f"COPY_SCREEN (local) stored {meta.byte_length} bytes")
+            return CommandHandler.encode_clip_info(meta)
+
+        if data[0] == SERVER_CMD_CLIPBOARD_INFO:
+            return CommandHandler.encode_clip_info(service.get_metadata(session_id))
+
+        # SERVER_CMD_LOCAL_PASTE_CHUNK
+        offset = 0
+        max_bytes = 64
+        if len(data) >= 3:
+            offset = (data[1] << 8) | data[2]
+        if len(data) >= 4:
+            max_bytes = data[3] or 256
+        chunk = service.to_local_petscii_chunk(session_id, offset, max_bytes)
+        return CommandHandler.encode_paste_chunk(chunk)
+
+    @staticmethod
+    def _handle_console_clipboard(
+        console_id: int, data: bytes, session_id: int, mgr
+    ) -> Optional[bytes]:
+        """Server-console (1-10) clipboard commands (GH #18).
+
+        COPY_SCREEN extracts from the app's authoritative ``screen`` buffer
+        (not $0400, which may be mid-redraw). COPY_NATIVE routes to the app's
+        native copy hook, falling back (status 0) so the wedge can start a
+        generic screen selection. PASTE_TO_APP routes the clipboard text to
+        the app paste hook, showing a toaster on rejection.
+        """
+        from .clipboard import get_clipboard_service, Selection
+
+        service = get_clipboard_service()
+        console = mgr.get_console(console_id, session_id)
+        # Route through the manager so on_activate/on_deactivate stay correct.
+        mgr._notify_switch(console_id, session_id)
+
+        if data[0] == SERVER_CMD_COPY_SCREEN:
+            if len(data) < 6:
+                logger.warning("COPY_SCREEN payload too short")
+                return None
+            mode, x0, y0, x1, y1 = data[1], data[2], data[3], data[4], data[5]
+            meta = service.copy_screen(
+                session_id,
+                bytes(console.screen),
+                Selection(mode, x0, y0, x1, y1),
+                source=f"console{console_id}",
+            )
+            return CommandHandler.encode_clip_info(meta)
+
+        if data[0] == SERVER_CMD_COPY_NATIVE:
+            copied = False
+            try:
+                copied = bool(console.copy_native())
+            except Exception:
+                logger.exception(f"copy_native failed for console {console_id}")
+            if not copied:
+                # No native selection -> tell the wedge to fall back to the
+                # generic visible-screen selector.
+                return bytes([0x00])
+            meta = service.get_metadata(session_id)
+            return bytes([0x01]) + CommandHandler.encode_clip_info(meta)
+
+        if data[0] == SERVER_CMD_CLIPBOARD_INFO:
+            return CommandHandler.encode_clip_info(service.get_metadata(session_id))
+
+        # SERVER_CMD_PASTE_TO_APP
+        text = service.get_text(session_id)
+        accepted = False
+        try:
+            accepted = bool(console.handle_clipboard_paste(text))
+        except Exception:
+            logger.exception(f"handle_clipboard_paste failed for console {console_id}")
+        if accepted:
+            console.push_screen()
+            return bytes([PASTE_STATUS_ACCEPTED])
+        try:
+            console.show_toaster("PASTE NOT AVAILABLE", duration_sec=3.0)
+            console.push_screen()
+        except Exception:
+            logger.debug("toaster on paste-reject failed", exc_info=True)
+        return bytes([PASTE_STATUS_REJECTED])
 
     @staticmethod
     def create_response(response_type: int, data: bytes) -> bytes:
@@ -353,6 +508,32 @@ class CommandHandler:
             return data[:-1]
         # return MAGIC_BYTES + bytes([response_type]) + data
         return data
+
+    # ------------------------------------------------------------------
+    # Clipboard reply encoders (GH #18)
+    #
+    # Both replies are designed so their LAST byte is never 0x00 -- the
+    # local-console (console 0) response path funnels through
+    # ``create_response(PETSCII_NULL_TERMINATED, ...)`` which strips a
+    # trailing null. clip-info ends on a non-zero flags byte; paste-chunk
+    # ends either on the ``done`` byte (0x00/0x01 -- only 0x01 when the
+    # payload is empty) or on a PETSCII text byte (>= 0x20).
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def encode_clip_info(meta) -> bytes:
+        """Encode ClipboardMetadata as [len_hi, len_lo, line_count, flags]."""
+        length = min(meta.byte_length, 0xFFFF)
+        lines = min(meta.line_count, 0xFF)
+        flags = CLIP_FLAG_PRESENT if meta.byte_length > 0 else CLIP_FLAG_EMPTY
+        return bytes([(length >> 8) & 0xFF, length & 0xFF, lines, flags])
+
+    @staticmethod
+    def encode_paste_chunk(chunk) -> bytes:
+        """Encode a PasteChunk as [total_hi, total_lo, done, <petscii...>]."""
+        total = min(chunk.total_bytes, 0xFFFF)
+        done = 0x01 if chunk.done else 0x00
+        return bytes([(total >> 8) & 0xFF, total & 0xFF, done]) + chunk.data
 
     @staticmethod
     def is_server_console(console_id: int) -> bool:
@@ -387,6 +568,16 @@ class CommandHandler:
             send_screen_data(screen, color)
             return None
 
+        if data[0] in (
+            SERVER_CMD_COPY_SCREEN,
+            SERVER_CMD_COPY_NATIVE,
+            SERVER_CMD_CLIPBOARD_INFO,
+            SERVER_CMD_PASTE_TO_APP,
+        ):
+            return CommandHandler._handle_console_clipboard(
+                console_id, data, session_id, mgr
+            )
+
         # Delegate to console-specific handler
         result = mgr.handle_command(console_id, session_id, data)
         if result is not None:
@@ -415,9 +606,18 @@ class CommandHandler:
         mgr = ConsoleManager.instance()
         mgr.handle_keypress(console_id, session_id, petscii_code, modifiers)
 
+        # A keypress handler can switch the session's active console -- e.g. the
+        # Launcher's RETURN opens an app on another slot (LauncherConsole._open_app),
+        # which DMA-writes w_console and paints that app. Repaint whichever console
+        # is active *now*, not the one the key was addressed to; otherwise we'd
+        # paint the Launcher straight back over the app it just opened, and the app
+        # would only surface on the user's *next* keypress. GH #22.
+        active_id = mgr.active_console_id(session_id)
+        if active_id is None:
+            active_id = console_id
         # TODO temporary inefficient - send whole screen via DMA
-        screen = mgr.get_screen_data(console_id, session_id)
-        color = mgr.get_color_data(console_id, session_id)
+        screen = mgr.get_screen_data(active_id, session_id)
+        color = mgr.get_color_data(active_id, session_id)
         send_screen_data(screen, color)
         return None
 

@@ -85,6 +85,8 @@ KEY_CRSR_RT = 0x1D
 KEY_CRSR_LT = 0x9D
 KEY_LEFT_ARROW = 0x5F
 KEY_HOME = 0x13
+KEY_SHIFT_COMA = 0x3C   # <  — page up when held with C=
+KEY_SHIFT_PERIOD = 0x3E  # >  — page down when held with C=
 KEY_F1 = 0x85
 KEY_F2 = 0x89
 KEY_F3 = 0x86
@@ -130,7 +132,7 @@ HELP_LINES = [
     "",
     " CHAT LIST (F1)",
     " UP/DOWN     Select chat",
-    " F5/F3       Page down/up",
+    " C=+< / C=+> Page up/down",
     " RETURN      Open chat",
     " F2          Settings",
     " F3          Contacts",
@@ -138,7 +140,7 @@ HELP_LINES = [
     "",
     " CHAT VIEW",
     " UP/DOWN     Scroll messages",
-    " F5/F3       Page down/up",
+    " C=+< / C=+> Page up/down",
     " Type text   Compose message",
     " LT/RT       Move input cursor",
     " CBM+LT/RT   Jump word left/right",
@@ -1013,6 +1015,13 @@ class TelegramChatConsole(ServerConsole):
         self._stop_outgoing_typing(self.current_chat_id)
         self._is_active = False
 
+    def get_badge(self) -> Optional[str]:
+        """Launcher badge: total unread messages across chats (or None)."""
+        total = self._last_unread_total
+        if total <= 0:
+            return None
+        return "99+" if total > 99 else str(total)
+
     # =================================================================
     #  INPUT HANDLER
     # =================================================================
@@ -1142,10 +1151,15 @@ class TelegramChatConsole(ServerConsole):
                 if self.chat_sel >= self.chat_scroll + CONTENT_ROWS:
                     self.chat_scroll = self.chat_sel - CONTENT_ROWS + 1
 
-        elif key == KEY_F5:
-            # Page down
+        elif key == KEY_SHIFT_PERIOD and (mod & MOD_COMMODORE):
+            # C=+> — page down
             self.chat_sel = min(len(self.chats) - 1, self.chat_sel + CONTENT_ROWS)
             self.chat_scroll = max(0, self.chat_sel - CONTENT_ROWS + 1)
+
+        elif key == KEY_SHIFT_COMA and (mod & MOD_COMMODORE):
+            # C=+< — page up
+            self.chat_sel = max(0, self.chat_sel - CONTENT_ROWS)
+            self.chat_scroll = min(self.chat_scroll, self.chat_sel)
 
         elif key == KEY_F3:
             # Switch to contacts
@@ -1196,13 +1210,15 @@ class TelegramChatConsole(ServerConsole):
             if self.msg_scroll < max_scroll:
                 self.msg_scroll += 1
 
-        elif key == KEY_F5:
+        elif key == KEY_SHIFT_PERIOD and cbm:
+            # C=+> — page down
             max_scroll = max(0, len(self._rendered_lines) - self._msg_display_rows())
             self.msg_scroll = min(
                 max_scroll, self.msg_scroll + self._msg_display_rows()
             )
 
-        elif key == KEY_F3:
+        elif key == KEY_SHIFT_COMA and cbm:
+            # C=+< — page up
             self.msg_scroll = max(0, self.msg_scroll - self._msg_display_rows())
 
         elif key == KEY_RETURN:
@@ -1298,11 +1314,15 @@ class TelegramChatConsole(ServerConsole):
                 if self.contact_sel >= self.contact_scroll + CONTENT_ROWS:
                     self.contact_scroll = self.contact_sel - CONTENT_ROWS + 1
 
-        elif key == KEY_F5:
+        elif key == KEY_SHIFT_PERIOD and (mod & MOD_COMMODORE):
             self.contact_sel = min(
                 len(self.contacts) - 1, self.contact_sel + CONTENT_ROWS
             )
             self.contact_scroll = max(0, self.contact_sel - CONTENT_ROWS + 1)
+
+        elif key == KEY_SHIFT_COMA and (mod & MOD_COMMODORE):
+            self.contact_sel = max(0, self.contact_sel - CONTENT_ROWS)
+            self.contact_scroll = min(self.contact_scroll, self.contact_sel)
 
         elif key == KEY_RETURN:
             if self.contacts:
@@ -1476,9 +1496,11 @@ class TelegramChatConsole(ServerConsole):
             max_scroll = max(0, len(HELP_LINES) - CONTENT_ROWS)
             if self.help_scroll < max_scroll:
                 self.help_scroll += 1
-        elif key == KEY_F5:
+        elif key == KEY_SHIFT_PERIOD and (mod & MOD_COMMODORE):
             max_scroll = max(0, len(HELP_LINES) - CONTENT_ROWS)
             self.help_scroll = min(max_scroll, self.help_scroll + CONTENT_ROWS)
+        elif key == KEY_SHIFT_COMA and (mod & MOD_COMMODORE):
+            self.help_scroll = max(0, self.help_scroll - CONTENT_ROWS)
         elif key in (KEY_F8, KEY_RUNSTOP):
             self.mode = self.prev_mode if self.prev_mode != MODE_HELP else MODE_CHATS
 

@@ -63,7 +63,7 @@ input containing a space (`weather london`, `best sid tunes 1987`) — is run
 as a web search instead.
 
 **Requirements:** the HDN Server needs a SerpAPI key configured
-(`SERPAPI_API_KEY` in Settings / `hdnsh.cfg`). Without one, searching shows a
+(`SERPAPI_API_KEY` in Settings → Apps & Services / `hdnsh.cfg`). Without one, searching shows a
 normal error page telling you to set it up — browsing regular URLs is
 unaffected either way.
 
@@ -89,8 +89,8 @@ unaffected either way.
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Scroll one line up / down |
-| `F3` | Page up |
-| `F5` | Page down |
+| `C=+<` | Page up |
+| `C=+>` | Page down |
 | `SPACE` | Cycle through links visible on screen |
 | `RETURN` | Follow the highlighted link |
 | `LEFT ARROW` | Go back one page |

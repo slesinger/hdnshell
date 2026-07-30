@@ -55,7 +55,7 @@ Each article entry shows the feed name (cyan), article title, summary (up to 2 l
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Select article |
-| `F5` | Page down |
+| `C=+<` / `C=+>` | Page up / page down |
 | `RETURN` | Read selected article |
 | `SPACE` | Refresh all feeds |
 | `F3` | Open feed directory |
@@ -65,7 +65,7 @@ Each article entry shows the feed name (cyan), article title, summary (up to 2 l
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Scroll article text |
-| `F3` / `F5` | Page up / page down |
+| `C=+<` / `C=+>` | Page up / page down |
 | `C=+C` | Copy article link to the server-side clipboard (paste it with `C=+V` in the [File Editor](server-file-editor.md)) |
 | `RUN/STOP` | Return to article list |
 

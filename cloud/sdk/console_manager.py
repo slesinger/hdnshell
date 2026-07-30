@@ -151,6 +151,29 @@ class ConsoleManager:
             except Exception:
                 logger.exception(f"on_activate failed for console {console_id}")
 
+    def active_console_id(self, session_id: int) -> Optional[int]:
+        """Return the session's currently-active console id, or None.
+
+        None means the session is on the local BASIC shell (console 0). Used by
+        the keypress path to repaint whichever console is active *after* a
+        keypress, since a handler may have switched it (e.g. the Launcher
+        opening an app on another slot)."""
+        return self._active.get(session_id)
+
+    def get_active_console(self, session_id: int) -> Optional[ServerConsole]:
+        """Return the session's currently-active server console, or None.
+
+        The active console is the last server console the session switched to
+        (tracked by ``_notify_switch``). Returns None when the session is on
+        the local BASIC shell (console 0) -- ``deactivate_session`` clears the
+        record on RESTORE_SCREEN. Used by clipboard routing (GH #18) to reach
+        the app that should service a native copy / paste.
+        """
+        active_id = self._active.get(session_id)
+        if active_id is None:
+            return None
+        return self._consoles.get((session_id, active_id))
+
     def deactivate_session(self, session_id: int) -> None:
         """Deactivate the session's current server console (running its
         on_deactivate hook, e.g. File Editor auto-save) and clear the

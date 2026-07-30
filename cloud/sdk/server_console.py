@@ -237,6 +237,48 @@ class ServerConsole:
         pass
 
     # ------------------------------------------------------------------
+    # Clipboard hooks (GH #18)
+    # ------------------------------------------------------------------
+
+    def copy_native(self) -> bool:
+        """Copy this app's native selection into the shared clipboard.
+
+        Apps with a richer underlying data model than the visible screen
+        (a file-editor document selection, an RSS article link, ...) override
+        this to write through ``ClipboardService.set_text`` and return
+        ``True``. The base implementation has no native selection and returns
+        ``False`` so the wedge falls back to the generic visible-screen
+        selector.
+        """
+        return False
+
+    def handle_clipboard_paste(self, text: str) -> bool:
+        """Insert shared-clipboard ``text`` into this app's paste target.
+
+        Returns ``True`` if the paste was accepted. The base implementation
+        has no editable target and returns ``False``; the caller then shows a
+        ``PASTE NOT AVAILABLE`` toaster.
+        """
+        return False
+
+    # ------------------------------------------------------------------
+    # Launcher badge (GH #22)
+    # ------------------------------------------------------------------
+
+    def get_badge(self) -> Optional[str]:
+        """Return a short badge string for the Launcher catalog, or None.
+
+        A badge is either a count (e.g. ``"3"``) or a state (e.g.
+        ``"running"`` / ``"done"`` / ``"needs input"``). Kept short — the
+        Launcher truncates to a few chars. Default: no badge.
+
+        Called by the Launcher when rendering the catalog. Implementations
+        must be cheap and side-effect free (no network I/O) since it runs on
+        the render path.
+        """
+        return None
+
+    # ------------------------------------------------------------------
     # Toaster notifications (generic — available to all consoles)
     # ------------------------------------------------------------------
 

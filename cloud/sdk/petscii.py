@@ -99,6 +99,8 @@ def transliterate(text: str) -> str:
         >>> transliterate("Grüße aus Přerov — ¿qué?")
         'Gruesse aus Prerov - ?que?'
     """
+    if not text:
+        return ""
     text = text.translate(_TRANSLIT_MAP)
     return (
         unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
@@ -306,6 +308,49 @@ def petscii_to_screencode(petscii: int) -> int:
         return petscii + 0x80  # Reverse video characters
     # $80-$9F (colour / control) – not directly printable
     return DEFAULT_SCREEN_CODE
+
+
+# Screen-code -> Unicode reverse map, built lazily by inverting
+# ``ascii_to_screencode`` over the printable ASCII range. The first ASCII
+# code to map onto a given screen code wins; codes with no printable-ASCII
+# pre-image resolve to a space. Mirrors the approach in
+# ``scrollback._build_screencode_to_ascii_map`` but is exposed as the single
+# public reverse-conversion entry point (used by ``sdk.clipboard``).
+_SCREENCODE_TO_CHAR = None
+
+
+def _build_screencode_to_char_map() -> dict:
+    """Build (and cache) a map from C64 screen-code (0-127) -> character."""
+    global _SCREENCODE_TO_CHAR
+    if _SCREENCODE_TO_CHAR is not None:
+        return _SCREENCODE_TO_CHAR
+
+    mapping = {}
+    for code in range(32, 127):
+        sc = ascii_to_screencode(code) & 0x7F
+        if sc not in mapping:
+            mapping[sc] = chr(code)
+    for i in range(128):
+        mapping.setdefault(i, " ")
+
+    _SCREENCODE_TO_CHAR = mapping
+    return mapping
+
+
+def screencode_to_char(screen_code: int) -> str:
+    """Convert a C64 screen code back to a printable character.
+
+    The reverse-video bit (0x80) is stripped before lookup, so a reverse
+    'A' and a normal 'A' both decode to ``"A"``. Screen codes with no
+    printable-ASCII pre-image decode to a space.
+
+    Args:
+        screen_code: Screen-code byte value (0-255).
+
+    Returns:
+        A single-character string.
+    """
+    return _build_screencode_to_char_map().get(screen_code & 0x7F, " ")
 
 
 def char_to_screencode(ch: str) -> int:

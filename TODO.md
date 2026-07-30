@@ -30,7 +30,7 @@ QUEUE
 
 Running a prg by typing a name of the prg file only works if the letters are lowercase. POUZIJ medlika jako ukazku
 
-
+DONE: The UI Settings page gets too long already. Split it to logical parts and use tabs on top of the Settings page. Update documentation to reflect the new structure.
 
 
 

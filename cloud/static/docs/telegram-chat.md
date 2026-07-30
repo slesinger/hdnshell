@@ -53,7 +53,7 @@ Unread message counts are shown in **yellow** next to the chat name. Group chats
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Select chat |
-| `F5` | Page down |
+| `C=+<` / `C=+>` | Page up / page down |
 | `RETURN` | Open selected chat |
 | `F2` | Open settings |
 | `F3` | Open contacts |
@@ -64,7 +64,7 @@ Unread message counts are shown in **yellow** next to the chat name. Group chats
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Scroll messages |
-| `F5` / `F3` | Page down / page up |
+| `C=+<` / `C=+>` | Page up / page down |
 | Type text | Compose a message |
 | `←` / `→` | Move input cursor |
 | `C=+←` / `C=+→` | Jump one word left / right |

@@ -30,8 +30,8 @@ The server fetches and strips Wikipedia pages down to essential text and links f
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Scroll one line up / down |
-| `F3` | Page up |
-| `F5` | Page down |
+| `C=+<` | Page up |
+| `C=+>` | Page down |
 | `SPACE` | Cycle through links visible on screen |
 | `RETURN` | Follow the highlighted link |
 | `LEFT ARROW` | Go back one page |

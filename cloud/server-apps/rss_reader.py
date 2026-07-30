@@ -31,7 +31,7 @@ from sdk.server_console import (
     transliterate,
 )
 from sdk.generate_pet_asc_table import Petscii
-from sdk.shared_state import set_clipboard
+from sdk.clipboard import get_clipboard_service
 from workspace_init import WORKSPACE_DIR
 from sdk.text_utils import word_wrap as _word_wrap
 
@@ -91,6 +91,11 @@ KEY_F3 = 0x86
 KEY_F5 = 0x87
 KEY_F8 = 0x8C
 KEY_CBM_C = 0xBC
+KEY_SHIFT_COMA = 0x3C   # <  — page up when held with C=
+KEY_SHIFT_PERIOD = 0x3E  # >  — page down when held with C=
+
+# Modifier flags (wedge forwards C64 SHFLAG; C= arrives as 0x04)
+MOD_COMMODORE = 0x04
 
 # ── Modes ────────────────────────────────────────────────────────────
 MODE_ARTICLES = 0
@@ -179,14 +184,14 @@ HELP_TEXT = [
     "",
     " ARTICLE LIST (MAIN SCREEN)",
     "  UP/DOWN   Select article",
-    "  F5        Page down",
+    "  C=+</C=+> Page up / page down",
     "  RETURN    Read article",
     "  SPACE     Refresh feeds",
     "  F3        Feed directory",
     "",
     " ARTICLE VIEW",
     "  UP/DOWN   Scroll text",
-    "  F3/F5     Page up / page down",
+    "  C=+</C=+> Page up / page down",
     "  C=+C      Copy link to clipboard",
     "  STOP      Back to article list",
     "",
@@ -352,6 +357,20 @@ class RSSReaderConsole(ServerConsole):
     #  INPUT HANDLER
     # =================================================================
 
+    def copy_native(self) -> bool:
+        """C=+CTRL+C: copy the current article's link (GH #18).
+
+        Falls back (returns False -> generic visible-screen selection) when
+        no article with a link is open.
+        """
+        if self.current_article and self.current_article.get("link"):
+            get_clipboard_service().set_text(
+                self.session_id, self.current_article["link"], source="rss"
+            )
+            self.status_msg = "Link copied!"
+            return True
+        return False
+
     def handle_keypress(self, petscii_code: int, modifiers: int) -> Optional[bytes]:
         self.status_msg = ""  # clear transient status
         handlers = {
@@ -401,10 +420,17 @@ class RSSReaderConsole(ServerConsole):
         elif key == KEY_F3:
             self._switch_mode(MODE_FEEDS)
 
-        elif key == KEY_F5:
-            # Page down
+        elif key == KEY_SHIFT_PERIOD and (mod & MOD_COMMODORE):
+            # C=+> — page down
             self.article_sel = min(
                 n - 1, self.article_sel + (CONTENT_ROWS // LINES_PER_ARTICLE)
+            )
+            self._ensure_article_visible()
+
+        elif key == KEY_SHIFT_COMA and (mod & MOD_COMMODORE):
+            # C=+< — page up
+            self.article_sel = max(
+                0, self.article_sel - (CONTENT_ROWS // LINES_PER_ARTICLE)
             )
             self._ensure_article_visible()
 
@@ -436,10 +462,10 @@ class RSSReaderConsole(ServerConsole):
             if self.article_view_scroll < max_scroll:
                 self.article_view_scroll += 1
 
-        elif key == KEY_F3:
+        elif key == KEY_SHIFT_COMA and (mod & MOD_COMMODORE):
             self.article_view_scroll = max(0, self.article_view_scroll - CONTENT_ROWS)
 
-        elif key == KEY_F5:
+        elif key == KEY_SHIFT_PERIOD and (mod & MOD_COMMODORE):
             self.article_view_scroll = min(
                 max_scroll, self.article_view_scroll + CONTENT_ROWS
             )
@@ -449,7 +475,9 @@ class RSSReaderConsole(ServerConsole):
 
         elif key == KEY_CBM_C:
             if self.current_article and self.current_article.get("link"):
-                set_clipboard(self.session_id, self.current_article["link"])
+                get_clipboard_service().set_text(
+                    self.session_id, self.current_article["link"], source="rss"
+                )
                 self.status_msg = "Link copied!"
 
         elif key == KEY_F1:
@@ -660,9 +688,9 @@ class RSSReaderConsole(ServerConsole):
         elif key == KEY_CRSR_DN:
             if self.help_scroll < max_scroll:
                 self.help_scroll += 1
-        elif key == KEY_F3:
+        elif key == KEY_SHIFT_COMA and (mod & MOD_COMMODORE):
             self.help_scroll = max(0, self.help_scroll - CONTENT_ROWS)
-        elif key == KEY_F5:
+        elif key == KEY_SHIFT_PERIOD and (mod & MOD_COMMODORE):
             self.help_scroll = min(max_scroll, self.help_scroll + CONTENT_ROWS)
         elif key in (KEY_F8, KEY_RUNSTOP):
             self.mode = self.prev_mode

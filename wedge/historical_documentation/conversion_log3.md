@@ -3526,3 +3526,76 @@ HTTPS://HDN.SH" + "AND INSTALL ON PC/MAC", NOT `?SYNTAX ERROR`. (3) REGRESSION:
 `status`/`time`/`menu`/`reset` unaffected (same chain, checked after `help` now); `#`/`#h` etc.;
 `mnt`/`umnt`; run-by-name + `/flash/bin` fallback; chat/AI (`i:`/`m:`/`tutorials`) both server-up and
 server-down; ML monitor `R` header (confirms $8241 still intact); TASS/TMP; stock RR sweep.
+
+## Step 36 — shared clipboard (GH #18): SERVER SIDE DONE + TESTED; cartridge (bank2) selector/paste is the remaining HW-only step
+
+**What GH #18 is.** One shared *text* clipboard across three participants: the
+host desktop clipboard, the local BASIC console (console 0), and every server
+app (consoles 1-10). Two copy paths: a shell-owned visible-screen selector
+(works everywhere) and app-native copy (File Editor selection, RSS link).
+Paste goes to the active app's editable target or, on the local console, gets
+newline-flattened and inserted without an injected RETURN. Full spec is in the
+issue and mirrored in `docs/user_manual/clipboard.md`.
+
+**Server side — implemented and unit-tested this step (no cartridge bytes
+changed):**
+- `cloud/sdk/clipboard.py` — `ClipboardService`, the single owner of clipboard
+  semantics. `set_text/get_text/get_metadata/copy_screen/to_local_petscii_chunk`.
+  Normalises to UTF-8 + `\n`, enforces `clipboard_max_bytes` (64 KiB default),
+  tracks metadata (length/lines/source/time), reuses the existing per-session
+  `clipboard` state entry. Pure helpers `extract_screen_text` (line-wise +
+  rectangle, inclusive/normalised endpoints, reverse-video strip, trailing-pad
+  trim) and `text_to_local_petscii` (newline->space, unsupported->`?`).
+- `cloud/sdk/host_clipboard.py` — platform adapters (Win32, pbcopy/pbpaste,
+  wl-clipboard, xclip/xsel) + `HostClipboardSync` background watcher.
+  Hash-based change detection, last-host-written-hash loop suppression, host
+  changes routed to the *most-recently-active* session, graceful no-backend
+  fallback. Started/stopped by `cloud_server.py`; config
+  `clipboard_host_sync` / `clipboard_poll_interval_ms`.
+- `cloud/sdk/petscii.py` — new `screencode_to_char` (reverse map, mirrors
+  scrollback's inversion) used by screen extraction.
+- `ServerConsole.copy_native()` / `handle_clipboard_paste(text)` base hooks
+  (default False); File Editor + RSS Reader overridden and migrated off the raw
+  `set_clipboard`/`get_clipboard` onto `ClipboardService`.
+  `ConsoleManager.get_active_console()` added.
+- `cloud/sdk/command_handler.py` — clipboard command routing for console 0 and
+  server consoles; encoders `encode_clip_info` / `encode_paste_chunk`.
+- Tests: `cloud/test_clipboard.py` (27 cases) — extraction rules, size cap,
+  session isolation, local-paste normalisation/chunking, host-sync
+  host->server/server->host/loop-suppression/disabled/backend-exception, and
+  command routing. Full server suite green (592 passed).
+
+**Protocol contract the cartridge must speak (console byte = `(console<<4)|cmd`,
+cmd=COMMAND=0x00; the clipboard op is `data[0]`).** New op range reserved
+*after* the existing 0x01-0x05 (get/save/restore/scrollback) so old images
+never collide:
+- `0x10 COPY_SCREEN`  payload `mode,x0,y0,x1,y1` (mode 0=line-wise,1=rect).
+  Console 0 extracts from the DMA-saved screen (SAVE_SCREEN 0x02 first, like
+  scrollback); consoles 1-10 extract from the app's own screen buffer.
+  Reply: clip-info `[len_hi,len_lo,line_count,flags]`.
+- `0x11 COPY_NATIVE` (server consoles) → `[0x00]` = no native selection, start
+  the generic screen selector; or `[0x01]`+clip-info = app copied.
+- `0x12 CLIPBOARD_INFO` → clip-info.
+- `0x13 PASTE_TO_APP` (server consoles) → `[0x01]` accepted / `[0x02]` rejected
+  (server shows a `PASTE NOT AVAILABLE` toaster on reject).
+- `0x14 LOCAL_PASTE_CHUNK` (console 0) payload `offset_hi,offset_lo,max_bytes`
+  → `[total_hi,total_lo,done, <petscii...>]`, newline-flattened, chunked.
+  Every reply's LAST byte is deliberately non-null (clip-info ends on the
+  non-zero flags byte; paste-chunk ends on `done` or a >=0x20 PETSCII byte) so
+  the console-0 response path's `create_response` null-strip never eats it.
+
+**Remaining = cartridge input + selection modal (bank2), HW-only.** Per
+`feedback_vice_no_ultimate` this cannot be verified in VICE (UCI/REU/DMA), so
+it is intentionally deferred to a hardware session, exactly like the Launcher's
+`C=+CTRL` dispatch (GH #22). The work: extend the `C=+CTRL` chord dispatch in
+`wedge/rr38p-tmp12reu.bank02.asm` (the `csw_*`/`cs_modal` machinery around the
+existing `1..7`/`F5`/`F7` cases — preserve those byte-for-byte) to add `C` and
+`V`. `C=+CTRL+C` → COPY_NATIVE (server console) or generic selection after
+`scr_save` (console 0); `C=+CTRL+V` → PASTE_TO_APP or chunked LOCAL_PASTE_CHUNK
+insertion. The generic selector renders by XORing the reverse-video bit ($80)
+of affected `$0400` cells (no 1000-byte backup), clamps to x=0..39/y=0..24,
+sends only selection metadata (server does extraction), and XOR-restores on
+every exit (RETURN/STOP/net-error/console-switch/self-disarm). Space budget to
+be measured against the bank2 reserve when that session starts.
+
+**Not yet HW-tested** (nothing to test on HW yet — server side only this step).

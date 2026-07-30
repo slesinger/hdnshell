@@ -1,6 +1,6 @@
 # AI Assistance
 
-You can chat with a C64-aware AI assistant anytime, right at the `READY.` prompt — no need to run an AI program or anything. With HDN Shell RR, **any line you type that isn't a shell command or valid BASIC is forwarded to the assistant automatically**; you can also address it explicitly with the `i:` prefix. You need to have the HDN Server running and your C64U connected to it. Also, you need to have an LLM API key configured in the web UI `Settings` in the `Chatting LLM` section.
+You can chat with a C64-aware AI assistant anytime, right at the `READY.` prompt — no need to run an AI program or anything. With HDN Shell RR, **any line you type that isn't a shell command or valid BASIC is forwarded to the assistant automatically**; you can also address it explicitly with the `i:` prefix. You need to have the HDN Server running and your C64U connected to it. Also, you need to have an LLM API key configured in the web UI `Settings`, under the **AI Models** tab in the `Chat LLM` section.
 
 You can ask anything about the HDN Shell, how to do things, or even general questions about C64. The AI will try to answer based on the user manual and its general knowledge.
 
@@ -9,7 +9,7 @@ You can ask anything about the HDN Shell, how to do things, or even general ques
 Beyond answering questions, the assistant has tools to work with your real machine and the server:
 
 - **Search this manual** and C64 reference documentation (hardware registers, memory map, KERNAL).
-- **Search the web** (requires a web-search API key in Settings).
+- **Search the web** (requires a web-search API key in Settings → Apps & Services).
 - **Read your screen** — see below.
 - **Type on your keyboard** — it can send keystrokes to your C64U and do things for you.
 - **Read, analyze, and modify C64 memory** over the network, including finding sprites or SID data in a memory range.

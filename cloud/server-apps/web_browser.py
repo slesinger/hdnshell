@@ -435,6 +435,11 @@ KEY_F4 = 0x8A
 KEY_F5 = 0x87
 KEY_F7 = 0x88
 KEY_F8 = 0x8C
+KEY_SHIFT_COMA = 0x3C   # <  — page up when held with C=
+KEY_SHIFT_PERIOD = 0x3E  # >  — page down when held with C=
+
+# Modifier flags (wedge forwards C64 SHFLAG; C= arrives as 0x04)
+MOD_COMMODORE = 0x04
 
 # ── Browser modes ────────────────────────────────────────────────────
 MODE_BROWSE = 0
@@ -472,8 +477,8 @@ HELP_LINES = [
     "",
     " NAVIGATION",
     " UP/DOWN     Scroll one line",
-    " F3          Page up",
-    " F5          Page down",
+    " C=+<        Page up",
+    " C=+>        Page down",
     " SPACE       Cycle links on screen",
     " RETURN      Follow highlighted link",
     " LEFT ARROW  Back one page",
@@ -712,13 +717,13 @@ class WebBrowserConsole(ServerConsole):
                 tab.scroll_y += 1
                 tab.active_link_idx = -1
 
-        elif key == KEY_F3:
-            # Page up
+        elif key == KEY_SHIFT_COMA and (mod & MOD_COMMODORE):
+            # C=+< — page up
             tab.scroll_y = max(0, tab.scroll_y - CONTENT_ROWS)
             tab.active_link_idx = -1
 
-        elif key == KEY_F5:
-            # Page down
+        elif key == KEY_SHIFT_PERIOD and (mod & MOD_COMMODORE):
+            # C=+> — page down
             max_scroll = max(0, len(tab.content_lines) - CONTENT_ROWS)
             tab.scroll_y = min(max_scroll, tab.scroll_y + CONTENT_ROWS)
             tab.active_link_idx = -1
@@ -925,15 +930,16 @@ class WebBrowserConsole(ServerConsole):
     # ── HELP mode ───────────────────────────────────────────────────
     def _key_help(self, key: int, mod: int):
         max_scroll = max(0, len(HELP_LINES) - CONTENT_ROWS)
-        if key in (KEY_CRSR_UP, KEY_F3):
-            if key == KEY_F3:
-                self.help_scroll = max(0, self.help_scroll - CONTENT_ROWS)
-            elif self.help_scroll > 0:
+        cbm = bool(mod & MOD_COMMODORE)
+        if key == KEY_SHIFT_COMA and cbm:
+            self.help_scroll = max(0, self.help_scroll - CONTENT_ROWS)
+        elif key == KEY_SHIFT_PERIOD and cbm:
+            self.help_scroll = min(max_scroll, self.help_scroll + CONTENT_ROWS)
+        elif key == KEY_CRSR_UP:
+            if self.help_scroll > 0:
                 self.help_scroll -= 1
-        elif key in (KEY_CRSR_DN, KEY_F5):
-            if key == KEY_F5:
-                self.help_scroll = min(max_scroll, self.help_scroll + CONTENT_ROWS)
-            elif self.help_scroll < max_scroll:
+        elif key == KEY_CRSR_DN:
+            if self.help_scroll < max_scroll:
                 self.help_scroll += 1
         elif key in (KEY_RUNSTOP, KEY_F8, KEY_F1):
             # Return to previous mode
@@ -1804,7 +1810,7 @@ class WebBrowserConsole(ServerConsole):
         # Row 13: Navigation tips
         self._put_text(14, 1, "While browsing:", COL_WHITE)
         self._put_text(15, 1, "UP/DOWN  Scroll line", COL_HELP_FG)
-        self._put_text(16, 1, "F3/F5   Page up/down", COL_HELP_FG)
+        self._put_text(16, 1, "C=+</C=+>  Page up/down", COL_HELP_FG)
         self._put_text(17, 1, "SPACE   Cycle links", COL_HELP_FG)
         self._put_text(18, 1, "RETURN  Follow link", COL_HELP_FG)
         self._put_text(19, 1, "F7      URL input", COL_HELP_FG)
@@ -1998,7 +2004,7 @@ class WebBrowserConsole(ServerConsole):
             self._put_text(1, SCREEN_COLS - len(indicator), indicator, COL_DARK_GREY)
 
         # Status bar
-        help_status = "UP/DN=Scroll  F3/F5=Page  F8/STOP=Close"
+        help_status = "UP/DN Scroll C=+</> Page F8/STOP Close"
         self._put_text(
             STATUS_ROW, 0, help_status[:SCREEN_COLS], COL_STATUS_FG, reverse=True
         )

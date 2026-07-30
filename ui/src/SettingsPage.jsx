@@ -307,6 +307,7 @@ export default function SettingsPage({ lastC64Ip }) {
   const [testResults, setTestResults] = useState({});
   const [testLoading, setTestLoading] = useState({});
   const [detectingIp, setDetectingIp] = useState(false);
+  const [activeTab, setActiveTab] = useState("connection");
 
   // Load config on mount
   useEffect(() => {
@@ -399,10 +400,35 @@ export default function SettingsPage({ lastC64Ip }) {
     );
   }
 
+  const TABS = [
+    { id: "connection", label: "Connection" },
+    { id: "ai", label: "AI Models" },
+    { id: "messaging", label: "Messaging" },
+    { id: "services", label: "Apps & Services" },
+  ];
+
   return (
     <div className="rounded-4 bg-white border shadow-sm p-4">
       <h1 className="h4 mb-4">Settings</h1>
 
+      {/* ── Tab navigation ─────────────────────────────── */}
+      <ul className="nav nav-tabs mb-4">
+        {TABS.map((tab) => (
+          <li className="nav-item" key={tab.id}>
+            <button
+              type="button"
+              className={`nav-link ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {/* ══ Connection tab ══════════════════════════════ */}
+      {activeTab === "connection" && (
+      <div>
       {/* ── C64 IP Address ─────────────────────────────── */}
       <div className="card mb-3">
         <div className="card-body">
@@ -481,21 +507,12 @@ export default function SettingsPage({ lastC64Ip }) {
         </div>
       </div>
 
-      {/* ── Web Browser Home Page ───────────────────────── */}
-      <div className="card mb-3">
-        <div className="card-body">
-          <h6 className="card-title mb-3">Web Browser Home Page</h6>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="https://example.com"
-            value={config.home_page_url || ""}
-            onChange={(e) => setConfig((prev) => ({ ...prev, home_page_url: e.target.value }))}
-          />
-          <div className="form-text">When set, new tabs and the browser will open this URL automatically.</div>
-        </div>
       </div>
+      )}
 
+      {/* ══ AI Models tab ═══════════════════════════════ */}
+      {activeTab === "ai" && (
+      <div>
       {/* ── User Name ──────────────────────────────────── */}
       <div className="card mb-3">
         <div className="card-body">
@@ -627,6 +644,27 @@ export default function SettingsPage({ lastC64Ip }) {
         </div>
       </div>
 
+      </div>
+      )}
+
+      {/* ══ Apps & Services tab ═════════════════════════ */}
+      {activeTab === "services" && (
+      <div>
+      {/* ── Web Browser Home Page ───────────────────────── */}
+      <div className="card mb-3">
+        <div className="card-body">
+          <h6 className="card-title mb-3">Web Browser Home Page</h6>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="https://example.com"
+            value={config.home_page_url || ""}
+            onChange={(e) => setConfig((prev) => ({ ...prev, home_page_url: e.target.value }))}
+          />
+          <div className="form-text">When set, new tabs and the browser will open this URL automatically.</div>
+        </div>
+      </div>
+
       {/* ── SerpAPI ────────────────────────────────────── */}
       <div className="card mb-3">
         <div className="card-body">
@@ -688,6 +726,69 @@ export default function SettingsPage({ lastC64Ip }) {
         </div>
       </div>
 
+      {/* ── Clipboard ──────────────────────────────────── */}
+      <div className="card mb-3">
+        <div className="card-body">
+          <h6 className="card-title mb-3">Clipboard <span className="text-muted fw-normal">(shared host &harr; C64)</span></h6>
+          <div className="form-check form-switch mb-3">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="clipboardHostSync"
+              checked={(config.clipboard_host_sync || "true").toLowerCase() === "true"}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  clipboard_host_sync: e.target.checked ? "true" : "false",
+                }))
+              }
+            />
+            <label className="form-check-label" htmlFor="clipboardHostSync">
+              Sync with the host desktop clipboard
+            </label>
+            <div className="form-text">
+              Mirrors your computer's clipboard to the C64 and back, both ways.
+              Turn off to keep the C64/app clipboard fully separate from the
+              desktop. Fails gracefully on headless hosts with no clipboard
+              backend.
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-md-6 mb-3 mb-md-0">
+              <label className="form-label">Max clipboard size (bytes)</label>
+              <input
+                type="number"
+                min="1"
+                className="form-control"
+                placeholder="65536"
+                value={config.clipboard_max_bytes || ""}
+                onChange={(e) => setConfig((prev) => ({ ...prev, clipboard_max_bytes: e.target.value }))}
+              />
+              <div className="form-text">Larger copies are truncated. Default 65536 (64 KiB).</div>
+            </div>
+            <div className="col-md-6 mb-0">
+              <label className="form-label">Host poll interval (ms)</label>
+              <input
+                type="number"
+                min="50"
+                className="form-control"
+                placeholder="500"
+                value={config.clipboard_poll_interval_ms || ""}
+                onChange={(e) => setConfig((prev) => ({ ...prev, clipboard_poll_interval_ms: e.target.value }))}
+              />
+              <div className="form-text">How often the desktop clipboard is checked for changes.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </div>
+      )}
+
+      {/* ══ Messaging tab ═══════════════════════════════ */}
+      {activeTab === "messaging" && (
+      <div>
       {/* ── Telegram ───────────────────────────────────── */}
       <div className="card mb-3">
         <div className="card-body">
@@ -736,6 +837,131 @@ export default function SettingsPage({ lastC64Ip }) {
           </div>
         </div>
       </div>
+
+      {/* ── WhatsApp ───────────────────────────────────── */}
+      <div className="card mb-3">
+        <div className="card-body">
+          <h6 className="card-title mb-3">WhatsApp</h6>
+          <p className="text-muted small mb-3">
+            WhatsApp needs no API credentials. Enter your phone number below, then
+            open the WhatsApp console on the C64 (Launcher &rarr; WhatsApp, or
+            <code> C=+CTRL+9</code>). It shows an 8-character pairing code you type
+            into WhatsApp on your phone under <em>Settings &rarr; Linked Devices &rarr;
+            Link a device &rarr; Link with phone number</em>.
+          </p>
+          <p className="text-warning small mb-3">
+            Note: this uses an unofficial multi-device client. WhatsApp may flag or
+            ban accounts using unofficial clients — consider using a spare number.
+          </p>
+          <div className="mb-0">
+            <label className="form-label">Phone Number</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="+1234567890"
+              value={config.WHATSAPP_PHONE || ""}
+              onChange={(e) => setConfig((prev) => ({ ...prev, WHATSAPP_PHONE: e.target.value }))}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Email (IMAP/SMTP) ──────────────────────────── */}
+      <div className="card mb-3">
+        <div className="card-body">
+          <h6 className="card-title mb-3">Email <span className="text-muted fw-normal">(Mail console, C=+CTRL+8)</span></h6>
+          <div className="row">
+            <div className="col-md-8 mb-3">
+              <label className="form-label">IMAP Host</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="imap.example.com"
+                value={config.MAIL_IMAP_HOST || ""}
+                onChange={(e) => setConfig((prev) => ({ ...prev, MAIL_IMAP_HOST: e.target.value }))}
+              />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label className="form-label">IMAP Port</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="993"
+                value={config.MAIL_IMAP_PORT || ""}
+                onChange={(e) => setConfig((prev) => ({ ...prev, MAIL_IMAP_PORT: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-md-8 mb-3">
+              <label className="form-label">SMTP Host</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="smtp.example.com"
+                value={config.MAIL_SMTP_HOST || ""}
+                onChange={(e) => setConfig((prev) => ({ ...prev, MAIL_SMTP_HOST: e.target.value }))}
+              />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label className="form-label">SMTP Port</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="587"
+                value={config.MAIL_SMTP_PORT || ""}
+                onChange={(e) => setConfig((prev) => ({ ...prev, MAIL_SMTP_PORT: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Username <span className="text-muted fw-normal">(usually your email address)</span></label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="you@example.com"
+              value={config.MAIL_USER || ""}
+              onChange={(e) => setConfig((prev) => ({ ...prev, MAIL_USER: e.target.value }))}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Password <span className="text-muted fw-normal">(use an app-password for Gmail/Fastmail)</span></label>
+            <input
+              type="password"
+              className="form-control"
+              placeholder="••••••••"
+              value={config.MAIL_PASS || ""}
+              onChange={(e) => setConfig((prev) => ({ ...prev, MAIL_PASS: e.target.value }))}
+            />
+          </div>
+          <div className="row">
+            <div className="col-md-8 mb-0">
+              <label className="form-label">From Name <span className="text-muted fw-normal">(display name on sent mail)</span></label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Jane Doe"
+                value={config.MAIL_FROM_NAME || ""}
+                onChange={(e) => setConfig((prev) => ({ ...prev, MAIL_FROM_NAME: e.target.value }))}
+              />
+            </div>
+            <div className="col-md-4 mb-0">
+              <label className="form-label">Security</label>
+              <select
+                className="form-select"
+                value={config.MAIL_TLS || "ssl"}
+                onChange={(e) => setConfig((prev) => ({ ...prev, MAIL_TLS: e.target.value }))}
+              >
+                <option value="ssl">SSL/TLS</option>
+                <option value="starttls">STARTTLS</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </div>
+      )}
 
       {/* ── Save button ────────────────────────────────── */}
       <div className="d-flex align-items-center gap-3 mt-4">

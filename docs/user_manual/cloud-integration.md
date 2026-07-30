@@ -21,7 +21,13 @@ If the server needs to send a significant amount of data to the C64U, it can use
 The server also runs a web user interface on **port 8064** (open `http://localhost:8064` on the machine running the server). It offers:
 
 - **Status** — connection state of your C64U, with guided setup steps.
-- **Settings** — LLM configuration for the chat and coding assistants (provider, endpoint, model, API key — any OpenAI-compatible endpoint works, including a local Ollama), web-search API key, Telegram API credentials, and optional CSDB login.
+- **Settings** — organized into four tabs:
+    - **Connection** — the C64 Ultimate IP address (with network scan) and the server IP embedded into the ROM.
+    - **AI Models** — your display name plus LLM configuration for the chat, coding, and backup assistants (provider, endpoint, model, API key — any OpenAI-compatible endpoint works, including a local Ollama) and optional LangSmith tracing.
+    - **Messaging** — Telegram API credentials, WhatsApp phone number, and Email (IMAP/SMTP) account.
+    - **Apps & Services** — web browser home page, clipboard sync, web-search (SerpAPI) key, Context7 key, and optional CSDB login.
+
+  A single **Save All Settings** button (below the tabs) persists every tab at once.
 - **[File Manager](file-manager.md)** — browse, upload, download, run, and mount files on the Ultimate storage.
 - **Screen** — live video/audio stream of the machine (Ultimate 64) with remote keyboard input.
 - **Inspector** — a C64 memory inspector (requires the `Web Remote Control` service enabled on the C64U).

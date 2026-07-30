@@ -24,7 +24,7 @@ from sdk.server_console import (
     ascii_to_screencode,
 )
 from sdk.generate_pet_asc_table import Petscii
-from sdk.shared_state import get_clipboard, set_clipboard
+from sdk.clipboard import get_clipboard_service
 from workspace_init import WORKSPACE_DIR
 from sdk.platform_shell import IS_WINDOWS, WINDOWS_BASH, GIT_BASH_DOWNLOAD_URL
 
@@ -996,17 +996,44 @@ class FileEditorConsole(ServerConsole):
 
     def _cmd_cut(self, d: Document):
         if d.has_selection():
-            set_clipboard(self.session_id, d.get_selected_text())
+            get_clipboard_service().set_text(
+                self.session_id, d.get_selected_text(), source="editor"
+            )
             d.delete_selection()
 
     def _cmd_copy(self, d: Document):
         if d.has_selection():
-            set_clipboard(self.session_id, d.get_selected_text())
+            get_clipboard_service().set_text(
+                self.session_id, d.get_selected_text(), source="editor"
+            )
 
     def _cmd_paste(self, d: Document):
-        cb = get_clipboard(self.session_id)
+        cb = get_clipboard_service().get_text(self.session_id)
         if cb:
             d.insert_text_at_cursor(cb)
+
+    # ── Shared-clipboard hooks (GH #18) ──────────────────────────────
+    def copy_native(self) -> bool:
+        """C=+CTRL+C: copy the current document selection, if any."""
+        d = self.doc
+        if not d.has_selection():
+            return False
+        get_clipboard_service().set_text(
+            self.session_id, d.get_selected_text(), source="editor"
+        )
+        return True
+
+    def handle_clipboard_paste(self, text: str) -> bool:
+        """C=+CTRL+V: insert shared-clipboard text at the cursor.
+
+        Preserves document selection semantics (an active selection is
+        replaced, exactly like the app-native paste).
+        """
+        if not text:
+            return True
+        self.doc.insert_text_at_cursor(text)
+        self._full_render()
+        return True
 
     def _toggle_line_numbers(self):
         self.show_line_numbers = not self.show_line_numbers

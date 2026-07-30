@@ -90,6 +90,8 @@ KEY_F3 = 0x86
 KEY_F5 = 0x87
 KEY_F7 = 0x88
 KEY_F8 = 0x8C
+KEY_SHIFT_COMA = 0x3C   # <  — page up when held with C=
+KEY_SHIFT_PERIOD = 0x3E  # >  — page down when held with C=
 
 # Browser modes
 MODE_BROWSE = 0
@@ -104,6 +106,7 @@ TOC_WIDTH = 24  # columns for the TOC overlay
 
 # Modifier flags (from command_handler.py)
 MOD_CTRL = 0x02
+MOD_COMMODORE = 0x04
 STATUS_ROW = 24
 MAX_SEARCH_LEN = 200
 
@@ -119,8 +122,8 @@ HELP_LINES = [
     "",
     " NAVIGATION",
     " UP/DOWN     Scroll one line",
-    " F3          Page up",
-    " F5          Page down",
+    " C=+<        Page up",
+    " C=+>        Page down",
     " SPACE       Cycle links on screen",
     " RETURN      Follow highlighted link",
     " LEFT ARROW  Back one page",
@@ -294,11 +297,11 @@ class WikiBrowserConsole(ServerConsole):
                 self.scroll_y += 1
                 self.active_link_idx = -1
 
-        elif key == KEY_F3:
+        elif key == KEY_SHIFT_COMA and (mod & MOD_COMMODORE):
             self.scroll_y = max(0, self.scroll_y - CONTENT_ROWS)
             self.active_link_idx = -1
 
-        elif key == KEY_F5:
+        elif key == KEY_SHIFT_PERIOD and (mod & MOD_COMMODORE):
             max_scroll = max(0, len(self.content_lines) - CONTENT_ROWS)
             self.scroll_y = min(max_scroll, self.scroll_y + CONTENT_ROWS)
             self.active_link_idx = -1
@@ -435,15 +438,16 @@ class WikiBrowserConsole(ServerConsole):
 
     def _key_help(self, key: int, mod: int):
         max_scroll = max(0, len(HELP_LINES) - CONTENT_ROWS)
-        if key in (KEY_CRSR_UP, KEY_F3):
-            if key == KEY_F3:
-                self.help_scroll = max(0, self.help_scroll - CONTENT_ROWS)
-            elif self.help_scroll > 0:
+        cbm = bool(mod & MOD_COMMODORE)
+        if key == KEY_SHIFT_COMA and cbm:
+            self.help_scroll = max(0, self.help_scroll - CONTENT_ROWS)
+        elif key == KEY_SHIFT_PERIOD and cbm:
+            self.help_scroll = min(max_scroll, self.help_scroll + CONTENT_ROWS)
+        elif key == KEY_CRSR_UP:
+            if self.help_scroll > 0:
                 self.help_scroll -= 1
-        elif key in (KEY_CRSR_DN, KEY_F5):
-            if key == KEY_F5:
-                self.help_scroll = min(max_scroll, self.help_scroll + CONTENT_ROWS)
-            elif self.help_scroll < max_scroll:
+        elif key == KEY_CRSR_DN:
+            if self.help_scroll < max_scroll:
                 self.help_scroll += 1
         elif key in (KEY_RUNSTOP, KEY_F8):
             self.mode = MODE_BROWSE
