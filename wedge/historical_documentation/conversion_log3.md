@@ -3630,3 +3630,373 @@ chord"): inside e.g. File Editor (`C=+CTRL+2`) press `C=+CTRL+V` (desktop text
 should paste into the app) and `C=+CTRL+C` (the app's visible screen should
 appear on the desktop clipboard). Confirm a server-unreachable case leaves the
 console session alive (no hang).
+
+## Step 37 (PLANNED) — complete the clipboard wedge: staged plan to finish GH #18 cartridge side
+
+The Step-36 "fits-now" subset ships only the server-console whole-screen chord.
+This is the plan of record to land the **remaining deferred pieces** and reach
+the full spec in `docs/user_manual/clipboard.md` (interactive selector, local
+console-0 copy, local-BASIC paste, `COPY_NATIVE` via the chord, and the
+BASIC-prompt top-level chord). **Nothing here is built yet** — it is the ordered
+roadmap so each future HW session picks up a self-contained increment.
+
+**Server side is already 100% done for every increment below.** All five ops
+(`COPY_SCREEN 0x10`, `COPY_NATIVE 0x11`, `CLIPBOARD_INFO 0x12`, `PASTE_TO_APP
+0x13`, `LOCAL_PASTE_CHUNK 0x14`) are implemented + unit-tested (`test_clipboard.py`,
+32 cases). **No Python work remains** — Step 37 is a cartridge-only effort. Each
+increment simply removes one "deferred" caveat from clipboard.md and
+CLIPBOARD_TESTING.md §"What's left".
+
+### 37.0 SPACE AUDIT (2026-08-01) — bank3 reserve found, but a bank2 glue gap forces the FunPaint decision
+
+Owner asked to audit `space_map.md` for room in *other* banks before dropping
+anything. Done (see space_map.md 2026-08-01 entry). Two findings, one good, one
+decisive:
+
+**GOOD — the bulk-code home exists.** Bank3's reclaimed SS pocket has **135 B
+free at `$81BA`** (KickAss `.sym`-verified; space_map's "~126 B at $81C3" was
+stale — corrected), and there is an **already-proven `call_bank3` RAM
+trampoline** ($0360, HW-proven steps 11a/11b). So the big routines (fetch/render,
+selector) have a home without touching FunPaint.
+
+**DECISIVE — the bank2 *glue* does not fit.** Reaching that bank3 code from the
+CINV/console-switch context needs, IN BANK2: (a) a chord-dispatch delta so
+`csw_guard` recognises the new index, and (b) the cross-bank invocation itself.
+The invocation **must** run the bank-switch from RAM (the instant `sta $de00`
+maps bank3, any bank2-resident code executing is pulled out from under the CPU),
+so it needs a resident RAM trampoline (14 B) *plus* a bank2 copy-loop/`jsr` to
+install+call it — **~21 B minimum, and the template needs 14 B contiguous.**
+Byte-verified bank2 free space:
+- `$9BA9` console-switch/clipboard pocket: **100 % full** (`clip_wr` ends exactly
+  at `$9C40`, `cs_install` pinned `$9C41` — 0 fill bytes).
+- `$9E8F`: **14 B** stock-zero, unreferenced — the *only* contiguous chunk.
+- `$9CB3` (cm_vc tail) 4 B + `$9EFD` (clip_tab tail) 3 B — fragments, non-adjacent.
+- Max contiguous = **14 B**. `cs_install`/`console_switch`/`hondani_err` are
+  pinned, so the full pocket can't grow; §3.4 confirms bank2 has **no dead code**.
+
+So Path B (keep FunPaint, bank3 reserve) is **~7 B short on bank2 glue with no
+clean way to close the gap** — the reserve solves the bulk but not the glue, and
+refactoring the proven IERROR trampoline into a shared sub costs bytes, it does
+not free them. **Conclusion: local-console clipboard (37a/b/d) effectively
+requires reclaiming FunPaint (`$9777-$9911` IRQ code + `$9850-$98A7` table,
+~460 B, §5.4) — the one bank2 reclaim.** And if FunPaint goes, the whole feature
+fits **in-bank**: no trampoline, no bank3 reserve, no Step 37-pre proof — simpler
+end to end. This flips the earlier lean; it is an owner product call (awaiting go/
+no-go on dropping FunPaint).
+
+### 37.0b RESTRUCTURE FITS (2026-08-01) — owner chose "keep FunPaint, restructure"
+
+Byte-verified against `.sym`: the ~7 B bank2 gap CAN be closed by extracting a
+shared cross-bank helper from the proven IERROR path. Exact plan (this is Step
+37-pre + the reusable 37a glue):
+
+Bank2 addresses (verified): `hondani_err`=$9B2E (IERROR shim), `he_tcopy`=$9B3A,
+`he_pass`=$9B49, `tramp`=$9B4B-$9B58 (14 B), `cinv_tmpl`+`cvr_digits`=$9B59-$9BA8,
+`csw_guard`=$9BA9, `cs_install`=$9C41 (PINNED), free pocket `$9E8F`=14 B.
+
+1. **Extract `call_b3`** — Y-based copy of `tramp`→$0360 then `jmp $0360`
+   (tail-call; $0360's rts returns to `call_b3`'s caller). 14 B → the `$9E8F`
+   pocket (exact fit). Y-based so it preserves X (hsh_dispatch ignores X/Y —
+   confirmed: "X is free here"). Both IERROR and the chord call it.
+2. **Shrink the IERROR shim**: the inline copy+`jsr $0360` (15 B, $9B3A-$9B48)
+   becomes `jsr call_b3; ldx #$0b; rts` (6 B) → **frees 9 B** at $9B40.
+3. **`csw_guard2`** (7 B) in that gap: `cpx #$09; bne csw_guard; jmp call_b3`.
+   `bne csw_guard` = +103 B, in range. X=9 (V chord) → `jmp call_b3` (tail-call);
+   else branch into the unchanged `csw_guard`.
+4. **Absorb the `cvr_digits` +1** (V) by shifting `he_pass`/`tramp`/`cinv_tmpl`/
+   `cvr_digits` up 2 B into the leftover gap, keeping `csw_guard` at $9BA9 so the
+   full `$9BA9..$9C40` pocket never touches pinned `cs_install`. 9 freed = 7
+   (guard) + 1 (V) + 1 (slack).
+5. **Byte-neutral repoints**: RAM stub `jsr csw_guard`→`jsr csw_guard2`; `tramp`
+   `jsr $998b`→`jsr b3_clip_gate` (new PINNED bank3 address — add to space_map §4).
+   Scan `ldx #$09`→`ldx #$0A`; `cs_install` cvr_digits copy count +1.
+6. **Bank3** (`$81BA` reserve, 135 B): `b3_clip_gate` (`cpx #$09; beq clip; jmp
+   $998b`) + payload. **37-pre payload = a trivial sentinel** (flash `$D020` a few
+   times, rts) to prove the chain dispatch→call_b3→trampoline-from-CINV→bank3→
+   return survives on HW. 37a swaps the sentinel for the real LOCAL_PASTE_CHUNK
+   fetch + CHROUT render.
+
+Risk: touches the proven IERROR + console-switch paths; VICE can't validate
+(UCI/DMA/banking) — HW test gates it. Placement is `.errorif`-guarded at build.
+
+**BUILT 2026-08-01 — awaiting HW test.** `build.sh` clean; all `.errorif` guards
+pass. Verified addresses: `call_b3`=$9E8F (exact 14-B pocket fill), `csw_guard2`=
+$9B40, `csw_guard`=$9BA6 (floated up 3 B), `b3_clip_gate`=$81BA (pinned). Pins
+held: `hondani_err`=$9B2E, `cs_install`=$9C41, `console_switch`=$9CB7. Byte-diff
+vs HEAD confirms the ONLY changes are: the IERROR-shim refactor + `csw_guard2`
+($9B31-$9BBF), the `$9BA9` pocket floated up 3 B ($9BC1-$9C40, same code
+relocated), `cs_install`/`cm_vc` operand re-resolution ($9C44-$9C4F, $9C9B,
+$9CAD), `call_b3` ($9E8F), and the bank3 gate+sentinel ($81BA-$81DA).
+**`console_switch` and everything downstream are byte-identical; FunPaint and the
+HONDANI path untouched.**
+
+Cartridge: `wedge/hdn-rr38p-tmp12reu.crt`.
+
+**HW test plan (Honza) — Step 37-pre:**
+1. Flash the rebuilt `.crt`; power on; type `HONDANI` (arms the CINV hook; also
+   sets lower/upper — cosmetic).
+2. At the READY prompt press **C=+CTRL+V**. EXPECT: the border flashes/cycles
+   colours ~6× (~2 s, machine briefly frozen), then returns to light-blue, and
+   the machine keeps running normally (cursor blinks, you can type). This proves
+   the whole chain: chord recognition (console 0) → `csw_guard2` → `call_b3` →
+   RAM trampoline mapping bank3 **from the CINV/IRQ context** → `b3_clip_gate` →
+   sentinel → clean return. Border flash = the cross-bank call worked.
+3. REGRESSION — the shared trampoline change must not break shell dispatch: type
+   a non-keyword line (e.g. `HELLO THERE`) + RETURN. EXPECT: same as before —
+   the server answers (or, offline, the local `help`-style fallback / stock
+   `?SYNTAX ERROR`). Proves `hondani_err`→`call_b3`→`b3_clip_gate`(X=$0B)→
+   `hsh_dispatch` still works.
+4. REGRESSION — console switch + scrollback unaffected: `C=+CTRL+1..7` switches
+   consoles, `C=+CTRL+F5/F7` pages scrollback, as before.
+5. Robustness: press C=+CTRL+V several times — each flashes and returns; no hang,
+   no corruption. If it PASSES, 37a swaps the sentinel (`b3_clip_paste`) for the
+   real LOCAL_PASTE_CHUNK fetch + CHROUT render; the bank2 glue stays as-is.
+
+**RESULT — Step 37-pre PASSED on hardware (2026-08-01).** Border flashes ~6× and
+returns; shell dispatch + console-switch + scrollback regressions all clean;
+repeated presses stable. The cross-bank round-trip **from the CINV/IRQ context**
+is proven. Remaining unknown before a real paste: whether **CHROUT itself** is
+safe/correct from that same context — 37-pre only flashed the border, it never
+called the screen editor. Split out as **37a-lit** below.
+
+### 37.0c Step 37a-lit BUILT (2026-08-01) — CHROUT-from-IRQ paste PROOF
+
+**Why split.** Two independent unknowns remain in "37a": (1) does `CHROUT`
+($FFD2) render into the BASIC **logical input line** from the `call_b3`/CINV(IRQ)
+context, and (2) the `LOCAL_PASTE_CHUNK` UCI fetch + reply parse. 37-pre proved
+the cross-bank dispatch but not (1). Also, the bank3 clipboard reserve is exactly
+**128 B** free ($81C1–$8240; `b3_clip_gate` holds $81BA–$81C0) and a fully
+self-contained connect+request+read+CHROUT routine measures ~169 B even
+table-driven — it does **not** fit without extracting a shared `hsh_conn` out of
+the central `hsh_body` (byte-risky surgery). So: prove CHROUT-from-IRQ cheaply
+first (fits in ~30 B), then do the network fetch as 37a-net with CHROUT already
+de-risked.
+
+**What 37a-lit does.** `b3_clip_paste` (still at $81C1, reached via the unchanged
+`b3_clip_gate` X=9 path) CHROUTs a fixed PETSCII literal **"PRINT 42"** at the
+cursor, then `rts`. Index lives in `$CF24` (shell-path scratch, dead here) so it
+is register-preservation-agnostic (no reliance on CHROUT preserving X/Y). On
+RETURN the screen editor reads the pasted text back as the input line and BASIC
+executes it → prints `42`. That is unambiguous proof the paste entered the
+**logical line**, not merely the screen.
+
+**Build/verify.** Clean build, all `.errorif` pins held. Bank3 byte-diff vs the
+37-pre build = **31 contiguous bytes at $81C1–$81DF only** (the `b3_clip_paste`
+body); size identical; `b3_clip_gate`=$81BA, `do_help`/`dh_txt`/`hsh_ip`,
+`hsh_dispatch`=$998B, `hsh_body`=$99DA, `hsh_hdr`=$9AEE all byte-identical. Bank2
+untouched by this step (the 37-pre glue stays as-is). Cartridge redeployed to
+`wedge/hdn-rr38p-tmp12reu.crt`.
+
+**HW test plan (Honza) — Step 37a-lit:**
+1. Flash; power on; type `HONDANI` (arms the CINV hook).
+2. At the READY prompt press **C=+CTRL+V**. EXPECT: `PRINT 42` appears at the
+   cursor exactly as if typed (no border flash now — that was 37-pre). The cursor
+   sits right after the `2`.
+3. Press **RETURN**. EXPECT: BASIC prints `42` and a fresh `READY.` — proving the
+   pasted text landed in the logical input line and survived the IRQ return.
+4. REGRESSION (unchanged from 37-pre): non-keyword line still reaches shell
+   dispatch; `C=+CTRL+1..7` / `C=+CTRL+F5/F7` still switch/scroll.
+5. Robustness: press C=+CTRL+V several times on one line → `PRINT 42PRINT 42…`
+   accumulates cleanly (or on separate lines), no hang/corruption.
+6. Optional stress: press it while the display is in a scrolled/near-bottom state
+   to confirm CHROUT's line-wrap/scroll from IRQ context behaves.
+
+**RESULT — Step 37a-lit PASSED on hardware (2026-08-01).** `PRINT 42` pastes at
+the cursor and RETURN runs it (prints 42); regressions clean; repeated presses
+stable. **CHROUT-from-IRQ is proven** — both risky mechanics (cross-bank + screen
+output from the CINV context) are now HW-verified, so 37a-net is a pure
+plumbing/space exercise, not a risk step.
+
+### 37.0d Step 37a-net BUILT (2026-08-01) — the real LOCAL_PASTE_CHUNK fetch
+
+Replaces the 37a-lit literal in `b3_clip_paste` with the actual clipboard fetch,
+reusing the **proven bank3 UCI stack** exactly as `hsh_body` does — same connect +
+per-phase `hsh_fin` sequence, so the wire behaviour is the tested one:
+
+1. **connect** — `hsh_hdr`(cmd $07) + port 6464 LE + `hsh_ip` string; `hsh_push`;
+   `hsh_wdav`→socket id to `$CF21`; `hsh_fin` (drain/accept → idle), `bcs`→close on
+   a non-"00" status.
+2. **write** — `hsh_hdr`(cmd $11) + socket; then `jsr bcp_wrq` writes the wire
+   framing `$FE,$00`(console0|COMMAND)`,$14`(op). **Op byte only** — the server
+   then defaults `offset=0, max_bytes=64` (`_handle_local_clipboard`), which covers
+   a BASIC command line in one chunk. `hsh_push`; `hsh_fin`.
+3. **read** — `hsh_hdr`(cmd $10) + socket + read-len $00E8; `hsh_push`; `hsh_wdav`
+   (first byte). Then a `LDY #$05` skip-loop over `$DF1E` (2 UCI length-prefix + 3
+   app-header bytes `total_hi,total_lo,done`), CHROUTing every byte after — Y stays
+   ≥0 for the 5 skips, goes negative and prints thereafter (relies on CHROUT
+   preserving Y, the universal `lda,y`/`jsr $FFD2`/`iny` idiom, now HW-safe per
+   37a-lit). `beq bcp_cl` when DATA_AV clears → `jmp hsh_close`. Single read pass
+   (≤69 B ≪ the 232 B window). Newlines are flattened to spaces server-side, so no
+   RETURN is ever injected.
+
+**Space solution (no shell surgery).** A self-contained connect+write+read+CHROUT
+is ~136 B > the 128 B bank3 reserve. Extracting a shared `hsh_conn` from `hsh_body`
+was rejected: the hsh module has only ~13 B of slack ($9BC0 12 B + $9E9D 1 B) vs
+the hard $9E9D stock-RR wall, and touching `hsh_body` risks the shell (used
+constantly). Instead the 16 B request-byte leaf **`bcp_wrq`** was homed in the
+**dead $8142–$8154 pad** (the step-35 `b3_wait_pkt` shrink pad; `b3wp_ok` ends with
+`rts`, so nothing falls through — reached only by `jsr bcp_wrq`). That drops
+`b3_clip_paste` to **126 B ($81C1–$823E, 2 B margin)**.
+
+**Build/verify.** Clean build, all `.errorif` pins held. Bank3 diff vs the 37a-lit
+build is **100 % confined** to the two intended regions — the $8142 pad ($8142–
+$8151, `bcp_wrq`) and the reserve ($81C1–$823E, `b3_clip_paste`); size identical.
+**Crucially the entire hsh module is byte-identical** (`hsh_dispatch`=$998B,
+`hsh_body`=$99DA, `hsh_hdr`=$9AEE, `hsh_push`/`wdav`/`fin`/`close`) — **zero shell
+blast radius** — as are `hsh_ip`/`do_help`/`dh_txt`/`b3_clip_gate`=$81BA. Disasm
+confirms every `jsr` target (helpers + `bcp_wrq` $8142 + CHROUT) and the loop
+back-edge. Bank2 untouched. Cartridge redeployed to `wedge/hdn-rr38p-tmp12reu.crt`.
+
+**HW test plan (Honza) — Step 37a-net:**
+1. On the host, copy some text to the OS clipboard (e.g. `dir` or `10 print"hi"`).
+2. Flash; power on; type `HONDANI` (arms the CINV hook + needs the HDN Server up).
+3. At the READY prompt press **C=+CTRL+V**. EXPECT: the clipboard text appears at
+   the cursor as if typed (newlines shown as spaces; ≤64 chars this first cut).
+   Brief freeze (~1 network round-trip, IRQ-masked) is normal.
+4. Press **RETURN** → BASIC runs/parses the pasted line (e.g. `dir`→shell, or the
+   BASIC line is entered). Proves the paste reached the logical input line.
+5. **Server-down / offline:** with the HDN Server stopped, press C=+CTRL+V →
+   EXPECT nothing pasted, no hang (bounded `hsh_wdav`/`hsh_widl` timeouts + $0E
+   kick recover), machine keeps running. (A brief freeze up to ~1 s is acceptable.)
+6. **Empty clipboard:** copy nothing / clear it → C=+CTRL+V pastes nothing, clean.
+7. REGRESSION: shell dispatch (non-keyword line), `C=+CTRL+1..7`, `C=+CTRL+F5/F7`
+   all still work (hsh module is byte-identical, so these must be unaffected).
+8. Robustness: repeated presses accumulate/refresh cleanly, no hang/corruption.
+
+If it PASSES → **37a-net-2** (offset paging for clipboards >64 B: loop the request
+with `offset += chunk` until the reply's `done` byte is set — needs the 3-byte
+`off_hi,off_lo,max` request form, so `bcp_wrq` grows or gains a variant) and then
+**37b** (local console-0 **copy**: `SAVE_SCREEN` snapshot + `COPY_SCREEN`).
+
+### 37.0e Step 37a-net FIX (2026-08-01) — missing read RETRY (HW: nothing pasted) → **PASSED HW**
+**RESULT (Honza HW, 2026-08-01):** re-flashed the FIX build → **paste now works** —
+copying text in VS Code and pressing C=+CTRL+V at the local BASIC console CHROUTs the
+shared clipboard at the cursor. The bounded read-retry closed the gap. This completes
+**37a-net**: the full local-BASIC clipboard paste (C64 ← host, one ≤64 B line) is
+HW-proven end to end (chord → cross-bank from CINV → UCI connect/write/read-with-retry
+→ CHROUT-from-IRQ). Next = 37a-net-2 (offset paging >64 B) / 37b (console-0 copy), both
+gated on the bank3 space wall — see §37.0f.
+
+**Symptom (Honza HW):** flashed 37a-net, copied text in VS Code, pressed C=+CTRL+V
+at the local console → **nothing appeared** (37a-lit's `PRINT 42` literal had pasted
+fine, so CHROUT-from-IRQ was already proven).
+
+**Root cause:** 37a-net did a **single read pass**. The FIRST UCI `SOCKET_READ` after
+the write almost always returns the 2-byte `$FFFF` "no data yet" length prefix — the
+server needs a round trip (incl. `pull_from_host` to the host clipboard) before the
+reply is queued. The single pass read that transient `$FFFF`, saw `DATA_AV` drop, and
+closed the socket → nothing pasted. The proven `hsh_body` chat path never had this
+bug because it **retries** the read until real data arrives. (Confirmed against
+`command_handler.py`: request framing `$FE,$00,$14` routes to `_handle_local_clipboard`
+→ `LOCAL_PASTE_CHUNK`; reply on the wire is exactly `[total_hi,total_lo,done,petscii…]`
+with NO app header — `create_response` returns the encoder bytes verbatim — so the
+skip-5 = 2 UCI-len + 3 (total_hi,total_lo,done) was already correct; only the retry
+was missing.)
+
+**Fix (`b3_clip_paste`):** bounded retry mirroring `hsh_body`. On drain, `tya/beq/bmi`
+distinguishes "only the prefix arrived" (Y>0 → `hsh_fin` + `dec $cf24` + retry) from
+"reply drained" (Y==0 empty, or Y<0 after printing → close). `$cf24` (init `0` = 256
+tries) **bounds** it so a peer close (`$0000` EOF, also leaves Y>0) or a wedged server
+can never hang — it burns the counter down and closes.
+
+**Space (bank3 was full — reserve had 2 B):** three surgical reclaims, **zero shell
+change**: (1) connect IP loop → pre-inc `ldx #$ff / inx / lda hsh_ip,x / sta / bne`
+(STA preserves the LDA's Z) drops the `cmp #$00`, −2 B; (2) the retry-counter init is
+folded into `bcp_wrq` (`sta $cf24` reusing A=$00), +3 B that fills the `$8142` pad
+EXACTLY (`bcp_wrq` now `$8142-$8154`, `hsh_ip` stays `$8155`); (3) the 6-byte
+`lda $cf21 / sta $df1d` "send socket" preamble was factored out of BOTH the write and
+read phases into a new **`hsh_hdrs`** leaf (`jsr hsh_hdr / lda $cf21 / sta $df1d / rts`)
+homed in the dead **12-byte `$9BC0` hole** (the old inline `hsh_ip` slot) — reclaiming
+12 reserve bytes. `b3_clip_paste` now `$81C1-$823D` (3 B reserve to spare).
+
+**Verify:** clean build, all `.errorif` pins held. Binary diff vs the 37a-net build =
+4 regions, ALL intended: `$814C-$8154` (bcp_wrq tail), `$81D1-$81FC`+`$81FE-$823E`
+(b3_clip_paste), `$9BC0-$9BC9` (hsh_hdrs). The **entire hsh shell module is
+byte-identical** (`hsh_dispatch $998B`, `hsh_body $99DA`, `hsh_hdr $9AEE`,
+`hsh_close $9ADD`), as are `hsh_ip $8155`, `do_help $8165`, `b3_clip_gate $81BA`,
+`hd_fold $9BCC`. Disasm confirms every jsr/branch target. **Re-flash and re-run the
+37a-net HW test plan above** (the empty-clipboard and server-down "no hang" cases now
+also cover the EOF/retry path).
+
+**Design decisions that stand regardless of A/B (recorded so they're not re-derived):**
+- **37a paste = CHROUT-to-screen, NOT KEYD dribble.** The C64 screen editor reads
+  the logical input line back *from screen memory* on RETURN, so paste just
+  `CHROUT`s ($FFD2) the PETSCII text at the cursor in one pass; the user presses
+  RETURN. Avoids a per-IRQ keyboard-buffer dribble + staging buffer — impossible
+  anyway since the RAM CINV stub is **byte-full at its $03E7 ceiling**. Bounds to
+  one logical line (server already flattens newlines→spaces).
+- **Chord recognition** extends the CINV stub key scan (`cvr_digits` @ $03F0) to
+  add V (SFDX `$1F`) — byte-neutral in the stub (`ldx #$09`→`ldx #$0A`, +1 table
+  byte at $03F9); `csw_guard` dispatches it. (37b adds C, SFDX `$14`.) With Path A
+  the dispatch target is bank2-local (cheap); with Path B it is the trampoline
+  glue that doesn't fit.
+
+### 37.1 The original blocker analysis — bank2 space (kept for context)
+
+The console-switch/clipboard machinery **must live in bank2**: it runs in the
+CINV IRQ context with bank2 mapped and calls bank2-local `hn_*`/`cs_connect`
+helpers. Bank2 free space is only two small pockets (`$9C0E` 51 B — fully spent
+by `clip_conn`/`clip_wr`; `$9C8C` 43 B — `cm_vc` used 39, so ~4 B left) plus 3
+spare pad bytes at `$9EF5` and scattered tail zeros. The full feature is
+≈350-450 B and does **not** fit. Two ways past the wall — **owner must pick one
+before 37c/37d**:
+
+- **Path A — drop FunPaint** (`$9777-$98A7`, ~460 B, the only sizeable bank2
+  reclaim). Simplest: the whole feature then fits in-bank with zero new banking
+  risk. Owner has so far chosen to PRESERVE FunPaint (`space_map.md` §5.4).
+- **Path B — reserve-bank + IRQ cross-bank trampoline.** Keep FunPaint; host the
+  big selector/paste code in a bank with room (candidate per `space_map.md` — NOT
+  bank5, "effectively saturated"; likely bank3) and call into it from the bank2
+  IRQ context. **Higher risk:** cross-banking *out of the CINV IRQ context is
+  unproven* — no bank2 IRQ routine currently uses the `$9F00` gate.
+
+37a/37b are small enough to fit the existing pockets and are **not** gated on
+this decision; 37c and especially 37d are.
+
+### 37.2 Step 37-pre (only if Path B) — IRQ-context cross-bank round-trip PROOF
+
+Before building any feature on Path B, prove the path exactly as steps **11a**
+and **15-pre** did for their cross-bank trampolines. Minimal test: from
+`cs_modal` (IRQ / bank2 context), bank out to the reserve bank via the `$9F00`
+gate, run a trivial routine (border flash or write one sentinel byte), return,
+and confirm the IRQ return path and RR banking state are intact across many
+IRQs. Gate **all** Path-B code on this passing on real hardware. If it cannot be
+made reliable, fall back to Path A.
+
+### 37.3 Feature increments — each its own BUILT → HW-tested step, lowest-risk first
+
+1. **37a — local-BASIC paste at the prompt.** Highest daily value, smallest.
+   Add top-level chord dispatch (extend the CINV stub key scan + `csw_guard` to
+   recognise `C=+CTRL+V` at console 0 — see 37.0; currently the chord is dead at
+   the BASIC prompt). In one modal pass (like `cm_vc`) drive `LOCAL_PASTE_CHUNK
+   0x14` in a loop and **`CHROUT` ($FFD2) each returned PETSCII byte to the
+   screen at the cursor** (NOT KEYD — see 37.0), then return; the user presses
+   RETURN and the editor submits the logical line. The server already
+   newline-flattens + chunks, and every reply's last byte is non-null so the
+   console-0 null-strip is safe. The fetch/render routine lives in the **bank3
+   $81BA reserve** (called via the `call_bank3`-style trampoline, gated on
+   37-pre); only the tiny chord-recognition delta touches bank2/the RAM stub.
+2. **37b — local console-0 copy (whole screen).** Add top-level `C=+CTRL+C`
+   dispatch. Take a DMA snapshot first via the existing `SAVE_SCREEN 0x02` path
+   (same as scrollback), then send `COPY_SCREEN mode 0, 0,0..39,24`. Server
+   already extracts. Small; pocket-sized if 37a left room, else needs Path A/B.
+3. **37c — `COPY_NATIVE 0x11` via the chord (server consoles).** Chord asks the
+   active app for a native selection first (`[0x01]`+clip-info = app copied) and
+   only falls back to whole-screen on `[0x00]`. Lets the File Editor selection /
+   RSS link flow through the *shell* chord, not just the app's own `C=+C`.
+   Modest, but combined size likely needs the space decision.
+4. **37d — interactive on-screen selector.** The big one (~200-300 B): a modal
+   with cursor movement, `RETURN` to mark start then end, `C=+CTRL+L` to toggle
+   line-wise ↔ rectangle, `STOP` to cancel, and XOR reverse-video rendering of
+   the selection; emits `COPY_SCREEN` with the chosen mode + rect. This is the
+   increment that most needs **Path A or a proven Path B** — it will not fit the
+   residual pockets.
+
+### 37.4 Per-increment closeout
+
+For each landed increment: rebuild the whole `.crt` via `build.sh` (byte-verify
+the pinned addresses hold — `hondani_err`/`cs_install`/`console_switch`), run
+the HW test from CLIPBOARD_TESTING.md, then delete that item from the "Still
+DEFERRED" list in Step 36 above and the corresponding caveat in clipboard.md /
+CLIPBOARD_TESTING.md §6. Update `space_map.md` whenever a pocket is consumed or
+FunPaint is dropped.

@@ -3764,28 +3764,34 @@ hondani_err:
     lda $3a                // CURLIN hi = $FF only in direct mode
     cmp #$ff
     bne he_pass
-    // self-heal the call_bank3 RAM trampoline into $0360 (14 B), then call it.
-    // Reinstalled per line so a TASS/other page-3 scribble can't leave a stale
-    // stub. Runs from RAM so the bank flips never move the executing code.
-    ldx #tramp_end - tramp - 1
-he_tcopy:
-    lda tramp,x
-    sta $0360,x
-    dex
-    bpl he_tcopy
-    jsr $0360              // -> map bank3, jsr hsh_dispatch, restore bank2
+    // step 37-pre: the trampoline copy+call is now the shared `call_b3` helper
+    // (lives in the $9E8F pocket). X stays $0B across it (call_b3 is Y-based), so
+    // bank3's b3_clip_gate routes this to the normal hsh_dispatch (X != 9). Net
+    // behaviour is byte-identical to the old inline copy + `jsr $0360`.
+    jsr call_b3            // copy tramp -> $0360 + call bank3 (via b3_clip_gate)
     ldx #$0b               // restore error index for the stock handler
     rts                    // carry from bank3 propagates (C=1 -> stock ?SYNTAX ERROR)
 he_pass:
     sec                    // not our error class -> stock IERROR (X untouched)
     rts
+// csw_guard2 -- step 37-pre: pre-filter in front of csw_guard, reached from the
+// CINV stub (its `jsr csw_guard` is repointed here). X=9 = C=+CTRL+V (local
+// clipboard paste) -> cross-bank call to bank3 via call_b3 (tail-call: the
+// trampoline's rts returns to the stub). Every other index falls through to the
+// unchanged csw_guard (console 1..7 / scrollback). X is preserved into bank3 so
+// b3_clip_gate can read it. `bne csw_guard` reaches csw_guard (~+110 B, in range).
+csw_guard2:
+    cpx #$09
+    bne csw_guard          // not V -> stock console-switch / scrollback path
+    jmp call_b3            // V -> bank3 clipboard (X=9 preserved for b3_clip_gate)
 // call_bank3 RAM trampoline template -- copied to $0360, RUNS from RAM so the
 // ROM bank flips can't pull it out from under itself. No PC-relative operand
 // (all absolute/immediate), so the ROM-resident copy is position-independent.
 tramp:
     lda #$18               // map bank3 (RR $de00 control: bank3 = $18)
     sta $de00
-    jsr $998b              // hsh_dispatch @ bank3 reserve start (PINNED $998B)
+    jsr $81ba              // step 37-pre: b3_clip_gate @ bank3 reserve (PINNED $81BA)
+                           //   -- routes X=9 -> clipboard, else -> hsh_dispatch $998B
     lda #$10               // restore bank2 with a CONSTANT (never read $de00)
     sta $de00
     rts
@@ -3818,7 +3824,7 @@ cvr_live:
     cmp #$06               // both C= and CTRL held?
     bne cvr_clear
     lda $cb                // SFDX: matrix code of the key currently down
-    ldx #$09               // scan the 1..7 + F5/F7 table ($03F0) from the top down
+    ldx #$0a               // scan the 1..7 + F5/F7 + V table ($03F0) from the top down
 cvr_chk:
     dex                    // ran past index 0 => no digit matched: drop the chord
     bmi cvr_clear          //   (C=+CTRL held on a non-1..7 key, e.g. $CB=$40 as the
@@ -3839,7 +3845,7 @@ cvr_match:
     sta $03ee              // latch (one action per press)
     lda #$10               // page in bank2 (same value the HONDANI gate uses)
     sta $de00
-    jsr csw_guard          // scrollback-aware entry (X=7/8 -> scroll; else console)
+    jsr csw_guard2         // step 37-pre pre-filter (X=9=V -> clipboard); else csw_guard
     lda #$08               // restore bank1 with a CONSTANT (stock $DEE3 value)
     sta $de00
     jmp ($03ec)
@@ -3849,6 +3855,7 @@ cinv_tmpl_end:
 cvr_digits:
     .byte 56, 59, 8, 11, 16, 19, 24    // SFDX matrix codes for keys 1..7 -> $03F0
     .byte 6, 3                          // SFDX F5 (idx7=scroll prev), F7 (idx8=scroll next) -> $03F7/$03F8
+    .byte 31                            // step 37-pre: SFDX V ($1F) idx9 -> local clipboard paste -> $03F9
 
 // csw_guard -- new console_switch entry point (the CINV RAM stub's cvr_match now
 // `jsr csw_guard` instead of `jsr console_switch`). Lives in this roomy reclaimed
@@ -4004,9 +4011,9 @@ csi_copy:
     sta $03a0,x
     dex
     bpl csi_copy
-    ldx #$08               // copy the 9-byte digit+F5/F7 table out to $03F0 (16-fix:
-csi_dcopy:                 //   it no longer fits inside the stub after the
-    lda cvr_digits,x       //   self-disarm prefix, so it lives at $03F0)
+    ldx #$09               // copy the 10-byte digit+F5/F7+V table out to $03F0 (16-fix:
+csi_dcopy:                 //   it no longer fits inside the stub after the self-disarm
+    lda cvr_digits,x       //   prefix, so it lives at $03F0; step 37-pre added V at $03F9)
     sta $03f0,x
     dex
     bpl csi_dcopy
@@ -4398,7 +4405,20 @@ ks_done:
     rts                    // 60
 bank02_data_9E8F:
 .errorif (* != $9E8F), "bank02_data_9E8F shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9E8F
+// step 37-pre: call_b3 -- shared cross-bank trampoline install+call. Copies the
+// 14-byte `tramp` template to $0360, then tail-jmps it (the trampoline's rts
+// returns to call_b3's caller). Y-based copy so X is PRESERVED for b3_clip_gate's
+// X=9 clipboard test. Callers: hondani_err (X=$0B -> shell dispatch) and
+// csw_guard2 (X=9 -> clipboard). Exactly fills the 14-byte $9E8F stock-zero pocket.
+call_b3:
+    ldy #tramp_end - tramp - 1
+cb3_cp:
+    lda tramp,y
+    sta $0360,y
+    dey
+    bpl cb3_cp
+    jmp $0360
+.errorif (* != $9E9D), "call_b3 must exactly fill the $9E8F pocket (end $9E9D)"
 b02_9E9D:
     jsr $deba              // 20 BA DE
     dec $01                // C6 01   CPU port: mem banking

@@ -19,7 +19,7 @@ was used, `~` where estimated.
 | 0 | 385 | 393 | 702 high-conf + ~420 med-low | 0 |
 | 1 | 16 (inside HDN pocket) | 16 | ~7 (entangled) | ~90-150 printer (entangled) |
 | 2 | 102 | 140 | 0 | 0 (FUNPAINT viewer ~460 optional) |
-| 3 | ~133 | ~139 | — (resolved, see §3) | ~90 SS boot-detect (§5.1 item 2, remaining) |
+| 3 | ~142 | ~148 | — (resolved, see §3) | ~90 SS boot-detect (§5.1 item 2, remaining) |
 | 4 | 161 | 161 | 3 | 0 |
 | 5 | ~42 | ~42 | 3 | flash util: 0 cleanly recoverable |
 | 6 | 37 | 37 | 3 | 0 |
@@ -82,28 +82,59 @@ placed here runs in freeze/boot context, not BASIC context.
 $9E08-$9E10 (8) + $9E51-$9E59 (8). No stock padding anywhere else; the bank is
 fully packed (DOS wedge, ML monitor, TASS/TMP launcher, F-key macros, HDN hook).
 
-### Bank 2 — ~28 B usable + 38 B pinned/stock (step 36 consumed the two big pockets)
+### Bank 2 — ~14 B usable (step 37-pre consumed the $9E8F pocket for `call_b3`)
+*Step 37-pre note:* the IERROR shim was refactored to call the shared `call_b3`
+(freeing ~11 B there); `csw_guard2` (7 B) + the `cvr_digits` +1 (V chord) went
+into that freed run, so the whole `csw_guard..clip_wr` pocket floated UP 3 B
+(now 3 B slack in the `.fill` before pinned `cs_install`=$9C41). `console_switch`
+and everything downstream stayed byte-identical. Remaining bank2 free: `$9CB3`
+(cm_vc tail) 4 B + `$9EFD` (clip_tab tail) 3 B + the new 3 B pocket slack ≈ 10 B,
+all fragmented.
 | Range | Bytes | Class | Notes |
 |---|---:|---|---|
 | $9B20-$9B2E | 14 | c | pinned padding — `hondani_err` must stay at $9B2E (bank1 stub hardcodes it) |
 | ~~$9C0E-$9C41~~ | ~~51~~ **0** | — | **CONSUMED (step 36):** `clip_conn`+`clip_wr` fill it exactly (51/51). `cs_install` still pinned $9C41 |
 | ~~$9C84-$9CB7~~ | ~~51→43~~ **4** | a | step 36 `cm_vc` uses 39 B ($9C8C-$9CB2); 4 B left. (was measured 43, not 51 — `cs_install` grew since 07-21). `console_switch` pinned $9CB7 |
-| $9E8F-$9E9D | 14 | b | stock zeros |
+| ~~$9E8F-$9E9C~~ **0** | ~~14~~ | — | **CONSUMED (step 37-pre):** `call_b3` (shared cross-bank trampoline install+call) fills it exactly (14/14). `b02_9E9D` pinned $9E9D |
 | ~~$9EF5-$9EFF~~ | ~~10~~ **3** | b | step 36 `clip_tab` uses 7 B; 3 B stock-zero left |
 
-### Bank 3 — ~133 B usable
+### Bank 3 — ~142 B usable (**earmarked as the Step-37 clipboard reserve bank**)
 Reclaimed Silversurfer pocket $80F8-$8241 (§5.1): step 31's `hsh_putc`, step
 32's `b3_dos1_read`, step 34's `b3_wait_pkt`, and step 35's `do_help`
-(+ its fallback text) now occupy $80F8-$81C3 (~203 B), leaving ~126 B free at
-$81C3-$8241 (`.errorif`-guarded, kept: $8241 `jmp` + ML monitor register
-header).
+(+ its fallback text) occupy $80F8-$81B9. **Verified 2026-08-01 via KickAss
+`.sym`:** `do_help`=$8165, `dh_txt`=$817E (60 B of text), so the free reserve is
+**135 B at $81BA-$8240** (`.errorif`-guarded, kept: $8241 `jmp` + ML monitor
+register header). *(Prior doc said "~126 B at $81C3" — stale by 9 B / one page;
+`do_help` is 25 B of code + 60 B text = 85 B, not the ~102 B once estimated.)*
 Plus the original 14 B at $9FF2-$9FFF (class b) and 6 B of 2-byte slack scraps
 pinned inside full HDN annexes ($807F preserves the `bit $8080` trick byte — do
 not touch). All five original pockets are consumed; further bank-3 space must
-come from Silversurfer item 2 (§5.1) or the reclaimed pocket's remaining ~126 B.
+come from Silversurfer item 2 (§5.1) or the reclaimed pocket's remaining 135 B.
 The separate `$998B-$9E9D` shell reserve is now down to **1 B free** (step 35
 ate 16 of its 17 B tail) — essentially saturated; any future keyword there
 needs a same-size swap, not an addition.
+
+**Step-37 (clipboard, GH #18) reserve — 37-pre + 37a-lit + 37a-net ALL PASSED HW
+(37a-net FIX PASSED 2026-08-01: local-BASIC paste works end to end).** `b3_clip_gate` (pinned $81BA, routes X=9→clipboard
+else `jmp $998B`) occupies **$81BA-$81C0 (7 B)**; `b3_clip_paste` starts at $81C1, so
+the usable clipboard code space is **exactly 128 B ($81C1-$8240)**. **37a-net** (the
+real LOCAL_PASTE_CHUNK fetch: connect+write+read+CHROUT, reusing the bank3 UCI
+leaves + `hsh_ip` + socket `$CF21`, all fins kept as in `hsh_body`) now uses **$81C1-
+$823D = 125 B** (3 B free at $823E-$8240). The **37a-net FIX** (single-pass read →
+bounded 256-try retry; first read returns a transient `$FFFF` "no data yet" prefix,
+which the old code mistook for done) was made to FIT the full reserve without touching
+`hsh_body` via three reclaims: connect IP loop pre-inc `ldx #$ff` trick (−2 B);
+retry-counter init folded into `bcp_wrq` (`sta $cf24`, +3 B fills the $8142 pad EXACTLY
+→ `bcp_wrq`=$8142-$8154, `hsh_ip` still $8155); and the `lda $cf21/sta $df1d` "send
+socket" preamble factored out of write+read into **`hsh_hdrs`** (`jsr hsh_hdr / lda
+$cf21 / sta $df1d / rts`), homed in the **dead 12 B $9BC0 hole** (old inline `hsh_ip`
+slot; leaves 2 B fill so `hd_fold` stays $9BCC). The hsh module + `hsh_ip`/`do_help`/
+gate/`hd_fold` stay byte-identical. Reached from the bank2 CINV/console-switch context
+via the proven `call_bank3` RAM trampoline ($0360 + `call_b3` in bank2 $9E8F) —
+FunPaint (§5.4) KEPT. **Remaining reserve for 37a-net-2/37b: ~3 B here + the $9BC0
+hole is now FULL (hsh_hdrs) and the $8142 pad is FULL** → offset-paging/copy will need
+their own homes (the $998B-$9E9C shell reserve is down to 1 B; consider a reserve-bank
+or a FunPaint decision). See conversion_log3.md Step 37 / §37.0e.
 
 **Step 31 (2026-07-21) new pocket:** dropping `#8/#9/#s` from `hd_setdev`
 (`hd_local`→`hd_bad`, short-circuits to a stock `?SYNTAX ERROR`) and from
@@ -122,9 +153,10 @@ gain this step: +15 B (headline table's "~29 B" step-31 estimate was high by
 (4 B) -- `kw_tab` moved $9E79→$9E85, ending at $9E9C, **1 B free** remains in
 the shell reserve (down from 17). Separately, `do_help` (the hsh_body-wrapper
 handler itself, ~102 B incl. its fallback text) was placed in the reclaimed SS
-pocket ahead of `hsh_ip` ($8155), which had ~223 B free there -- now ~121 B
-free at that spot (`do_help`+`dh_txt` end at ~$81C3, up to the kept $8241
-monitor header). See conversion_log3.md step 35.
+pocket ahead of `hsh_ip` ($8155), which had ~223 B free there -- now **135 B**
+free at that spot (`do_help`+`dh_txt` end at **$81BA** — verified 2026-08-01,
+not the ~$81C3 estimated here — up to the kept $8241 monitor header). See
+conversion_log3.md step 35.
 
 ### Banks 4-7 — 276 B total, all tails of HDN reserve pockets
 | Bank | Ranges | Bytes |
@@ -208,7 +240,8 @@ the copy boundary with tools/dis.py before trusting the 420-B figure.**
   by step 31 — that $80F8-$8241 pocket was not touched)/
   `b3_wait_pkt`=$812B (step 34, hardcoded as `B3_WAIT_PKT` in bank05.asm, UNCHANGED);
   bank4 `b4_disp`=$9C00; bank5 `rf_loader`=$804E, `b5_disp`=$9E00;
-  bank6 `b6_disp`=$9E00; bank7 `bb_main`=$8023; bank3 $8080 (`bit $8080` trick).
+  bank6 `b6_disp`=$9E00; bank7 `bb_main`=$8023; bank3 $8080 (`bit $8080` trick);
+  **bank3 `b3_clip_gate`=$81BA (step 37-pre — bank2 `tramp` hardcodes `jsr $81BA`).**
 
 ---
 
@@ -303,3 +336,22 @@ tail: 7 B used (`clip_tab`), 3 B left. Pinned `hondani_err`/`cs_install`/
 Bank 2 now has ~28 B usable left ($9E8F 14 + $9C8C-tail 4 + $9EF5-tail 3 + scraps) —
 the interactive selector + local-BASIC paste (deferred) need a bigger reclaim
 (FUNPAINT §5.4, owner chose to keep it) or a reserve-bank + IRQ cross-bank path.
+
+**2026-08-01 (Step-37 space audit — verify pass per owner request):** re-audited
+all banks for where the deferred clipboard code can live WITHOUT dropping
+FunPaint. Result: **bank 3's $81BA reserve (135 B) is the home**, reached via the
+proven `call_bank3` trampoline — see the bank-3 §2 entry above and conversion_log3
+Step 37. Corrections made this pass (KickAss `.sym`-verified): bank-3 reclaimed
+pocket free is 135 B at $81BA (was doc'd "~126 B at $81C3"); §1 bank-3 row +9 B.
+Bank-2 pinned addresses re-confirmed exact: `hondani_err`=$9B2E, `cs_install`=$9C41,
+`console_switch`=$9CB7 (§4 contract holds). Bank 0's 385 B is freeze/boot context
+(unusable for runtime clipboard); banks 4-7 are the opaque TMP+REU payload +
+tiny tails — neither is a candidate.
+**Decisive follow-on:** the bank3 reserve holds the bulk, but reaching it from the
+CINV/console-switch context needs ~21 B of *bank2* glue (chord dispatch + a
+RAM-resident cross-bank trampoline install/call; the bank-switch must run from
+RAM). Bank-2 max **contiguous** free is only **14 B** ($9E8F); the $9BA9 pocket
+is 100 % full and pinned; §3.4 confirms no dead code. So Path B is ~7 B short with
+no clean fix → **local-console clipboard effectively requires dropping FUNPAINT
+(§5.4, ~460 B — the sole bank2 reclaim)**, which also lets the whole feature live
+in-bank (no trampoline needed). Owner go/no-go pending. See conversion_log3 §37.0.

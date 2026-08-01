@@ -89,6 +89,11 @@ CONFIG_DEFAULTS = {
     # ways; it fails gracefully on headless hosts with no backend.
     "clipboard_host_sync": "true",
     "clipboard_max_bytes": "65536",
+    # background_poll off by default: the desktop clipboard is read on demand
+    # (when you paste on the C64), so nothing runs on a timer. Turn on only if
+    # desktop->C64 sync feels stale; note it flashes the GNOME/Wayland dock.
+    # poll_interval_ms applies only while background_poll is on.
+    "clipboard_background_poll": "false",
     "clipboard_poll_interval_ms": "500",
 }
 

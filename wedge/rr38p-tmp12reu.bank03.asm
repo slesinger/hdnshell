@@ -481,9 +481,28 @@ b3wp_no:
 b3wp_ok:
     clc
     rts
-    // step 35 shrank b3_wait_pkt by 19 bytes; pad back to its original $8155 end so
-    // hsh_ip/do_help keep their addresses -> zero downstream shift, surgical diff.
-.errorif (* > $8155), "b3_wait_pkt overran its original $8155 end -- downstream would shift"
+// step 37a-net: bcp_wrq -- the LOCAL_PASTE_CHUNK request-byte leaf, homed in this
+// dead pad (b3wp_ok above ends with rts, so nothing falls through here; reached
+// only by `jsr bcp_wrq` from b3_clip_paste). Writes the wire framing after the
+// socket id: magic $FE, console0|COMMAND $00, op $14. No offset/max bytes -> the
+// server defaults offset=0, max_bytes=64 (command_handler). Relocated out of the
+// 128 B bank3 clipboard reserve so b3_clip_paste's connect+read fits (see §37.0d).
+bcp_wrq:
+    lda #$fe               // wire magic
+    sta $df1d
+    lda #$00               // console 0 | COMMAND(0)
+    sta $df1d
+    sta $cf24              // step 37a-net-fix: init b3_clip_paste retry counter to
+                           // 0 (=256 tries), reusing A=$00 -- free, folded in here so
+                           // the read loop needs no inline init. This +3B fills the
+                           // $8142 pad exactly (bcp_wrq now $8142-$8154, hsh_ip=$8155).
+    lda #$14               // SERVER_CMD_LOCAL_PASTE_CHUNK
+    sta $df1d
+    rts
+    // step 35 shrank b3_wait_pkt by 19 bytes; step 37a-net reused part of that pad
+    // for bcp_wrq above. Pad back to the original $8155 end so hsh_ip/do_help keep
+    // their addresses -> zero downstream shift, surgical diff.
+.errorif (* > $8155), "b3_wait_pkt/bcp_wrq overran the $8155 end -- downstream would shift"
     .fill $8155 - *, $00
 .errorif (* != $8155), "step-35 pad did not restore hsh_ip to $8155"
 .errorif (* > $8241), "step-34 b3_dos1_read/b3_wait_pkt overran the kept $8241 monitor header"
@@ -526,6 +545,99 @@ dh_txt:
     .byte $41, $4E, $44, $20, $49, $4E, $53, $54, $41, $4C, $4C, $20, $4F, $4E, $20, $50, $43, $2F, $4D, $41, $43, $0D, $00
                            // "AND INSTALL ON PC/MAC",CR,0
 .errorif (* > $8241), "do_help overran the kept $8241 monitor header"
+// step 37-pre/37a-lit: b3_clip_gate -- bank3 entry for the clipboard chord,
+// reached via the call_b3 trampoline (bank2 `tramp` hardcodes `jsr $81BA`).
+// PINNED $81BA.
+//   X=9  (C=+CTRL+V) -> clipboard paste (37a-lit: CHROUT a fixed literal).
+//   X!=9 (e.g. $0B from the shell IERROR path) -> hsh_dispatch @ $998B, byte-
+//        identical in effect to tramp's old direct `jsr $998B`.
+b3_clip_gate:
+.errorif (* != $81BA), "b3_clip_gate moved (bank2 tramp hardcodes $81BA)"
+    cpx #$09
+    beq b3_clip_paste
+    jmp $998b              // hsh_dispatch (shell dispatcher) -- unchanged path
+b3_clip_paste:
+    // 37a-net: fetch the shared clipboard (LOCAL_PASTE_CHUNK) and CHROUT it at the
+    // BASIC cursor. Runs IRQ-masked from the CINV chain via call_b3 (cross-bank +
+    // CHROUT-from-IRQ both HW-proven by 37-pre / 37a-lit). Reuses the proven bank3
+    // UCI leaves (hsh_hdr/push/wdav/fin/close), hsh_ip, and socket $CF21 EXACTLY as
+    // hsh_body does -- same connect + per-phase fin sequence, so the wire behaviour
+    // is the tested one. Request payload = the op byte only: the server then
+    // defaults offset=0, max_bytes=64 (_handle_local_clipboard), covering a BASIC
+    // command line in one chunk. Reply = [total_hi, total_lo, done, petscii...]; we
+    // skip 5 leading bytes (2 UCI length-prefix + 3 app header) and CHROUT the rest.
+    // Newlines are flattened to spaces server-side, so no RETURN is injected. Single
+    // read pass (<=69 B << the 232 B window). The request-byte leaf (bcp_wrq) lives
+    // in the dead $8142 pad so this all fits the 128 B reserve. Offset paging (long
+    // clipboards) is 37a-net-2. See conversion_log3 §37.0d.
+    // ---- connect: target $03 cmd $07, port 6464 LE, hsh_ip ----
+    lda #$07
+    jsr hsh_hdr
+    lda #$40               // port 6464 = $1940, lo first
+    sta $df1d
+    lda #$19
+    sta $df1d
+    ldx #$ff               // step 37a-net-fix: pre-inc loop drops the cmp-after-inx
+bcp_ilp:                   // (STA preserves the LDA's Z), saving 2B for the retry
+    inx
+    lda hsh_ip,x           // host string incl. $00 terminator (Z set on terminator)
+    sta $df1d
+    bne bcp_ilp
+    jsr hsh_push
+    bcs bcp_cl
+    jsr hsh_wdav           // socket id must appear
+    bcs bcp_cl
+    lda $df1e
+    sta $cf21              // socket id
+    jsr hsh_fin            // drain/accept the connect response -> UCI idle
+    bcs bcp_cl             // connect status not "00" -> give up, close
+    // ---- write: cmd $11, socket, then bcp_wrq (magic/console0|CMD/op) ----
+    lda #$11
+    jsr hsh_hdrs          // header + socket id ($cf21) -- shared leaf in the $9BC0 hole
+    jsr bcp_wrq           // magic $FE, $00, op $14 (leaf in the $8142 pad; inits $cf24)
+    jsr hsh_push
+    bcs bcp_cl
+    jsr hsh_fin
+    // ---- read one chunk WITH RETRY; skip 5 lead bytes, CHROUT the payload ----
+    // The FIRST socket read almost always returns the 2-byte $FFFF "no data yet"
+    // length prefix -- the server needs a round trip (incl. pull_from_host to the
+    // host clipboard) before the reply lands. The 37a-net bug was a single pass: it
+    // read the transient $FFFF, saw DATA_AV drop, and closed -> nothing pasted. Mirror
+    // hsh_body: retry until real data arrives. $cf24 (init 0 = 256 tries, set in
+    // bcp_wrq) BOUNDS the retries so a peer close ($0000 EOF) or a wedged server can
+    // never hang -- both leave Y>0 at drain and burn down the counter. tya/beq/bmi
+    // then tells "only the prefix arrived" (Y>0 -> retry) from "the reply drained"
+    // (Y==0 empty reply, or Y<0 after printing text -> done).
+bcp_rd:
+    lda #$10
+    jsr hsh_hdrs          // header + socket id ($cf21)
+    lda #$e8              // read len lo (232)
+    sta $df1d
+    lda #$00              // read len hi
+    sta $df1d
+    jsr hsh_push
+    bcs bcp_cl
+    jsr hsh_wdav          // wait for this read's first byte (bounded ~1s, then C=1)
+    bcs bcp_cl
+    ldy #$05              // skip 2 UCI-length + 3 (total_hi,total_lo,done) lead bytes
+bcp_prlp:
+    lda $df1c
+    and #$80              // DATA_AV
+    beq bcp_drn           // stream drained -> decide retry vs done
+    lda $df1e             // pop one byte
+    dey
+    bpl bcp_prlp          // Y>=0 -> still in the 5 lead bytes -> discard
+    jsr $ffd2             // CHROUT the PETSCII char at the cursor (Y preserved)
+    jmp bcp_prlp
+bcp_drn:
+    tya
+    beq bcp_cl            // Y==0 -> full (empty) reply drained -> done
+    bmi bcp_cl            // Y<0  -> printed text drained -> done
+    jsr hsh_fin           // Y>0  -> only the prefix arrived: drain/accept, then retry
+    dec $cf24
+    bne bcp_rd
+bcp_cl:
+    jmp hsh_close         // close socket (its own jmp hsh_fin drains) + return
     .fill $8241 - *, $00   // remainder of the reclaimed SS pocket (free bank3 reserve)
 .errorif (* != $8241), "step-31 fill did not land on $8241 (monitor header)"
 b03_8241:
@@ -3462,7 +3574,20 @@ hsh_fbad:
 // been relocated into the free $8241 reserve (search "hsh_ip:" below) so the
 // Download&Update IP patcher gets a full 16-byte slot. 12 zero bytes are kept
 // here so hd_fold and everything after stay byte-exact.
-    .fill $0C, $00         // (was: hsh_ip "192.168.1.2",0)
+// step 37a-net-fix: hsh_hdrs -- shared "send header + socket id" leaf for
+// b3_clip_paste's write ($11) and read ($10) phases, homed in this 12-byte hole
+// (freed when hsh_ip moved to the $8241 reserve). Factoring the 6-byte
+// `lda $cf21 / sta $df1d` preamble out of BOTH phases reclaimed the reserve bytes
+// the bounded retry needed. A = command id on entry (passed straight to hsh_hdr).
+// Callers: b3_clip_paste only -- the shell's hsh_body/hsh_close keep their own
+// inline copies, so the shell path is byte-for-byte unchanged (zero blast radius).
+hsh_hdrs:
+    jsr hsh_hdr            // A=cmd -> target $03 + cmd (handles idle wait / $0E kick)
+    lda $cf21
+    sta $df1d
+    rts
+.errorif (* > $9bcc), "hsh_hdrs overran the 12B hsh_ip hole -> hd_fold/$9E9D shift"
+    .fill $9bcc - *, $00   // keep this hole exactly 12B so hd_fold stays $9BCC
 // ---- step 12 helpers --------------------------------------------------------
 // hd_fold: normalize the device letter in A to uppercase ($41-$5A). Accepts
 // lowercase ($61-$7A -> AND $DF) and shifted PETSCII ($C1-$DA -> AND $7F); digits

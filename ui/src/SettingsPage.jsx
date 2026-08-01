@@ -749,9 +749,35 @@ export default function SettingsPage({ lastC64Ip }) {
             </label>
             <div className="form-text">
               Mirrors your computer's clipboard to the C64 and back, both ways.
+              A C64 copy reaches the desktop instantly; the desktop clipboard is
+              read only when you paste on the C64 &mdash; nothing runs on a timer.
               Turn off to keep the C64/app clipboard fully separate from the
               desktop. Fails gracefully on headless hosts with no clipboard
               backend.
+            </div>
+          </div>
+          <div className="form-check form-switch mb-3">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="clipboardBackgroundPoll"
+              checked={(config.clipboard_background_poll || "false").toLowerCase() === "true"}
+              onChange={(e) =>
+                setConfig((prev) => ({
+                  ...prev,
+                  clipboard_background_poll: e.target.checked ? "true" : "false",
+                }))
+              }
+            />
+            <label className="form-check-label" htmlFor="clipboardBackgroundPoll">
+              Poll the desktop clipboard in the background
+            </label>
+            <div className="form-text">
+              Leave off (default). When on, the desktop clipboard is re-read on a
+              timer instead of on demand. Only enable this if desktop&rarr;C64
+              sync feels stale on your setup &mdash; on GNOME/Wayland it makes the
+              dock icon and taskbar flash each interval.
             </div>
           </div>
           <div className="row">
@@ -774,10 +800,14 @@ export default function SettingsPage({ lastC64Ip }) {
                 min="50"
                 className="form-control"
                 placeholder="500"
+                disabled={(config.clipboard_background_poll || "false").toLowerCase() !== "true"}
                 value={config.clipboard_poll_interval_ms || ""}
                 onChange={(e) => setConfig((prev) => ({ ...prev, clipboard_poll_interval_ms: e.target.value }))}
               />
-              <div className="form-text">How often the desktop clipboard is checked for changes.</div>
+              <div className="form-text">
+                Only used when background polling (above) is on. With the default
+                on-demand sync the desktop clipboard is read only when you paste.
+              </div>
             </div>
           </div>
         </div>
