@@ -12,6 +12,7 @@ helpers that advance the cursor and scroll automatically.
 
 import logging
 import math
+import threading
 import time
 from typing import Optional
 
@@ -89,6 +90,15 @@ class ServerConsole:
     def __init__(self, console_id: int, session_id: int):
         self.console_id = console_id
         self.session_id = session_id
+        # The wedge opens a fresh TCP connection per command, and the server
+        # spawns a new thread per connection (cloud_server.py), so bursts of
+        # keypresses (e.g. KERNAL auto-repeat while a cursor key is held)
+        # can dispatch to this same console instance concurrently. Every
+        # entry point that reads/mutates screen/color or app state must hold
+        # this lock for its full read-render-push sequence, or concurrent
+        # renders can interleave (torn frames) and state updates can race
+        # (lost/duplicated scroll steps).
+        self.lock = threading.RLock()
         self.screen = bytearray(SCREEN_SIZE)
         self.color = bytearray(SCREEN_SIZE)
         self.cursor_col: int = 0

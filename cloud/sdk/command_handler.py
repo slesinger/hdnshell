@@ -564,11 +564,16 @@ class CommandHandler:
             Response bytes, or None.
         """
         mgr = ConsoleManager.instance()
+        console = mgr.get_console(console_id, session_id)
 
         if data[0] == SERVER_CMD_GET_SCREEN:
             logger.info(f"GET_SCREEN for console {console_id}, session {session_id}")
-            screen = mgr.get_screen_data(console_id, session_id)
-            color = mgr.get_color_data(console_id, session_id)
+            # See handle_console_keypress for why this needs the console's
+            # lock: a concurrent keypress/fetch thread could otherwise be
+            # mid-render when this snapshot is taken.
+            with console.lock:
+                screen = mgr.get_screen_data(console_id, session_id)
+                color = mgr.get_color_data(console_id, session_id)
             send_screen_data(screen, color)
             return None
 
@@ -578,12 +583,14 @@ class CommandHandler:
             SERVER_CMD_CLIPBOARD_INFO,
             SERVER_CMD_PASTE_TO_APP,
         ):
-            return CommandHandler._handle_console_clipboard(
-                console_id, data, session_id, mgr
-            )
+            with console.lock:
+                return CommandHandler._handle_console_clipboard(
+                    console_id, data, session_id, mgr
+                )
 
         # Delegate to console-specific handler
-        result = mgr.handle_command(console_id, session_id, data)
+        with console.lock:
+            result = mgr.handle_command(console_id, session_id, data)
         if result is not None:
             return result
 
@@ -608,7 +615,17 @@ class CommandHandler:
         petscii_code = data[0]
         modifiers = swap_c64_modifiers(data[1])
         mgr = ConsoleManager.instance()
-        mgr.handle_keypress(console_id, session_id, petscii_code, modifiers)
+
+        # The wedge opens a fresh connection per command and the server
+        # spawns a thread per connection, so a burst of keypresses (e.g.
+        # KERNAL auto-repeat while a cursor key is held) can reach this
+        # console concurrently from multiple threads. Serialize the whole
+        # handle-then-render sequence on the target console's own lock so
+        # concurrent keypresses can't interleave mid-render (torn screens)
+        # or race on app state (lost/duplicated scroll steps).
+        console = mgr.get_console(console_id, session_id)
+        with console.lock:
+            mgr.handle_keypress(console_id, session_id, petscii_code, modifiers)
 
         # A keypress handler can switch the session's active console -- e.g. the
         # Launcher's RETURN opens an app on another slot (LauncherConsole._open_app),
@@ -619,9 +636,11 @@ class CommandHandler:
         active_id = mgr.active_console_id(session_id)
         if active_id is None:
             active_id = console_id
+        active_console = mgr.get_console(active_id, session_id)
         # TODO temporary inefficient - send whole screen via DMA
-        screen = mgr.get_screen_data(active_id, session_id)
-        color = mgr.get_color_data(active_id, session_id)
+        with active_console.lock:
+            screen = active_console.get_screen_data()
+            color = active_console.get_color_data()
         send_screen_data(screen, color)
         return None
 
@@ -638,4 +657,6 @@ class CommandHandler:
             session_id: Client session ID.
         """
         mgr = ConsoleManager.instance()
-        return mgr.handle_text_input(console_id, session_id, data)
+        console = mgr.get_console(console_id, session_id)
+        with console.lock:
+            return mgr.handle_text_input(console_id, session_id, data)

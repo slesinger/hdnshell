@@ -111,7 +111,7 @@ CONTENT_TOP = 1
 CONTENT_BOTTOM = 23
 CONTENT_ROWS = CONTENT_BOTTOM - CONTENT_TOP + 1  # 23
 STATUS_ROW = 24
-LINES_PER_ARTICLE = 5  # title + 2 summary lines + date + separator
+LINES_PER_ARTICLE = 6  # 4 wrapped title lines + date + separator
 
 # ── Settings keys (stored in config_manager) ─────────────────────────
 SETTINGS_FIELDS = ["Max Articles", "Refresh (min)"]
@@ -779,35 +779,42 @@ class RSSReaderConsole(ServerConsole):
             finally:
                 self._article_fetching = False
 
-            # Only update if we are still viewing the same article
-            if (
-                self.mode == MODE_ARTICLE
-                and self.current_article
-                and self.current_article.get("link") == url
-            ):
-                art = self.current_article
-                lines: List[str] = []
-                title_text = art.get("title", "(no title)") or "(no title)"
-                lines.extend(_word_wrap(title_text))
-                lines.append("")
-                src = art.get("feed_title", "")
-                date = art.get("published", "")
-                if src or date:
-                    meta = []
-                    if src:
-                        meta.append(src)
-                    if date:
-                        meta.append(date)
-                    lines.extend(_word_wrap(" | ".join(meta)))
+            # Runs on a background thread while the user may be mid-scroll on
+            # the main (per-connection) thread -- take the console lock for
+            # the whole read-check-mutate-render-push sequence so this can't
+            # interleave with a keypress's own render (torn screen) or stomp
+            # a scroll position the user set after this fetch started.
+            with self.lock:
+                # Only update if we are still viewing the same article
+                if (
+                    self.mode == MODE_ARTICLE
+                    and self.current_article
+                    and self.current_article.get("link") == url
+                ):
+                    art = self.current_article
+                    lines: List[str] = []
+                    title_text = art.get("title", "(no title)") or "(no title)"
+                    lines.extend(_word_wrap(title_text))
                     lines.append("")
-                if url:
-                    lines.append(url[:SCREEN_COLS])
-                    lines.append("")
-                lines.extend(_word_wrap(full_text))
-                self.article_lines = lines
-                self.article_view_scroll = 0
-                self.status_msg = "Full article loaded"
-                self._full_render()
+                    src = art.get("feed_title", "")
+                    date = art.get("published", "")
+                    if src or date:
+                        meta = []
+                        if src:
+                            meta.append(src)
+                        if date:
+                            meta.append(date)
+                        lines.extend(_word_wrap(" | ".join(meta)))
+                        lines.append("")
+                    if url:
+                        lines.append(url[:SCREEN_COLS])
+                        lines.append("")
+                    lines.extend(_word_wrap(full_text))
+                    self.article_lines = lines
+                    self.article_view_scroll = 0
+                    self.status_msg = "Full article loaded"
+                    self._full_render()
+                    self.push_screen()
 
         threading.Thread(target=_do_fetch, daemon=True).start()
 
@@ -1014,47 +1021,47 @@ class RSSReaderConsole(ServerConsole):
             art = self.articles[art_idx]
             is_sel = art_idx == self.article_sel
 
-            # Line 1: feed abbreviation + title
+            # Lines 1-4: feed abbreviation (line 1 only) + word-wrapped title
             feed_abbr = (art.get("feed_title", "") or "")[:8]
             if feed_abbr:
                 feed_abbr = feed_abbr + " "
             title_space = SCREEN_COLS - len(feed_abbr)
-            art_title = (art.get("title", "") or "(no title)")[:title_space]
-            full_line = feed_abbr + art_title
+            art_title = art.get("title", "") or "(no title)"
 
-            if is_sel:
-                self._write_text(
-                    screen_row,
-                    0,
-                    full_line.ljust(SCREEN_COLS),
-                    COL_SELECTED_FG,
-                    reverse=True,
-                )
-            else:
-                # Feed name in cyan, title in white
-                if feed_abbr:
-                    self._write_text(screen_row, 0, feed_abbr, COL_FEED_NAME_FG)
-                self._write_text(screen_row, len(feed_abbr), art_title, COL_WHITE)
+            first_wrap = _word_wrap(art_title, title_space)
+            line1_title = first_wrap[0] if first_wrap else ""
+            remainder = art_title[len(line1_title):].lstrip()
+            rest_lines = _word_wrap(remainder)[:3] if remainder else []
+            title_lines = [line1_title] + rest_lines
+            while len(title_lines) < 4:
+                title_lines.append("")
 
-            screen_row += 1
-            if screen_row > CONTENT_BOTTOM:
-                break
-
-            # Lines 2-3: summary preview (up to 2 word-wrapped lines)
-            summary = art.get("summary", "") or ""
-            preview_lines = _word_wrap(summary[:200])[:2]
-            for pi in range(2):
-                pline = preview_lines[pi] if pi < len(preview_lines) else ""
-                if is_sel:
-                    self._write_text(
-                        screen_row,
-                        0,
-                        pline.ljust(SCREEN_COLS),
-                        COL_TEXT_FG,
-                        reverse=True,
-                    )
+            for ti, tline in enumerate(title_lines):
+                if ti == 0 and feed_abbr:
+                    if is_sel:
+                        self._write_text(
+                            screen_row,
+                            0,
+                            (feed_abbr + tline).ljust(SCREEN_COLS)[:SCREEN_COLS],
+                            COL_SELECTED_FG,
+                            reverse=True,
+                        )
+                    else:
+                        self._write_text(screen_row, 0, feed_abbr, COL_FEED_NAME_FG)
+                        self._write_text(
+                            screen_row, len(feed_abbr), tline, COL_WHITE
+                        )
                 else:
-                    self._write_text(screen_row, 0, pline, COL_TEXT_FG)
+                    if is_sel:
+                        self._write_text(
+                            screen_row,
+                            0,
+                            tline.ljust(SCREEN_COLS),
+                            COL_SELECTED_FG,
+                            reverse=True,
+                        )
+                    else:
+                        self._write_text(screen_row, 0, tline, COL_WHITE)
                 screen_row += 1
                 if screen_row > CONTENT_BOTTOM:
                     break
@@ -1062,7 +1069,7 @@ class RSSReaderConsole(ServerConsole):
             if screen_row > CONTENT_BOTTOM:
                 break
 
-            # Line 4: date
+            # Line 5: date
             date_str = art.get("published", "")[:SCREEN_COLS]
             if is_sel:
                 self._write_text(
@@ -1077,7 +1084,7 @@ class RSSReaderConsole(ServerConsole):
 
             screen_row += 1
 
-            # Line 5: horizontal separator between articles
+            # Line 6: horizontal separator between articles
             if screen_row <= CONTENT_BOTTOM:
                 off = screen_row * SCREEN_COLS
                 for col in range(SCREEN_COLS):
