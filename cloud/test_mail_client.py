@@ -235,6 +235,49 @@ class TestComposeHelpers:
 
 
 # ----------------------------------------------------------------------
+# Link extraction (GH #27)
+# ----------------------------------------------------------------------
+
+
+class TestExtractLinks:
+    def test_finds_footnote_link(self):
+        lines = [("See [1] now.", mc.COL_TEXT_FG),
+                 (" ", mc.COL_TEXT_FG),
+                 ("[1] https://example.com/x", mc.COL_TEXT_FG)]
+        links = mc._extract_links(lines)
+        assert len(links) == 1
+        assert links[0].url == "https://example.com/x"
+        assert links[0].line == 2
+
+    def test_finds_bare_inline_url(self):
+        lines = [("Check http://example.org/page for info.", mc.COL_TEXT_FG)]
+        links = mc._extract_links(lines)
+        assert len(links) == 1
+        assert links[0].url == "http://example.org/page"
+
+    def test_strips_trailing_punctuation(self):
+        lines = [("Visit (https://example.com/a).", mc.COL_TEXT_FG)]
+        links = mc._extract_links(lines)
+        assert links[0].url == "https://example.com/a"
+
+    def test_multiple_links_same_line(self):
+        lines = [("a https://one.com/ b https://two.com/ c", mc.COL_TEXT_FG)]
+        links = mc._extract_links(lines)
+        assert [lk.url for lk in links] == ["https://one.com/", "https://two.com/"]
+
+    def test_no_links(self):
+        lines = [("just plain text", mc.COL_TEXT_FG)]
+        assert mc._extract_links(lines) == []
+
+    def test_col_positions(self):
+        lines = [("xx https://a.com yy", mc.COL_TEXT_FG)]
+        links = mc._extract_links(lines)
+        link = links[0]
+        text = lines[0][0]
+        assert text[link.col_start:link.col_end] == "https://a.com"
+
+
+# ----------------------------------------------------------------------
 # Catalog / registration
 # ----------------------------------------------------------------------
 
@@ -286,6 +329,115 @@ class TestKeyDispatch:
         assert c.compose_field == mc.FIELD_CC
         c._key_compose(mc.KEY_TAB, mc.MOD_COMMODORE)
         assert c.compose_field == mc.FIELD_TO
+
+
+# ----------------------------------------------------------------------
+# Link cycling + open-in-browser handoff (GH #27)
+# ----------------------------------------------------------------------
+
+
+class TestMessageViewLinks:
+    def _console_with_links(self):
+        c = mc.MailClientConsole(8, 998)
+        c.mode = mc.MODE_VIEW
+        c.body = mc.MailBody(uid="1", text_lines=[
+            ("Hello there.", mc.COL_TEXT_FG),
+            ("First https://one.example/ link.", mc.COL_TEXT_FG),
+            ("Second https://two.example/ link.", mc.COL_TEXT_FG),
+        ])
+        c.links = mc._extract_links(c.body.text_lines)
+        c.active_link_idx = -1
+        return c
+
+    def test_space_highlights_first_visible_link(self):
+        c = self._console_with_links()
+        c._key_view(mc.KEY_SPACE, 0)
+        assert c.active_link_idx == 0
+        assert c.links[c.active_link_idx].url == "https://one.example/"
+
+    def test_space_cycles_through_links(self):
+        c = self._console_with_links()
+        c._key_view(mc.KEY_SPACE, 0)
+        c._key_view(mc.KEY_SPACE, 0)
+        assert c.links[c.active_link_idx].url == "https://two.example/"
+        c._key_view(mc.KEY_SPACE, 0)  # wraps back
+        assert c.links[c.active_link_idx].url == "https://one.example/"
+
+    def test_space_with_no_links_is_a_noop(self):
+        c = self._console_with_links()
+        c.links = []
+        c._key_view(mc.KEY_SPACE, 0)
+        assert c.active_link_idx == -1
+
+    def test_return_opens_active_link(self, monkeypatch):
+        c = self._console_with_links()
+        c._key_view(mc.KEY_SPACE, 0)  # highlight link 0
+        opened = []
+        monkeypatch.setattr(c, "_open_url_in_browser", lambda url: opened.append(url))
+        c._key_view(mc.KEY_RETURN, 0)
+        assert opened == ["https://one.example/"]
+
+    def test_return_without_active_link_is_a_noop(self, monkeypatch):
+        c = self._console_with_links()
+        opened = []
+        monkeypatch.setattr(c, "_open_url_in_browser", lambda url: opened.append(url))
+        c._key_view(mc.KEY_RETURN, 0)
+        assert opened == []
+
+    def test_back_to_list_clears_links(self):
+        c = self._console_with_links()
+        c._key_view(mc.KEY_SPACE, 0)
+        c._back_to_list()
+        assert c.links == []
+        assert c.active_link_idx == -1
+
+    def test_open_url_in_browser_switches_console_and_skips_own_repaint(
+        self, monkeypatch
+    ):
+        import web_browser
+        from sdk.app_registry import AppInfo, AppRegistry
+        from sdk.launcher_config import LauncherConfig
+
+        AppRegistry.reset()
+        registry = AppRegistry.instance()
+        registry.register(AppInfo("web_browser", "Web Browser", "",
+                                  4, web_browser.WebBrowserConsole))
+        monkeypatch.setattr(LauncherConfig, "load",
+                            classmethod(lambda cls, default_pins=None: LauncherConfig({}, [])))
+        # No configured home page -> constructing the browser console won't
+        # kick off its own background navigate that could race our stub.
+        import sdk.config_manager as config_manager
+        monkeypatch.setattr(config_manager, "read_config", lambda: {})
+
+        c = self._console_with_links()
+        navigated = []
+        monkeypatch.setattr(
+            web_browser.WebBrowserConsole, "_navigate",
+            lambda self, url, add_to_history=True: navigated.append(url))
+        painted = []
+        monkeypatch.setattr(
+            mc.MailClientConsole, "_route_and_paint",
+            lambda self, slot, screen, color: painted.append(slot))
+
+        try:
+            c._key_view(mc.KEY_SPACE, 0)
+            c._key_view(mc.KEY_RETURN, 0)
+
+            assert navigated == ["https://one.example/"]
+            assert painted == [4]  # web_browser's default slot
+            assert c._switched_console is True
+        finally:
+            AppRegistry.reset()
+
+    def test_handle_keypress_skips_own_push_after_switch(self, monkeypatch):
+        c = self._console_with_links()
+        monkeypatch.setattr(c, "_open_active_link",
+                            lambda: setattr(c, "_switched_console", True))
+        c.mode = mc.MODE_VIEW
+        pushed = []
+        monkeypatch.setattr(c, "_push_screen", lambda: pushed.append(True))
+        c.handle_keypress(mc.KEY_RETURN, 0)
+        assert pushed == []
 
 
 class TestRegistration:

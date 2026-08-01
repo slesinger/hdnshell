@@ -168,6 +168,9 @@ HELP_LINES = [
     " MESSAGE VIEW",
     " UP/DOWN     Scroll",
     " C=+< / C=+> Page up / down",
+    " SPACE       Highlight next link",
+    " RETURN      Open highlighted link",
+    "             (switches to Web Browser)",
     " F3          Reply",
     " F4          Reply all",
     " F7          Forward",
@@ -236,6 +239,16 @@ class MailBody:
     attachments: List[Attachment] = field(default_factory=list)
 
 
+@dataclass
+class MailLink:
+    """A URL found in a message body, positioned in ``MailBody.text_lines``."""
+
+    url: str = ""
+    line: int = 0        # index into text_lines
+    col_start: int = 0   # start column within the (untruncated) line text
+    col_end: int = 0     # exclusive end column
+
+
 # =====================================================================
 #  Pure helpers (unit-testable)
 # =====================================================================
@@ -268,6 +281,28 @@ def _parse_address(raw: Optional[str]) -> Tuple[str, str]:
 _TAG_RE = re.compile(r"<[^>]+>")
 _A_HREF_RE = re.compile(r'<a\s+[^>]*href=["\']?([^"\'>\s]+)', re.IGNORECASE)
 _WS_RE = re.compile(r"[ \t]+")
+_URL_RE = re.compile(r'https?://[^\s<>"\']+')
+_URL_TRAILING_PUNCT = ".,;:!?)]}>\"'"
+
+
+def _extract_links(text_lines: List[Tuple[str, int]]) -> List["MailLink"]:
+    """Find every http(s) URL in *text_lines*, in reading order.
+
+    Catches both the ``[n] https://...`` footnotes ``_html_to_text`` appends
+    for HTML mail and bare URLs typed inline in plain-text mail.
+    """
+    links: List[MailLink] = []
+    for i, (text, _color) in enumerate(text_lines):
+        for m in _URL_RE.finditer(text):
+            url = m.group(0)
+            end = m.end()
+            while url and url[-1] in _URL_TRAILING_PUNCT:
+                url = url[:-1]
+                end -= 1
+            if url:
+                links.append(MailLink(url=url, line=i,
+                                      col_start=m.start(), col_end=end))
+    return links
 
 
 def _html_to_text(html: str) -> str:
@@ -1145,6 +1180,9 @@ class MailClientConsole(ServerConsole):
         self.view_scroll: int = 0
         self.attach_overlay: bool = False
         self.attach_sel: int = 0
+        self.links: List[MailLink] = []
+        self.active_link_idx: int = -1
+        self._switched_console: bool = False
 
         # Compose state
         self.compose_fields = {FIELD_TO: "", FIELD_CC: "", FIELD_SUB: "",
@@ -1260,9 +1298,14 @@ class MailClientConsole(ServerConsole):
                 MODE_HELP: self._key_help,
             }
             handler = handlers.get(self.mode, self._key_list)
+            self._switched_console = False
             handler(petscii_code, modifiers)
-            self._full_render()
-            self._push_screen()
+            # A link handoff (GH #27) already painted the browser console's
+            # screen onto the C64; repainting our own buffer here would race
+            # it and win, stomping the switch. Skip our own push that turn.
+            if not self._switched_console:
+                self._full_render()
+                self._push_screen()
         return None
 
     def handle_text_input(self, data: bytes) -> Optional[bytes]:
@@ -1336,6 +1379,8 @@ class MailClientConsole(ServerConsole):
             self.view_scroll = 0
             self.attach_overlay = False
             self.attach_sel = 0
+            self.links = _extract_links(body.text_lines)
+            self.active_link_idx = -1
             self.mode = MODE_VIEW
             # Reflect the now-seen state locally.
             for h in self.headers:
@@ -1536,6 +1581,10 @@ class MailClientConsole(ServerConsole):
             self.prev_mode = MODE_VIEW
             self.help_scroll = 0
             self.mode = MODE_HELP
+        elif key == KEY_SPACE:
+            self._cycle_link()
+        elif key == KEY_RETURN:
+            self._open_active_link()
         else:
             ch = (self._printable(key) or "").lower()
             if ch == "n":
@@ -1556,6 +1605,8 @@ class MailClientConsole(ServerConsole):
         self.mode = MODE_LIST
         self.body = None
         self.attach_overlay = False
+        self.links = []
+        self.active_link_idx = -1
 
     def _view_step(self, delta: int):
         if not self.headers:
@@ -1568,6 +1619,86 @@ class MailClientConsole(ServerConsole):
             elif self.list_sel < self.list_scroll:
                 self.list_scroll = self.list_sel
             self._open_message(self.headers[self.list_sel].uid)
+
+    # =================================================================
+    #  LINKS (GH #27 — click links in an email, same UX as the browser)
+    # =================================================================
+
+    def _cycle_link(self):
+        """Highlight the next link visible in the current scroll window."""
+        if not self.links:
+            self.status_msg = "No links in this message"
+            return
+        rows = self._view_rows()
+        vis_start = self.view_scroll
+        vis_end = self.view_scroll + rows - 1
+        visible = [i for i, lk in enumerate(self.links)
+                  if vis_start <= lk.line <= vis_end]
+        if not visible:
+            self.active_link_idx = -1
+            self.status_msg = "No links on screen"
+            return
+        if self.active_link_idx not in visible:
+            self.active_link_idx = visible[0]
+        else:
+            vi = visible.index(self.active_link_idx)
+            self.active_link_idx = visible[(vi + 1) % len(visible)]
+
+    def _open_active_link(self):
+        if not (0 <= self.active_link_idx < len(self.links)):
+            return
+        self._open_url_in_browser(self.links[self.active_link_idx].url)
+
+    def _open_url_in_browser(self, url: str):
+        """Hand *url* off to the Web Browser console and switch to it.
+
+        Mirrors ``LauncherConsole._open_app``: resolve the slot the browser
+        currently lives on (it may have been re-pinned), navigate it, then
+        DMA-switch the C64's active console and push the rendered page.
+        """
+        try:
+            from sdk.app_registry import AppRegistry
+            from sdk.launcher_config import LauncherConfig
+            from sdk.console_manager import ConsoleManager
+
+            registry = AppRegistry.instance()
+            info = registry.get("web_browser")
+            if info is None:
+                self.status_msg = "Browser app unavailable"
+                return
+            config = LauncherConfig.load(registry.default_pins())
+            slot = config.slot_for_app("web_browser") or info.default_slot
+
+            mgr = ConsoleManager.instance()
+            try:
+                mgr.register_factory(slot, info.factory)
+            except Exception:
+                logger.exception("open_link: register_factory failed slot=%s", slot)
+
+            browser = mgr.get_console(slot, self.session_id)
+            browser._navigate(url)  # blocks; pushes its own loading/result screens
+
+            screen = mgr.get_screen_data(slot, self.session_id)
+            color = mgr.get_color_data(slot, self.session_id)
+            self._route_and_paint(slot, screen, color)
+            self._switched_console = True
+        except Exception as e:
+            logger.error("open_link failed: %s", e)
+            self.status_msg = "Could not open link"
+
+    def _route_and_paint(self, slot: int, screen: bytes, color: bytes):
+        """DMA-write w_console=$03EF and paint the target console (HW only)."""
+        try:
+            from sdk import network_helper as nh
+
+            host = nh.read_last_c64_ip()
+            if host:
+                # w_console lives at $03EF; console nibble = slot << 4.
+                nh.send_dmawrite(host, bytes([0xEF, 0x03, (slot << 4) & 0xFF]))
+            nh.send_screen_data(screen, color)
+        except Exception:
+            logger.debug("open_link: route/paint failed (off hardware?)",
+                         exc_info=True)
 
     def _key_attach(self, key: int, mod: int):
         atts = self.body.attachments if self.body else []
@@ -1982,15 +2113,24 @@ class MailClientConsole(ServerConsole):
 
         lines = self.body.text_lines if self.body else []
         rows = self._view_rows()
+        active_link = (self.links[self.active_link_idx]
+                      if 0 <= self.active_link_idx < len(self.links) else None)
         for vi in range(rows):
             li = self.view_scroll + vi
             if li >= len(lines):
                 break
             text, colour = lines[li]
             self._put(5 + vi, 0, text[:SCREEN_COLS], colour)
+            if active_link is not None and active_link.line == li:
+                self._highlight_link(5 + vi, active_link)
 
-        self._render_status_bar(
-            " F3Reply F4All F7Fwd D-Del A-Att F8=HELP")
+        if active_link is not None:
+            status = " RETURN=Open link  SPACE=Next  F8=HELP"
+        elif self.links:
+            status = " SPACE=Links F3Reply F7Fwd D-Del F8=HELP"
+        else:
+            status = " F3Reply F4All F7Fwd D-Del A-Att F8=HELP"
+        self._render_status_bar(status)
 
         if self.attach_overlay:
             self._render_attach_overlay()
@@ -2139,6 +2279,17 @@ class MailClientConsole(ServerConsole):
         for c in range(SCREEN_COLS):
             self.screen[row * SCREEN_COLS + c] = SC_HLINE
             self.color[row * SCREEN_COLS + c] = COL_DARK_GREY
+
+    def _highlight_link(self, row: int, link: "MailLink"):
+        """Reverse-video the on-screen slice of *link* (clipped to 0..40)."""
+        start = max(0, link.col_start)
+        end = min(SCREEN_COLS, link.col_end)
+        if row < 0 or row >= SCREEN_ROWS:
+            return
+        for c in range(start, end):
+            pos = row * SCREEN_COLS + c
+            self.screen[pos] |= SC_REVERSE_BIT
+            self.color[pos] = COL_SELECTED_FG
 
     def _put(self, row: int, col: int, text: str, fg: int, reverse: bool = False):
         for i, ch in enumerate(text):
