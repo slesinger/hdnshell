@@ -482,6 +482,8 @@ HELP_LINES = [
     " SPACE       Cycle links on screen",
     " RETURN      Follow highlighted link",
     " LEFT ARROW  Back one page",
+    " F3          Back one page",
+    " F5          Forward one page",
     "",
     " URL & TABS",
     " F7          Open URL input",
@@ -603,6 +605,7 @@ class BrowserTab:
     loading: bool = False
     error_msg: str = ""
     history: List[str] = field(default_factory=list)  # navigation history stack
+    forward_history: List[str] = field(default_factory=list)  # forward stack (populated by Back)
 
 
 # =====================================================================
@@ -630,7 +633,6 @@ class WebBrowserConsole(ServerConsole):
         # History list state
         self.history_sel: int = 0
         self.history_scroll: int = 0
-        self._navigating_back: bool = False
         # Initial render
         # If a home page is configured in server settings, start navigation
         # in a background thread so initialization isn't blocked.
@@ -781,12 +783,22 @@ class WebBrowserConsole(ServerConsole):
             self.mode = MODE_BOOKMARKS
             self._send_vic_colors(COL_LIGHT_BLUE, COL_BLUE)
 
-        elif key == KEY_LEFT_ARROW:
+        elif key in (KEY_LEFT_ARROW, KEY_F3):
             # Navigate back one page in history
             if tab.history:
+                tab.forward_history.append(tab.url)
                 prev_url = tab.history.pop()
-                self._navigating_back = True
-                self._navigate(prev_url)
+                self._navigate(prev_url, add_to_history=False)
+
+        elif key == KEY_F5:
+            # Navigate forward one page (after a Back)
+            if tab.forward_history:
+                next_url = tab.forward_history.pop()
+                if tab.url:
+                    tab.history.append(tab.url)
+                    if len(tab.history) > MAX_HISTORY:
+                        tab.history = tab.history[-MAX_HISTORY:]
+                self._navigate(next_url, add_to_history=False)
 
         elif key == KEY_F4:
             # Open history list
@@ -1149,17 +1161,22 @@ class WebBrowserConsole(ServerConsole):
     #  NAVIGATION
     # =================================================================
 
-    def _navigate(self, url: str):
-        """Fetch and render a URL in the active tab."""
+    def _navigate(self, url: str, add_to_history: bool = True):
+        """Fetch and render a URL in the active tab.
+
+        add_to_history is False for Back/Forward navigation, whose stack
+        bookkeeping is handled by the caller (_key_browse).
+        """
         logger.info(f"Browser navigating to: {url}")
         tab = self.tab
 
-        # Record current URL in history (unless navigating back)
-        if not self._navigating_back and tab.url:
+        # Record current URL in history; a fresh navigation invalidates
+        # the forward stack (matches standard browser back/forward semantics).
+        if add_to_history and tab.url:
             tab.history.append(tab.url)
             if len(tab.history) > MAX_HISTORY:
                 tab.history = tab.history[-MAX_HISTORY:]
-        self._navigating_back = False
+            tab.forward_history = []
 
         tab.url = url
         tab.loading = True

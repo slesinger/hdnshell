@@ -93,7 +93,8 @@ unaffected either way.
 | `C=+>` | Page down |
 | `SPACE` | Cycle through links visible on screen |
 | `RETURN` | Follow the highlighted link |
-| `LEFT ARROW` | Go back one page |
+| `LEFT ARROW` / `F3` | Go back one page |
+| `F5` | Go forward one page |
 
 ### URL Input
 
