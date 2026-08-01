@@ -160,10 +160,19 @@ class C64Server:
                 "on",
             )
             poll_ms = int(cfg.get("clipboard_poll_interval_ms") or 500)
+            # Background polling spawns a `wl-paste` client every tick, which
+            # flashes the dock/taskbar on GNOME (no wlroots data-control).
+            # Off by default: desktop->C64 is pulled on demand at paste time.
+            background_poll = str(
+                cfg.get("clipboard_background_poll", "false")
+            ).lower() in ("1", "true", "yes", "on")
 
             service = configure(max_bytes=max_bytes)
             self.clipboard_sync = HostClipboardSync(
-                service, enabled=host_sync, poll_interval_ms=poll_ms
+                service,
+                enabled=host_sync,
+                poll_interval_ms=poll_ms,
+                background_poll=background_poll,
             )
         except Exception:
             logger.exception("clipboard initialisation failed; continuing without it")

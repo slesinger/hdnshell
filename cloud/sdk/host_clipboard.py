@@ -33,6 +33,7 @@ import platform
 import shutil
 import subprocess
 import threading
+import time
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -211,10 +212,12 @@ class HostClipboardSync:
         backend: Optional[HostClipboard] = None,
         enabled: bool = True,
         poll_interval_ms: int = 500,
+        background_poll: bool = False,
     ):
         self.service = service
         self.enabled = enabled
         self.poll_interval = max(0.05, poll_interval_ms / 1000.0)
+        self._background_poll = background_poll
         self._backend = backend
         self._thread: Optional[threading.Thread] = None
         self._stop = threading.Event()
@@ -223,6 +226,10 @@ class HostClipboardSync:
         # so we only react to genuine changes.
         self._last_host_written_hash: Optional[str] = None
         self._last_seen_hash: Optional[str] = None
+        # On-demand pull debounce: a CLIPBOARD_INFO immediately followed by a
+        # paste must spawn at most one `wl-paste`, not two.
+        self._pull_debounce = 0.25
+        self._last_pull_ts = 0.0
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -245,11 +252,16 @@ class HostClipboardSync:
             )
             return False
 
-        # server -> host: mirror C64/app copies to the desktop.
+        # server -> host: mirror C64/app copies to the desktop. This is
+        # event-driven -- it fires only on an actual copy, never on a timer.
         self.service.register_host_sink(self._on_server_copy)
+        # host -> server: pulled on demand when the C64 pastes (see
+        # pull_now), so nothing spawns a clipboard subprocess in the
+        # background.
+        self.service.register_host_source(self.pull_now)
 
         # Seed the last-seen hash so we don't import whatever is already on
-        # the host clipboard as a spurious "change" on the first tick.
+        # the host clipboard as a spurious "change" on the first pull.
         try:
             current = self._backend.read_text()
             if current is not None:
@@ -257,19 +269,67 @@ class HostClipboardSync:
         except Exception:
             logger.debug("initial host clipboard read failed", exc_info=True)
 
-        self._thread = threading.Thread(
-            target=self._run, name="host-clipboard-sync", daemon=True
+        # Background polling is OFF by default. On compositors without the
+        # wlroots data-control protocol (e.g. GNOME/Mutter) `wl-paste --watch`
+        # is unavailable, so a poll loop must spawn a fresh `wl-paste` client
+        # every tick -- which visibly flashes the dock and taskbar. On-demand
+        # pulls (at paste time) avoid that entirely. Opt back in with the
+        # clipboard_background_poll config for headless/other setups.
+        if self._background_poll:
+            self._thread = threading.Thread(
+                target=self._run, name="host-clipboard-sync", daemon=True
+            )
+            self._thread.start()
+        logger.info(
+            "host clipboard sync started (backend=%s, mode=%s)",
+            type(self._backend).__name__,
+            "poll" if self._background_poll else "on-demand",
         )
-        self._thread.start()
-        logger.info("host clipboard sync started (backend=%s)", type(self._backend).__name__)
         return True
 
     def stop(self) -> None:
-        """Stop the watcher and detach the host sink."""
+        """Stop the watcher and detach the host hooks."""
         self._stop.set()
         self.service.register_host_sink(None)
+        self.service.register_host_source(None)
         if self._thread is not None:
             self._thread.join(timeout=2.0)
+
+    # ------------------------------------------------------------------
+    # host -> server (on demand)
+    # ------------------------------------------------------------------
+
+    def pull_now(self, session_id: int) -> bool:
+        """Import the host clipboard into ``session_id`` at paste time.
+
+        This is the desktop->C64 path with no background polling: it reads
+        the host clipboard once (debounced, so a CLIPBOARD_INFO+paste burst
+        spawns at most one subprocess) and imports a genuine, non-echo change
+        into the pasting session. Nothing spawns a clipboard subprocess
+        unless the user actually pastes.
+        """
+        if self._backend is None:
+            return False
+        now = time.monotonic()
+        if now - self._last_pull_ts < self._pull_debounce:
+            return False
+        self._last_pull_ts = now
+        try:
+            text = self._backend.read_text()
+        except Exception:
+            logger.debug("on-demand host clipboard read failed", exc_info=True)
+            return False
+        if text is None:
+            return False
+        h = _norm_hash(text)
+        if h == self._last_seen_hash:
+            return False  # unchanged since we last saw it
+        self._last_seen_hash = h
+        if h == self._last_host_written_hash:
+            return False  # our own echo, not a genuine host change
+        self.service.set_text(session_id, text, source="host")
+        logger.debug("pulled host clipboard change into session %s", session_id)
+        return True
 
     # ------------------------------------------------------------------
     # server -> host

@@ -3928,6 +3928,53 @@ sb_next:
     jsr scr_cmd0
     jmp sb_modal
 
+// --- step 36: shared clipboard (GH #18) -- fits-now cartridge side ------------
+// Server-console copy/paste over the existing UCI machinery. Reached only from
+// cs_modal (a server console is active), so w_console ($03EF) is never 0 here --
+// no scr_save/DMA-snapshot is needed: consoles 1-10 extract COPY_SCREEN from the
+// app's own server-side screen buffer. The interactive selection modal and the
+// local-BASIC (console 0) copy/paste are deferred (they need bank space we chose
+// not to reclaim -- see space_map.md FUNPAINT note + conversion_log3 step 36).
+//
+// Split into clip_conn + clip_wr on purpose: cs_connect clobbers X and Y (its
+// IP-write loop uses X; hn_push/hn_fin use Y), so the payload length/index must
+// be loaded AFTER the connect, not passed through it. Callers do:
+//   jsr clip_conn ; bcs skip ; ldy #idx ; ldx #len ; jsr clip_wr
+//
+// clip_conn -- open a socket to w_console and write the COMMAND(0) wire header
+//   (magic + console|cmd byte). C=1 on connect failure (nothing left to close).
+clip_conn:
+    jsr cs_connect
+    bcs ccn_ret            // server unreachable -> abort, screen untouched
+    lda #$11               // SOCKET_WRITE
+    jsr hn_hdr
+    lda $cf21              // socket id
+    sta $df1d
+    lda #$fe               // wire magic
+    sta $df1d
+    lda $03ef              // console nibble | COMMAND(0) = the wire byte
+    sta $df1d
+    clc                    // header written OK
+ccn_ret:
+    rts
+// clip_wr -- X = payload length, Y = start index into clip_tab (table by $9EF5);
+//   append the op(+payload) bytes, push, drain, close. Fire-and-forget like
+//   scr_get: the server owns user feedback (e.g. the "PASTE NOT AVAILABLE"
+//   toaster on a rejected paste), so we read no reply; the socket is per-op.
+clip_wr:
+cwr_pl:
+    lda clip_tab,y         // op byte, then any payload (mode,x0,y0,x1,y1)
+    sta $df1d
+    iny
+    dex
+    bne cwr_pl
+    jsr hn_push
+    bcs cwr_cl
+    jsr hn_fin
+cwr_cl:
+    jsr hn_close
+    rts
+
     .fill $9C41 - *, $00   // remaining reclaimed pocket up to cs_install
 .errorif (* != $9C41), "cinv_tmpl/pocket overran cs_install (pinned $9C41)"
 
@@ -3998,6 +4045,34 @@ csi_arm:
 // up into the reclaimed $9B59 pocket when it grew the program-mode self-disarm;
 // this vacated slot is now zero padding so console_switch stays pinned at $9CB7
 // and the whole downstream bank2 remains byte-identical to the frozen build.
+// cm_vc -- step 36 clipboard chord handler, reached from cs_modal's "combo held
+// but not 1..7/<-" tail (that path already flushed the chord char via $C6). SFDX
+// ($CB) still holds the pressed key. C (matrix $14) -> COPY_SCREEN whole visible
+// screen; V (matrix $1F) -> PASTE_TO_APP. Any other combo key is ignored. Like
+// cm_server, cs_wait_release gives one op per press (no network flood).
+cm_vc:
+    lda $cb                // SFDX
+    cmp #$14               // C -> copy the whole visible app screen
+    beq cm_vc_ok
+    cmp #$1f               // V -> paste the shared clipboard into the app
+    bne cm_vc_x            // neither -> ignore, keep the console session live
+cm_vc_ok:
+    pha                    // remember which key across the connect (clobbers A/X/Y)
+    jsr cs_wait_release    // one op per press (release + flush), no network flood
+    jsr clip_conn          // open socket + write the COMMAND(0) header
+    pla                    // recover the key (PLA leaves clip_conn's carry intact)
+    bcs cm_vc_x            // server unreachable -> drop the key, keep the session
+    ldy #$00               // default = paste: clip_tab[0], 1 wire byte
+    ldx #$01
+    cmp #$1f               // V -> paste (defaults already set)
+    beq cm_vc_wr
+    ldy #$01               // C -> copy: clip_tab[1..6], 6 wire bytes
+    ldx #$06
+cm_vc_wr:
+    jsr clip_wr
+cm_vc_x:
+    jmp cs_modal
+
     .fill $9CB7 - *, $00
 .errorif (* != $9CB7), "console_switch shifted -- downstream bank2 moved"
 
@@ -4076,7 +4151,7 @@ cm_chk:
     bpl cm_chk             //   Launcher (the old cpx#0 back-to-local case is gone;
     lda #$00               //   combo held but not a digit: drop the chord char
     sta $c6                //   SCNKEY queued, so it isn't forwarded on release
-    beq cs_modal           // (always)
+    jmp cm_vc              //   step 36: C/V -> clipboard copy/paste, else -> cs_modal
 cm_local:                  // reached only via the C=+CTRL+<- branch above)
     jsr cs_wait_release    // C=+CTRL+<- : back to local
     jsr scr_restore
@@ -4379,7 +4454,13 @@ b02_9EEF:
     jsr $0018              // 20 18 00
 bank02_data_9EF5:
 .errorif (* != $9EF5), "bank02_data_9EF5 shifted"
-    .byte $00, $00, $00, $00, $00, $00, $00, $00, $00, $00    // data $9EF5
+// step 36 clipboard op/payload table -- reuses 7 of these 10 stock-zero pad bytes
+// (3 kept as pad). [0] paste op; [1..6] copy op + selection metadata. clip_send
+// indexes it by Y: X=1,Y=0 -> paste; X=6,Y=1 -> whole-screen line-wise copy.
+clip_tab:
+    .byte $13                             // [0] SERVER_CMD_PASTE_TO_APP
+    .byte $10, $00, $00, $00, $27, $18    // [1..6] COPY_SCREEN, mode 0, x0 0,y0 0, x1 39,y1 24
+    .byte $00, $00, $00                   // remaining stock-zero pad (data $9EF5)
     eor #$ea               // 49 EA
 b02_9F01:
     nop                    // EA

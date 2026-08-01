@@ -186,6 +186,7 @@ HELP_TEXT = [
     "  UP/DOWN   Select article",
     "  C=+</C=+> Page up / page down",
     "  RETURN    Read article",
+    "  C=+C      Copy selected link",
     "  SPACE     Refresh feeds",
     "  F3        Feed directory",
     "",
@@ -371,6 +372,20 @@ class RSSReaderConsole(ServerConsole):
             return True
         return False
 
+    def _copy_link(self, article: Optional[dict]) -> bool:
+        """Copy an article's link to the shared clipboard, with feedback.
+
+        Returns True on success. Sets a status message either way so C=+C
+        never fails silently (a link-less or missing article says so).
+        """
+        link = (article or {}).get("link") if article else None
+        if link:
+            get_clipboard_service().set_text(self.session_id, link, source="rss")
+            self.status_msg = "Link copied!"
+            return True
+        self.status_msg = "No link to copy"
+        return False
+
     def handle_keypress(self, petscii_code: int, modifiers: int) -> Optional[bytes]:
         self.status_msg = ""  # clear transient status
         handlers = {
@@ -443,6 +458,10 @@ class RSSReaderConsole(ServerConsole):
         elif key == KEY_F8:
             self._switch_mode(MODE_HELP)
 
+        elif key == KEY_CBM_C:
+            # Copy the selected article's link without opening it.
+            self._copy_link(self.articles[self.article_sel] if self.articles else None)
+
         elif key == KEY_SPACE:
             # Manual refresh
             self._fetch_all_feeds()
@@ -474,11 +493,7 @@ class RSSReaderConsole(ServerConsole):
             self.mode = MODE_ARTICLES
 
         elif key == KEY_CBM_C:
-            if self.current_article and self.current_article.get("link"):
-                get_clipboard_service().set_text(
-                    self.session_id, self.current_article["link"], source="rss"
-                )
-                self.status_msg = "Link copied!"
+            self._copy_link(self.current_article)
 
         elif key == KEY_F1:
             self.mode = MODE_ARTICLES

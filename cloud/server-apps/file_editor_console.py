@@ -1008,7 +1008,9 @@ class FileEditorConsole(ServerConsole):
             )
 
     def _cmd_paste(self, d: Document):
-        cb = get_clipboard_service().get_text(self.session_id)
+        svc = get_clipboard_service()
+        svc.pull_from_host(self.session_id)  # refresh from desktop at paste time
+        cb = svc.get_text(self.session_id)
         if cb:
             d.insert_text_at_cursor(cb)
 

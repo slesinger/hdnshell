@@ -82,14 +82,14 @@ placed here runs in freeze/boot context, not BASIC context.
 $9E08-$9E10 (8) + $9E51-$9E59 (8). No stock padding anywhere else; the bank is
 fully packed (DOS wedge, ML monitor, TASS/TMP launcher, F-key macros, HDN hook).
 
-### Bank 2 — 102 B usable + 38 B pinned/stock
+### Bank 2 — ~28 B usable + 38 B pinned/stock (step 36 consumed the two big pockets)
 | Range | Bytes | Class | Notes |
 |---|---:|---|---|
 | $9B20-$9B2E | 14 | c | pinned padding — `hondani_err` must stay at $9B2E (bank1 stub hardcodes it) |
-| $9C0E-$9C41 | 51 | a | reclaimed pocket up to `cs_install` (pinned at $9C41) |
-| $9C84-$9CB7 | 51 | a | vacated old CINV-stub slot, `console_switch` pinned at $9CB7 |
+| ~~$9C0E-$9C41~~ | ~~51~~ **0** | — | **CONSUMED (step 36):** `clip_conn`+`clip_wr` fill it exactly (51/51). `cs_install` still pinned $9C41 |
+| ~~$9C84-$9CB7~~ | ~~51→43~~ **4** | a | step 36 `cm_vc` uses 39 B ($9C8C-$9CB2); 4 B left. (was measured 43, not 51 — `cs_install` grew since 07-21). `console_switch` pinned $9CB7 |
 | $9E8F-$9E9D | 14 | b | stock zeros |
-| $9EF5-$9EFF | 10 | b | stock zeros |
+| ~~$9EF5-$9EFF~~ | ~~10~~ **3** | b | step 36 `clip_tab` uses 7 B; 3 B stock-zero left |
 
 ### Bank 3 — ~133 B usable
 Reclaimed Silversurfer pocket $80F8-$8241 (§5.1): step 31's `hsh_putc`, step
@@ -292,3 +292,14 @@ across banks 3/4/6, which cost bank 6 a net 17 B (index tables relocated into
 the `$8023` pocket, offset by the new path string). Bank 3's leaf helpers
 re-frozen (see §4) — measured gain there was 15 B, not the ~29 B estimated.
 See §2 bank-3/4/6 entries for the full before/after byte accounting.
+
+**2026-07-30 (step 36, clipboard cartridge fits-now):** bank 2's two big pockets
+are now spent on GH #18 server-console copy/paste. `$9C0E` pocket: **full** (51/51,
+`clip_conn`+`clip_wr`). `$9C8C` pocket: 39 B used (`cm_vc`), 4 B left — and note it
+was really **43 B, not the 51 B this doc claimed** (`cs_install` grew ~8 B since
+07-21; verified by KickAss `.sym`: `cm_vc`=$9C8C, `console_switch`=$9CB7). `$9EF5`
+tail: 7 B used (`clip_tab`), 3 B left. Pinned `hondani_err`/`cs_install`/
+`console_switch` unchanged; `cs_modal`..`key_send` slid +1 B (all same-bank).
+Bank 2 now has ~28 B usable left ($9E8F 14 + $9C8C-tail 4 + $9EF5-tail 3 + scraps) —
+the interactive selector + local-BASIC paste (deferred) need a bigger reclaim
+(FUNPAINT §5.4, owner chose to keep it) or a reserve-bank + IRQ cross-bank path.

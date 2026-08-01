@@ -82,6 +82,17 @@ startup and the on-C64 clipboard keeps working normally. Supported backends
 are the Win32 clipboard on Windows, `pbcopy`/`pbpaste` on macOS, and
 `wl-clipboard` (Wayland) or `xclip`/`xsel` (X11) on Linux.
 
+The two directions work differently, by design, so the server never disturbs
+your desktop when idle:
+
+- **C64/app → desktop** happens the instant you copy (event-driven).
+- **Desktop → C64/app** is pulled *on demand*, the moment you paste on the
+  C64. The server does **not** poll the desktop clipboard in the background,
+  because on some Linux desktops (notably GNOME/Wayland, which lack the
+  wlroots `data-control` protocol) periodic clipboard reads make the taskbar
+  or dock icon flash. If you specifically want continuous background polling,
+  set `clipboard_background_poll` to `true` in the server config.
+
 ### Configuration
 
 Clipboard behaviour is configured on the **Settings** page of the HDN Server
@@ -91,7 +102,7 @@ web UI, under the **Apps & Services** tab, in the **Clipboard** section:
 | --- | --- | --- |
 | **Sync with the host desktop clipboard** | On | Mirror the desktop clipboard both ways. Turn off to keep the C64/app clipboard separate from the desktop. |
 | **Max clipboard size (bytes)** | `65536` | Maximum clipboard size (64 KiB). Larger copies are truncated. |
-| **Host poll interval (ms)** | `500` | How often the host clipboard is checked for changes. |
+| **Host poll interval (ms)** | `500` | Only used when background polling is explicitly enabled (`clipboard_background_poll`). With the default on-demand sync the desktop clipboard is read only when you paste, so this has no effect. |
 
 Clipboard settings are read when the server starts, so restart the HDN Server
 after changing them.

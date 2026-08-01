@@ -410,9 +410,11 @@ class CommandHandler:
             return CommandHandler.encode_clip_info(meta)
 
         if data[0] == SERVER_CMD_CLIPBOARD_INFO:
+            service.pull_from_host(session_id)
             return CommandHandler.encode_clip_info(service.get_metadata(session_id))
 
         # SERVER_CMD_LOCAL_PASTE_CHUNK
+        service.pull_from_host(session_id)
         offset = 0
         max_bytes = 64
         if len(data) >= 3:
@@ -468,9 +470,11 @@ class CommandHandler:
             return bytes([0x01]) + CommandHandler.encode_clip_info(meta)
 
         if data[0] == SERVER_CMD_CLIPBOARD_INFO:
+            service.pull_from_host(session_id)
             return CommandHandler.encode_clip_info(service.get_metadata(session_id))
 
         # SERVER_CMD_PASTE_TO_APP
+        service.pull_from_host(session_id)
         text = service.get_text(session_id)
         accepted = False
         try:

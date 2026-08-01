@@ -114,6 +114,7 @@ class ClipboardService:
     def __init__(self, max_bytes: int = DEFAULT_MAX_BYTES):
         self.max_bytes = max_bytes
         self._host_sink: Optional[Callable[[int, str], None]] = None
+        self._host_source: Optional[Callable[[int], None]] = None
         self._last_active_session: Optional[int] = None
 
     # ------------------------------------------------------------------
@@ -129,6 +130,31 @@ class ClipboardService:
         desktop backend can never break C64/app clipboard operations.
         """
         self._host_sink = sink
+
+    def register_host_source(self, source: Optional[Callable[[int], None]]) -> None:
+        """Register a callback that pulls the host clipboard on demand.
+
+        The source receives the pasting ``session_id`` and is expected to
+        import a genuine host clipboard change into it (via ``set_text`` with
+        ``source="host"``). Called by :func:`pull_from_host` just before a
+        paste is served, so the desktop->C64 direction needs no background
+        polling. Registering ``None`` disables it. Exceptions are swallowed.
+        """
+        self._host_source = source
+
+    def pull_from_host(self, session_id: int) -> None:
+        """Refresh the clipboard from the host, if a host source is wired.
+
+        Paste entry points call this so desktop->C64 sync happens lazily at
+        paste time rather than on a background timer. A no-op when no host
+        source is registered (headless, or host sync disabled).
+        """
+        if self._host_source is None:
+            return
+        try:
+            self._host_source(session_id)
+        except Exception:
+            logger.debug("host clipboard source failed", exc_info=True)
 
     @property
     def last_active_session(self) -> Optional[int]:

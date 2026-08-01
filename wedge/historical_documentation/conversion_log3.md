@@ -3584,18 +3584,49 @@ never collide:
   non-zero flags byte; paste-chunk ends on `done` or a >=0x20 PETSCII byte) so
   the console-0 response path's `create_response` null-strip never eats it.
 
-**Remaining = cartridge input + selection modal (bank2), HW-only.** Per
-`feedback_vice_no_ultimate` this cannot be verified in VICE (UCI/REU/DMA), so
-it is intentionally deferred to a hardware session, exactly like the Launcher's
-`C=+CTRL` dispatch (GH #22). The work: extend the `C=+CTRL` chord dispatch in
-`wedge/rr38p-tmp12reu.bank02.asm` (the `csw_*`/`cs_modal` machinery around the
-existing `1..7`/`F5`/`F7` cases — preserve those byte-for-byte) to add `C` and
-`V`. `C=+CTRL+C` → COPY_NATIVE (server console) or generic selection after
-`scr_save` (console 0); `C=+CTRL+V` → PASTE_TO_APP or chunked LOCAL_PASTE_CHUNK
-insertion. The generic selector renders by XORing the reverse-video bit ($80)
-of affected `$0400` cells (no 1000-byte backup), clamps to x=0..39/y=0..24,
-sends only selection metadata (server does extraction), and XOR-restores on
-every exit (RETURN/STOP/net-error/console-switch/self-disarm). Space budget to
-be measured against the bank2 reserve when that session starts.
+**Cartridge side — "fits-now" subset LANDED (2026-07-30), NOT YET HW-TESTED.**
+Per `feedback_vice_no_ultimate` none of this can run in VICE (UCI/DMA), so it is
+written against the proven bank2 comms pattern and awaits a hardware session.
 
-**Not yet HW-tested** (nothing to test on HW yet — server side only this step).
+*Space reality (verified 2026-07-30, corrects a stale space_map figure).* The
+console-switch/clipboard machinery MUST live in bank2 (it runs in the CINV IRQ
+context with bank2 mapped and reaches the bank2-local `hn_*`/`cs_connect`
+helpers). Cross-banking out of that IRQ context is unproven — no bank2 IRQ
+routine uses the `$9F00` gate. Bank2 free = two non-adjacent pockets: `$9C0E`
+(51 B) + `$9C8C` (43 B, space_map said 51 — `cs_install` grew ~8 B since) +
+scattered tail zeros. The full feature (interactive selector + local-BASIC
+paste ≈ 350-450 B) does NOT fit and would need FUNPAINT (`$9777-$98A7`, ~460 B,
+the only sizable bank2 reclaim) dropped — owner chose to PRESERVE FunPaint. So
+this step ships only what fits the existing pockets.
+
+*What LANDED (server-console clipboard, whole-screen copy):* dispatch added
+inside `cs_modal` only (the CINV stub / `csw_guard` / `cvr_digits` are UNTOUCHED
+— so the chord is live only while a server console 1-10 is active, NOT at the
+local BASIC prompt). `cs_modal`'s "combo-held-but-not-1..7/←" tail now `jmp cm_vc`
+(+1 B) instead of looping. New code:
+- `clip_conn` + `clip_wr` in pocket `$9C0E` (51/51 B, exact): open a socket to
+  w_console and write the `COMMAND(0)` wire header (`$FE`, console|cmd), then
+  append op(+payload) from `clip_tab`, push, drain, close. Split in two because
+  `cs_connect` clobbers X/Y — the len/index are set AFTER the connect.
+- `cm_vc` in pocket `$9C8C` (39/43 B): SFDX `$14`=C → COPY_SCREEN whole visible
+  screen (`mode 0, 0,0..39,24`); `$1F`=V → PASTE_TO_APP; else ignore.
+  `cs_wait_release` gives one op per press. Fire-and-forget like `scr_get` (the
+  server owns feedback — e.g. the `PASTE NOT AVAILABLE` toaster on reject).
+- `clip_tab` = 7 of the 10 stock-zero pad bytes at `$9EF5`: `[0]`=PASTE_TO_APP
+  op; `[1..6]`=COPY_SCREEN op + selection metadata.
+Pinned addrs held (`hondani_err`/`cs_install`/`console_switch` byte-identical);
+`key_send`/`ks_done` slid +1 B (all same-bank assembler-resolved). Whole `.crt`
+rebuilds clean via `build.sh`.
+
+*Still DEFERRED (need the FUNPAINT drop or a reserve-bank + IRQ cross-bank path):*
+interactive on-screen selection modal (rect/line, XOR reverse-video render);
+local console 0 copy (needs `scr_save` first + top-level `csw_guard` dispatch);
+local-BASIC paste (`LOCAL_PASTE_CHUNK` → KEYD injection); `COPY_NATIVE` app-
+selection copy via the chord (apps keep their own `C=+C`); and the top-level
+(BASIC-prompt) chord (CINV stub unchanged).
+
+**HW test when hardware is available** (see `cloud/CLIPBOARD_TESTING.md` §"C64
+chord"): inside e.g. File Editor (`C=+CTRL+2`) press `C=+CTRL+V` (desktop text
+should paste into the app) and `C=+CTRL+C` (the app's visible screen should
+appear on the desktop clipboard). Confirm a server-unreachable case leaves the
+console session alive (no hang).

@@ -193,11 +193,13 @@ class _FakeBackend:
         self.text = text
         self.available = True
         self.raise_on_read = False
+        self.reads = 0
 
     def is_available(self):
         return self.available
 
     def read_text(self):
+        self.reads += 1
         if self.raise_on_read:
             raise RuntimeError("boom")
         return self.text
@@ -274,6 +276,69 @@ class TestHostSync:
             assert sync.poll_once() is False
         finally:
             sync.stop()
+
+    # ── On-demand pull (no background polling => no dock/taskbar flash) ──
+
+    def test_start_does_not_spawn_background_thread_by_default(self):
+        import threading
+
+        backend = _FakeBackend()
+        _svc, sync = self._sync(backend)
+        before = {id(t) for t in threading.enumerate()}
+        assert sync.start() is True
+        try:
+            new_threads = [t for t in threading.enumerate() if id(t) not in before]
+            # The whole point of the fix: no poll loop spawning `wl-paste`.
+            assert new_threads == [], f"unexpected background thread(s): {new_threads}"
+        finally:
+            sync.stop()
+
+    def test_pull_from_host_imports_change_on_demand(self):
+        backend = _FakeBackend("seed")
+        svc, sync = self._sync(backend)
+        sync.start()
+        try:
+            backend.text = "pasted from desktop"
+            # A paste into session 5 pulls the host clipboard just-in-time.
+            svc.pull_from_host(5)
+            assert svc.get_text(5) == "pasted from desktop"
+        finally:
+            sync.stop()
+
+    def test_pull_debounce_coalesces_info_and_paste(self):
+        backend = _FakeBackend("seed")
+        _svc, sync = self._sync(backend)
+        sync.start()
+        reads_after_seed = backend.reads
+        try:
+            backend.text = "v1"
+            assert sync.pull_now(5) is True          # first pull reads
+            backend.text = "v2"
+            assert sync.pull_now(5) is False         # within debounce -> no read
+            # Only one extra backend read happened for the burst.
+            assert backend.reads == reads_after_seed + 1
+        finally:
+            sync.stop()
+
+    def test_pull_suppresses_own_echo(self):
+        backend = _FakeBackend()
+        svc, sync = self._sync(backend)
+        sync.start()
+        try:
+            svc.set_text(1, "c64 copy", source="editor")  # mirrored to host
+            sync._last_pull_ts = 0.0                        # bypass debounce
+            # Pulling back our own write must NOT re-import it as a host change.
+            assert sync.pull_now(1) is False
+        finally:
+            sync.stop()
+
+    def test_disabled_sync_has_no_host_source(self):
+        backend = _FakeBackend("x")
+        svc, sync = self._sync(backend, enabled=False)
+        assert sync.start() is False
+        # pull_from_host must be a harmless no-op when sync never started.
+        svc.pull_from_host(1)
+        assert svc.get_text(1) == ""
 
 
 # ----------------------------------------------------------------------
