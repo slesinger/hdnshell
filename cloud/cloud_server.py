@@ -32,6 +32,7 @@ MailClientConsole = importlib.import_module("mail_client").MailClientConsole
 WebBrowserConsole = importlib.import_module("web_browser").WebBrowserConsole
 RSSReaderConsole = importlib.import_module("rss_reader").RSSReaderConsole
 WikiBrowserConsole = importlib.import_module("wiki_browser").WikiBrowserConsole
+SidBrowserConsole = importlib.import_module("sid_browser").SidBrowserConsole
 LauncherConsole = importlib.import_module("launcher").LauncherConsole
 
 _cmd = importlib.import_module("sdk.command_handler")
@@ -66,6 +67,9 @@ APP_CATALOG = [
     AppInfo("mail", "Mail", "IMAP/SMTP email client.", 8, MailClientConsole),
     AppInfo("whatsapp", "WhatsApp", "WhatsApp chats and messages.", 9, WhatsAppChatConsole),
     AppInfo("wiki", "Wikipedia", "Browse Wikipedia articles.", 7, WikiBrowserConsole),
+    # SID Browser (issue #28): slot 10 has no wedge chord either, so it is a
+    # fixed Launcher-only extra like Mail and WhatsApp above.
+    AppInfo("sid_browser", "SID Browser", "Browse & play HVSC SID chiptunes.", 10, SidBrowserConsole),
 ]
 
 

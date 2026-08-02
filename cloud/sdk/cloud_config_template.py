@@ -83,6 +83,18 @@ CONFIG_DEFAULTS = {
     # ── RSS Reader ──
     "rss_max_articles": "100",
     "rss_refresh_minutes": "5",
+    # ── SID Browser (GH #28) ──
+    # HVSC mirror the catalog index and .sid files are fetched from, and how
+    # long that index may go without a refresh before it rebuilds in the
+    # background. Tunes are always fetched live, so only the index goes stale.
+    "sid_mirror_url": "https://www.hvsc.de/download/C64Music",
+    "sid_index_max_age_days": "14",
+    # Bracket the tune's play call with inc/dec $D020, so the coloured band in
+    # the border shows exactly how much raster time the tune costs -- handy
+    # when picking music for a demo. Costs 12 cycles a frame. "yes"/"no".
+    "sid_raster_border": "no",
+    # Folder the save-to-workspace dialog opens at; empty = workspace root.
+    "sid_last_save_dir": "",
     # ── Clipboard (GH #18) ──
     # One shared clipboard across the host desktop, the local BASIC console
     # and every server app. host_sync mirrors the desktop clipboard both

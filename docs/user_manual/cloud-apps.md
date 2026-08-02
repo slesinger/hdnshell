@@ -1,6 +1,6 @@
 # Server Apps
 
-HDN Shell RR includes six server-side console applications that run on your PC and render their output directly to the Commodore 64 screen via the DMA service. Each app occupies its own virtual console and is instantly accessible using the **C= (Commodore) key together with CTRL** and a number key.
+HDN Shell RR includes a set of server-side console applications that run on your PC and render their output directly to the Commodore 64 screen via the DMA service. Each app occupies its own virtual console and is instantly accessible using the **C= (Commodore) key together with CTRL** and a number key.
 
 The server renders a full 40×25 screen-code buffer which is transferred to the C64 over the network. From the C64's point of view each app behaves like a real console — keyboard input is sent to the server and the updated screen arrives back within milliseconds.
 
@@ -21,6 +21,8 @@ Press **C=+CTRL** together with a digit to switch consoles at any time:
 | `C=+CTRL+5` | [Telegram Chat](telegram-chat.md) | A Telegram client that connects to the Telegram network using the MTProto protocol (Telethon library). Browse your chat list, read messages, compose and send replies, and manage contacts — all from the C64 keyboard. |
 | `C=+CTRL+6` | [RSS Reader](rss-reader.md) | An RSS/Atom feed reader that fetches, parses, and displays news articles in a clean 40-column layout. Comes pre-loaded with Hacker News, BBC News, and CSDb Releases feeds. You can add, remove, and enable/disable feeds from the built-in feed directory. |
 | `C=+CTRL+7` | [Wikipedia Browser](wikipedia-browser.md) | A dedicated Wikipedia reader that strips pages down to essential text and links for the 40×25 PETSCII display. Supports multi-language search, link navigation, page history, and a table of contents overlay (Ctrl+T) for quick section jumping. |
+| `C=+CTRL+8` | [Mail](mail-client.md) | An IMAP/SMTP mail client. Read your inbox, follow links from a message straight into the Web Browser console, and compose and send replies from the C64 keyboard. |
+| from the Launcher | [SID Browser](sid-browser.md) | Search the whole High Voltage SID Collection (~61,000 tunes) by title, composer or STIL comment, inspect a tune's PSID/RSID header, save tunes into your workspace with a credits note, keep playlists, and play tunes on the real C64 — the player runs in C64 RAM *under* the console, so the screen and keyboard stay yours and stopping restores the memory it borrowed. |
 | `C=+CTRL+9` | [WhatsApp Chat](whatsapp-chat.md) | A WhatsApp client that links to your account as a companion device (whatsmeow / neonize library) using an 8-character pairing code — no API keys, no QR scanning. Browse chats, read and send messages, and manage contacts. Set your phone number in the web UI Settings page. Uses an unofficial client library; use at your own risk. |
 
 Switching is instantaneous. The server keeps each console's state alive so you can freely jump between them and return to exactly where you left off. When you switch away from the shell, the server saves your C64 screen and restores it when you come back with `C=+CTRL+1`.

@@ -21,6 +21,7 @@
     { "slug": "rss-reader",               "title": "RSS Reader",           "level": 2 },
     { "slug": "wikipedia-browser",        "title": "Wikipedia Browser",    "level": 2 },
     { "slug": "mail-client",              "title": "Mail",                 "level": 2 },
+    { "slug": "sid-browser",              "title": "SID Browser",          "level": 2 },
     { "slug": "programming",              "title": "Programming" },
     { "slug": "c-programming",            "title": "Programming in C on the C64",            "level": 2 },
     { "slug": "c-graphics",               "title": "C: Graphics & Text Mode",                "level": 2 },

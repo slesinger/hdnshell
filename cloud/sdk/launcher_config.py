@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 _CONFIG_FILENAME = "launcher.json"
 
 # Slots that can be pinned to apps from the hotbar. Slot 1 is always the
-# Launcher itself and is never a pin target. Slot 10 (C=+0 / Vibe Chat) has no
-# wedge chord yet, so it stays a *fixed* extra (openable via the Launcher's
+# Launcher itself and is never a pin target. Slot 10 (SID Browser, GH #28) has
+# no wedge chord, so it stays a *fixed* extra (openable via the Launcher's
 # RETURN, not digit-pinnable) rather than a hotbar slot -- see GH #22.
 #
 # PRODUCTION policy: the HDN shell only supports digits 2-7 for pinning.
@@ -72,7 +72,7 @@ class LauncherConfig:
             except Exception as e:
                 logger.warning("Failed to load launcher.json: %s", e)
         # First run (or unreadable): seed from defaults, but only for pinnable
-        # slots -- a non-pinnable default (e.g. vibe_chat @ slot 10) must not
+        # slots -- a non-pinnable default (e.g. sid_browser @ slot 10) must not
         # show up as a phantom hotbar pin.
         seeded = {
             slot: app_id
